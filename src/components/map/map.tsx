@@ -178,14 +178,16 @@ const InitMap = () => {
         ref={mapContainerRef}
         className="absolute top-0 left-0 right-0 bottom-0 w-full h-full"
       />
-      <div className="absolute top-2 left-2 bg-white text-black px-4 py-2 rounded shadow">
-        🚀 Швидкість: {speed.toFixed(2)} м/с
-      </div>
-      <div className="absolute top-12 left-2 bg-white text-black px-4 py-2 rounded shadow">
-        ⏱ Точність: {accuracy}
-      </div>
-      <div className="absolute top-22 left-2 bg-white text-black px-4 py-2 rounded shadow">
-        ⏱ Час останнього оновлення: {formatTimestamp(timeStamp)}
+      <div className="absolute flex flex-col gap-4 top-2 left-2 bg-white text-black px-4 py-2 rounded shadow">
+        <div className="border-b">
+          🚀 Швидкість: {(speed * 3.6).toFixed(1)} км/год
+        </div>
+        <div className="border-b">🚀 Швидкість: {speed.toFixed(2)} м/с</div>
+        <div className="border-b"> ⏱ Точність: {accuracy}</div>
+        <div className="border-b">
+          {" "}
+          ⏱ Час останнього оновлення: {formatTimestamp(timeStamp)}
+        </div>
       </div>
     </div>
   );
