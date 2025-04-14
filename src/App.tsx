@@ -14,6 +14,16 @@ function App() {
     });
   }, []);
 
+  useEffect(() => {
+    // let deferredPrompt: any;
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      console.log("beforeinstallprompt", e);
+      // deferredPrompt = e;
+      // показати кнопку
+    });
+  }, []);
+
   return (
     <>
       <StickyCursor />
