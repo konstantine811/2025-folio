@@ -13,9 +13,9 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "favicon.ico", "robots.txt"],
       manifest: {
-        name: "Мій Vite PWA",
-        short_name: "VitePWA",
-        description: "Це мій додаток з підтримкою PWA!",
+        name: "AbcFolio",
+        short_name: "AbcFolio",
+        description: "Abramov Constantin Abc Folio",
         theme_color: "#ffffff",
         background_color: "#ffffff",
         display: "standalone",
@@ -23,12 +23,12 @@ export default defineConfig({
         start_url: "/",
         icons: [
           {
-            src: "logo.png",
+            src: "logo.svg",
             sizes: "192x192",
             type: "image/png",
           },
           {
-            src: "logo.png",
+            src: "logo.svg",
             sizes: "512x512",
             type: "image/png",
           },
