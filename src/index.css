@@ -1,0 +1,30 @@
+@import "tailwindcss";
+@import "mapbox-gl/dist/mapbox-gl.css";
+
+:root {
+  --color-primary: #0000ff;
+  --color-secondary: #00ff00;
+  --color-tertiary: #ff0000;
+  --color-main: #000000;
+  --color-accent: #ff00ff;
+  --color-background: #ffffff;
+  --color-text: #000000;
+  --color-border: #cccccc;
+  --color-shadow: #000000;
+  --color-highlight: #ffff00;
+  --color-link: #0000ff;
+}
+
+@theme static {
+  --color-main: var(--color-main);
+  --color-accent: var(--color-accent);
+  --color-background: var(--color-background);
+  --color-text: var(--color-text);
+  --color-border: var(--color-border);
+  --color-shadow: var(--color-shadow);
+  --color-highlight: var(--color-highlight);
+  --color-link: var(--color-link);
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-tertiary: var(--color-tertiary);
+}
