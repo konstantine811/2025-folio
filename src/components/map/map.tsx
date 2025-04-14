@@ -22,6 +22,11 @@ function getDistance(
   return R * c;
 }
 
+function formatTimestamp(timestamp: number): string {
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString(); // повертає тільки час, напр. "14:23:01"
+}
+
 const InitMap = () => {
   const mapRef = useRef<Map>(null!);
   const markerRef = useRef<Marker | null>(null);
@@ -29,6 +34,20 @@ const InitMap = () => {
   const prevPositionRef = useRef<GeolocationPosition | null>(null);
   const routeRef = useRef<LatLng[]>([]);
   const [speed, setSpeed] = useState<number>(0);
+  const [accuracy, setAccuracy] = useState<number>(0);
+  const [timeStamp, setTimeStamp] = useState<number>(0);
+
+  const speedBuffer = useRef<number[]>([]);
+  const maxBufferSize = 5;
+
+  function getSmoothedSpeed(newSpeed: number) {
+    speedBuffer.current.push(newSpeed);
+    if (speedBuffer.current.length > maxBufferSize) {
+      speedBuffer.current.shift();
+    }
+    const sum = speedBuffer.current.reduce((a, b) => a + b, 0);
+    return sum / speedBuffer.current.length;
+  }
 
   useEffect(() => {
     mapboxgl.accessToken =
@@ -100,10 +119,17 @@ const InitMap = () => {
             latitude,
             longitude
           );
-
           if (timeDelta > 0 && dist >= 0) {
             const calculatedSpeed = dist / timeDelta;
-            setSpeed(calculatedSpeed);
+            setAccuracy(position.coords.accuracy);
+            setTimeStamp(position.timestamp);
+            // Фільтрація стрибків
+            if (calculatedSpeed < 0 || calculatedSpeed > 15) return;
+            if (position.coords.accuracy > 50) return;
+
+            // Згладжування
+            const smoothed = getSmoothedSpeed(calculatedSpeed);
+            setSpeed(smoothed);
           }
         }
         prevPositionRef.current = position;
@@ -154,6 +180,12 @@ const InitMap = () => {
       />
       <div className="absolute top-2 left-2 bg-white text-black px-4 py-2 rounded shadow">
         🚀 Швидкість: {speed.toFixed(2)} м/с
+      </div>
+      <div className="absolute top-12 left-2 bg-white text-black px-4 py-2 rounded shadow">
+        ⏱ Точність: {accuracy}
+      </div>
+      <div className="absolute top-22 left-2 bg-white text-black px-4 py-2 rounded shadow">
+        ⏱ Час останнього оновлення: {formatTimestamp(timeStamp)}
       </div>
     </div>
   );
