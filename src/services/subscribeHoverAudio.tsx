@@ -2,6 +2,7 @@ import {
   buttonHoverSound,
   buttonHoverOutSound,
   selectSound,
+  buttonHoverSound2,
 } from "@config/sounds";
 import { SoundTypeElement } from "@custom-types/sound";
 import { useHoverStore } from "@storage/hoverStore";
@@ -14,6 +15,10 @@ export function subscribeToHoverSound() {
         case SoundTypeElement.LINK:
           buttonHoverOutSound.stop();
           buttonHoverSound.play();
+          break;
+        case SoundTypeElement.SELECT:
+          buttonHoverSound2.stop();
+          buttonHoverSound2.play("first");
           break;
         case SoundTypeElement.LOGO:
           selectSound.stop();

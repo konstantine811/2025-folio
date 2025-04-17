@@ -1,3 +1,4 @@
+import CanvasOverlay from "@components/common/canvas-overlay";
 import { useCallback, useEffect, useRef } from "react";
 
 const MouseTrail = ({
@@ -81,20 +82,6 @@ const MouseTrail = ({
     }
   }, [lineWidth, strokeStyle, lineCap, filter]);
 
-  const handleResizeWindow = useCallback(() => {
-    if (canvasRef.current) {
-      canvasRef.current.width = window.innerWidth;
-      canvasRef.current.height = Math.max(
-        document.body.scrollHeight,
-        document.body.offsetHeight,
-        document.documentElement.clientHeight,
-        document.documentElement.scrollHeight,
-        document.documentElement.offsetHeight
-      );
-    }
-    applyCanvasStyles();
-  }, [applyCanvasStyles]);
-
   const animateRender = useCallback(() => {
     const ctx = ctxRef.current;
     const canvas = canvasRef.current;
@@ -133,21 +120,12 @@ const MouseTrail = ({
   }, [applyCanvasStyles]);
 
   useEffect(() => {
-    handleResizeWindow();
-    window.addEventListener("resize", handleResizeWindow);
     window.addEventListener("mousemove", handleMouseMove);
-
     return () => {
-      window.removeEventListener("resize", handleResizeWindow);
       window.removeEventListener("mousemove", handleMouseMove);
     };
-  }, [handleResizeWindow, handleMouseMove]);
-  return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 pointer-events-none mix-blend-difference z-[100000] "
-    ></canvas>
-  );
+  }, [handleMouseMove]);
+  return <CanvasOverlay ref={canvasRef} callbackResize={applyCanvasStyles} />;
 };
 
 export default MouseTrail;

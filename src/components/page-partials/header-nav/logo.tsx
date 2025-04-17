@@ -1,6 +1,12 @@
+import { ThemePalette } from "@config/theme-colors.config";
+import { useThemeStore } from "@storage/themeStore";
 import { motion } from "motion/react";
+import { useEffect, useState } from "react";
 
 const LogoAnimated = () => {
+  const themeType = useThemeStore((state) => state.selectedTheme);
+  const [colors, setColors] = useState(ThemePalette.dark);
+  const strokeWidth = 3;
   const pathVariants = {
     initial: { pathLength: 0, scale: 1.01, opacity: 0 },
     animate: (i: number) => ({
@@ -15,10 +21,10 @@ const LogoAnimated = () => {
     }),
   };
 
-  const stroke = "#0F0F0F";
-  const strokeWidth = 3;
-  const gradientBottomColor = "#015C01";
-  const gradientTopColor = "#F5F521";
+  useEffect(() => {
+    const themeColors = ThemePalette[themeType];
+    setColors(themeColors);
+  }, [themeType]);
 
   const paths: string[] = [
     "M128.5 57L146.5 34.5H102L110.5 57H128.5Z",
@@ -42,7 +48,7 @@ const LogoAnimated = () => {
           key={i}
           d={d}
           fill={i === 5 ? "none" : "url(#mainGradient)"} // останній path без заливки
-          stroke={stroke}
+          stroke={colors.fg}
           strokeWidth={strokeWidth}
           variants={pathVariants}
           initial="initial"
@@ -60,8 +66,8 @@ const LogoAnimated = () => {
           y2="0"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0%" stopColor={gradientBottomColor} />
-          <stop offset="100%" stopColor={gradientTopColor} />
+          <stop offset="0%" stopColor={colors.surface} />
+          <stop offset="100%" stopColor={colors.accent} />
         </linearGradient>
       </defs>
     </svg>

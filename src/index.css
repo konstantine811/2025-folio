@@ -2,29 +2,33 @@
 @import "mapbox-gl/dist/mapbox-gl.css";
 
 :root {
-  --color-primary: #0000ff;
-  --color-secondary: #00ff00;
-  --color-tertiary: #ff0000;
-  --color-main: #000000;
-  --color-accent: #ff00ff;
-  --color-background: #ffffff;
-  --color-text: #000000;
-  --color-border: #cccccc;
-  --color-shadow: #000000;
-  --color-highlight: #ffff00;
-  --color-link: #0000ff;
+  --background: "#000000";
+  --background-alt: "#ff0000";
+  --surface: "#333333";
+  --border: "#b3b3b3";
+  --fg: "#999999";
+  --fgMuted: "#666666";
+  --accent: "#3f6ae0";
+  --highlight: "#e6e6e6";
+  --shadow: "#cccccc";
+  --link: "#ffffff";
+  --success: "#00cc66";
+  --error: "#ff3333";
+  --warning: "#ff9900";
 }
 
 @theme static {
-  --color-main: var(--color-main);
-  --color-accent: var(--color-accent);
-  --color-background: var(--color-background);
-  --color-text: var(--color-text);
-  --color-border: var(--color-border);
-  --color-shadow: var(--color-shadow);
-  --color-highlight: var(--color-highlight);
-  --color-link: var(--color-link);
-  --color-primary: var(--color-primary);
-  --color-secondary: var(--color-secondary);
-  --color-tertiary: var(--color-tertiary);
+  --color-background: var(--background);
+  --color-background-alt: var(--background-alt);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fgMuted);
+  --color-accent: var(--accent);
+  --color-highlight: var(--highlight);
+  --color-shadow: var(--shadow);
+  --color-link: var(--link);
+  --color-success: var(--success);
+  --color-error: var(--error);
+  --color-warning: var(--warning);
 }

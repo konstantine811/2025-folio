@@ -1,18 +1,34 @@
-import ColorPicker from "@components/ui-abc/select/color-picker";
+import ColorPicker from "@components/page-partials/page-setting/color-picker/color-picker";
 import NavMenu from "./nav-menu";
+import { memo, useEffect, useRef } from "react";
+import { useHeaderSizetore } from "@storage/headerSizeStore";
 
-const Header = () => {
+const Header = memo(() => {
+  const headerRef = useRef<HTMLDivElement>(null!);
+  const setHeaderSize = useHeaderSizetore((state) => state.setHeaderSize);
+  useEffect(() => {
+    if (headerRef.current) {
+      const headerHeight = headerRef.current.getBoundingClientRect().height;
+      setHeaderSize(headerHeight);
+    }
+  }, [headerRef, setHeaderSize]);
   return (
-    <header className="sticky top-0 z-50 border-b backdrop-blur-md  bg-transparent">
-      <div className="grid grid-cols-3">
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-50 border-b backdrop-blur-md  bg-transparent"
+    >
+      <div className="grid grid-cols-1 md:grid-cols-3 items-center">
         <NavMenu />
-        <div className="text-white text-center ">2025 folio</div>
-        <div className="text-white text-right pr-4 flex items-center justify-end">
+        <div className="text-fg text-center hidden md:block">
+          <div>@ 2025 folio</div>
+          <div>Abramkin Constantine</div>
+        </div>
+        <div className="text-fg pr-4 items-center justify-end hidden md:flex">
           <ColorPicker />
         </div>
       </div>
     </header>
   );
-};
+});
 
 export default Header;

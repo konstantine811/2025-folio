@@ -1,55 +1,63 @@
 export const ThemePalette: IThemePalette = {
   dark: {
-    primary: "#000000",
-    secondary: "#1a1a1a",
-    tertiary: "#333333",
-    main: "#4d4d4d",
-    accent: "#666666",
-    background: "#808080",
-    text: "#999999",
+    background: "#000000",
+    "background-alt": "#1a1a1a",
+    surface: "#333333",
     border: "#b3b3b3",
-    shadow: "#cccccc",
+    fg: "#999999",
+    fgMuted: "#666666",
+    accent: "#3f6ae0",
     highlight: "#e6e6e6",
+    shadow: "#cccccc",
     link: "#ffffff",
-  },
-  green: {
-    primary: "#004d00",
-    secondary: "#007300",
-    tertiary: "#009900",
-    main: "#00cc00",
-    accent: "#33ff33",
-    background: "#66ff66",
-    text: "#99ff99",
-    border: "#ccffcc",
-    shadow: "#e6ffe6",
-    highlight: "#f2fff2",
-    link: "#ffffff",
-  },
-  blue: {
-    primary: "#0078d4",
-    secondary: "#2b88d8",
-    tertiary: "#71afe5",
-    main: "#0000cc",
-    accent: "#3333ff",
-    background: "#6666ff",
-    text: "#9999ff",
-    border: "#ccccff",
-    shadow: "#e6e6ff",
-    highlight: "#f2f2ff",
-    link: "#ffffff",
+    success: "#00cc66",
+    error: "#ff3333",
+    warning: "#ff9900",
   },
   light: {
-    primary: "#ffffff",
-    secondary: "#f2f2f2",
-    tertiary: "#e6e6e6",
-    main: "#d9d9d9",
-    accent: "#cccccc",
-    background: "#b3b3b3",
-    text: "#999999",
+    background: "#ffffff",
+    "background-alt": "#f2f2f2",
+    surface: "#e6e6e6",
     border: "#808080",
-    shadow: "#666666",
+    fg: "#333333",
+    fgMuted: "#666666",
+    accent: "#3f6ae0",
     highlight: "#4d4d4d",
+    shadow: "#999999",
     link: "#000000",
+    success: "#00cc66",
+    error: "#cc0000",
+    warning: "#ff9900",
+  },
+  green: {
+    background: "#66ff66",
+    "background-alt": "#33cc33",
+    surface: "#00cc00",
+    border: "#ccffcc",
+    fg: "#003300",
+    fgMuted: "#009900",
+    accent: "#33ff33",
+    highlight: "#f2fff2",
+    shadow: "#e6ffe6",
+    link: "#004d00",
+    success: "#00cc00",
+    error: "#990000",
+    warning: "#cc9900",
+  },
+  blue: {
+    background: "#6666ff",
+    "background-alt": "#2b88d8",
+    surface: "#0000cc",
+    border: "#ccccff",
+    fg: "#000033",
+    fgMuted: "#666699",
+    accent: "#3333ff",
+    highlight: "#f2f2ff",
+    shadow: "#e6e6ff",
+    link: "#0078d4",
+    success: "#00ccff",
+    error: "#ff3333",
+    warning: "#ffcc00",
   },
 };
 
@@ -65,15 +73,17 @@ export type IThemePalette = {
 };
 
 export interface IThemeColors {
-  primary: string;
-  secondary: string;
-  tertiary: string;
-  main: string;
-  accent: string;
   background: string;
-  text: string;
+  "background-alt": string;
+  surface: string;
   border: string;
-  shadow: string;
+  fg: string;
+  fgMuted: string;
+  accent: string;
   highlight: string;
+  shadow: string;
   link: string;
+  success: string;
+  error: string;
+  warning: string;
 }

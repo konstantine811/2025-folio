@@ -10,8 +10,8 @@ const StickCursor = () => {
     useHoverStore((s) => s);
   const smoothMouseProps = { stiffness: 733, damping: 36, mass: 0.3 };
   const smoothSizeProps = { stiffness: 500, damping: 30, mass: 0.1 };
-  const classBorderColor = "border-primary";
-  const classHoverLink = `${classBorderColor} absolute w-3 h-3 border-primary`;
+  const classBorderColor = "border-accent";
+  const classHoverLink = `${classBorderColor} absolute w-3 h-3`;
   // розмір курсора — плавний
   const sizeWidth = useMotionValue(defaultSize);
   const sizeHeight = useMotionValue(defaultSize);
@@ -44,10 +44,6 @@ const StickCursor = () => {
     [mousePos.x, mousePos.y, sizeWidth, isHovering, boundingBox, sizeHeight]
   );
 
-  useEffect(() => {
-    console.log("is ", isHoveringWrapper);
-  }, [isHoveringWrapper]);
-
   // 👇 оновлюємо розмір при зміні стану наведення
   useEffect(() => {
     if (boundingBox) {
@@ -70,8 +66,10 @@ const StickCursor = () => {
 
   return (
     <motion.div
-      className={`fixed rounded-full z-[100000] pointer-events-none cursor-none  ${
-        !isHoveringWrapper ? `border ${classBorderColor}` : "border-none"
+      className={`fixed rounded-full z-[100000] pointer-events-none cursor-none   ${
+        !isHoveringWrapper || hoverTypeElement !== SoundTypeElement.LINK
+          ? `border ${classBorderColor}`
+          : "border-none"
       }`}
       style={{
         left: smoothMousePos.x,

@@ -1,36 +1,43 @@
 import Header from "@components/page-partials/header-nav/header";
-
 import StickyCursor from "@components/mouse/sticky-cursor";
 import { subscribeToHoverSound } from "@services/subscribeHoverAudio";
-import { useEffect } from "react";
-import { ThemePalette } from "@config/theme-colors.config";
-import Map from "@components/map/map";
+import MouseTrail from "@components/mouse/mouse-trail";
+import { Suspense, useEffect, useState } from "react";
+import { Routes, Route } from "react-router";
+import { router } from "@config/router-config";
+import TransitionPage from "@components/page-partials/page-setting/transition-page";
 
 function App() {
   subscribeToHoverSound();
-  useEffect(() => {
-    Object.entries(ThemePalette.blue).forEach(([key, value]) => {
-      document.documentElement.style.setProperty(`--color-${key}`, value);
-    });
-  }, []);
+  const [isTouch, setIsTouch] = useState(false);
 
   useEffect(() => {
-    // let deferredPrompt: any;
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      console.log("beforeinstallprompt", e);
-      // deferredPrompt = e;
-      // показати кнопку
-    });
+    setIsTouch("ontouchstart" in window || navigator.maxTouchPoints > 0);
   }, []);
-
   return (
     <>
-      <StickyCursor />
-      <div className="bg-black">
+      {!isTouch && (
+        <>
+          <StickyCursor />
+          <MouseTrail />
+        </>
+      )}
+      <div className="bg-background transition transition-background duration-400 ease-in-out h-[300vh]">
         <Header />
-        <Map />
+        <Suspense fallback={<div>Завантаження сторінки...</div>}>
+          <Routes>
+            {router.map((route) => (
+              <Route
+                key={route.path}
+                path={route.path}
+                element={<route.Component />}
+              />
+            ))}
+          </Routes>
+        </Suspense>
+        {/* <Map /> */}
       </div>
+      <TransitionPage />
     </>
   );
 }

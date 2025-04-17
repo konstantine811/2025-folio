@@ -4,6 +4,7 @@ import { SoundTypeElement } from "@custom-types/sound";
 import { forwardRef } from "react";
 import clsx from "clsx"; // опціонально
 import { motion, MotionProps } from "motion/react";
+import { MOTION_FRAME_TRANSITION } from "@config/animations";
 
 type SoundHoverElementProps = {
   children: ReactNode;
@@ -11,6 +12,7 @@ type SoundHoverElementProps = {
   as?: ElementType;
   className?: string;
   hoverAnimType?: "scale" | "rotate" | "translate"; // тип анімації при наведенні
+  animValue?: number;
 } & React.HTMLAttributes<HTMLElement> &
   MotionProps;
 
@@ -22,6 +24,7 @@ const SoundHoverElement = forwardRef<HTMLElement, SoundHoverElementProps>(
       as: Tag = "div",
       className,
       hoverAnimType = "scale",
+      animValue = 1.1,
       ...rest
     },
     forwardedRef
@@ -30,11 +33,7 @@ const SoundHoverElement = forwardRef<HTMLElement, SoundHoverElementProps>(
     const ref = (forwardedRef as React.RefObject<HTMLElement>) ?? internalRef;
     const setHover = useHoverStore((s) => s.setHover);
     const MotionTag = motion(Tag as ElementType);
-    const hoverTransition = {
-      type: "spring",
-      stiffness: 300,
-      damping: 8,
-    };
+    const hoverTransition = MOTION_FRAME_TRANSITION.spring;
     const handleMouseEnter = () => {
       const rect = ref.current?.getBoundingClientRect?.();
       if (rect) {
@@ -55,12 +54,12 @@ const SoundHoverElement = forwardRef<HTMLElement, SoundHoverElementProps>(
       switch (hoverAnimType) {
         case "scale":
           return {
-            scale: 1.1,
+            scale: animValue,
             transition: hoverTransition,
           };
         case "translate":
           return {
-            y: -2,
+            y: animValue,
             transition: hoverTransition,
           };
       }
