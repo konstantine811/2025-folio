@@ -65,3 +65,12 @@ export const shinySound = new Howl({
     third: [9500, 13000],
   },
 });
+
+export const riserSound = new Howl({
+  src: [getEfxPath("riser")],
+  volume: 1.0,
+  sprite: {
+    first: [0, 1000],
+    second: [1000, 3000],
+  },
+});

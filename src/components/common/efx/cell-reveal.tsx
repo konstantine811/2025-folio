@@ -23,6 +23,7 @@ const CellReveal = ({
   offsetTop = 0,
   zIndex = 10,
   color = "background-alt",
+  invertRipple = true,
 }: {
   rows?: number;
   columns?: number;
@@ -33,6 +34,7 @@ const CellReveal = ({
   offsetTop?: number;
   zIndex?: number;
   color?: keyof IThemeColors;
+  invertRipple?: boolean;
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const selectedTheme = useThemeStore((state) => state.selectedTheme);
@@ -58,16 +60,24 @@ const CellReveal = ({
     setCells(cells);
   }, [columns, rows, offsetTop]);
 
-  // Ініціалізуємо springs
   const [springs, api] = useSprings(cells.length, () => ({
     scale: show ? 1 : 0,
     opacity: show ? 1 : 0,
   }));
 
-  // Коли show змінюється — запускаємо анімацію
   useEffect(() => {
     const centerX = window.innerWidth / 2;
     const centerY = (window.innerHeight - offsetTop) / 2;
+
+    const distances = cells.map((cell) => {
+      const cx = cell.x + cell.width / 2;
+      const cy = cell.y + cell.height / 2;
+      const dx = cx - centerX;
+      const dy = cy - centerY;
+      return Math.sqrt(dx * dx + dy * dy);
+    });
+
+    const maxDistance = Math.max(...distances);
 
     api.start((i) => {
       const cell = cells[i];
@@ -76,7 +86,10 @@ const CellReveal = ({
       const dx = cx - centerX;
       const dy = cy - centerY;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      const delay = distance * delayPerPixel;
+
+      const delay = invertRipple
+        ? (maxDistance - distance) * delayPerPixel
+        : distance * delayPerPixel;
 
       return {
         scale: show ? 1 : 0,
@@ -85,9 +98,8 @@ const CellReveal = ({
         delay,
       };
     });
-  }, [show, api, cells, duration, delayPerPixel, offsetTop]);
+  }, [show, api, cells, duration, delayPerPixel, offsetTop, invertRipple]);
 
-  // Canvas малювання
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
@@ -100,7 +112,6 @@ const CellReveal = ({
 
       springs.forEach((spring, i) => {
         const { scale, opacity } = spring;
-
         const s = scale.get();
         const o = opacity.get();
         if (o <= 0) return;

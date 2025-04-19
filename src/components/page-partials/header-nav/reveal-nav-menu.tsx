@@ -2,6 +2,7 @@ import SoundHoverElement from "@components/ui-abc/sound-hover-element";
 import WrapperHoverElement from "@components/ui-abc/wrapper-hover-element";
 import { MOTION_FRAME_TRANSITION } from "@config/animations";
 import { router } from "@config/router-config";
+import { riserSound } from "@config/sounds";
 import { SoundTypeElement } from "@custom-types/sound";
 import { useClickStore } from "@storage/clickStore";
 import { useNavMenuStore } from "@storage/navMenuStore";
@@ -78,9 +79,10 @@ const RevealNavMenu = memo(() => {
                     } else {
                       setOpen(false); // 🔥 закриваємо меню
                       onTransition(true); // 🔥 запускаємо лише якщо маршрут інший
+                      riserSound.play("first");
                       setTimeout(() => {
                         navigate(path);
-                      }, 1000);
+                      }, 700);
                     }
                   }}
                   className={`${

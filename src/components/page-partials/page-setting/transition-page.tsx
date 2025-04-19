@@ -11,6 +11,7 @@ const TransitionPage = () => {
       duration={300}
       delayPerPixel={0.7}
       offsetTop={offsetTop}
+      invertRipple={isShow}
     />
   );
 };
