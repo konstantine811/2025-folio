@@ -22,18 +22,18 @@ const TopicBlogPost = ({
 
   useEffect(() => {
     const { height } = refTopic.current.getBoundingClientRect();
-    setOffsetTopic(height + hSize + 5);
+    setOffsetTopic(height + hSize);
   }, [refTopic, hSize]);
   return (
-    <>
+    <div>
       <div
         ref={refTopic}
-        className="bg-background-alt p-6 sticky top-0 flex gap-2 items-center z-10"
+        className="bg-background-alt p-6 sticky top-0 flex flex-wrap gap-2 items-center z-10 bottom-0"
         style={{ top: hSize }}
       >
         <h2 className="text-fg text-2xl uppercase font-bold">{topic}</h2>
         {Object.keys(subtopics).length > 1 && (
-          <WrapperHoverElement as="div" className="flex items-center">
+          <WrapperHoverElement as="div" className="flex flex-wrap items-center">
             <SoundHoverElement
               hoverAnimType="scale"
               hoverTypeElement={SoundTypeElement.SELECT_2}
@@ -81,7 +81,7 @@ const TopicBlogPost = ({
               {subtopic !== "null" && (
                 <h3
                   className={
-                    "bg-background-alt/5 backdrop-blur-2xl inline-block text-fg font-bold uppercase ml-10 p-4 m-2 sticky"
+                    "bg-background-alt/5 backdrop-blur-2xl inline-block text-fg font-bold uppercase p-4 sticky z-1"
                   }
                   style={{
                     top: offsetTopic,
@@ -102,7 +102,7 @@ const TopicBlogPost = ({
             </li>
           ))}
       </ul>
-    </>
+    </div>
   );
 };
 
