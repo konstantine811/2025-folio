@@ -64,12 +64,12 @@ export const ThemePalette: IThemePalette = {
 export enum ThemeType {
   DARK = "dark",
   LIGHT = "light",
-  GREEN = "green",
-  BLUE = "blue",
+  // GREEN = "green",
+  // BLUE = "blue",
 }
 
 export type IThemePalette = {
-  [keyof in ThemeType]?: IThemeColors;
+  [keyof in ThemeType]: IThemeColors;
 };
 
 export interface IThemeColors {
