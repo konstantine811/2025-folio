@@ -1,0 +1,9 @@
+{
+  "welcome": "Welcome",
+  "hello_user": "Hello, {{name}}!",
+  "blog": {
+    "topics": {
+      "all": "All Topics"
+    }
+  }
+}

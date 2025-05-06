@@ -29,36 +29,36 @@ export const ThemePalette: IThemePalette = {
     error: "#cc0000",
     warning: "#ff9900",
   },
-  green: {
-    background: "#66ff66",
-    "background-alt": "#33cc33",
-    surface: "#00cc00",
-    border: "#ccffcc",
-    fg: "#003300",
-    fgMuted: "#009900",
-    accent: "#33ff33",
-    highlight: "#f2fff2",
-    shadow: "#e6ffe6",
-    link: "#004d00",
-    success: "#00cc00",
-    error: "#990000",
-    warning: "#cc9900",
-  },
-  blue: {
-    background: "#6666ff",
-    "background-alt": "#2b88d8",
-    surface: "#0000cc",
-    border: "#ccccff",
-    fg: "#000033",
-    fgMuted: "#666699",
-    accent: "#3333ff",
-    highlight: "#f2f2ff",
-    shadow: "#e6e6ff",
-    link: "#0078d4",
-    success: "#00ccff",
-    error: "#ff3333",
-    warning: "#ffcc00",
-  },
+  // green: {
+  //   background: "#66ff66",
+  //   "background-alt": "#33cc33",
+  //   surface: "#00cc00",
+  //   border: "#ccffcc",
+  //   fg: "#003300",
+  //   fgMuted: "#009900",
+  //   accent: "#33ff33",
+  //   highlight: "#f2fff2",
+  //   shadow: "#e6ffe6",
+  //   link: "#004d00",
+  //   success: "#00cc00",
+  //   error: "#990000",
+  //   warning: "#cc9900",
+  // },
+  // blue: {
+  //   background: "#6666ff",
+  //   "background-alt": "#2b88d8",
+  //   surface: "#0000cc",
+  //   border: "#ccccff",
+  //   fg: "#000033",
+  //   fgMuted: "#666699",
+  //   accent: "#3333ff",
+  //   highlight: "#f2f2ff",
+  //   shadow: "#e6e6ff",
+  //   link: "#0078d4",
+  //   success: "#00ccff",
+  //   error: "#ff3333",
+  //   warning: "#ffcc00",
+  // },
 };
 
 export enum ThemeType {
@@ -69,7 +69,7 @@ export enum ThemeType {
 }
 
 export type IThemePalette = {
-  [keyof in ThemeType]: IThemeColors;
+  [keyof in ThemeType]?: IThemeColors;
 };
 
 export interface IThemeColors {

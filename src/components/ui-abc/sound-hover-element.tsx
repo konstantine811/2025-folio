@@ -1,4 +1,4 @@
-import { ReactNode, useRef, ElementType } from "react";
+import { ReactNode, useRef, ElementType, memo } from "react";
 import { useHoverStore } from "@storage/hoverStore";
 import { SoundTypeElement } from "@custom-types/sound";
 import { forwardRef } from "react";
@@ -32,7 +32,7 @@ const SoundHoverElement = forwardRef<HTMLElement, SoundHoverElementProps>(
     const internalRef = useRef<HTMLElement>(null!);
     const ref = (forwardedRef as React.RefObject<HTMLElement>) ?? internalRef;
     const setHover = useHoverStore((s) => s.setHover);
-    const MotionTag = motion(Tag as ElementType);
+    const MotionTag = motion.create(Tag as ElementType);
     const hoverTransition = MOTION_FRAME_TRANSITION.spring;
     const handleMouseEnter = () => {
       const rect = ref.current?.getBoundingClientRect?.();
@@ -68,8 +68,8 @@ const SoundHoverElement = forwardRef<HTMLElement, SoundHoverElementProps>(
     return (
       <MotionTag
         ref={ref}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        onHoverStart={handleMouseEnter} // 🧠 замість onMouseEnter
+        onHoverEnd={handleMouseLeave}
         className={clsx(className)}
         whileHover={getHoverTypeAnimation()}
         {...rest}
@@ -80,4 +80,4 @@ const SoundHoverElement = forwardRef<HTMLElement, SoundHoverElementProps>(
   }
 );
 
-export default SoundHoverElement;
+export default memo(SoundHoverElement);

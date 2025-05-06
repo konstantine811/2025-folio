@@ -4,6 +4,9 @@ const HomePage = lazy(() => import("@components/page-partials/pages/Home"));
 const ExperimentalPage = lazy(
   () => import("@components/page-partials/pages/Experimental")
 );
+const BlogPage = lazy(
+  () => import("@/components/page-partials/pages/blog/Blog")
+);
 
 export const router = [
   {
@@ -15,5 +18,10 @@ export const router = [
     path: "/experimental",
     Component: ExperimentalPage,
     id: "experimental",
+  },
+  {
+    path: "/blog",
+    Component: BlogPage,
+    id: "blog",
   },
 ];

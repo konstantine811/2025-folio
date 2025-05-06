@@ -56,6 +56,33 @@ export const selectSound = new Howl({
   },
 });
 
+export const selectSound_2 = new Howl({
+  src: [getEfxPath("select-2")],
+  volume: 0.5,
+  sprite: {
+    first: [0, 1600],
+    second: [3600, 900],
+    third: [5700, 1500],
+  },
+});
+
+export const selectClickSound = new Howl({
+  src: [getEfxPath("select-2")],
+  volume: 1.0,
+  sprite: {
+    first: [0, 1600],
+  },
+});
+
+export const selectedSound = new Howl({
+  src: [getEfxPath("selected")],
+  volume: 1.0,
+  sprite: {
+    first: [0, 1300],
+    second: [2800, 2000],
+  },
+});
+
 export const shinySound = new Howl({
   src: [getEfxPath("shiny")],
   volume: 0.3,
@@ -67,10 +94,10 @@ export const shinySound = new Howl({
 });
 
 export const riserSound = new Howl({
-  src: [getEfxPath("riser")],
-  volume: 1.0,
+  src: [getEfxPath("riser-2")],
+  volume: 0.5,
   sprite: {
-    first: [0, 1000],
-    second: [1000, 3000],
+    first: [6008, 7000],
+    second: [7000, 10000],
   },
 });

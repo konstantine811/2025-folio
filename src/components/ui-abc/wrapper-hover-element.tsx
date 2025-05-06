@@ -16,7 +16,7 @@ const WrapperHoverElement = forwardRef<HTMLElement, WrapperHoverElementProps>(
     const internalRef = useRef<HTMLElement>(null!);
     const ref = (forwardedRef as React.RefObject<HTMLElement>) ?? internalRef;
     const setHoverWrapper = useHoverStore((s) => s.setHoverWrapper);
-    const MotionTag = motion(Tag as ElementType);
+    const MotionTag = motion.create(Tag as ElementType);
 
     return (
       <MotionTag

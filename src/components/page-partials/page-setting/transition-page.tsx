@@ -9,7 +9,7 @@ const TransitionPage = () => {
     <CellReveal
       show={isShow}
       duration={300}
-      delayPerPixel={0.7}
+      delayPerPixel={0.9}
       offsetTop={offsetTop}
       invertRipple={isShow}
     />

@@ -1,4 +1,3 @@
-import { TestTubeDiagonal } from "lucide-react";
 import SoundHoverElement from "../sound-hover-element";
 import { SoundTypeElement } from "@custom-types/sound";
 import { AnimatePresence, Variants } from "motion/react";
@@ -12,11 +11,13 @@ type SelectItemProps = {
     x: number;
     y: number;
   };
+  selectNode: React.ReactNode;
 };
 
 const SelectItem = ({
   renderItems,
   dropPosition = { x: 0, y: 0 },
+  selectNode,
 }: SelectItemProps) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -51,7 +52,7 @@ const SelectItem = ({
           setIsOpen(!isOpen);
         }}
       >
-        <TestTubeDiagonal />
+        {selectNode}
       </SoundHoverElement>
       {isOpen && (
         <div
@@ -68,7 +69,7 @@ const SelectItem = ({
         <AnimatePresence>
           {isOpen && (
             <div
-              className="absolute z-10 left-0 "
+              className="absolute z-10 left-0"
               style={{
                 transform: `translate(${dropPosition.x}px, ${dropPosition.y}px)`,
               }}

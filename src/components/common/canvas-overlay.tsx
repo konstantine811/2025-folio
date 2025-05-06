@@ -1,53 +1,61 @@
-import { useCallback, useEffect, useImperativeHandle, useRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  forwardRef,
+} from "react";
 
 type CanvasOverlayProps = {
   callbackResize: () => void;
-  ref?: React.Ref<HTMLCanvasElement>;
   mixBlend?: boolean;
   offsetTop?: number;
   zIndex?: number;
 };
 
-const CanvasOverlay = ({
-  callbackResize,
-  mixBlend = true,
-  ref,
-  offsetTop = 0,
-  zIndex = 100000,
-}: CanvasOverlayProps) => {
-  const internalRef = useRef<HTMLCanvasElement>(null);
-  const canvasRef = (ref ?? internalRef) as React.RefObject<HTMLCanvasElement>;
+const CanvasOverlay = forwardRef<HTMLCanvasElement, CanvasOverlayProps>(
+  (
+    { callbackResize, mixBlend = true, offsetTop = 0, zIndex = 100000 },
+    ref
+  ) => {
+    const internalRef = useRef<HTMLCanvasElement>(null);
 
-  // Expose the internal ref to the parent via forwardRef
-  useImperativeHandle(ref, () => canvasRef.current as HTMLCanvasElement, []);
-  const handleResizeWindow = useCallback(() => {
-    if (canvasRef.current) {
-      canvasRef.current.width = window.innerWidth;
-      canvasRef.current.height = window.innerHeight - offsetTop;
-    }
-    callbackResize();
-  }, [callbackResize, canvasRef, offsetTop]);
+    // expose the DOM node
+    useImperativeHandle(
+      ref,
+      () => internalRef.current as HTMLCanvasElement,
+      []
+    );
 
-  useEffect(() => {
-    handleResizeWindow();
-    window.addEventListener("resize", handleResizeWindow);
-    return () => {
-      window.removeEventListener("resize", handleResizeWindow);
-    };
-  }, [handleResizeWindow]);
+    const handleResizeWindow = useCallback(() => {
+      if (internalRef.current) {
+        internalRef.current.width = window.innerWidth;
+        internalRef.current.height = window.innerHeight - offsetTop;
+      }
+      callbackResize();
+    }, [callbackResize, offsetTop]);
 
-  return (
-    <canvas
-      className={`fixed inset-0 pointer-events-none ${
-        mixBlend && "mix-blend-difference"
-      }`}
-      ref={ref}
-      style={{
-        top: offsetTop ? `${offsetTop}px` : "0px",
-        zIndex: zIndex,
-      }}
-    ></canvas>
-  );
-};
+    useEffect(() => {
+      handleResizeWindow();
+      window.addEventListener("resize", handleResizeWindow);
+      return () => {
+        window.removeEventListener("resize", handleResizeWindow);
+      };
+    }, [handleResizeWindow]);
+
+    return (
+      <canvas
+        className={`fixed inset-0 pointer-events-none ${
+          mixBlend && "mix-blend-difference"
+        }`}
+        ref={internalRef}
+        style={{
+          top: offsetTop ? `${offsetTop}px` : "0px",
+          zIndex: zIndex,
+        }}
+      ></canvas>
+    );
+  }
+);
 
 export default CanvasOverlay;
