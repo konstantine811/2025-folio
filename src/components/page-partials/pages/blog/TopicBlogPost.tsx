@@ -2,9 +2,10 @@ import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import WrapperHoverElement from "@/components/ui-abc/wrapper-hover-element";
 import { useHeaderSizetore } from "@/storage/headerSizeStore";
 import { PostCover } from "@/types/blog-storage";
-import { SoundTypeElement } from "@/types/sound";
+import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import BlocCard from "./BlocCard";
 
 const TopicBlogPost = ({
   topic,
@@ -18,11 +19,8 @@ const TopicBlogPost = ({
   const [selectedSubtopic, setSelectedSubtopic] = useState<string | null>(null);
   const refTopic = useRef<HTMLDivElement>(null!);
   const [offsetTopic, setOffsetTopic] = useState<number>(0);
+
   useEffect(() => {
-    console.log(
-      "refTopic.current.offsetHeight",
-      refTopic.current.getBoundingClientRect()
-    );
     const { height } = refTopic.current.getBoundingClientRect();
     setOffsetTopic(height + hSize + 5);
   }, [refTopic, hSize]);
@@ -39,6 +37,7 @@ const TopicBlogPost = ({
             <SoundHoverElement
               hoverAnimType="scale"
               hoverTypeElement={SoundTypeElement.SELECT_2}
+              hoverStyleElement={HoverStyleElement.quad}
               as="h6"
               className={`text-fg hover:underline  hover:cursor-pointer p-3 ${
                 selectedSubtopic === null ? "underline decoration-accent" : ""
@@ -51,6 +50,7 @@ const TopicBlogPost = ({
               <SoundHoverElement
                 hoverAnimType="scale"
                 hoverTypeElement={SoundTypeElement.SELECT_2}
+                hoverStyleElement={HoverStyleElement.quad}
                 as="h6"
                 className={`text-fg hover:underline  hover:cursor-pointer p-3 ${
                   selectedSubtopic === subtopic
@@ -81,7 +81,7 @@ const TopicBlogPost = ({
               {subtopic !== "null" && (
                 <h3
                   className={
-                    "inline-block text-fg font-bold uppercase ml-10 p-4 m-2 sticky"
+                    "bg-background-alt/5 backdrop-blur-2xl inline-block text-fg font-bold uppercase ml-10 p-4 m-2 sticky"
                   }
                   style={{
                     top: offsetTopic,
@@ -91,14 +91,14 @@ const TopicBlogPost = ({
                 </h3>
               )}
 
-              <ul className="flex gap-2">
+              <WrapperHoverElement
+                as="ul"
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
+              >
                 {posts.map((post) => (
-                  <li className="border border-fg text-fg p-6" key={post.id}>
-                    <h4>{post.title}</h4>
-                    <p>{post.description}</p>
-                  </li>
+                  <BlocCard key={post.id} post={post} />
                 ))}
-              </ul>
+              </WrapperHoverElement>
             </li>
           ))}
       </ul>

@@ -1,5 +1,7 @@
 export enum BlogSupabaseTable {
   articles = "articles-blog",
+  articlesImage = "blog-articles-images",
+  articlesImageFolder = "blog-images",
 }
 
 export enum BlogArticleProps {

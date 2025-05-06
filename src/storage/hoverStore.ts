@@ -1,4 +1,4 @@
-import { SoundTypeElement } from "@custom-types/sound";
+import { HoverStyleElement, SoundTypeElement } from "@custom-types/sound";
 import { create } from "zustand";
 
 interface BoundingBox {
@@ -12,11 +12,13 @@ interface HoverState {
   isHovering: boolean;
   boundingBox: BoundingBox | null;
   hoverTypeElement: SoundTypeElement | null;
+  hoverStyleElement: HoverStyleElement;
   isHoveringWrapper: boolean;
   setHoverType: (hoverType: SoundTypeElement) => void;
   setHover: (
     hovering: boolean,
     hoverType: SoundTypeElement,
+    hoverStyle: HoverStyleElement,
     box?: BoundingBox
   ) => void;
   setHoverWrapper: (hovering: boolean) => void;
@@ -26,11 +28,13 @@ export const useHoverStore = create<HoverState>((set) => ({
   isHovering: false,
   boundingBox: null,
   hoverTypeElement: null,
+  hoverStyleElement: HoverStyleElement.circle,
   isHoveringWrapper: false,
-  setHover: (hovering, hoverType, box) =>
+  setHover: (hovering, hoverType, hoverStyle, box) =>
     set({
       isHovering: hovering,
       hoverTypeElement: hoverType,
+      hoverStyleElement: hoverStyle,
       boundingBox: box ?? null,
     }),
   setHoverWrapper: (hovering) => set({ isHoveringWrapper: hovering }),

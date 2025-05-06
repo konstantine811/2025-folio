@@ -1,6 +1,6 @@
 import { ReactNode, useRef, ElementType, memo } from "react";
 import { useHoverStore } from "@storage/hoverStore";
-import { SoundTypeElement } from "@custom-types/sound";
+import { HoverStyleElement, SoundTypeElement } from "@custom-types/sound";
 import { forwardRef } from "react";
 import clsx from "clsx"; // опціонально
 import { motion, MotionProps } from "motion/react";
@@ -13,6 +13,7 @@ type SoundHoverElementProps = {
   className?: string;
   hoverAnimType?: "scale" | "rotate" | "translate"; // тип анімації при наведенні
   animValue?: number;
+  hoverStyleElement?: HoverStyleElement;
 } & React.HTMLAttributes<HTMLElement> &
   MotionProps;
 
@@ -25,6 +26,7 @@ const SoundHoverElement = forwardRef<HTMLElement, SoundHoverElementProps>(
       className,
       hoverAnimType = "scale",
       animValue = 1.1,
+      hoverStyleElement = HoverStyleElement.circle,
       ...rest
     },
     forwardedRef
@@ -35,19 +37,21 @@ const SoundHoverElement = forwardRef<HTMLElement, SoundHoverElementProps>(
     const MotionTag = motion.create(Tag as ElementType);
     const hoverTransition = MOTION_FRAME_TRANSITION.spring;
     const handleMouseEnter = () => {
-      const rect = ref.current?.getBoundingClientRect?.();
-      if (rect) {
-        setHover(true, hoverTypeElement, {
-          top: rect.top,
-          left: rect.left,
-          width: rect.width,
-          height: rect.height,
-        });
-      }
+      setTimeout(() => {
+        const rect = ref.current?.getBoundingClientRect?.();
+        if (rect) {
+          setHover(true, hoverTypeElement, hoverStyleElement, {
+            top: rect.top,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height,
+          });
+        }
+      }, 0);
     };
 
     const handleMouseLeave = () => {
-      setHover(false, hoverTypeElement);
+      setHover(false, hoverTypeElement, hoverStyleElement);
     };
 
     function getHoverTypeAnimation() {

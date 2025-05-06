@@ -3,7 +3,7 @@ import WrapperHoverElement from "@components/ui-abc/wrapper-hover-element";
 import { MOTION_FRAME_TRANSITION } from "@config/animations";
 import { router } from "@config/router-config";
 import { riserSound } from "@config/sounds";
-import { SoundTypeElement } from "@custom-types/sound";
+import { HoverStyleElement, SoundTypeElement } from "@custom-types/sound";
 import { useClickStore } from "@storage/clickStore";
 import { useNavMenuStore } from "@storage/navMenuStore";
 import { useTransitionStore } from "@storage/transitionRoutePath";
@@ -94,6 +94,7 @@ const RevealNavMenu = memo(() => {
                     variants={itemVariants}
                     className="relative  w-full py-2 px-4 text-fg text-lg font-medium hover:bg-main/5 rounded-md"
                     hoverTypeElement={SoundTypeElement.LINK}
+                    hoverStyleElement={HoverStyleElement.quad}
                     hoverAnimType="scale"
                     animValue={0.98}
                     as="li"
