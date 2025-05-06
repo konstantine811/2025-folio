@@ -33,7 +33,7 @@ const SelectTabs = ({
             hoverAnimType="scale"
             key={index}
             className={`relative z-10 cursor-pointer px-6 py-2 ${
-              selected === item ? "text-bg" : "text-fg"
+              selected === item ? "text-background" : "text-fg"
             }`}
             onClick={() => {
               setSelected(item);

@@ -3,7 +3,8 @@
   "hello_user": "Hello, {{name}}!",
   "blog": {
     "topics": {
-      "all": "All Topics"
+      "all": "All Topics",
+      "all_subtopics": "All Subtopics"
     }
   }
 }

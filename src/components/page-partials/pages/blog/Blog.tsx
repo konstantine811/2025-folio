@@ -21,6 +21,7 @@ const Blog = () => {
 
   useEffect(() => {
     if (postsEntity) {
+      console.log("postsEntity", postsEntity);
       setSelectedPostEntity(postsEntity);
     }
   }, [postsEntity]);
@@ -31,7 +32,7 @@ const Blog = () => {
 
   return (
     <div
-      className="bg-background"
+      className="bg-background pb-10"
       style={{ minHeight: `calc(100vh - ${hSize}px)` }}
     >
       {loading ? (
