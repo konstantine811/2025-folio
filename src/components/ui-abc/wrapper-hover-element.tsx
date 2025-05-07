@@ -22,7 +22,9 @@ const WrapperHoverElement = forwardRef<HTMLElement, WrapperHoverElementProps>(
       <MotionTag
         ref={ref}
         onMouseEnter={() => setHoverWrapper(true)}
-        onMouseLeave={() => setHoverWrapper(false)}
+        onMouseLeave={() => {
+          setHoverWrapper(false);
+        }}
         className={clsx(className)}
         {...rest}
       >

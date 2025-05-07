@@ -8,20 +8,46 @@ const BlogPage = lazy(
   () => import("@/components/page-partials/pages/blog/Blog")
 );
 
+const ArticlePage = lazy(
+  () => import("@/components/page-partials/pages/blog/Article")
+);
+
+export enum RoutPath {
+  HOME = "/",
+  EXPERIMENTAL = "/experimental",
+  BLOG = "/blog",
+  ARTICLE = "/blog/:id",
+}
+
 export const router = [
   {
-    path: "/",
+    path: RoutPath.HOME,
     Component: HomePage,
+    isNav: true,
     id: "home",
   },
   {
-    path: "/experimental",
+    path: RoutPath.EXPERIMENTAL,
     Component: ExperimentalPage,
+    isNav: true,
     id: "experimental",
   },
   {
-    path: "/blog",
+    path: RoutPath.BLOG,
     Component: BlogPage,
+    isNav: true,
     id: "blog",
+  },
+  {
+    path: RoutPath.ARTICLE,
+    Component: ArticlePage,
+    isNav: false,
+    id: "article",
+  },
+  {
+    path: "*",
+    Component: HomePage,
+    isNav: false,
+    id: "not-found",
   },
 ];

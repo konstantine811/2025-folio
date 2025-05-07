@@ -27,6 +27,10 @@ export interface PostCover {
   description: string;
 }
 
+export interface PostContent extends PostCover {
+  content: string;
+}
+
 export interface PostEntity {
   [key: string]: {
     [key: string]: PostCover[];

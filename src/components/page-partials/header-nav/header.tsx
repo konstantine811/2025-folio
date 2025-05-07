@@ -1,12 +1,12 @@
 import ColorPicker from "@components/page-partials/page-setting/color-picker/color-picker";
 import NavMenu from "./nav-menu";
 import { memo, useEffect, useRef } from "react";
-import { useHeaderSizetore } from "@storage/headerSizeStore";
+import { useHeaderSizeStore } from "@storage/headerSizeStore";
 import LanguagePicker from "../page-setting/lange-picker/language-picker";
 
 const Header = memo(() => {
   const headerRef = useRef<HTMLDivElement>(null!);
-  const setHeaderSize = useHeaderSizetore((state) => state.setHeaderSize);
+  const setHeaderSize = useHeaderSizeStore((state) => state.setHeaderSize);
   useEffect(() => {
     if (headerRef.current) {
       const headerHeight = headerRef.current.getBoundingClientRect().height;

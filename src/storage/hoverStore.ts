@@ -17,11 +17,12 @@ interface HoverState {
   setHoverType: (hoverType: SoundTypeElement) => void;
   setHover: (
     hovering: boolean,
-    hoverType: SoundTypeElement,
+    hoverType: SoundTypeElement | null,
     hoverStyle: HoverStyleElement,
     box?: BoundingBox
   ) => void;
   setHoverWrapper: (hovering: boolean) => void;
+  setHoverStyle: (hoverStyle: HoverStyleElement) => void;
 }
 
 export const useHoverStore = create<HoverState>((set) => ({
@@ -30,6 +31,8 @@ export const useHoverStore = create<HoverState>((set) => ({
   hoverTypeElement: null,
   hoverStyleElement: HoverStyleElement.circle,
   isHoveringWrapper: false,
+  setHoverStyle: (hoverStyle: HoverStyleElement) =>
+    set({ hoverStyleElement: hoverStyle }),
   setHover: (hovering, hoverType, hoverStyle, box) =>
     set({
       isHovering: hovering,

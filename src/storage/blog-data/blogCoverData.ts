@@ -4,6 +4,7 @@ import { supabase } from "@config/supabaseClient";
 import {
   BlogArticleProps,
   BlogSupabaseTable,
+  PostContent,
   PostCover,
   PostEntity,
 } from "@custom-types/blog-storage";
@@ -24,15 +25,38 @@ type PostsStore = {
   posts: PostCover[] | null;
   postsEntity: PostEntity;
   uniqueTopics: string[] | null;
+  fetchArticle: (id: number) => Promise<PostContent>;
+  articles: { [key: string]: PostContent };
   loading: boolean;
   fetchPosts: (lang: LanguageType, allTopics: string) => Promise<void>;
 };
 
-export const usePostsStore = create<PostsStore>((set) => ({
+export const usePostsStore = create<PostsStore>((set, get) => ({
   posts: null,
   loading: false,
   uniqueTopics: null,
   postsEntity: {},
+  articles: {},
+  fetchArticle: async (id: number) => {
+    const state = get(); // отримуємо поточний стан стора
+
+    // 1. Перевірка чи вже є в articles
+    if (state.articles[id]) {
+      return state.articles[id];
+    }
+    const { data, error } = await supabase
+      .from(BlogSupabaseTable.articles)
+      .select("*") // отримуємо всі поля
+      .eq(BlogArticleProps.id, id)
+      .single(); // фільтр по id
+
+    if (error) {
+      console.error("Помилка при отриманні статті:", error);
+    } else {
+      state.articles[id] = data; // зберігаємо статтю в кеш
+      return data;
+    }
+  },
   fetchPosts: async (lang, allTopics) => {
     set({ loading: true });
 

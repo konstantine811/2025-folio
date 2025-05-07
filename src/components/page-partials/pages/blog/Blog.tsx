@@ -6,12 +6,12 @@ import { useTranslation } from "react-i18next";
 import Preloader from "../../preloader/preloader";
 import { PostEntity } from "@/types/blog-storage";
 import BlogPost from "./BlogPost";
-import { useHeaderSizetore } from "@/storage/headerSizeStore";
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 
 const Blog = () => {
   const { postsEntity, loading, fetchPosts, uniqueTopics } = usePostsStore();
 
-  const hSize = useHeaderSizetore((state) => state.size);
+  const hSize = useHeaderSizeStore((state) => state.size);
   const [selectedPostEnity, setSelectedPostEntity] =
     useState<PostEntity>(postsEntity);
 
@@ -21,7 +21,6 @@ const Blog = () => {
 
   useEffect(() => {
     if (postsEntity) {
-      console.log("postsEntity", postsEntity);
       setSelectedPostEntity(postsEntity);
     }
   }, [postsEntity]);

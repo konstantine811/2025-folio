@@ -1,6 +1,6 @@
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import WrapperHoverElement from "@/components/ui-abc/wrapper-hover-element";
-import { useHeaderSizetore } from "@/storage/headerSizeStore";
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { PostCover } from "@/types/blog-storage";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import { useEffect, useRef, useState } from "react";
@@ -14,7 +14,7 @@ const TopicBlogPost = ({
   topic: string;
   subtopics: { [key: string]: PostCover[] };
 }) => {
-  const hSize = useHeaderSizetore((state) => state.size);
+  const hSize = useHeaderSizeStore((state) => state.size);
   const [t] = useTranslation();
   const [selectedSubtopic, setSelectedSubtopic] = useState<string | null>(null);
   const refTopic = useRef<HTMLDivElement>(null!);

@@ -68,41 +68,43 @@ const RevealNavMenu = memo(() => {
               as="ul"
               variants={containerVariants}
             >
-              {router.map((route, i) => (
-                <a
-                  key={i}
-                  onClick={(e) => {
-                    e.preventDefault(); // 👈 запобігаємо переходу
-                    const path = route.path || "/";
-                    if (location.pathname === path) {
-                      return; // 👈 нічого не виконуємо
-                    } else {
-                      setOpen(false); // 🔥 закриваємо меню
-                      onTransition(true); // 🔥 запускаємо лише якщо маршрут інший
-                      riserSound.play("first");
-                      setTimeout(() => {
-                        navigate(path);
-                      }, 700);
-                    }
-                  }}
-                  className={`${
-                    route.path === location.pathname &&
-                    "bg-background rounded-sm"
-                  }`}
-                >
-                  <SoundHoverElement
-                    variants={itemVariants}
-                    className="relative  w-full py-2 px-4 text-fg text-lg font-medium hover:bg-main/5 rounded-md"
-                    hoverTypeElement={SoundTypeElement.LINK}
-                    hoverStyleElement={HoverStyleElement.quad}
-                    hoverAnimType="scale"
-                    animValue={0.98}
-                    as="li"
+              {router
+                .filter((route) => route.isNav)
+                .map((route, i) => (
+                  <a
+                    key={i}
+                    onClick={(e) => {
+                      e.preventDefault(); // 👈 запобігаємо переходу
+                      const path = route.path || "/";
+                      if (location.pathname === path) {
+                        return; // 👈 нічого не виконуємо
+                      } else {
+                        setOpen(false); // 🔥 закриваємо меню
+                        onTransition(true); // 🔥 запускаємо лише якщо маршрут інший
+                        riserSound.play("first");
+                        setTimeout(() => {
+                          navigate(path);
+                        }, 700);
+                      }
+                    }}
+                    className={`${
+                      route.path === location.pathname &&
+                      "bg-background rounded-sm"
+                    }`}
                   >
-                    {route.id}
-                  </SoundHoverElement>
-                </a>
-              ))}
+                    <SoundHoverElement
+                      variants={itemVariants}
+                      className="relative  w-full py-2 px-4 text-fg text-lg font-medium hover:bg-main/5 rounded-md"
+                      hoverTypeElement={SoundTypeElement.LINK}
+                      hoverStyleElement={HoverStyleElement.quad}
+                      hoverAnimType="scale"
+                      animValue={0.98}
+                      as="li"
+                    >
+                      {route.id}
+                    </SoundHoverElement>
+                  </a>
+                ))}
             </WrapperHoverElement>
           </motion.nav>
         )}

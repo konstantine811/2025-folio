@@ -1,9 +1,8 @@
 import {
-  buttonHoverSound,
-  buttonHoverOutSound,
   selectSound,
   buttonHoverSound2,
   selectSound_2,
+  selectedSound,
 } from "@config/sounds";
 import { SoundTypeElement } from "@custom-types/sound";
 import { useHoverStore } from "@storage/hoverStore";
@@ -14,8 +13,8 @@ export function subscribeToHoverSound() {
       switch (state.hoverTypeElement) {
         case SoundTypeElement.BUTTON:
         case SoundTypeElement.LINK:
-          buttonHoverOutSound.stop();
-          buttonHoverSound.play();
+          selectedSound.stop();
+          selectedSound.play("first");
           break;
         case SoundTypeElement.SELECT:
           buttonHoverSound2.stop();
@@ -34,8 +33,8 @@ export function subscribeToHoverSound() {
       switch (state.hoverTypeElement) {
         case SoundTypeElement.BUTTON:
         case SoundTypeElement.LINK:
-          buttonHoverSound.stop();
-          buttonHoverOutSound.play();
+          selectedSound.stop();
+          selectedSound.play("second");
           break;
         case SoundTypeElement.LOGO:
           selectSound.stop();

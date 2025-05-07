@@ -5,7 +5,7 @@ interface HeaderSizeState {
   setHeaderSize: (size: number) => void;
 }
 
-export const useHeaderSizetore = create<HeaderSizeState>((set) => ({
+export const useHeaderSizeStore = create<HeaderSizeState>((set) => ({
   size: 0,
   setHeaderSize: (size) => {
     set({ size });
