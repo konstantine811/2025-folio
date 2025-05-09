@@ -6,8 +6,13 @@ import { HoverStyleElement } from "@custom-types/sound";
 const StickCursor = () => {
   const defaultSize = 1;
 
-  const { isHovering, boundingBox, isHoveringWrapper, hoverStyleElement } =
-    useHoverStore((s) => s);
+  const {
+    isHovering,
+    boundingBox,
+    isHoveringWrapper,
+    hoverStyleElement,
+    setHover,
+  } = useHoverStore((s) => s);
   const smoothMouseProps = { stiffness: 733, damping: 36, mass: 0.3 };
   const smoothSizeProps = { stiffness: 500, damping: 30, mass: 0.1 };
   const classBorderColor = "border-accent";
@@ -44,6 +49,11 @@ const StickCursor = () => {
     [mousePos.x, mousePos.y, sizeWidth, isHovering, boundingBox, sizeHeight]
   );
 
+  const handleOnScoll = useCallback(() => {
+    sizeWidth.set(defaultSize);
+    sizeHeight.set(defaultSize);
+  }, [sizeWidth, sizeHeight]);
+
   // 👇 оновлюємо розмір при зміні стану наведення
   useEffect(() => {
     if (boundingBox) {
@@ -63,6 +73,13 @@ const StickCursor = () => {
       window.removeEventListener("mousemove", handleMouseMove);
     };
   }, [handleMouseMove]);
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleOnScoll);
+    return () => {
+      window.removeEventListener("scroll", handleOnScoll);
+    };
+  }, [setHover, handleOnScoll]);
 
   return (
     <motion.div

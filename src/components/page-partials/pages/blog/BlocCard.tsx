@@ -16,7 +16,7 @@ const BlocCard = ({ post }: { post: PostCover }) => {
     <SoundHoverElement
       hoverAnimType="scale"
       animValue={0.97}
-      hoverTypeElement={SoundTypeElement.NONE}
+      hoverTypeElement={SoundTypeElement.SELECT}
       hoverStyleElement={HoverStyleElement.quad}
       as="li"
       className="bg-background-alt text-fg rounded-xs overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col h-full"

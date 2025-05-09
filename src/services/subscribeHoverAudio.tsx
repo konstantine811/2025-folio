@@ -1,8 +1,9 @@
 import {
   selectSound,
-  buttonHoverSound2,
-  selectSound_2,
   selectedSound,
+  whooshSound,
+  selectSound_3,
+  selectSound_2,
 } from "@config/sounds";
 import { SoundTypeElement } from "@custom-types/sound";
 import { useHoverStore } from "@storage/hoverStore";
@@ -10,22 +11,19 @@ import { useHoverStore } from "@storage/hoverStore";
 export function subscribeToHoverSound() {
   useHoverStore.subscribe((state) => {
     if (state.isHovering) {
+      whooshSound.stop();
       switch (state.hoverTypeElement) {
         case SoundTypeElement.BUTTON:
         case SoundTypeElement.LINK:
-          selectedSound.stop();
           selectedSound.play("first");
           break;
         case SoundTypeElement.SELECT:
-          buttonHoverSound2.stop();
-          buttonHoverSound2.play("first");
+          selectSound_2.play("first");
           break;
         case SoundTypeElement.SELECT_2:
-          selectSound_2.stop();
-          selectSound_2.play("second");
+          selectSound_3.play("first");
           break;
         case SoundTypeElement.LOGO:
-          selectSound.stop();
           selectSound.play("second");
           break;
       }
@@ -34,15 +32,18 @@ export function subscribeToHoverSound() {
         case SoundTypeElement.BUTTON:
         case SoundTypeElement.LINK:
           selectedSound.stop();
-          selectedSound.play("second");
+          whooshSound.play("second");
+          break;
+        case SoundTypeElement.SELECT:
+          selectSound_2.stop();
           break;
         case SoundTypeElement.LOGO:
           selectSound.stop();
-          selectSound.play("third");
+          whooshSound.play("second");
           break;
         case SoundTypeElement.SELECT_2:
-          selectSound_2.stop();
-          selectSound_2.play("second");
+          selectSound_3.stop();
+          whooshSound.play("second");
       }
     }
   });

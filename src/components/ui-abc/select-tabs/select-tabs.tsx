@@ -4,7 +4,6 @@ import { useState } from "react";
 import SoundHoverElement from "../sound-hover-element";
 import { HoverStyleElement, SoundTypeElement } from "@custom-types/sound";
 import WrapperHoverElement from "../wrapper-hover-element";
-import { selectClickSound } from "@config/sounds";
 import { useTranslation } from "react-i18next";
 
 const SelectTabs = ({
@@ -41,7 +40,6 @@ const SelectTabs = ({
               if (onSelectItem) {
                 onSelectItem(item);
               }
-              selectClickSound.play("first");
             }}
           >
             {selected === item && (
