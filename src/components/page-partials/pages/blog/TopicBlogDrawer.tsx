@@ -32,6 +32,7 @@ const TopicBlogDrawer = () => {
     <div>
       <motion.div
         animate={{ x: isOpen ? 0 : -drawerWidth }}
+        initial={{ x: -drawerWidth }}
         transition={MOTION_FRAME_TRANSITION.spring3}
         className="fixed top-0 left-0 flex w-full"
         style={{
