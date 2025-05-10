@@ -20,7 +20,7 @@ const ArticleCover = ({ article }: { article: PostContent }) => {
           loading="lazy"
         />
       )}
-      <div className="relative z-10 w-full grow flex flex-col items-center bg-background-alt/40 backdrop-contrast-150 py-10 px-10">
+      <div className="relative z-10 w-full grow flex flex-col items-center bg-background-alt/40 backdrop-contrast-150 pt-22 pb-10 md:py-10 px-10">
         <div className="text-link/50 text-shadow-md  text-shadow-background/20">
           <p className="text-xs font-mono tracking-wide text-fg uppercase">
             {dayjs(article.created_at).format("D MMMM YYYY [о] HH:mm")}
