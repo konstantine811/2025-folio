@@ -118,7 +118,7 @@ const RevealNavMenu = memo(() => {
                   ))}
               </WrapperHoverElement>
             </motion.nav>
-            <div className="flex px-5 pb-3 justify-between items-center text-fg/55 md:hidden">
+            <div className="flex px-5 py-5 justify-between items-center text-fg/55 md:hidden border-t border-background">
               <HeaderBanner />
               <div className="flex gap-2">
                 <ToggleSound />

@@ -8,7 +8,7 @@ import { useHoverStore } from "@/storage/hoverStore";
 import { LocalStorageKey } from "@/config/local-storage.config";
 
 const ToggleSound = () => {
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(true);
   const setSoundEnabled = useHoverStore((state) => state.setSoundEnabled);
   const toggle = () => {
     localStorage.setItem(LocalStorageKey.sound, JSON.stringify(!enabled));
