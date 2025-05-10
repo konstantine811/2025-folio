@@ -17,7 +17,6 @@ const ToggleSound = () => {
 
   useEffect(() => {
     const storedValue = localStorage.getItem(LocalStorageKey.sound);
-    console.log("storedValue", storedValue);
     if (storedValue) {
       setEnabled(JSON.parse(storedValue));
     }
