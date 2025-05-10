@@ -10,6 +10,9 @@ import { useTransitionStore } from "@storage/transitionRoutePath";
 import { AnimatePresence, motion } from "motion/react";
 import { memo } from "react";
 import { useLocation, useNavigate } from "react-router";
+import LanguagePicker from "../page-setting/lange-picker/language-picker";
+import ColorPicker from "../page-setting/color-picker/color-picker";
+import HeaderBanner from "./header-banner";
 
 const RevealNavMenu = memo(() => {
   const { isOpen, setOpen } = useNavMenuStore((state) => state);
@@ -52,61 +55,70 @@ const RevealNavMenu = memo(() => {
       )}
       <AnimatePresence>
         {isOpen && (
-          <motion.nav
+          <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={MOTION_FRAME_TRANSITION.spring}
             layout="size"
-            className="absolute z-10 bottom-0 left-0 w-full bg-background-alt/99  flex items-center justify-center  translate-y-full rounded-br-md"
+            className="absolute z-10 bottom-0 left-0 w-full bg-background-alt/99  translate-y-full rounded-br-md"
           >
-            <WrapperHoverElement
-              className="py-1 flex flex-col w-full px-2"
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              as="ul"
-              variants={containerVariants}
-            >
-              {router
-                .filter((route) => route.isNav)
-                .map((route, i) => (
-                  <a
-                    key={i}
-                    onClick={(e) => {
-                      e.preventDefault(); // 👈 запобігаємо переходу
-                      const path = route.path || "/";
-                      if (location.pathname === path) {
-                        return; // 👈 нічого не виконуємо
-                      } else {
-                        setOpen(false); // 🔥 закриваємо меню
-                        onTransition(true); // 🔥 запускаємо лише якщо маршрут інший
-                        riserSound.play("first");
-                        setTimeout(() => {
-                          navigate(path);
-                        }, 700);
-                      }
-                    }}
-                    className={`${
-                      route.path === location.pathname &&
-                      "bg-background rounded-sm"
-                    }`}
-                  >
-                    <SoundHoverElement
-                      variants={itemVariants}
-                      className="relative  w-full py-2 px-4 text-fg text-lg font-medium hover:bg-main/5 rounded-md"
-                      hoverTypeElement={SoundTypeElement.LINK}
-                      hoverStyleElement={HoverStyleElement.quad}
-                      hoverAnimType="scale"
-                      animValue={0.98}
-                      as="li"
+            <motion.nav className="flex items-center justify-center ">
+              <WrapperHoverElement
+                className="py-1 flex flex-col w-full px-2"
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                as="ul"
+                variants={containerVariants}
+              >
+                {router
+                  .filter((route) => route.isNav)
+                  .map((route, i) => (
+                    <a
+                      key={i}
+                      onClick={(e) => {
+                        e.preventDefault(); // 👈 запобігаємо переходу
+                        const path = route.path || "/";
+                        if (location.pathname === path) {
+                          return; // 👈 нічого не виконуємо
+                        } else {
+                          setOpen(false); // 🔥 закриваємо меню
+                          onTransition(true); // 🔥 запускаємо лише якщо маршрут інший
+                          riserSound.play("first");
+                          setTimeout(() => {
+                            navigate(path);
+                          }, 700);
+                        }
+                      }}
+                      className={`${
+                        route.path === location.pathname &&
+                        "bg-background rounded-sm"
+                      }`}
                     >
-                      {route.id}
-                    </SoundHoverElement>
-                  </a>
-                ))}
-            </WrapperHoverElement>
-          </motion.nav>
+                      <SoundHoverElement
+                        variants={itemVariants}
+                        className="relative  w-full py-2 px-4 text-fg text-lg font-medium hover:bg-main/5 rounded-md"
+                        hoverTypeElement={SoundTypeElement.LINK}
+                        hoverStyleElement={HoverStyleElement.quad}
+                        hoverAnimType="scale"
+                        animValue={0.98}
+                        as="li"
+                      >
+                        {route.id}
+                      </SoundHoverElement>
+                    </a>
+                  ))}
+              </WrapperHoverElement>
+            </motion.nav>
+            <div className="flex px-5 pb-3 justify-between items-center text-fg/55 md:hidden">
+              <HeaderBanner />
+              <div className="flex gap-2">
+                <LanguagePicker />
+                <ColorPicker />
+              </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

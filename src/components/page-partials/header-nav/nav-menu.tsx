@@ -7,7 +7,7 @@ import { SoundTypeElement } from "@custom-types/sound";
 
 export default function NavMenu() {
   return (
-    <div className="relative max-w-md w-full">
+    <div className="relative md:max-w-md w-full">
       <div className="relative z-20 flex items-center justify-between gap-4 w-full bg-background-alt/90 px-5  backdrop-blur-2xl py-2">
         <SoundHoverElement
           hoverTypeElement={SoundTypeElement.LOGO}

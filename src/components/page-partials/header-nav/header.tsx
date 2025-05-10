@@ -3,6 +3,7 @@ import NavMenu from "./nav-menu";
 import { memo, useEffect, useRef } from "react";
 import { useHeaderSizeStore } from "@storage/headerSizeStore";
 import LanguagePicker from "../page-setting/lange-picker/language-picker";
+import HeaderBanner from "./header-banner";
 
 const Header = memo(() => {
   const headerRef = useRef<HTMLDivElement>(null!);
@@ -20,9 +21,8 @@ const Header = memo(() => {
     >
       <div className="grid grid-cols-1 md:grid-cols-3 items-center">
         <NavMenu />
-        <div className="text-fg text-center hidden md:block">
-          <div>@ 2025 folio</div>
-          <div>Abramkin Constantine</div>
+        <div className="text-fg/70 font-mono tracking-wide text-center hidden md:block">
+          <HeaderBanner />
         </div>
         <div className="text-fg pr-4 items-center justify-end hidden md:flex">
           <LanguagePicker />
