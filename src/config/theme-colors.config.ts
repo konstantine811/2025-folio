@@ -4,7 +4,7 @@ export const ThemePalette: IThemePalette = {
     "background-alt": "#1a1a1a",
     surface: "#333333",
     border: "#b3b3b3",
-    fg: "#ffffff",
+    fg: "#faf9f6",
     fgMuted: "#666666",
     accent: "#32ffce",
     highlight: "#e6e6e6",
@@ -15,7 +15,7 @@ export const ThemePalette: IThemePalette = {
     warning: "#ff9900",
   },
   light: {
-    background: "#ffffff",
+    background: "#fbfcf8",
     "background-alt": "#f2f2f2",
     surface: "#e6e6e6",
     border: "#808080",

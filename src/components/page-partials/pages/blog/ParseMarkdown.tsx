@@ -1,3 +1,4 @@
+import ImageWithLoader from "@/components/ui-abc/image-with-loader";
 import { getBlogImage } from "@/config/supabaseClient";
 import { createId, formatMarkdown } from "@/utils/markdown-pars.util";
 import { Children, isValidElement } from "react";
@@ -11,14 +12,7 @@ const ParseMarkdown = ({ content }: { content: string }) => {
       rehypePlugins={[rehypeRaw]}
       remarkPlugins={[remarkGfm]}
       components={{
-        img: (props) => (
-          <img
-            {...props}
-            className="rounded-lg pt-2 pb-5 md:pb-10 lg:pb-20 mb-4 last:mb-0 mx-auto"
-            alt=""
-            loading="lazy"
-          />
-        ),
+        img: ({ src, alt }) => <ImageWithLoader src={src} alt={alt} />,
         h1: (props) => (
           <h1
             {...props}
@@ -77,7 +71,10 @@ const ParseMarkdown = ({ content }: { content: string }) => {
             }
             return false;
           });
-          return isEmpty ? null : <p className="mb-4 last:mb-0">{children}</p>;
+
+          return isEmpty ? null : (
+            <div className="mb-4 last:mb-0">{children}</div>
+          );
         },
 
         table: (props) => (
