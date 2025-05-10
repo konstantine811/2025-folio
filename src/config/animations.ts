@@ -16,4 +16,9 @@ export const MOTION_FRAME_TRANSITION = {
     bounce: 1,
     mass: 0.3,
   },
+  spring3: {
+    type: "spring",
+    stiffness: 300,
+    damping: 30,
+  },
 };

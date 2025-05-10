@@ -1,33 +1,26 @@
-import { LanguageType } from "@/i18n";
 import SelectTabs from "@components/ui-abc/select-tabs/select-tabs";
 import { usePostsStore } from "@storage/blog-data/blogCoverData";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import Preloader from "../../preloader/preloader";
 import { PostEntity } from "@/types/blog-storage";
 import BlogPost from "./BlogPost";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
+import useFetchPosts, { ALL_TOPICS_TITLE } from "@/hooks/useFetchPosts";
 
 const Blog = () => {
-  const { postsEntity, loading, fetchPosts, uniqueTopics } = usePostsStore();
+  const { postsEntity, loading, uniqueTopics } = usePostsStore();
 
   const hSize = useHeaderSizeStore((state) => state.size);
   const [selectedPostEnity, setSelectedPostEntity] =
     useState<PostEntity>(postsEntity);
 
-  const { i18n } = useTranslation();
-  const lang = i18n.language as LanguageType;
-  const allTopics = "blog.topics.all";
+  useFetchPosts();
 
   useEffect(() => {
     if (postsEntity) {
       setSelectedPostEntity(postsEntity);
     }
   }, [postsEntity]);
-
-  useEffect(() => {
-    fetchPosts(lang, allTopics); // завжди викликати, коли змінюється lang
-  }, [lang, fetchPosts]); // слідкуємо за lang!
 
   return (
     <div
@@ -43,7 +36,7 @@ const Blog = () => {
               <SelectTabs
                 items={uniqueTopics}
                 onSelectItem={(item) => {
-                  if (item === allTopics) {
+                  if (item === ALL_TOPICS_TITLE) {
                     setSelectedPostEntity(postsEntity);
                   } else {
                     setSelectedPostEntity({ [item]: postsEntity[item] });

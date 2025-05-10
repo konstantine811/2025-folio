@@ -27,7 +27,15 @@ type PostsStore = {
   uniqueTopics: string[] | null;
   fetchArticle: (id: number) => Promise<PostContent>;
   articles: { [key: string]: PostContent };
+  activeTopic: {
+    topic: string;
+    subtopics: { [key: string]: PostCover[] };
+  };
   loading: boolean;
+  setActiveTopic: (
+    topic: string,
+    subtopics: { [key: string]: PostCover[] }
+  ) => void;
   fetchPosts: (lang: LanguageType, allTopics: string) => Promise<void>;
 };
 
@@ -37,6 +45,13 @@ export const usePostsStore = create<PostsStore>((set, get) => ({
   uniqueTopics: null,
   postsEntity: {},
   articles: {},
+  activeTopic: {
+    topic: "",
+    subtopics: {},
+  },
+  setActiveTopic: (topic, subtopics) => {
+    set({ activeTopic: { topic, subtopics } });
+  },
   fetchArticle: async (id: number) => {
     const state = get(); // отримуємо поточний стан стора
 
@@ -58,6 +73,10 @@ export const usePostsStore = create<PostsStore>((set, get) => ({
     }
   },
   fetchPosts: async (lang, allTopics) => {
+    const state = get();
+    if (Object.keys(state.postsEntity).length) {
+      return;
+    }
     set({ loading: true });
 
     const { data, error } = await supabase

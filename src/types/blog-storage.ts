@@ -18,7 +18,7 @@ export enum BlogArticleProps {
 }
 
 export interface PostCover {
-  id: string;
+  id: number;
   title: string;
   topic: string;
   subtopic: string;
@@ -35,4 +35,10 @@ export interface PostEntity {
   [key: string]: {
     [key: string]: PostCover[];
   };
+}
+
+export interface IArticleHeading {
+  depth: number;
+  text: string;
+  id: string;
 }

@@ -15,11 +15,11 @@ const TopicBlogPost = ({
   subtopics: { [key: string]: PostCover[] };
 }) => {
   const hSize = useHeaderSizeStore((state) => state.size);
+
   const [t] = useTranslation();
   const [selectedSubtopic, setSelectedSubtopic] = useState<string | null>(null);
   const refTopic = useRef<HTMLDivElement>(null!);
   const [offsetTopic, setOffsetTopic] = useState<number>(0);
-
   useEffect(() => {
     const { height } = refTopic.current.getBoundingClientRect();
     setOffsetTopic(height + hSize);

@@ -5,6 +5,9 @@
     "topics": {
       "all": "Усі розділи",
       "all_subtopics": "Усі підрозділи"
+    },
+    "articles": {
+      "on_this_page": "На цій сторінці"
     }
   }
 }
