@@ -25,7 +25,12 @@ const TopicBlogDrawerContent = () => {
                 {subtopic}
               </h4>
             )}
-            <WrapperHoverElement as="ul">
+            <WrapperHoverElement
+              as="ol"
+              className={`${
+                posts.length > 1 ? "list-decimal list-inside" : "list-none"
+              }`}
+            >
               {posts.map((post) => {
                 const isActive = post.id === Number(id);
                 return (
@@ -38,7 +43,7 @@ const TopicBlogDrawerContent = () => {
                       isActive
                         ? "cursor-none pointer-events-none bg-accent text-fg-muted"
                         : "cursor-pointer pointer-events-auto text-fg"
-                    } text-lg  py-2 cursor-pointer pl-5 transition-background duration-1000`}
+                    }  text-lg  py-2 cursor-pointer pl-5 transition-background duration-1000`}
                     onClick={() => {
                       if (isActive) return; // якщо стаття активна, нічого не робимо
                       onTransition(true); // 🔥 запускаємо лише якщо маршрут інший
