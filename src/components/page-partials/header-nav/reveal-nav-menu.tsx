@@ -13,6 +13,8 @@ import { useLocation, useNavigate } from "react-router";
 import LanguagePicker from "../page-setting/lange-picker/language-picker";
 import ColorPicker from "../page-setting/color-picker/color-picker";
 import HeaderBanner from "./header-banner";
+import { useHoverStore } from "@/storage/hoverStore";
+import ToggleSound from "../page-setting/toggle-sound";
 
 const RevealNavMenu = memo(() => {
   const { isOpen, setOpen } = useNavMenuStore((state) => state);
@@ -20,6 +22,7 @@ const RevealNavMenu = memo(() => {
   const location = useLocation();
   const navigate = useNavigate();
   const setClick = useClickStore((state) => state.setClick);
+  const isSoundEnabled = useHoverStore((state) => state.isSoundEnabled);
   const containerVariants = {
     visible: {
       transition: {
@@ -48,7 +51,9 @@ const RevealNavMenu = memo(() => {
           className="fixed top-0 left-0 w-full"
           style={{ height: `${document.body.scrollHeight}px` }}
           onClick={() => {
-            setClick(SoundTypeElement.BUTTON);
+            if (isSoundEnabled) {
+              setClick(SoundTypeElement.BUTTON);
+            }
             setOpen(false);
           }}
         ></div>
@@ -61,7 +66,7 @@ const RevealNavMenu = memo(() => {
             exit={{ height: 0, opacity: 0 }}
             transition={MOTION_FRAME_TRANSITION.spring}
             layout="size"
-            className="absolute z-10 bottom-0 left-0 w-full bg-background-alt/99  translate-y-full rounded-br-md"
+            className="absolute z-10 bottom-0 left-0 w-full bg-background-alt/99  translate-y-full rounded-br-md shadow-md shadow-background"
           >
             <motion.nav className="flex items-center justify-center ">
               <WrapperHoverElement
@@ -85,7 +90,9 @@ const RevealNavMenu = memo(() => {
                         } else {
                           setOpen(false); // 🔥 закриваємо меню
                           onTransition(true); // 🔥 запускаємо лише якщо маршрут інший
-                          riserSound.play("first");
+                          if (isSoundEnabled) {
+                            riserSound.play("first");
+                          }
                           setTimeout(() => {
                             navigate(path);
                           }, 700);
@@ -114,6 +121,7 @@ const RevealNavMenu = memo(() => {
             <div className="flex px-5 pb-3 justify-between items-center text-fg/55 md:hidden">
               <HeaderBanner />
               <div className="flex gap-2">
+                <ToggleSound />
                 <LanguagePicker />
                 <ColorPicker />
               </div>

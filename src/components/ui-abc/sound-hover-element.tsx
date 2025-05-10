@@ -39,6 +39,7 @@ const SoundHoverElement = forwardRef<HTMLElement, SoundHoverElementProps>(
     const setHover = useHoverStore((s) => s.setHover);
     const setHoverStyle = useHoverStore((s) => s.setHoverStyle);
     const setClick = useClickStore((s) => s.setClick);
+    const isSoundEnabled = useHoverStore((state) => state.isSoundEnabled);
     const MotionTag = motion.create(Tag as ElementType);
     const hoverTransition = MOTION_FRAME_TRANSITION.spring;
     const handleMouseEnter = () => {
@@ -85,7 +86,9 @@ const SoundHoverElement = forwardRef<HTMLElement, SoundHoverElementProps>(
           if (onClick) {
             onClick();
             setHoverStyle(HoverStyleElement.circle);
-            setClick(hoverTypeElement);
+            if (isSoundEnabled) {
+              setClick(hoverTypeElement);
+            }
           }
         }}
         whileHover={getHoverTypeAnimation()}

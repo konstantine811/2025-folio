@@ -10,6 +10,9 @@ import { useHoverStore } from "@storage/hoverStore";
 
 export function subscribeToHoverSound() {
   useHoverStore.subscribe((state) => {
+    if (!state.isSoundEnabled) {
+      return;
+    }
     if (state.isHovering) {
       whooshSound.stop();
       switch (state.hoverTypeElement) {

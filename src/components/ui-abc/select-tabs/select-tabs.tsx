@@ -23,7 +23,7 @@ const SelectTabs = ({
         initial="hidden"
         animate="visible"
         exit="hidden"
-        className="relative flex flex-wrap border border-fg rounded-sm  items-center justify-center"
+        className="relative flex flex-wrap md:border border-fg rounded-sm  items-center justify-center"
       >
         {items.map((item, index) => (
           <SoundHoverElement

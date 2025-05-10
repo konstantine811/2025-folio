@@ -8,6 +8,7 @@ import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import WrapperHoverElement from "@/components/ui-abc/wrapper-hover-element";
 import { useClickStore } from "@/storage/clickStore";
 import TopicBlogDrawerContent from "./TopicBlogDrawerContent";
+import { useHoverStore } from "@/storage/hoverStore";
 
 const offset = 10;
 const btnWidth = 50;
@@ -15,6 +16,7 @@ const btnWidth = 50;
 const TopicBlogDrawer = () => {
   const hSize = useHeaderSizeStore((state) => state.size);
   const setClick = useClickStore((s) => s.setClick);
+  const isSoundEnabled = useHoverStore((state) => state.isSoundEnabled);
   const [isOpen, setIsOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState<number>(
     typeof window !== "undefined" ? window.innerWidth : 1024
@@ -77,7 +79,9 @@ const TopicBlogDrawer = () => {
           className="fixed w-full h-full top-0 z-20"
           onClick={() => {
             setIsOpen(false);
-            setClick(SoundTypeElement.BUTTON);
+            if (isSoundEnabled) {
+              setClick(SoundTypeElement.BUTTON);
+            }
           }}
         ></div>
       )}

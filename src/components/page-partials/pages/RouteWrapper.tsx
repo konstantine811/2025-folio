@@ -8,15 +8,18 @@ import { useLocation } from "react-router";
 const RouteWrapper = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const onTransition = useTransitionStore((state) => state.onIsTransition);
+  const isSoundEnabled = useHoverStore((state) => state.isSoundEnabled);
   const setHover = useHoverStore((s) => s.setHover);
   useEffect(() => {
     setHover(false, null, HoverStyleElement.circle);
   }, [location.pathname, setHover]);
   useEffect(() => {
-    riserSound.play("second");
+    if (isSoundEnabled) {
+      riserSound.play("second");
+    }
     onTransition(false);
     // тут твій хук або виклик функції
-  }, [location.pathname, onTransition]);
+  }, [location.pathname, onTransition, isSoundEnabled]);
 
   return <>{children}</>;
 };

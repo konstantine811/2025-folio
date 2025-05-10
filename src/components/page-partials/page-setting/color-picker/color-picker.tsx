@@ -8,9 +8,11 @@ import { LocalStorageKey } from "@config/local-storage.config";
 import { getConicGradientFromTheme, setTheme } from "@utils/color-picker.util";
 import { useThemeStore } from "@storage/themeStore";
 import { TestTubeDiagonal } from "lucide-react";
+import { useHoverStore } from "@/storage/hoverStore";
 
 const ColorPicker = () => {
   const setThemeStore = useThemeStore((state) => state.onSetTheme);
+  const isSoundEnabled = useHoverStore((state) => state.isSoundEnabled);
   useEffect(() => {
     const storedTheme = localStorage.getItem(LocalStorageKey.theme);
     if (storedTheme) {
@@ -41,7 +43,9 @@ const ColorPicker = () => {
               hoverAnimType="scale"
               animValue={0.9}
               onClick={() => {
-                buttonClickSound2.play("first");
+                if (isSoundEnabled) {
+                  buttonClickSound2.play("first");
+                }
                 setTheme(themeColors);
                 setThemeStore(themeName as ThemeType);
                 localStorage.setItem(

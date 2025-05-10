@@ -7,10 +7,12 @@ import { useNavigate } from "react-router";
 import { RoutPath } from "@/config/router-config";
 import { useTransitionStore } from "@/storage/transitionRoutePath";
 import { riserSound, shinySound } from "@/config/sounds";
+import { useHoverStore } from "@/storage/hoverStore";
 
 const BlocCard = ({ post }: { post: PostCover }) => {
   const navigate = useNavigate();
   const onTransition = useTransitionStore((state) => state.onIsTransition);
+  const isSoundEnabled = useHoverStore((state) => state.isSoundEnabled);
 
   return (
     <SoundHoverElement
@@ -22,8 +24,10 @@ const BlocCard = ({ post }: { post: PostCover }) => {
       className="bg-background-alt text-fg rounded-xs overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col h-full"
       onClick={() => {
         onTransition(true); // 🔥 запускаємо лише якщо маршрут інший
-        riserSound.play("first");
-        shinySound.play("first");
+        if (isSoundEnabled) {
+          riserSound.play("first");
+          shinySound.play("first");
+        }
         setTimeout(() => {
           navigate(`${RoutPath.BLOG}/${post.id}`);
         }, 700);

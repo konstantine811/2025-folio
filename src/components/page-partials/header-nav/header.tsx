@@ -4,6 +4,7 @@ import { memo, useEffect, useRef } from "react";
 import { useHeaderSizeStore } from "@storage/headerSizeStore";
 import LanguagePicker from "../page-setting/lange-picker/language-picker";
 import HeaderBanner from "./header-banner";
+import ToggleSound from "../page-setting/toggle-sound";
 
 const Header = memo(() => {
   const headerRef = useRef<HTMLDivElement>(null!);
@@ -25,6 +26,7 @@ const Header = memo(() => {
           <HeaderBanner />
         </div>
         <div className="text-fg pr-4 items-center justify-end hidden md:flex">
+          <ToggleSound />
           <LanguagePicker />
           <ColorPicker />
         </div>
