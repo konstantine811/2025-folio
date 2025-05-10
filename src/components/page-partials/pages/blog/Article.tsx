@@ -2,7 +2,7 @@ import { usePostsStore } from "@/storage/blog-data/blogCoverData";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { useHoverStore } from "@/storage/hoverStore";
 import { HoverStyleElement } from "@/types/sound";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router";
 import { IArticleHeading, PostContent } from "@/types/blog-storage";
 import { extractHeadingsFromMarkdown } from "@/utils/markdown-pars.util";
@@ -12,8 +12,10 @@ import ArticleCover from "./ArticleCover";
 import ArticleHeading from "./ArticleHeading";
 import TopicBlogDrawer from "./TopicBlogDrawer";
 import useFetchPosts from "@/hooks/useFetchPosts";
+import ScrollProgressBar from "@/components/common/scroll-progress-bar";
 
 const Article = () => {
+  const scrollRef = useRef<HTMLDivElement>(null!);
   const { id } = useParams(); // Отримуємо ідентифікатор статті з URL
   const hSize = useHeaderSizeStore((state) => state.size);
   const fetchArticle = usePostsStore((state) => state.fetchArticle);
@@ -53,8 +55,10 @@ const Article = () => {
   return (
     <div
       className="bg-background pb-20 relative"
+      ref={scrollRef}
       style={{ minHeight: `calc(100vh - ${hSize}px)` }}
     >
+      {scrollRef.current && <ScrollProgressBar target={scrollRef} />}
       <TopicBlogDrawer />
       {article ? (
         <>
