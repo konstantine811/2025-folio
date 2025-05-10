@@ -38,6 +38,10 @@ const Article = () => {
   }, [id, fetchArticle]);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [id]);
+
+  useEffect(() => {
     // Якщо postsEntity вже завантажено, то знаходимо активний розділ
     // і підрозділи для статті
     if (postsEntity) {

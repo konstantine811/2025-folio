@@ -1,5 +1,6 @@
 import { motion, useSpring, useScroll } from "motion/react";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
+import { MOTION_FRAME_TRANSITION } from "@/config/animations";
 
 const ScrollProgressBar = ({
   target,
@@ -10,11 +11,7 @@ const ScrollProgressBar = ({
   const { scrollYProgress } = useScroll({
     target: target,
   });
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001,
-  });
+  const scaleX = useSpring(scrollYProgress, MOTION_FRAME_TRANSITION.spring3);
 
   return (
     <motion.div
