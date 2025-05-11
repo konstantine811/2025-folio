@@ -6,6 +6,7 @@ import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import BlocCard from "./BlocCard";
+import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 
 const TopicBlogPost = ({
   topic,
@@ -15,7 +16,7 @@ const TopicBlogPost = ({
   subtopics: { [key: string]: PostCover[] };
 }) => {
   const hSize = useHeaderSizeStore((state) => state.size);
-
+  const isMdSize = useIsAdoptive();
   const [t] = useTranslation();
   const [selectedSubtopic, setSelectedSubtopic] = useState<string | null>(null);
   const refTopic = useRef<HTMLDivElement>(null!);
@@ -28,7 +29,7 @@ const TopicBlogPost = ({
     <div>
       <div
         ref={refTopic}
-        className="bg-background-alt p-6 sticky top-0 flex flex-wrap gap-2 items-center z-10 bottom-0"
+        className="bg-background-alt p-6 md:sticky top-0 flex flex-wrap gap-2 items-center z-10 bottom-0"
         style={{ top: hSize }}
       >
         <h2 className="text-fg text-2xl uppercase font-bold">{topic}</h2>
@@ -84,7 +85,7 @@ const TopicBlogPost = ({
                     "bg-background-alt/5 backdrop-blur-2xl inline-block text-fg font-bold uppercase p-4 sticky z-1"
                   }
                   style={{
-                    top: offsetTopic,
+                    top: isMdSize ? hSize : offsetTopic,
                   }}
                 >
                   {subtopic}:
