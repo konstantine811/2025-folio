@@ -104,16 +104,17 @@ const Article = () => {
 
   return (
     <div
+      ref={scrollRef}
       className="bg-background pb-20 relative"
       style={{ minHeight: `calc(100vh - ${hSize}px)` }}
     >
-      {scrollRef.current && scrollReady && (
+      {scrollRef.current && scrollReady && article && (
         <ScrollProgressBar target={scrollRef} />
       )}
       <TopicBlogDrawer />
       {!loading ? (
         article && (
-          <div ref={scrollRef}>
+          <div>
             <ArticleCover article={article} />
             <div className="grid grid-cols-8 gap-4 px-5 sm:px-10">
               {/* Ліва частина — стаття */}
