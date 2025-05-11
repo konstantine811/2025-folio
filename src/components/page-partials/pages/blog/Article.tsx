@@ -36,8 +36,8 @@ const Article = () => {
   const [article, setArticle] = useState<PostContent | null>(null);
   const [headings, setHeadings] = useState<IArticleHeading[]>([]);
   const navigate = useNavigate();
+  const [scrollReady, setScrollReady] = useState(false);
   useFetchPosts();
-
   const fetchArticleById = useCallback(
     (id: number | string | undefined) => {
       fetchArticle(Number(id)).then((data) => {
@@ -49,6 +49,12 @@ const Article = () => {
     },
     [fetchArticle]
   );
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      setScrollReady(true);
+    }
+  }, [article]); // або [] якщо ref не змінюється
   useEffect(() => {
     setHover(false, null, HoverStyleElement.circle);
   }, [setHoverStyle, setHover]);
@@ -99,14 +105,15 @@ const Article = () => {
   return (
     <div
       className="bg-background pb-20 relative"
-      ref={scrollRef}
       style={{ minHeight: `calc(100vh - ${hSize}px)` }}
     >
-      {scrollRef.current && <ScrollProgressBar target={scrollRef} />}
+      {scrollRef.current && scrollReady && (
+        <ScrollProgressBar target={scrollRef} />
+      )}
       <TopicBlogDrawer />
       {!loading ? (
         article && (
-          <>
+          <div ref={scrollRef}>
             <ArticleCover article={article} />
             <div className="grid grid-cols-8 gap-4 px-5 sm:px-10">
               {/* Ліва частина — стаття */}
@@ -123,7 +130,7 @@ const Article = () => {
                 )}
               </div>
             </div>
-          </>
+          </div>
         )
       ) : (
         <Preloader />

@@ -59,7 +59,6 @@ export const usePostsStore = create<PostsStore>((set, get) => ({
     set({ activeTopic: { topic, subtopics } });
   },
   fetchTranslatedArticle: async (id: number, lang: LanguageType) => {
-    console.log("fetchTranslatedArticle", id);
     const { data, error } = await supabase
       .from(BlogSupabaseTable.articles)
       .select(BlogArticleProps.id) // отримуємо всі поля
