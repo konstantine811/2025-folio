@@ -1,3 +1,4 @@
+import { useSoundEnabledStore } from "@/storage/soundEnabled";
 import {
   selectSound,
   selectedSound,
@@ -10,9 +11,8 @@ import { useHoverStore } from "@storage/hoverStore";
 
 export function subscribeToHoverSound() {
   useHoverStore.subscribe((state) => {
-    if (!state.isSoundEnabled) {
-      return;
-    }
+    const isSoundEnabled = useSoundEnabledStore.getState().isSoundEnabled;
+    if (!isSoundEnabled) return; // не виконуємо звуки, якщо вимкнено
     if (state.isHovering) {
       whooshSound.stop();
       switch (state.hoverTypeElement) {

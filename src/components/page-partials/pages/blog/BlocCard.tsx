@@ -7,12 +7,13 @@ import { useNavigate } from "react-router";
 import { RoutPath } from "@/config/router-config";
 import { useTransitionStore } from "@/storage/transitionRoutePath";
 import { riserSound, shinySound } from "@/config/sounds";
-import { useHoverStore } from "@/storage/hoverStore";
+
+import { useSoundEnabledStore } from "@/storage/soundEnabled";
 
 const BlocCard = ({ post }: { post: PostCover }) => {
   const navigate = useNavigate();
   const onTransition = useTransitionStore((state) => state.onIsTransition);
-  const isSoundEnabled = useHoverStore((state) => state.isSoundEnabled);
+  const isSoundEnabled = useSoundEnabledStore((state) => state.isSoundEnabled);
 
   return (
     <SoundHoverElement

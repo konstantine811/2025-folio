@@ -4,12 +4,14 @@ import { Volume2, VolumeX } from "lucide-react"; // Або будь-які SVG/�
 import { MOTION_FRAME_TRANSITION } from "@/config/animations";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { SoundTypeElement } from "@/types/sound";
-import { useHoverStore } from "@/storage/hoverStore";
 import { LocalStorageKey } from "@/config/local-storage.config";
+import { useSoundEnabledStore } from "@/storage/soundEnabled";
 
 const ToggleSound = () => {
   const [enabled, setEnabled] = useState(true);
-  const setSoundEnabled = useHoverStore((state) => state.setSoundEnabled);
+  const setSoundEnabled = useSoundEnabledStore(
+    (state) => state.setSoundEnabled
+  );
   const toggle = () => {
     localStorage.setItem(LocalStorageKey.sound, JSON.stringify(!enabled));
     setEnabled(!enabled);
@@ -29,9 +31,9 @@ const ToggleSound = () => {
   return (
     <SoundHoverElement
       as="button"
-      hoverTypeElement={SoundTypeElement.LINK}
+      hoverTypeElement={SoundTypeElement.NONE}
       onClick={toggle}
-      className="w-12 h-12 flex items-center justify-center relative overflow-hidden"
+      className="w-12 h-12 flex items-center justify-center relative overflow-hidden opacity-50"
     >
       <AnimatePresence>
         {enabled ? (

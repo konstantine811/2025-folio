@@ -1,4 +1,4 @@
-import { useHoverStore } from "@/storage/hoverStore";
+import { useSoundEnabledStore } from "@/storage/soundEnabled";
 import BurgerMenu from "@components/ui-abc/burger-menu";
 import { SoundTypeElement } from "@custom-types/sound";
 import { useClickStore } from "@storage/clickStore";
@@ -7,7 +7,7 @@ import { useNavMenuStore } from "@storage/navMenuStore";
 const NavToggler = () => {
   const { isOpen, setOpen } = useNavMenuStore((state) => state);
   const setClick = useClickStore((state) => state.setClick);
-  const isSoundEnabled = useHoverStore((state) => state.isSoundEnabled);
+  const isSoundEnabled = useSoundEnabledStore((state) => state.isSoundEnabled);
 
   return (
     <>

@@ -13,8 +13,9 @@ import { useLocation, useNavigate } from "react-router";
 import LanguagePicker from "../page-setting/lange-picker/language-picker";
 import ColorPicker from "../page-setting/color-picker/color-picker";
 import HeaderBanner from "./header-banner";
-import { useHoverStore } from "@/storage/hoverStore";
 import ToggleSound from "../page-setting/toggle-sound";
+import { useSoundEnabledStore } from "@/storage/soundEnabled";
+import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 
 const RevealNavMenu = memo(() => {
   const { isOpen, setOpen } = useNavMenuStore((state) => state);
@@ -22,7 +23,8 @@ const RevealNavMenu = memo(() => {
   const location = useLocation();
   const navigate = useNavigate();
   const setClick = useClickStore((state) => state.setClick);
-  const isSoundEnabled = useHoverStore((state) => state.isSoundEnabled);
+  const isSoundEnabled = useSoundEnabledStore((state) => state.isSoundEnabled);
+  const isMdSize = useIsAdoptive();
   const containerVariants = {
     visible: {
       transition: {
@@ -118,14 +120,16 @@ const RevealNavMenu = memo(() => {
                   ))}
               </WrapperHoverElement>
             </motion.nav>
-            <div className="flex px-5 py-5 justify-between items-center text-fg/55 md:hidden border-t border-background">
-              <HeaderBanner />
-              <div className="flex gap-2">
-                <ToggleSound />
-                <LanguagePicker />
-                <ColorPicker />
+            {isMdSize && (
+              <div className="flex px-5 py-5 justify-between items-center text-fg/55 border-t border-background">
+                <HeaderBanner />
+                <div className="flex gap-2">
+                  <ToggleSound />
+                  <LanguagePicker />
+                  <ColorPicker />
+                </div>
               </div>
-            </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

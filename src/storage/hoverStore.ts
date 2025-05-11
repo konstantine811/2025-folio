@@ -15,8 +15,6 @@ interface HoverState {
   hoverStyleElement: HoverStyleElement;
   isHoveringWrapper: boolean;
   setHoverType: (hoverType: SoundTypeElement) => void;
-  isSoundEnabled: boolean;
-  setSoundEnabled: (enabled: boolean) => void;
   setHover: (
     hovering: boolean,
     hoverType: SoundTypeElement | null,
@@ -32,8 +30,6 @@ export const useHoverStore = create<HoverState>((set) => ({
   boundingBox: null,
   hoverTypeElement: null,
   hoverStyleElement: HoverStyleElement.circle,
-  isSoundEnabled: true,
-  setSoundEnabled: (enabled) => set({ isSoundEnabled: enabled }),
   isHoveringWrapper: false,
   setHoverStyle: (hoverStyle: HoverStyleElement) =>
     set({ hoverStyleElement: hoverStyle }),

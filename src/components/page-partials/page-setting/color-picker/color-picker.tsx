@@ -8,11 +8,11 @@ import { LocalStorageKey } from "@config/local-storage.config";
 import { getConicGradientFromTheme, setTheme } from "@utils/color-picker.util";
 import { useThemeStore } from "@storage/themeStore";
 import { TestTubeDiagonal } from "lucide-react";
-import { useHoverStore } from "@/storage/hoverStore";
+import { useSoundEnabledStore } from "@/storage/soundEnabled";
 
 const ColorPicker = () => {
   const setThemeStore = useThemeStore((state) => state.onSetTheme);
-  const isSoundEnabled = useHoverStore((state) => state.isSoundEnabled);
+  const isSoundEnabled = useSoundEnabledStore((state) => state.isSoundEnabled);
   useEffect(() => {
     const storedTheme = localStorage.getItem(LocalStorageKey.theme);
     if (storedTheme) {

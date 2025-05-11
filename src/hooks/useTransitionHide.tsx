@@ -1,11 +1,11 @@
-import { useHoverStore } from "@/storage/hoverStore";
+import { useSoundEnabledStore } from "@/storage/soundEnabled";
 import { riserSound } from "@config/sounds";
 import { useTransitionStore } from "@storage/transitionRoutePath";
 import { useEffect } from "react";
 
 const useTransitionHide = () => {
   const onTransition = useTransitionStore((state) => state.onIsTransition);
-  const isSoundEnabled = useHoverStore((state) => state.isSoundEnabled);
+  const isSoundEnabled = useSoundEnabledStore((state) => state.isSoundEnabled);
   useEffect(() => {
     if (isSoundEnabled) {
       riserSound.play("second");

@@ -1,4 +1,5 @@
 import { useHoverStore } from "@/storage/hoverStore";
+import { useSoundEnabledStore } from "@/storage/soundEnabled";
 import { HoverStyleElement } from "@/types/sound";
 import { riserSound } from "@config/sounds";
 import { useTransitionStore } from "@storage/transitionRoutePath";
@@ -8,7 +9,7 @@ import { useLocation } from "react-router";
 const RouteWrapper = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const onTransition = useTransitionStore((state) => state.onIsTransition);
-  const isSoundEnabled = useHoverStore((state) => state.isSoundEnabled);
+  const isSoundEnabled = useSoundEnabledStore((state) => state.isSoundEnabled);
   const setHover = useHoverStore((s) => s.setHover);
   useEffect(() => {
     setHover(false, null, HoverStyleElement.circle);

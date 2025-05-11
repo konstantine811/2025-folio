@@ -6,6 +6,7 @@ import clsx from "clsx"; // опціонально
 import { motion, MotionProps } from "motion/react";
 import { MOTION_FRAME_TRANSITION } from "@config/animations";
 import { useClickStore } from "@/storage/clickStore";
+import { useSoundEnabledStore } from "@/storage/soundEnabled";
 
 type SoundHoverElementProps = {
   children: ReactNode;
@@ -39,7 +40,9 @@ const SoundHoverElement = forwardRef<HTMLElement, SoundHoverElementProps>(
     const setHover = useHoverStore((s) => s.setHover);
     const setHoverStyle = useHoverStore((s) => s.setHoverStyle);
     const setClick = useClickStore((s) => s.setClick);
-    const isSoundEnabled = useHoverStore((state) => state.isSoundEnabled);
+    const isSoundEnabled = useSoundEnabledStore(
+      (state) => state.isSoundEnabled
+    );
     const MotionTag = motion.create(Tag as ElementType);
     const hoverTransition = MOTION_FRAME_TRANSITION.spring;
     const handleMouseEnter = () => {

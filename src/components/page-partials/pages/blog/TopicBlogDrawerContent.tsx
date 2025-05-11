@@ -3,7 +3,7 @@ import WrapperHoverElement from "@/components/ui-abc/wrapper-hover-element";
 import { RoutPath } from "@/config/router-config";
 import { riserSound, shinySound } from "@/config/sounds";
 import { usePostsStore } from "@/storage/blog-data/blogCoverData";
-import { useHoverStore } from "@/storage/hoverStore";
+import { useSoundEnabledStore } from "@/storage/soundEnabled";
 import { useTransitionStore } from "@/storage/transitionRoutePath";
 import { HoverStyleElement } from "@/types/sound";
 import { useNavigate, useParams } from "react-router";
@@ -12,7 +12,7 @@ const TopicBlogDrawerContent = () => {
   const { id } = useParams(); // Отримуємо ідентифікатор статті з URL
   const activeTopic = usePostsStore((state) => state.activeTopic);
   const navigate = useNavigate();
-  const isSoundEnabled = useHoverStore((state) => state.isSoundEnabled);
+  const isSoundEnabled = useSoundEnabledStore((state) => state.isSoundEnabled);
   const onTransition = useTransitionStore((state) => state.onIsTransition);
   return (
     <>

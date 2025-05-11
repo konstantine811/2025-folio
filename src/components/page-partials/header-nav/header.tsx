@@ -5,10 +5,12 @@ import { useHeaderSizeStore } from "@storage/headerSizeStore";
 import LanguagePicker from "../page-setting/lange-picker/language-picker";
 import HeaderBanner from "./header-banner";
 import ToggleSound from "../page-setting/toggle-sound";
+import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 
 const Header = memo(() => {
   const headerRef = useRef<HTMLDivElement>(null!);
   const setHeaderSize = useHeaderSizeStore((state) => state.setHeaderSize);
+  const isMdSize = useIsAdoptive();
   useEffect(() => {
     if (headerRef.current) {
       const headerHeight = headerRef.current.getBoundingClientRect().height;
@@ -22,14 +24,19 @@ const Header = memo(() => {
     >
       <div className="grid grid-cols-1 md:grid-cols-3 items-center">
         <NavMenu />
-        <div className="text-fg/70 font-mono tracking-wide text-center hidden md:block">
-          <HeaderBanner />
-        </div>
-        <div className="text-fg pr-4 items-center justify-end hidden md:flex">
-          <ToggleSound />
-          <LanguagePicker />
-          <ColorPicker />
-        </div>
+        {!isMdSize && (
+          <div className="text-fg/70 font-mono tracking-wide text-center">
+            <HeaderBanner />
+          </div>
+        )}
+
+        {!isMdSize && (
+          <div className="text-fg pr-4 items-center justify-end flex">
+            <ToggleSound />
+            <LanguagePicker />
+            <ColorPicker />
+          </div>
+        )}
       </div>
     </header>
   );
