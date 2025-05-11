@@ -1,3 +1,5 @@
+import { LanguageType } from "@/i18n";
+
 export enum BlogSupabaseTable {
   articles = "articles-blog",
   articlesImage = "blog-articles-images",
@@ -29,6 +31,8 @@ export interface PostCover {
 
 export interface PostContent extends PostCover {
   content: string;
+  lang: LanguageType;
+  translation_group_id: number;
 }
 
 export interface PostEntity {

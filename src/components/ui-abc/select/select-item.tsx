@@ -54,15 +54,6 @@ const SelectItem = ({
       >
         {selectNode}
       </SoundHoverElement>
-      {isOpen && (
-        <div
-          className="fixed top-0 left-0 w-full"
-          style={{ height: `${document.body.scrollHeight}px` }}
-          onClick={() => {
-            setIsOpen(false);
-          }}
-        ></div>
-      )}
       <div
         className={`${isOpen ? "pointer-events-auto" : "pointer-events-none"}`}
       >
@@ -82,6 +73,7 @@ const SelectItem = ({
                 exit="hidden"
                 key={isOpen ? "visible" : "hidden"} // 👈 це важливо
                 variants={containerVariants}
+                onClick={() => setIsOpen(false)}
               >
                 {renderItems(itemVariants)}
               </WrapperHoverElement>

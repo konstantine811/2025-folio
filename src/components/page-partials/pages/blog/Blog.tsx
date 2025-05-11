@@ -5,10 +5,15 @@ import Preloader from "../../preloader/preloader";
 import { PostEntity } from "@/types/blog-storage";
 import BlogPost from "./BlogPost";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
-import useFetchPosts, { ALL_TOPICS_TITLE } from "@/hooks/useFetchPosts";
+import useFetchPosts, {
+  ALL_TOPICS_TITLE,
+} from "@/hooks/blog-handle/useFetchPosts";
+
+import useFetchBlogLangData from "@/hooks/blog-handle/useFetchBlogLangData";
 
 const Blog = () => {
-  const { postsEntity, loading, uniqueTopics } = usePostsStore();
+  const { loading, uniqueTopics } = usePostsStore();
+  const postsEntity = useFetchBlogLangData();
 
   const hSize = useHeaderSizeStore((state) => state.size);
   const [selectedPostEnity, setSelectedPostEntity] =

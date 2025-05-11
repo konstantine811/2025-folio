@@ -1,6 +1,7 @@
 {
   "welcome": "Welcome",
   "hello_user": "Hello, {{name}}!",
+  "date_format": "D MMMM YYYY [at] HH:mm",
   "blog": {
     "topics": {
       "all": "All Topics",

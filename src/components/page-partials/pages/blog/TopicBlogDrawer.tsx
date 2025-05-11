@@ -52,7 +52,7 @@ const TopicBlogDrawer = () => {
             height: "100%",
           }}
         >
-          <TopicBlogDrawerContent />
+          <TopicBlogDrawerContent onClose={() => setIsOpen(false)} />
         </div>
 
         {/* Toggle button */}

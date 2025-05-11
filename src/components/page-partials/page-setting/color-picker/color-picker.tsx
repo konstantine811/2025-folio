@@ -11,6 +11,7 @@ import { useSoundEnabledStore } from "@/storage/soundEnabled";
 
 const ColorPicker = () => {
   const setThemeStore = useThemeStore((state) => state.onSetTheme);
+  const selectedTheme = useThemeStore((state) => state.selectedTheme);
   const isSoundEnabled = useSoundEnabledStore((state) => state.isSoundEnabled);
 
   return (
@@ -43,7 +44,11 @@ const ColorPicker = () => {
               as="li"
             >
               <div
-                className={`w-7 h-7 rounded-full p-2`}
+                className={`w-7 h-7 rounded-full p-2 ${
+                  themeName === selectedTheme
+                    ? "border-4 border-accent"
+                    : "border-none border-transparent"
+                }`}
                 style={{ background: getConicGradientFromTheme(themeColors) }}
               />
             </SoundHoverElement>

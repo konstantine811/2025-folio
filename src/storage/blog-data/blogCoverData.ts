@@ -22,8 +22,7 @@ function collectPostEntity(postEnity: PostEntity, post: PostCover) {
 }
 
 type PostsStore = {
-  posts: PostCover[] | null;
-  postsEntity: PostEntity;
+  postsLangEntity: { [key in LanguageType]: PostEntity };
   uniqueTopics: string[] | null;
   fetchArticle: (id: number) => Promise<PostContent>;
   articles: { [key: string]: PostContent };
@@ -37,13 +36,20 @@ type PostsStore = {
     subtopics: { [key: string]: PostCover[] }
   ) => void;
   fetchPosts: (lang: LanguageType, allTopics: string) => Promise<void>;
+  fetchTranslatedArticle: (
+    id: number,
+    lang: LanguageType
+  ) => Promise<number | null>;
 };
 
 export const usePostsStore = create<PostsStore>((set, get) => ({
   posts: null,
   loading: false,
   uniqueTopics: null,
-  postsEntity: {},
+  postsLangEntity: {
+    [LanguageType.UA]: {},
+    [LanguageType.EN]: {},
+  },
   articles: {},
   activeTopic: {
     topic: "",
@@ -51,6 +57,22 @@ export const usePostsStore = create<PostsStore>((set, get) => ({
   },
   setActiveTopic: (topic, subtopics) => {
     set({ activeTopic: { topic, subtopics } });
+  },
+  fetchTranslatedArticle: async (id: number, lang: LanguageType) => {
+    console.log("fetchTranslatedArticle", id);
+    const { data, error } = await supabase
+      .from(BlogSupabaseTable.articles)
+      .select(BlogArticleProps.id) // отримуємо всі поля
+      .eq(BlogArticleProps.translationGroupId, id)
+      .eq(BlogArticleProps.lang, lang)
+      .single(); // фільтр по id
+
+    if (error) {
+      console.error("Помилка при отриманні статті:", error);
+      return null;
+    } else {
+      return data.id;
+    }
   },
   fetchArticle: async (id: number) => {
     const state = get(); // отримуємо поточний стан стора
@@ -73,18 +95,21 @@ export const usePostsStore = create<PostsStore>((set, get) => ({
     }
   },
   fetchPosts: async (lang, allTopics) => {
-    const state = get();
-    if (Object.keys(state.postsEntity).length) {
+    set({ loading: true });
+    const state = get(); // отримуємо поточний стан стора
+    if (
+      state.postsLangEntity[lang] &&
+      Object.keys(state.postsLangEntity[lang]).length
+    ) {
+      set({ loading: false });
       return;
     }
-    set({ loading: true });
-
     const { data, error } = await supabase
       .from(BlogSupabaseTable.articles)
       .select(
         `${BlogArticleProps.id}, ${BlogArticleProps.title}, ${BlogArticleProps.topic}, ${BlogArticleProps.subtopic}, ${BlogArticleProps.createdAt}, ${BlogArticleProps.cover}, ${BlogArticleProps.description}`
       )
-      .eq(BlogArticleProps.lang, lang === LanguageType.UA ? "uk" : lang);
+      .eq(BlogArticleProps.lang, lang);
     if (!error && data) {
       // set unique topics
       const uniqueTopics = [
@@ -97,9 +122,14 @@ export const usePostsStore = create<PostsStore>((set, get) => ({
       data.forEach((post) => {
         collectPostEntity(postEntity, post);
       });
-      set({ postsEntity: postEntity });
+      set({
+        postsLangEntity: {
+          ...state.postsLangEntity,
+          [lang]: postEntity,
+        },
+        loading: false,
+      }); // set posts
       // set posts
-      set({ posts: data, loading: false });
     } else {
       console.error(error);
       set({ loading: false });

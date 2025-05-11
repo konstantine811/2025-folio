@@ -8,7 +8,7 @@ import { useTransitionStore } from "@/storage/transitionRoutePath";
 import { HoverStyleElement } from "@/types/sound";
 import { useNavigate, useParams } from "react-router";
 
-const TopicBlogDrawerContent = () => {
+const TopicBlogDrawerContent = ({ onClose }: { onClose: () => void }) => {
   const { id } = useParams(); // Отримуємо ідентифікатор статті з URL
   const activeTopic = usePostsStore((state) => state.activeTopic);
   const navigate = useNavigate();
@@ -53,6 +53,7 @@ const TopicBlogDrawerContent = () => {
                         riserSound.play("first");
                         shinySound.play("first");
                       }
+                      onClose();
                       setTimeout(() => {
                         navigate(`${RoutPath.BLOG}/${post.id}`);
                       }, 700);

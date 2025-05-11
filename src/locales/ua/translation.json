@@ -1,6 +1,8 @@
 {
   "welcome": "Ласкаво просимо",
   "hello_user": "Привіт, {{name}}!",
+  "date_format": "D MMMM YYYY [о] HH:mm",
+
   "blog": {
     "topics": {
       "all": "Усі розділи",

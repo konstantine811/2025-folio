@@ -1,4 +1,4 @@
-import { useActiveHeading } from "@/hooks/useActiveHeading";
+import { useActiveHeading } from "@/hooks/blog-handle/useActiveHeading";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { IArticleHeading } from "@/types/blog-storage";
 import { useTranslation } from "react-i18next";
