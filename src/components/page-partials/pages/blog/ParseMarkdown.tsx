@@ -59,6 +59,16 @@ const ParseMarkdown = ({ content }: { content: string }) => {
             className="text-base md:text-lg font-medium mb-2 mt-3 text-gray-400 uppercase tracking-wide"
           />
         ),
+        a: ({ href, children }) => (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-accent hover:underline underline-offset-2 transition-colors duration-150"
+          >
+            {children}
+          </a>
+        ),
         span: (props) => <span {...props} />,
         p: ({ children }) => {
           const arrayChildren = Children.toArray(children);
@@ -73,7 +83,9 @@ const ParseMarkdown = ({ content }: { content: string }) => {
           });
 
           return isEmpty ? null : (
-            <div className="mb-4 last:mb-0">{children}</div>
+            <div className="text-base md:text-lg leading-7 mb-4 last:mb-0">
+              {children}
+            </div>
           );
         },
 
