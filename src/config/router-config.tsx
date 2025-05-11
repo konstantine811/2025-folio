@@ -1,15 +1,15 @@
 import { lazy } from "react";
 
-const HomePage = lazy(() => import("@components/page-partials/pages/Home"));
+const HomePage = lazy(() => import("../components/page-partials/pages/Home"));
 const ExperimentalPage = lazy(
-  () => import("@components/page-partials/pages/Experimental")
+  () => import("../components/page-partials/pages/Experimental")
 );
 const BlogPage = lazy(
-  () => import("@/components/page-partials/pages/blog/Blog")
+  () => import("../components/page-partials/pages/blog/Blog")
 );
 
 const ArticlePage = lazy(
-  () => import("@/components/page-partials/pages/blog/Article")
+  () => import("../components/page-partials/pages/blog/Article")
 );
 
 export enum RoutPath {

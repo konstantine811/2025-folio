@@ -49,4 +49,14 @@ export default defineConfig({
       "@custom-types": path.resolve(__dirname, "src/types"),
     },
   },
+  server: {
+    fs: {
+      strict: false,
+    },
+  },
+  build: {
+    rollupOptions: {
+      input: "/index.html",
+    },
+  },
 });
