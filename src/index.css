@@ -47,6 +47,6 @@
   }
 
   .highlight-green {
-    @apply bg-green-300/30 border border-green-200 text-white rounded-lg px-1.5 py-0.5;
+    @apply bg-green-300/30 border border-green-200 text-fg rounded-lg px-1.5 py-0.5;
   }
 }

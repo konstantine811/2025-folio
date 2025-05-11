@@ -16,7 +16,7 @@ const TopicBlogDrawerContent = () => {
   const onTransition = useTransitionStore((state) => state.onIsTransition);
   return (
     <>
-      <h3 className="text-2xl text-center text-fg font-bold mt-4">
+      <h3 className="text-2xl text-fg font-bold my-4 mx-4">
         📂 {activeTopic.topic}
       </h3>
       <div>

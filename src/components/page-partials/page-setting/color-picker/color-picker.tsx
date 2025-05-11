@@ -3,7 +3,6 @@ import { SoundTypeElement } from "@custom-types/sound";
 import SelectItem from "../../../ui-abc/select/select-item";
 import { ThemePalette, ThemeType } from "@config/theme-colors.config";
 import { buttonClickSound2 } from "@config/sounds";
-import { useEffect } from "react";
 import { LocalStorageKey } from "@config/local-storage.config";
 import { getConicGradientFromTheme, setTheme } from "@utils/color-picker.util";
 import { useThemeStore } from "@storage/themeStore";
@@ -13,19 +12,7 @@ import { useSoundEnabledStore } from "@/storage/soundEnabled";
 const ColorPicker = () => {
   const setThemeStore = useThemeStore((state) => state.onSetTheme);
   const isSoundEnabled = useSoundEnabledStore((state) => state.isSoundEnabled);
-  useEffect(() => {
-    const storedTheme = localStorage.getItem(LocalStorageKey.theme);
-    if (storedTheme) {
-      const parsedTheme = JSON.parse(storedTheme) as keyof typeof ThemePalette;
-      const themeColors = ThemePalette[parsedTheme];
-      setTheme(themeColors);
-      setThemeStore(parsedTheme);
-    } else {
-      const defaultTheme = ThemeType.DARK;
-      setThemeStore(defaultTheme);
-      setTheme(ThemePalette[defaultTheme]);
-    }
-  }, [setThemeStore]);
+
   return (
     <SelectItem
       dropPosition={{

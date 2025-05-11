@@ -20,7 +20,7 @@ const ArticleHeading = ({ headings }: { headings: IArticleHeading[] }) => {
     }
   };
   return (
-    <div className="pl-4">
+    <div className="pl-4 pt-5">
       <h4 className="text-md font-mono font-bold tracking-wide text-fg uppercase">
         {t("blog.articles.on_this_page")}:
       </h4>

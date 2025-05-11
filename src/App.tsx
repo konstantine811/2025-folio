@@ -8,9 +8,11 @@ import { router } from "@config/router-config";
 import TransitionPage from "@components/page-partials/page-setting/transition-page";
 import RouteWrapper from "@components/page-partials/pages/RouteWrapper";
 import Preloader from "./components/page-partials/preloader/preloader";
+import useSetTheme from "./hooks/useSetTheme";
 
 function App() {
   subscribeToHoverSound();
+  useSetTheme();
   const [isTouch, setIsTouch] = useState(false);
 
   useEffect(() => {
