@@ -128,11 +128,11 @@ const ParseMarkdown = ({ content }: { content: string }) => {
             <ol
               start={start}
               {...props}
-              className="list-decimal list-inside ml-4 my-2 space-y-1 text-base md:text-lg leading-7"
+              className="list-decimal list-outside ml-6 my-2 space-y-1 text-base md:text-lg leading-7"
             />
           );
         },
-        li: ({ children }) => <li className="pl-1">{children}</li>,
+        li: ({ children }) => <li className="ml-2">{children}</li>,
         code: ({ className, children }) => {
           const isBlock = className?.includes("language-");
           if (isBlock) {

@@ -15,7 +15,7 @@ const ImageWithLoader = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   return (
-    <div className="pt-2 pb-5 md:pb-10 lg:pb-20">
+    <div className="pt-2 pb-3 md:pb-5 lg:pb-10">
       <div
         className="relative w-full flex justify-center cursor-zoom-in "
         onClick={() => setIsFullscreen(true)}
