@@ -43,8 +43,8 @@ const TopicBlogDrawerContent = ({ onClose }: { onClose: () => void }) => {
                     key={post.id}
                     className={`${
                       isActive
-                        ? "cursor-none pointer-events-none bg-accent text-fg-muted"
-                        : "cursor-pointer pointer-events-auto text-fg"
+                        ? "cursor-none pointer-events-none bg-accent text-fg-muted "
+                        : "cursor-pointer pointer-events-auto text-fg last:border-0 border-b border-background"
                     }  text-lg  py-2 cursor-pointer pl-5 transition-background duration-1000`}
                     onClick={() => {
                       if (isActive) return; // якщо стаття активна, нічого не робимо

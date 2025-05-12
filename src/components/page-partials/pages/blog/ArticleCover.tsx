@@ -38,7 +38,7 @@ const ArticleCover = ({ article }: { article: PostContent }) => {
             {article.title}
           </h1>
 
-          <p className="text-xl lg:text-3xl inline-block w-auto p-2 rounded-xs overflow-hidden bg-background-alt/50 backdrop-blur-xl">
+          <p className="text-xl lg:text-3xl inline-block w-auto p-2 rounded-xs overflow-hidden bg-background-alt/50 backdrop-blur-xl border border-background">
             {article.description}
           </p>
         </div>
