@@ -34,7 +34,7 @@ const ArticleCover = ({ article }: { article: PostContent }) => {
           <p className="text-xs font-mono tracking-wide text-fg uppercase">
             {dayjs(article.created_at).format(t("date_format"))}
           </p>
-          <h1 className="text-6xl lg:text-8xl font-extrabold mb-4 break-all text-center max-w-screen-md mx-auto px-4">
+          <h1 className="text-[clamp(1.5rem,5vw,3rem)] leading-tight md:text-6xl lg:text-8xl font-extrabold mb-4 break-words text-balance  text-center max-w-screen-md mx-auto px-4">
             {article.title}
           </h1>
 

@@ -117,6 +117,38 @@ const ParseMarkdown = ({ content }: { content: string }) => {
             className="border border-gray-700 px-4 py-2 whitespace-nowrap"
           />
         ),
+        ul: ({ children }) => (
+          <ul className="list-disc list-inside ml-4 my-2 space-y-1 text-base md:text-lg leading-7">
+            {children}
+          </ul>
+        ),
+        ol: ({ node, ...props }) => {
+          const start = (node?.properties?.start as number) || 1;
+          return (
+            <ol
+              start={start}
+              {...props}
+              className="list-decimal list-inside ml-4 my-2 space-y-1 text-base md:text-lg leading-7"
+            />
+          );
+        },
+        li: ({ children }) => <li className="pl-1">{children}</li>,
+        code: ({ className, children }) => {
+          const isBlock = className?.includes("language-");
+          if (isBlock) {
+            return (
+              <pre className="my-4 p-4 rounded-lg bg-background-alt text-accent overflow-x-auto text-sm">
+                <code className={className}>{children}</code>
+              </pre>
+            );
+          }
+
+          return (
+            <code className="bg-background-alt text-accent px-3 py-2 rounded text-sm">
+              {children}
+            </code>
+          );
+        },
       }}
     >
       {formatMarkdown(content, getBlogImage)}

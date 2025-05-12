@@ -31,8 +31,8 @@ const ArticleHeading = ({ headings }: { headings: IArticleHeading[] }) => {
             <li
               key={heading.id}
               style={{
-                paddingLeft: `${(heading.depth - 1) * 22}px`,
-                fontSize: `${1.1 - (heading.depth - 1) * 0.1}rem`,
+                paddingLeft: `${(heading.depth - 1) * 10}px`,
+                fontSize: `${1.1 - (heading.depth - 2) * 0.1}rem`,
               }}
               className={`${
                 isActive ? "before:bg-accent" : "before:bg-fg/20"
