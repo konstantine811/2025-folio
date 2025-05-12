@@ -46,7 +46,7 @@ const ImageWithLoader = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-background/80  flex items-center justify-center cursor-zoom-out"
+            className="fixed inset-0 z-[1000000] bg-background/80  flex items-center justify-center cursor-zoom-out"
             onClick={() => setIsFullscreen(false)}
           >
             <motion.img
