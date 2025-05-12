@@ -1,9 +1,9 @@
 const HeaderBanner = () => {
   return (
-    <div>
-      <div>@ 2025 folio</div>
-      <div>Abramkin Constantine</div>
-    </div>
+    <>
+      <h3>@ 2025 folio</h3>
+      <h3>Abramkin Constantine</h3>
+    </>
   );
 };
 

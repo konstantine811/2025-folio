@@ -4,8 +4,11 @@ import NavToggler from "./nav-toggler";
 import RevealNavMenu from "./reveal-nav-menu";
 import LogoAnimated from "./logo";
 import { SoundTypeElement } from "@custom-types/sound";
+import HeaderBanner from "./header-banner";
+import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 
 export default function NavMenu() {
+  const isMdSize = useIsAdoptive();
   return (
     <div className="relative md:max-w-md w-full">
       <div className="relative z-20 flex items-center justify-between gap-4 w-full bg-background-alt/90 px-5  backdrop-blur-2xl py-2">
@@ -16,6 +19,11 @@ export default function NavMenu() {
         >
           <LogoAnimated />
         </SoundHoverElement>
+        {isMdSize && (
+          <div className="text-sm text-fg/70 font-mono tracking-wide text-center">
+            <HeaderBanner />
+          </div>
+        )}
         <SoundHoverElement hoverAnimType="scale">
           <NavToggler />
         </SoundHoverElement>

@@ -12,7 +12,6 @@ import { memo } from "react";
 import { useLocation, useNavigate } from "react-router";
 import LanguagePicker from "../page-setting/lange-picker/language-picker";
 import ColorPicker from "../page-setting/color-picker/color-picker";
-import HeaderBanner from "./header-banner";
 import ToggleSound from "../page-setting/toggle-sound";
 import { useSoundEnabledStore } from "@/storage/soundEnabled";
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
@@ -122,7 +121,6 @@ const RevealNavMenu = memo(() => {
             </motion.nav>
             {isMdSize && (
               <div className="flex px-5 py-5 justify-between items-center text-fg/55 border-t border-background">
-                <HeaderBanner />
                 <div className="flex gap-2">
                   <ToggleSound />
                   <LanguagePicker />

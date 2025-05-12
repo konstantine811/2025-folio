@@ -69,6 +69,11 @@ const ParseMarkdown = ({ content }: { content: string }) => {
             {children}
           </a>
         ),
+        blockquote: ({ children }) => (
+          <blockquote className="border-l-4 border-accent pl-4 italic text-highlight my-4">
+            {children}
+          </blockquote>
+        ),
         span: (props) => <span {...props} />,
         p: ({ children }) => {
           const arrayChildren = Children.toArray(children);
