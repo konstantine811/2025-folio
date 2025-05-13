@@ -5,6 +5,12 @@ import { Heading, Parent, Text, RootContent } from "mdast";
 import { Children, isValidElement, ReactElement, ReactNode } from "react";
 import slugify from "slugify";
 import { IArticleHeading } from "@/types/blog-storage";
+import { getBlogArticleId } from "@/config/supabaseClient";
+import {
+  DEFAULT_LOCALE_PLUG,
+  DEFAULT_OBSIDIAN_VAULT,
+  RoutPath,
+} from "@/config/router-config";
 
 export const extractText = (node: RootContent): string => {
   if (node.type === "text") return (node as Text).value;
@@ -53,9 +59,53 @@ export const createId = (children: ReactNode): string => {
 export const formatMarkdown = (
   text: string,
   getBlogImage: (filename: string) => string
-): string => {
-  return text.replace(/!\[\[(.*?)\]\]/g, (_, filename) => {
+): Promise<string> => {
+  // 1. Обробка Obsidian-зображень
+  const output = text.replace(/!\[\[(.*?)\]\]/g, (_, filename) => {
     const url = getBlogImage(filename.trim());
-    return `![](${url})`; // <-- ВАЖЛИВО! Це перетворює у Markdown зображення
+    return `![](${url})`;
   });
+
+  // 2. Замінюємо Obsidian-лінки типу obsidian://open?vault=...&file=... на кастомні лінки
+
+  return replaceObsidianLinksWithCustomId(output);
 };
+
+export async function replaceObsidianLinksWithCustomId(
+  markdown: string
+): Promise<string> {
+  const regex = /\[([^\]]+)\]\(obsidian:\/\/open\?vault=[^&]+&file=([^)]+)\)/g;
+  const matches = [...markdown.matchAll(regex)];
+  let updated = markdown;
+
+  for (const match of matches) {
+    const [fullMatch, label, encodedPath] = match;
+    const decodedPath = decodeURIComponent(encodedPath);
+    let replacement = `[${label}](https:/${decodedPath})`; // default
+
+    if (decodedPath.startsWith(DEFAULT_OBSIDIAN_VAULT.blogVault)) {
+      const langPath = extractLangPathFromUrl(decodedPath)?.split("/");
+      if (langPath?.length === 4) {
+        const id = await getBlogArticleId(
+          langPath[0],
+          langPath[1],
+          langPath[2],
+          langPath[3]
+        );
+
+        if (id) {
+          replacement = `[${label}](${DEFAULT_LOCALE_PLUG}${RoutPath.BLOG}/${id})`;
+        }
+      }
+    }
+
+    updated = updated.replace(fullMatch, replacement);
+  }
+
+  return updated;
+}
+
+export function extractLangPathFromUrl(url: string): string | null {
+  const match = url.match(/(?:\/)(ua|en)\/.+/); // включає і передній слеш
+  return match ? match[0].slice(1) : null; // видаляємо початковий /
+}

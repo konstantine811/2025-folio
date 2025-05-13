@@ -8,8 +8,6 @@ interface TransitionRouteState {
 export const useTransitionStore = create<TransitionRouteState>((set) => ({
   isTransition: false,
   onIsTransition: (status) => {
-    setTimeout(() => {
-      set({ isTransition: status });
-    });
+    set({ isTransition: status });
   },
 }));

@@ -2,25 +2,23 @@ import SoundHoverElement from "@components/ui-abc/sound-hover-element";
 import WrapperHoverElement from "@components/ui-abc/wrapper-hover-element";
 import { MOTION_FRAME_TRANSITION } from "@config/animations";
 import { router } from "@config/router-config";
-import { riserSound } from "@config/sounds";
 import { HoverStyleElement, SoundTypeElement } from "@custom-types/sound";
 import { useClickStore } from "@storage/clickStore";
 import { useNavMenuStore } from "@storage/navMenuStore";
-import { useTransitionStore } from "@storage/transitionRoutePath";
 import { AnimatePresence, motion } from "motion/react";
 import { memo } from "react";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation } from "react-router";
 import LanguagePicker from "../page-setting/lange-picker/language-picker";
 import ColorPicker from "../page-setting/color-picker/color-picker";
 import ToggleSound from "../page-setting/toggle-sound";
 import { useSoundEnabledStore } from "@/storage/soundEnabled";
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
+import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
 
 const RevealNavMenu = memo(() => {
   const { isOpen, setOpen } = useNavMenuStore((state) => state);
-  const onTransition = useTransitionStore((state) => state.onIsTransition);
   const location = useLocation();
-  const navigate = useNavigate();
+  const navigateTo = useTransitionRouteTo();
   const setClick = useClickStore((state) => state.setClick);
   const isSoundEnabled = useSoundEnabledStore((state) => state.isSoundEnabled);
   const isMdSize = useIsAdoptive();
@@ -90,13 +88,7 @@ const RevealNavMenu = memo(() => {
                           return; // 👈 нічого не виконуємо
                         } else {
                           setOpen(false); // 🔥 закриваємо меню
-                          onTransition(true); // 🔥 запускаємо лише якщо маршрут інший
-                          if (isSoundEnabled) {
-                            riserSound.play("first");
-                          }
-                          setTimeout(() => {
-                            navigate(path);
-                          }, 700);
+                          navigateTo(path);
                         }
                       }}
                       className={`${

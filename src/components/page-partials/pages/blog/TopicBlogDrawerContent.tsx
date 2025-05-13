@@ -1,18 +1,16 @@
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import WrapperHoverElement from "@/components/ui-abc/wrapper-hover-element";
 import { RoutPath } from "@/config/router-config";
-import { riserSound, shinySound } from "@/config/sounds";
+import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
 import { usePostsStore } from "@/storage/blog-data/blogCoverData";
-import { useSoundEnabledStore } from "@/storage/soundEnabled";
 import { useTransitionStore } from "@/storage/transitionRoutePath";
 import { HoverStyleElement } from "@/types/sound";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 
 const TopicBlogDrawerContent = ({ onClose }: { onClose: () => void }) => {
   const { id } = useParams(); // Отримуємо ідентифікатор статті з URL
   const activeTopic = usePostsStore((state) => state.activeTopic);
-  const navigate = useNavigate();
-  const isSoundEnabled = useSoundEnabledStore((state) => state.isSoundEnabled);
+  const navigateTo = useTransitionRouteTo();
   const onTransition = useTransitionStore((state) => state.onIsTransition);
   return (
     <>
@@ -49,14 +47,8 @@ const TopicBlogDrawerContent = ({ onClose }: { onClose: () => void }) => {
                     onClick={() => {
                       if (isActive) return; // якщо стаття активна, нічого не робимо
                       onTransition(true); // 🔥 запускаємо лише якщо маршрут інший
-                      if (isSoundEnabled) {
-                        riserSound.play("first");
-                        shinySound.play("first");
-                      }
+                      navigateTo(`${RoutPath.BLOG}/${post.id}`);
                       onClose();
-                      setTimeout(() => {
-                        navigate(`${RoutPath.BLOG}/${post.id}`);
-                      }, 700);
                     }}
                   >
                     {post.title}

@@ -1,4 +1,4 @@
-import { BlogSupabaseTable } from "@/types/blog-storage";
+import { BlogArticleProps, BlogSupabaseTable } from "@/types/blog-storage";
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -14,3 +14,26 @@ export const getBlogImage = (imgPath: string) => {
 
   return data.publicUrl;
 };
+
+export async function getBlogArticleId(
+  lang: string,
+  topic: string,
+  subtopic: string | null,
+  title: string
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from(BlogSupabaseTable.articles)
+    .select(BlogArticleProps.id) // отримуємо всі поля
+    .eq(BlogArticleProps.lang, lang)
+    .eq(BlogArticleProps.topic, topic)
+    .eq(BlogArticleProps.subtopic, subtopic)
+    .eq(BlogArticleProps.title, title)
+    .single();
+
+  if (error || !data) {
+    console.error("❌ Error fetching article ID:", error);
+    return null;
+  }
+
+  return data.id;
+}

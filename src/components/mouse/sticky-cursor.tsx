@@ -13,6 +13,7 @@ const StickCursor = () => {
     hoverStyleElement,
     setHover,
   } = useHoverStore((s) => s);
+
   const smoothMouseProps = { stiffness: 733, damping: 36, mass: 0.3 };
   const smoothSizeProps = { stiffness: 500, damping: 30, mass: 0.1 };
   const classBorderColor = "border-accent";
@@ -82,43 +83,48 @@ const StickCursor = () => {
   }, [setHover, handleOnScoll]);
 
   return (
-    <motion.div
-      className={`fixed rounded-full z-[100000] pointer-events-none cursor-none   ${
-        !isHoveringWrapper || hoverStyleElement !== HoverStyleElement.quad
-          ? `border ${classBorderColor}`
-          : "border-none"
-      }`}
-      style={{
-        left: smoothMousePos.x,
-        top: smoothMousePos.y,
-        width: animatedSizeWidth,
-        height: animatedSizeHeight,
-      }}
-    >
-      {hoverStyleElement === HoverStyleElement.quad && isHoveringWrapper && (
-        <>
-          {/* top-left */}
-          <span
-            className={`${classHoverLink} top-0 left-0 border-t-2 border-l-2 rounded-tl-[4px]`}
-          />
+    <>
+      {hoverStyleElement !== HoverStyleElement.none && (
+        <motion.div
+          className={`fixed rounded-full z-[100000] pointer-events-none cursor-none   ${
+            !isHoveringWrapper || hoverStyleElement !== HoverStyleElement.quad
+              ? `border ${classBorderColor}`
+              : "border-none"
+          }`}
+          style={{
+            left: smoothMousePos.x,
+            top: smoothMousePos.y,
+            width: animatedSizeWidth,
+            height: animatedSizeHeight,
+          }}
+        >
+          {hoverStyleElement === HoverStyleElement.quad &&
+            isHoveringWrapper && (
+              <>
+                {/* top-left */}
+                <span
+                  className={`${classHoverLink} top-0 left-0 border-t-2 border-l-2 rounded-tl-[4px]`}
+                />
 
-          {/* top-right */}
-          <span
-            className={`${classHoverLink} top-0 right-0 border-t-2 border-r-2 rounded-tr-[4px]`}
-          />
+                {/* top-right */}
+                <span
+                  className={`${classHoverLink} top-0 right-0 border-t-2 border-r-2 rounded-tr-[4px]`}
+                />
 
-          {/* bottom-left */}
-          <span
-            className={`${classHoverLink} bottom-0 left-0 border-b-2 border-l-2 rounded-bl-[4px]`}
-          />
+                {/* bottom-left */}
+                <span
+                  className={`${classHoverLink} bottom-0 left-0 border-b-2 border-l-2 rounded-bl-[4px]`}
+                />
 
-          {/* bottom-right */}
-          <span
-            className={`${classHoverLink} bottom-0 right-0 border-b-2 border-r-2 rounded-br-[4px]`}
-          />
-        </>
+                {/* bottom-right */}
+                <span
+                  className={`${classHoverLink} bottom-0 right-0 border-b-2 border-r-2 rounded-br-[4px]`}
+                />
+              </>
+            )}
+        </motion.div>
       )}
-    </motion.div>
+    </>
   );
 };
 

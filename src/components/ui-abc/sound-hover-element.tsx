@@ -16,7 +16,7 @@ type SoundHoverElementProps = {
   hoverAnimType?: "scale" | "rotate" | "translate"; // тип анімації при наведенні
   animValue?: number;
   hoverStyleElement?: HoverStyleElement;
-  onClick?: () => void;
+  onClick?: (e: Event) => void;
 } & React.HTMLAttributes<HTMLElement> &
   MotionProps;
 
@@ -84,10 +84,10 @@ const SoundHoverElement = forwardRef<HTMLElement, SoundHoverElementProps>(
         onHoverStart={handleMouseEnter} // 🧠 замість onMouseEnter
         onHoverEnd={handleMouseLeave}
         className={clsx(className)}
-        onClick={() => {
+        onClick={(e: Event) => {
           handleMouseLeave();
           if (onClick) {
-            onClick();
+            onClick(e);
             setHoverStyle(HoverStyleElement.circle);
             if (isSoundEnabled) {
               setClick(hoverTypeElement);

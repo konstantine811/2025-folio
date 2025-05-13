@@ -19,6 +19,11 @@ export enum RoutPath {
   ARTICLE = "/blog/:id",
 }
 
+export const DEFAULT_LOCALE_PLUG = "https://custom.local";
+export const DEFAULT_OBSIDIAN_VAULT = {
+  blogVault: "Blog",
+};
+
 export const router = [
   {
     path: RoutPath.HOME,

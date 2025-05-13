@@ -10,4 +10,5 @@ export enum SoundTypeElement {
 export enum HoverStyleElement {
   circle = "circle",
   quad = "quad",
+  none = "none",
 }
