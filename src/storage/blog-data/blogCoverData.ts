@@ -10,15 +10,16 @@ import {
 } from "@custom-types/blog-storage";
 import { create } from "zustand";
 
-function collectPostEntity(postEnity: PostEntity, post: PostCover) {
+function collectPostEntity(postEntity: PostEntity, post: PostCover) {
   const { topic, subtopic } = post;
-  if (!postEnity[topic]) {
-    postEnity[topic] = {};
+  if (!postEntity[topic]) {
+    postEntity[topic] = {};
   }
-  if (!postEnity[topic][subtopic]) {
-    postEnity[topic][subtopic] = [];
+  if (!postEntity[topic][subtopic]) {
+    postEntity[topic][subtopic] = [];
   }
-  postEnity[topic][subtopic].push(post);
+  postEntity[topic][subtopic].push(post);
+  postEntity[topic][subtopic].sort((a, b) => a.sort_position - b.sort_position);
 }
 
 type PostsStore = {
@@ -106,7 +107,7 @@ export const usePostsStore = create<PostsStore>((set, get) => ({
     const { data, error } = await supabase
       .from(BlogSupabaseTable.articles)
       .select(
-        `${BlogArticleProps.id}, ${BlogArticleProps.title}, ${BlogArticleProps.topic}, ${BlogArticleProps.subtopic}, ${BlogArticleProps.createdAt}, ${BlogArticleProps.cover}, ${BlogArticleProps.description}`
+        `${BlogArticleProps.id}, ${BlogArticleProps.title}, ${BlogArticleProps.topic}, ${BlogArticleProps.subtopic}, ${BlogArticleProps.createdAt}, ${BlogArticleProps.cover}, ${BlogArticleProps.description}, ${BlogArticleProps.sortPosition}`
       )
       .eq(BlogArticleProps.lang, lang);
     if (!error && data) {

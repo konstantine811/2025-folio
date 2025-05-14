@@ -17,6 +17,7 @@ export enum BlogArticleProps {
   content = "content",
   translationGroupId = "translation_group_id",
   lang = "lang",
+  sortPosition = "sort_position",
 }
 
 export interface PostCover {
@@ -27,6 +28,7 @@ export interface PostCover {
   created_at: string;
   cover: string;
   description: string;
+  sort_position: number;
 }
 
 export interface PostContent extends PostCover {
