@@ -31,7 +31,7 @@ const ImageWithLoader = ({
           loading="lazy"
           onLoad={() => setIsLoaded(true)}
           className={cn(
-            "rounded-lg  mb-4 last:mb-0 mx-auto transition-all duration-300 hover:scale-102",
+            "rounded-lg  mb-4 last:mb-0 mx-auto transition-all duration-300 hover:scale-101",
             isLoaded ? "opacity-100" : "opacity-0",
             className
           )}

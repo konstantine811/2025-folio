@@ -1,11 +1,15 @@
 import { useActiveHeading } from "@/hooks/blog-handle/useActiveHeading";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { IArticleHeading } from "@/types/blog-storage";
-import { useTranslation } from "react-i18next";
 
-const ArticleHeading = ({ headings }: { headings: IArticleHeading[] }) => {
+const ArticleHeading = ({
+  headings,
+  title,
+}: {
+  title: string;
+  headings: IArticleHeading[];
+}) => {
   const hSize = useHeaderSizeStore((state) => state.size);
-  const [t] = useTranslation();
   const activeId = useActiveHeading(
     headings.map((h) => h.id),
     hSize
@@ -22,7 +26,7 @@ const ArticleHeading = ({ headings }: { headings: IArticleHeading[] }) => {
   return (
     <div className="pl-4 pt-5">
       <h4 className="text-md font-mono font-bold tracking-wide text-fg uppercase">
-        {t("blog.articles.on_this_page")}:
+        {title}
       </h4>
       <ul className="">
         {headings.map((heading) => {

@@ -129,7 +129,10 @@ const Article = () => {
                 <div className="hidden lg:block col-span-2 relative">
                   {headings.length && (
                     <div className="sticky" style={{ top: `${hSize}px` }}>
-                      <ArticleHeading headings={headings} />
+                      <ArticleHeading
+                        title={article.title}
+                        headings={headings}
+                      />
                     </div>
                   )}
                 </div>

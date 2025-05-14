@@ -159,7 +159,7 @@ const ParseMarkdown = ({
           />
         ),
         ul: ({ children }) => (
-          <ul className="list-disc list-inside ml-4 my-2 space-y-1 text-base md:text-lg leading-7">
+          <ul className="list-disc list-outside ml-4 my-2 space-y-1 text-base md:text-lg leading-7">
             {children}
           </ul>
         ),
