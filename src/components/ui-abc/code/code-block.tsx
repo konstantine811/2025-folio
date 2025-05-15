@@ -12,24 +12,26 @@ export const CodeBlock: Components["code"] = ({
 }) => {
   const [html, setHtml] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const selctedTheme = useThemeStore((state) => state.selectedTheme);
+  const selectedTheme = useThemeStore((state) => state.selectedTheme);
   const isBlock = className?.includes("language-");
   const lang = className?.replace("language-", "") || "tsx";
   const [t] = useTranslation();
   const codeText = typeof children === "string" ? children.trim() : "";
+
   useEffect(() => {
     if (!isBlock || !codeText) return;
 
     const load = async () => {
       const html = await codeToHtml(codeText, {
         lang: lang === "terminal" ? "bash" : lang,
-        theme: selctedTheme === ThemeType.DARK ? "min-dark" : "min-light",
+        theme:
+          selectedTheme === ThemeType.DARK ? "github-dark" : "github-light",
       });
       setHtml(html);
     };
 
     load();
-  }, [codeText, isBlock, lang, selctedTheme]);
+  }, [codeText, isBlock, lang, selectedTheme]);
 
   const copyToClipboard = async () => {
     await navigator.clipboard.writeText(codeText);
@@ -39,18 +41,21 @@ export const CodeBlock: Components["code"] = ({
 
   if (isBlock && html) {
     return (
-      <div className="relative p-4 rounded-lg text-sm bg-background-alt text-accent">
+      <div className="relative my-6 rounded-md overflow-hidden text-sm font-mono bg-background-alt text-fg border border-background-alt">
+        {/* Верхня градієнтна лінія */}
+        <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-accent via-highlight to-success" />
+
         {/* Кнопка копіювання */}
         <button
           onClick={copyToClipboard}
-          className="absolute top-2 right-2 bg-background-alt text-accent text-xs px-2 py-1 rounded hover:bg-accent hover:text-background-alt transition"
+          className="absolute top-2 right-2 bg-background-alt text-fg text-xs px-2 py-1 rounded hover:bg-fg hover:text-background transition"
         >
           {copied ? t("copied") : t("copy")}
         </button>
 
         {/* Код */}
         <div
-          className="[&_pre]:!bg-transparent [&_code]:!bg-transparent"
+          className="[&_pre]:!bg-transparent [&_code]:!bg-transparent p-4 font-mono"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       </div>
@@ -60,7 +65,7 @@ export const CodeBlock: Components["code"] = ({
   // Inline-код
   return (
     <code
-      className="bg-background-alt text-accent px-2 py-1 rounded text-sm"
+      className="bg-background-alt text-fg px-2 py-1 rounded text-sm font-mono"
       {...props}
     >
       {children}
