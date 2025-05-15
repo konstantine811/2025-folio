@@ -1,3 +1,4 @@
+import { CodeBlock } from "@/components/ui-abc/code/code-block";
 import ImageWithLoader from "@/components/ui-abc/image-with-loader";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { DEFAULT_LOCALE_PLUG } from "@/config/router-config";
@@ -174,22 +175,7 @@ const ParseMarkdown = ({
           );
         },
         li: ({ children }) => <li className="ml-2">{children}</li>,
-        code: ({ className, children }) => {
-          const isBlock = className?.includes("language-");
-          if (isBlock) {
-            return (
-              <pre className="my-4 p-4 rounded-lg bg-background-alt text-accent overflow-x-auto text-sm">
-                <code className={className}>{children}</code>
-              </pre>
-            );
-          }
-
-          return (
-            <code className="bg-background-alt text-accent px-3 py-2 rounded text-sm">
-              {children}
-            </code>
-          );
-        },
+        code: CodeBlock,
       }}
     >
       {formattedContent}

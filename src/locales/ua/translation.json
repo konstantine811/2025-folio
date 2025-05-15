@@ -2,6 +2,8 @@
   "welcome": "Ласкаво просимо",
   "hello_user": "Привіт, {{name}}!",
   "date_format": "D MMMM YYYY [о] HH:mm",
+  "copy": "Скопіювати",
+  "copied": "Скопійовано",
 
   "blog": {
     "topics": {
