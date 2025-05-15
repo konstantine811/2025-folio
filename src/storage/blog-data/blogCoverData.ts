@@ -104,12 +104,18 @@ export const usePostsStore = create<PostsStore>((set, get) => ({
       set({ loading: false });
       return;
     }
-    const { data, error } = await supabase
+    let query = supabase
       .from(BlogSupabaseTable.articles)
       .select(
-        `${BlogArticleProps.id}, ${BlogArticleProps.title}, ${BlogArticleProps.topic}, ${BlogArticleProps.subtopic}, ${BlogArticleProps.createdAt}, ${BlogArticleProps.cover}, ${BlogArticleProps.description}, ${BlogArticleProps.sortPosition}`
+        `${BlogArticleProps.id}, ${BlogArticleProps.title}, ${BlogArticleProps.topic}, ${BlogArticleProps.subtopic}, ${BlogArticleProps.createdAt}, ${BlogArticleProps.cover}, ${BlogArticleProps.description}, ${BlogArticleProps.sortPosition}, ${BlogArticleProps.isPublished}`
       )
       .eq(BlogArticleProps.lang, lang);
+
+    if (process.env.NODE_ENV === "production") {
+      query = query.eq(BlogArticleProps.isPublished, true);
+    }
+
+    const { data, error } = await query;
     if (!error && data) {
       // set unique topics
       const uniqueTopics = [

@@ -1,6 +1,7 @@
 import { CodeBlock } from "@/components/ui-abc/code/code-block";
 import ImageWithLoader from "@/components/ui-abc/image-with-loader";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
+import { StyledKbd } from "@/components/ui-abc/styled-kbd";
 import { DEFAULT_LOCALE_PLUG } from "@/config/router-config";
 import { getBlogImage } from "@/config/supabaseClient";
 import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
@@ -46,7 +47,7 @@ const ParseMarkdown = ({
             <h2
               {...props}
               id={createId(props.children)}
-              className="text-3xl md:text-4xl font-semibold mb-5 mt-8 border-b border-gray-600 pb-2"
+              className="text-3xl md:text-4xl font-semibold mb-5 mt-8 border-b border-background-alt pb-2"
             />
           );
         },
@@ -77,7 +78,7 @@ const ParseMarkdown = ({
           <h6
             {...props}
             id={createId(props.children)}
-            className="text-base md:text-lg font-medium mb-2 mt-3 text-gray-400 uppercase tracking-wide"
+            className="text-base md:text-lg font-medium mb-2 mt-3 text-fg-muted uppercase tracking-wide"
           />
         ),
         a: ({ href, children }) => {
@@ -140,23 +141,26 @@ const ParseMarkdown = ({
           <div className="overflow-x-auto my-6">
             <table
               {...props}
-              className="w-full border border-gray-700 border-collapse text-sm md:text-base"
+              className="w-full border border-background-alt border-collapse text-sm md:text-base"
             />
           </div>
         ),
         thead: (props) => (
-          <thead {...props} className="bg-gray-800 text-left text-gray-100" />
+          <thead
+            {...props}
+            className="border-background-alt text-left text-fg"
+          />
         ),
         th: (props) => (
           <th
             {...props}
-            className="border border-gray-700 px-4 py-2 font-semibold whitespace-nowrap"
+            className="border border-background-alt px-4 py-2 font-semibold whitespace-nowrap"
           />
         ),
         td: (props) => (
           <td
             {...props}
-            className="border border-gray-700 px-4 py-2 whitespace-nowrap"
+            className="border border-background-alt px-4 py-2 whitespace-nowrap"
           />
         ),
         ul: ({ children }) => (
@@ -176,6 +180,7 @@ const ParseMarkdown = ({
         },
         li: ({ children }) => <li className="ml-2">{children}</li>,
         code: CodeBlock,
+        kbd: ({ children }) => <StyledKbd>{children}</StyledKbd>,
       }}
     >
       {formattedContent}

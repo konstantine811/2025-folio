@@ -18,6 +18,7 @@ export enum BlogArticleProps {
   translationGroupId = "translation_group_id",
   lang = "lang",
   sortPosition = "sort_position",
+  isPublished = "is_published",
 }
 
 export interface PostCover {
@@ -29,6 +30,7 @@ export interface PostCover {
   cover: string;
   description: string;
   sort_position: number;
+  is_published: boolean;
 }
 
 export interface PostContent extends PostCover {
