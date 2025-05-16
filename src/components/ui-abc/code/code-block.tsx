@@ -43,12 +43,14 @@ export const CodeBlock: Components["code"] = ({
     return (
       <div className="relative my-6 rounded-md overflow-hidden text-sm font-mono bg-background-alt text-fg border border-background-alt">
         {/* Верхня градієнтна лінія */}
-        <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-accent via-highlight to-success" />
+        <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-highlight via-success to-accent" />
 
         {/* Кнопка копіювання */}
         <button
           onClick={copyToClipboard}
-          className="absolute top-2 right-2 bg-background-alt text-fg text-xs px-2 py-1 rounded hover:bg-fg hover:text-background transition"
+          className={`${
+            copied ? "bg-accent text-background" : "bg-background-alt text-fg"
+          } absolute top-2 right-2  text-xs px-2 py-1 rounded hover:bg-accent hover:text-background transition`}
         >
           {copied ? t("copied") : t("copy")}
         </button>
