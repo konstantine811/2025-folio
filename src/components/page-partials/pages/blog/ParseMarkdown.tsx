@@ -49,7 +49,7 @@ const ParseMarkdown = ({
             <h2
               {...props}
               id={createId(props.children)}
-              className="text-3xl md:text-4xl font-semibold mb-5 mt-8 border-b border-background-alt pb-2"
+              className="text-3xl md:text-4xl font-semibold mb-5 mt-8 border-b border-background-alt pb-2 text-accent"
             />
           );
         },
@@ -58,7 +58,7 @@ const ParseMarkdown = ({
             <h3
               {...props}
               id={createId(props.children)}
-              className="text-2xl md:text-3xl font-semibold mb-4 mt-6"
+              className="text-2xl md:text-3xl font-semibold mb-4 mt-6 text-accent"
             />
           );
         },
@@ -66,21 +66,21 @@ const ParseMarkdown = ({
           <h4
             {...props}
             id={createId(props.children)}
-            className="text-xl md:text-2xl font-medium mb-3 mt-5"
+            className="text-xl md:text-2xl font-medium mb-3 mt-5 text-accent"
           />
         ),
         h5: (props) => (
           <h5
             {...props}
             id={createId(props.children)}
-            className="text-lg md:text-xl font-medium mb-2 mt-4"
+            className="text-lg md:text-xl font-medium mb-2 mt-4 text-accent"
           />
         ),
         h6: (props) => (
           <h6
             {...props}
             id={createId(props.children)}
-            className="text-base md:text-lg font-medium mb-2 mt-3 text-fg-muted uppercase tracking-wide"
+            className="text-base md:text-lg font-medium mb-2 mt-3 uppercase tracking-wide text-accent"
           />
         ),
         a: ({ href, children }) => {
