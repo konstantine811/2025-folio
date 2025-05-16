@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Components } from "react-markdown";
 import { codeToHtml } from "shiki";
+import SoundHoverElement from "../sound-hover-element";
+import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 
 export const CodeBlock: Components["code"] = ({
   className,
@@ -41,19 +43,29 @@ export const CodeBlock: Components["code"] = ({
 
   if (isBlock && html) {
     return (
-      <div className="relative my-6 rounded-md overflow-hidden text-sm font-mono bg-background-alt text-fg border border-background-alt">
+      <div className="relative mt-7 mb-3 rounded-md text-sm font-mono bg-background-alt/50 text-fg border border-background-alt">
+        <div className="absolute -top-4 left-0 bg-background-alt/0 backdrop-blur-sm border border-fg/40 rounded-md px-3 py-0.5 z-50">
+          <h6 className="text-accent/90">{lang}:</h6>
+        </div>
         {/* Верхня градієнтна лінія */}
-        <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-highlight via-success to-accent" />
+        <div
+          className={`${
+            copied ? "w-full" : "w-0"
+          } absolute top-0 left-0 h-1 transition-all bg-gradient-to-r from-highlight via-success to-accent duration-300`}
+        />
 
         {/* Кнопка копіювання */}
-        <button
+        <SoundHoverElement
+          as="button"
+          hoverTypeElement={SoundTypeElement.SELECT_2}
+          hoverStyleElement={HoverStyleElement.none}
           onClick={copyToClipboard}
           className={`${
             copied ? "bg-accent text-background" : "bg-background-alt text-fg"
           } absolute top-2 right-2  text-xs px-2 py-1 rounded hover:bg-accent hover:text-background transition`}
         >
           {copied ? t("copied") : t("copy")}
-        </button>
+        </SoundHoverElement>
 
         {/* Код */}
         <div

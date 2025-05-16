@@ -26,7 +26,9 @@ const ParseMarkdown = ({
     onFormatted(false);
     formatMarkdown(content, getBlogImage).then((formattedContent) => {
       setFormattedContent(formattedContent);
-      onFormatted(true);
+      setTimeout(() => {
+        onFormatted(true);
+      }, 1000);
     });
   }, [content, onFormatted]);
   return (
