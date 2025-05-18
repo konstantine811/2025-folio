@@ -46,7 +46,7 @@ const TopicBlogDrawer = () => {
       >
         {/* Drawer */}
         <div
-          className="shadow-xl bg-background-alt/70 backdrop-blur-2xl"
+          className="shadow-xl bg-background-alt/70 backdrop-blur-2xl overflow-auto"
           style={{
             width: drawerWidth,
             height: "100%",
