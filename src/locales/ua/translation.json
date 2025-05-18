@@ -10,6 +10,10 @@
       "all": "Усі розділи",
       "all_subtopics": "Усі підрозділи"
     },
+    "subtopics": {
+      "common": "Загальні"
+    },
+
     "articles": {
       "on_this_page": "На цій сторінці"
     }

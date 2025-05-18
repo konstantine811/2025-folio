@@ -63,7 +63,7 @@ const TopicBlogPost = ({
                   setSelectedSubtopic(subtopic);
                 }}
               >
-                /{subtopic}
+                / {subtopic !== "null" ? subtopic : t("blog.subtopics.common")}
               </SoundHoverElement>
             ))}
           </WrapperHoverElement>

@@ -9,6 +9,9 @@
       "all": "All Topics",
       "all_subtopics": "All Subtopics"
     },
+    "subtopics": {
+      "common": "Common"
+    },
     "articles": {
       "on_this_page": "On this page"
     }
