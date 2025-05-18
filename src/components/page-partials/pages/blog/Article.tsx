@@ -42,8 +42,13 @@ const Article = () => {
   const hasNavigatedRef = useRef(false);
   useFetchPosts();
   const fetchArticleById = useCallback(
-    (id: number | string | undefined) => {
-      fetchArticle(Number(id)).then((data) => {
+    (id: string) => {
+      fetchArticle(id).then((data) => {
+        if (!data) {
+          console.error("Article not found");
+          setLoading(false);
+          return;
+        }
         setArticle(data);
         const headings = extractHeadingsFromMarkdown(data.content);
         setHeadings(headings);
@@ -63,6 +68,11 @@ const Article = () => {
   }, [setHoverStyle, setHover]);
   useEffect(() => {
     setLoading(true);
+    if (!id) {
+      console.error("Article ID is not provided");
+      setLoading(false);
+      return;
+    }
     fetchArticleById(id);
   }, [id, fetchArticleById]);
 
@@ -98,7 +108,7 @@ const Article = () => {
     if (postsEntity) {
       Object.entries(postsEntity).forEach(([topic, subtopics]) => {
         const isCurrent = Object.entries(subtopics).some(([, posts]) => {
-          return posts.some((post) => post.id === Number(id));
+          return posts.some((post) => post.id === id);
         });
         if (isCurrent) {
           setActiveTopic(topic, subtopics);

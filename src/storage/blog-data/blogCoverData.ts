@@ -1,13 +1,12 @@
 // store/postsStore.ts
 import { LanguageType } from "@/i18n";
-import { supabase } from "@config/supabaseClient";
 import {
-  BlogArticleProps,
-  BlogSupabaseTable,
-  PostContent,
-  PostCover,
-  PostEntity,
-} from "@custom-types/blog-storage";
+  fetchArticle,
+  fetchPosts,
+  fetchTranslatedArticle,
+} from "@/services/firebase/fetchBlogData";
+
+import { PostContent, PostCover, PostEntity } from "@custom-types/blog-storage";
 import { create } from "zustand";
 
 function collectPostEntity(postEntity: PostEntity, post: PostCover) {
@@ -25,7 +24,7 @@ function collectPostEntity(postEntity: PostEntity, post: PostCover) {
 type PostsStore = {
   postsLangEntity: { [key in LanguageType]: PostEntity };
   uniqueTopics: string[] | null;
-  fetchArticle: (id: number) => Promise<PostContent>;
+  fetchArticle: (id: string) => Promise<PostContent | null>;
   articles: { [key: string]: PostContent };
   activeTopic: {
     topic: string;
@@ -38,9 +37,9 @@ type PostsStore = {
   ) => void;
   fetchPosts: (lang: LanguageType, allTopics: string) => Promise<void>;
   fetchTranslatedArticle: (
-    id: number,
+    id: string,
     lang: LanguageType
-  ) => Promise<number | null>;
+  ) => Promise<string | null>;
 };
 
 export const usePostsStore = create<PostsStore>((set, get) => ({
@@ -59,40 +58,27 @@ export const usePostsStore = create<PostsStore>((set, get) => ({
   setActiveTopic: (topic, subtopics) => {
     set({ activeTopic: { topic, subtopics } });
   },
-  fetchTranslatedArticle: async (id: number, lang: LanguageType) => {
-    const { data, error } = await supabase
-      .from(BlogSupabaseTable.articles)
-      .select(BlogArticleProps.id) // отримуємо всі поля
-      .eq(BlogArticleProps.translationGroupId, id)
-      .eq(BlogArticleProps.lang, lang)
-      .single(); // фільтр по id
-
-    if (error) {
-      console.error("Помилка при отриманні статті:", error);
+  fetchTranslatedArticle: async (id: string, lang: LanguageType) => {
+    const data = await fetchTranslatedArticle(id, lang);
+    if (!data) {
+      console.error("Translation not found");
       return null;
-    } else {
-      return data.id;
     }
+    return data;
   },
-  fetchArticle: async (id: number) => {
+  fetchArticle: async (id: string) => {
     const state = get(); // отримуємо поточний стан стора
 
     // 1. Перевірка чи вже є в articles
     if (state.articles[id]) {
       return state.articles[id];
     }
-    const { data, error } = await supabase
-      .from(BlogSupabaseTable.articles)
-      .select("*") // отримуємо всі поля
-      .eq(BlogArticleProps.id, id)
-      .single(); // фільтр по id
-
-    if (error) {
-      console.error("Помилка при отриманні статті:", error);
-    } else {
-      state.articles[id] = data; // зберігаємо статтю в кеш
+    const data = await fetchArticle(id.toString());
+    if (data) {
+      state.articles[id] = data;
       return data;
     }
+    return null;
   },
   fetchPosts: async (lang, allTopics) => {
     set({ loading: true });
@@ -104,19 +90,9 @@ export const usePostsStore = create<PostsStore>((set, get) => ({
       set({ loading: false });
       return;
     }
-    let query = supabase
-      .from(BlogSupabaseTable.articles)
-      .select(
-        `${BlogArticleProps.id}, ${BlogArticleProps.title}, ${BlogArticleProps.topic}, ${BlogArticleProps.subtopic}, ${BlogArticleProps.createdAt}, ${BlogArticleProps.cover}, ${BlogArticleProps.description}, ${BlogArticleProps.sortPosition}, ${BlogArticleProps.isPublished}`
-      )
-      .eq(BlogArticleProps.lang, lang);
+    const data = await fetchPosts(lang);
 
-    if (process.env.NODE_ENV === "production") {
-      query = query.eq(BlogArticleProps.isPublished, true);
-    }
-
-    const { data, error } = await query;
-    if (!error && data) {
+    if (data) {
       // set unique topics
       const uniqueTopics = [
         allTopics,
@@ -137,7 +113,6 @@ export const usePostsStore = create<PostsStore>((set, get) => ({
       }); // set posts
       // set posts
     } else {
-      console.error(error);
       set({ loading: false });
     }
   },

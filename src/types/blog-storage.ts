@@ -6,6 +6,10 @@ export enum BlogSupabaseTable {
   articlesImageFolder = "blog-images",
 }
 
+export enum BlogFirebaseCollection {
+  articles = "articles-blog",
+}
+
 export enum BlogArticleProps {
   id = "id",
   title = "title",
@@ -22,7 +26,7 @@ export enum BlogArticleProps {
 }
 
 export interface PostCover {
-  id: number;
+  id: string;
   title: string;
   topic: string;
   subtopic: string;
@@ -36,7 +40,7 @@ export interface PostCover {
 export interface PostContent extends PostCover {
   content: string;
   lang: LanguageType;
-  translation_group_id: number;
+  translation_group_id: string;
 }
 
 export interface PostEntity {

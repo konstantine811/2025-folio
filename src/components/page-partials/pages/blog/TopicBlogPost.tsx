@@ -96,9 +96,9 @@ const TopicBlogPost = ({
                 as="ul"
                 className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
               >
-                {posts.map((post) => (
-                  <BlocCard key={post.id} post={post} />
-                ))}
+                {posts.map((post) => {
+                  return <BlocCard key={post.id} post={post} />;
+                })}
               </WrapperHoverElement>
             </li>
           ))}
