@@ -56,5 +56,5 @@ export const fetchPosts = async (lang: LanguageType): Promise<PostCover[]> => {
     console.error("Помилка при отриманні статті:", error);
     return [];
   }
-  return data;
+  return data as PostCover[];
 };

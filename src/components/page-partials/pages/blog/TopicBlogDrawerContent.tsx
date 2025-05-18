@@ -32,7 +32,7 @@ const TopicBlogDrawerContent = ({ onClose }: { onClose: () => void }) => {
               }`}
             >
               {posts.map((post) => {
-                const isActive = post.id === Number(id);
+                const isActive = post.id === id;
                 return (
                   <SoundHoverElement
                     hoverStyleElement={HoverStyleElement.quad}
