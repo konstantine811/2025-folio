@@ -13,7 +13,6 @@ const useTransitionRouteTo = () => {
     if (location.pathname === routePath) return; // ❌ вже на цій сторінці
 
     onTransition(true);
-
     if (isSoundEnabled) {
       riserSound.play("first");
       shinySound.play("first");

@@ -39,6 +39,7 @@ const Article = () => {
   const navigateTo = useTransitionRouteTo();
   const [scrollReady, setScrollReady] = useState(false);
   const [contentReady, setContentReady] = useState(false);
+  const hasNavigatedRef = useRef(false);
   useFetchPosts();
   const fetchArticleById = useCallback(
     (id: number | string | undefined) => {
@@ -70,7 +71,8 @@ const Article = () => {
   }, [id]);
 
   useEffect(() => {
-    if (article && article.lang !== lang) {
+    if (article && article.lang !== lang && !hasNavigatedRef.current) {
+      hasNavigatedRef.current = true; // ✅ запобігаємо повтору
       setLoading(true);
       fetchTranslatedArticle(
         article.translation_group_id,
@@ -85,6 +87,10 @@ const Article = () => {
       });
     }
   }, [lang, article, fetchTranslatedArticle, navigateTo]);
+
+  useEffect(() => {
+    hasNavigatedRef.current = false;
+  }, [id]);
 
   useEffect(() => {
     // Якщо postsEntity вже завантажено, то знаходимо активний розділ
