@@ -30,7 +30,14 @@ export interface PostCover {
   title: string;
   topic: string;
   subtopic: string;
-  created_at: string;
+  created_at: {
+    seconds: number;
+    nanoseconds: number;
+  };
+  updated_at: {
+    seconds: number;
+    nanoseconds: number;
+  };
   cover: string;
   description: string;
   sort_position: number;

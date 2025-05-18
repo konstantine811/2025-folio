@@ -32,7 +32,7 @@ const ArticleCover = ({ article }: { article: PostContent }) => {
       <div className="relative z-10 w-full grow flex flex-col items-center bg-background-alt/40 backdrop-contrast-150 pt-22 pb-10 md:py-10 px-13">
         <div className="text-fg/80 text-shadow-md max-w-4xl mx-auto text-shadow-background/30">
           <p className="text-xs font-mono tracking-wide text-fg uppercase">
-            {dayjs(article.created_at).format(t("date_format"))}
+            {dayjs(article.created_at.seconds * 1000).format(t("date_format"))}
           </p>
           <h1 className="text-[clamp(1.5rem,5vw,3rem)] leading-tight md:text-6xl lg:text-8xl font-extrabold mb-4 break-words text-balance  text-center max-w-screen-md mx-auto px-4">
             {article.title}
