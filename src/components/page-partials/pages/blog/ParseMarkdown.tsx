@@ -143,27 +143,21 @@ const ParseMarkdown = ({
           <div className="overflow-x-auto my-6">
             <table
               {...props}
-              className="w-full border border-background-alt border-collapse text-sm md:text-base"
+              className="w-full border-2 border-background-alt border-collapse text-sm md:text-base"
             />
           </div>
         ),
         thead: (props) => (
-          <thead
-            {...props}
-            className="border-background-alt text-left text-fg"
-          />
+          <thead {...props} className="border border-fg/50 text-left text-fg" />
         ),
         th: (props) => (
           <th
             {...props}
-            className="border border-background-alt px-4 py-2 font-semibold whitespace-nowrap"
+            className="border border-fg/50 px-4 py-2 font-semibold"
           />
         ),
         td: (props) => (
-          <td
-            {...props}
-            className="border border-background-alt px-4 py-2 whitespace-nowrap"
-          />
+          <td {...props} className="border border-fg/50 px-4 py-2" />
         ),
         ul: ({ children }) => (
           <ul className="list-disc list-outside ml-4 my-2 space-y-1 text-base md:text-lg leading-7">
