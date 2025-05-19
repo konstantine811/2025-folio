@@ -106,14 +106,22 @@ export const TasksWithCategories: React.FC = () => {
                       <motion.div
                         layout
                         key={task.id}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, task.id)}
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="bg-card px-4 py-2 rounded shadow cursor-grab active:cursor-grabbing text-foreground hover:bg-accent transition-colors"
                       >
-                        {task.title}
+                        <div
+                          className="bg-card px-4 py-2 rounded shadow cursor-grab active:cursor-grabbing text-foreground hover:bg-accent transition-colors"
+                          draggable
+                          onDragStart={(e) =>
+                            handleDragStart(
+                              e as React.DragEvent<HTMLDivElement>,
+                              task.id
+                            )
+                          }
+                        >
+                          {task.title}
+                        </div>
                       </motion.div>
                     ))
                   ) : (
@@ -143,14 +151,22 @@ export const TasksWithCategories: React.FC = () => {
                 <motion.div
                   layout
                   key={task.id}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, task.id)}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="bg-card px-4 py-2 rounded shadow cursor-grab active:cursor-grabbing text-foreground hover:bg-accent transition-colors"
                 >
-                  {task.title}
+                  <div
+                    className="bg-card px-4 py-2 rounded shadow cursor-grab active:cursor-grabbing text-foreground hover:bg-accent transition-colors"
+                    draggable
+                    onDragStart={(e) =>
+                      handleDragStart(
+                        e as React.DragEvent<HTMLDivElement>,
+                        task.id
+                      )
+                    }
+                  >
+                    {task.title}
+                  </div>
                 </motion.div>
               ))}
             {tasks.filter((t) => !t.categoryId).length === 0 && (
