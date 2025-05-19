@@ -1,25 +1,49 @@
 import { auth, provider } from "@/config/firebase.config";
 import { useAuthStore } from "@/storage/useAuthStore";
-import { signInWithPopup, signOut } from "firebase/auth";
+import {
+  getRedirectResult,
+  signInWithPopup,
+  signInWithRedirect,
+  signOut,
+} from "firebase/auth";
 import { SoundTypeElement } from "@custom-types/sound";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import SelectItem from "@/components/ui-abc/select/select-item";
 import { ArrowRightLeft, LogOut, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { isMobile } from "react-device-detect";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useEffect } from "react";
 
 const Login = () => {
   const { user, setUser, logout } = useAuthStore();
   const [t] = useTranslation();
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          setUser(result.user);
+        }
+      })
+      .catch((err) => {
+        console.error("Redirect login error:", err);
+      });
+  }, [setUser]);
+
   const handleLogin = async () => {
     try {
-      const result = await signInWithPopup(auth, provider);
-      setUser(result.user);
+      if (isMobile) {
+        signInWithRedirect(auth, provider); // ❗️без await
+      } else {
+        const result = await signInWithPopup(auth, provider);
+
+        setUser(result.user);
+      }
     } catch (err) {
       console.error("Login error:", err);
     }
@@ -38,7 +62,7 @@ const Login = () => {
         hoverAnimType="scale"
         onClick={handleLogin}
         tooltipText={t("login.to_google")}
-        className="w-8 h-8 p-2 flex  items-center justify-center  bg-primary/30 rounded-full "
+        className="w-8 h-8 p-2 flex  items-center justify-center  bg-primary/30 rounded-full"
       >
         <User />
       </SoundHoverElement>
@@ -56,9 +80,10 @@ const Login = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <img
+                referrerPolicy="no-referrer"
                 src={user.photoURL || "/logo.svg"}
                 alt="User avatar"
-                className="w-8 h-8 rounded-full"
+                className="w-8 h-8 rounded-full overflow-hidden"
               />
             </TooltipTrigger>
             <TooltipContent>
