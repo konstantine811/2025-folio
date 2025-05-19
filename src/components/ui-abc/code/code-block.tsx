@@ -43,15 +43,15 @@ export const CodeBlock: Components["code"] = ({
 
   if (isBlock && html) {
     return (
-      <div className="relative mt-7 mb-3 rounded-md text-sm font-mono bg-background-alt/50 text-fg border border-background-alt">
-        <div className="absolute -top-4 left-0 bg-background-alt/0 backdrop-blur-sm border border-fg/40 rounded-md px-3 py-0.5 z-50">
-          <h6 className="text-accent/90">{lang}:</h6>
+      <div className="relative mt-7 mb-3 rounded-md text-sm font-mono bg-card/50 text-foreground border border-card">
+        <div className="absolute -top-4 left-0 bg-card/0 backdrop-blur-sm border border-foreground/40 rounded-md px-3 py-0.5 z-50">
+          <h6 className="text-primary/90">{lang}:</h6>
         </div>
         {/* Верхня градієнтна лінія */}
         <div
           className={`${
             copied ? "w-full" : "w-0"
-          } absolute top-0 left-0 h-1 transition-all bg-gradient-to-r from-highlight via-success to-accent duration-300`}
+          } absolute top-0 left-0 h-1 transition-all bg-gradient-to-r from-highlight via-secondary to-primary duration-300`}
         />
 
         {/* Кнопка копіювання */}
@@ -61,8 +61,8 @@ export const CodeBlock: Components["code"] = ({
           hoverStyleElement={HoverStyleElement.none}
           onClick={copyToClipboard}
           className={`${
-            copied ? "bg-accent text-background" : "bg-background-alt text-fg"
-          } absolute top-2 right-2  text-xs px-2 py-1 rounded hover:bg-accent hover:text-background transition`}
+            copied ? "bg-primary text-background" : "bg-card text-foreground"
+          } absolute top-2 right-2  text-xs px-2 py-1 rounded hover:bg-primary hover:text-background transition`}
         >
           {copied ? t("copied") : t("copy")}
         </SoundHoverElement>
@@ -79,7 +79,7 @@ export const CodeBlock: Components["code"] = ({
   // Inline-код
   return (
     <code
-      className="bg-background-alt text-fg px-2 py-1 rounded text-sm font-mono"
+      className="bg-card text-foreground px-2 py-1 rounded text-sm font-mono"
       {...props}
     >
       {children}

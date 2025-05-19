@@ -22,7 +22,7 @@ const CellReveal = ({
   mixBlend = false,
   offsetTop = 0,
   zIndex = 10,
-  color = "background-alt",
+  color = "card",
   invertRipple = true,
 }: {
   rows?: number;
@@ -123,7 +123,7 @@ const CellReveal = ({
         const cy = cell.y + cell.height / 2;
 
         ctx.globalAlpha = o;
-        ctx.fillStyle = ThemePalette[selectedTheme][color];
+        ctx.fillStyle = ThemePalette[selectedTheme][color] as string;
         ctx.fillRect(cx - w / 2, cy - h / 2, w, h);
         ctx.globalAlpha = 1.0;
       });

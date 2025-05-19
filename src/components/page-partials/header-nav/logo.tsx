@@ -48,7 +48,7 @@ const LogoAnimated = () => {
           key={i}
           d={d}
           fill={i === 5 ? "none" : "url(#mainGradient)"} // останній path без заливки
-          stroke={colors.fg}
+          stroke={colors.foreground}
           strokeWidth={strokeWidth}
           variants={pathVariants}
           initial="initial"
@@ -66,8 +66,8 @@ const LogoAnimated = () => {
           y2="0"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0%" stopColor={colors.surface} />
-          <stop offset="100%" stopColor={colors.accent} />
+          <stop offset="0%" stopColor={colors["muted-foreground"]} />
+          <stop offset="100%" stopColor={colors.primary} />
         </linearGradient>
       </defs>
     </svg>

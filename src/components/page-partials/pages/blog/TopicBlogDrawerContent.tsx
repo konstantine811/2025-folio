@@ -14,14 +14,14 @@ const TopicBlogDrawerContent = ({ onClose }: { onClose: () => void }) => {
   const onTransition = useTransitionStore((state) => state.onIsTransition);
   return (
     <>
-      <h3 className="text-2xl text-fg font-bold my-4 mx-4">
+      <h3 className="text-2xl text-foreground font-bold my-4 mx-4">
         📂 {activeTopic.topic}
       </h3>
       <div>
         {Object.entries(activeTopic.subtopics).map(([subtopic, posts]) => (
           <div key={subtopic} className="">
             {subtopic !== "null" && (
-              <h4 className="text-2xl text-accent font-bold bg-background-alt p-4">
+              <h4 className="text-2xl text-primary font-bold bg-card p-4">
                 {subtopic}
               </h4>
             )}
@@ -41,8 +41,8 @@ const TopicBlogDrawerContent = ({ onClose }: { onClose: () => void }) => {
                     key={post.id}
                     className={`${
                       isActive
-                        ? "cursor-none pointer-events-none bg-accent text-fg-muted "
-                        : "cursor-pointer pointer-events-auto text-fg last:border-0 border-b border-background"
+                        ? "cursor-none pointer-events-none bg-primary text-muted-foreground "
+                        : "cursor-pointer pointer-events-auto text-foreground last:border-0 border-b border-background"
                     }  text-lg  py-2 cursor-pointer pl-5 transition-background duration-1000`}
                     onClick={() => {
                       if (isActive) return; // якщо стаття активна, нічого не робимо

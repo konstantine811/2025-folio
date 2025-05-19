@@ -133,7 +133,7 @@ const Article = () => {
             <ArticleCover article={article} />
             <div className="grid grid-cols-8 gap-4 px-5 sm:px-10">
               {/* Ліва частина — стаття */}
-              <div className="col-span-8 lg:col-start-3 lg:col-span-4 text-fg flex-1">
+              <div className="col-span-8 lg:col-start-3 lg:col-span-4 text-foreground flex-1">
                 <ParseMarkdown
                   content={article.content}
                   onFormatted={setContentReady}

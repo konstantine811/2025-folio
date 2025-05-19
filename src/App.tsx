@@ -9,8 +9,10 @@ import TransitionPage from "@components/page-partials/page-setting/transition-pa
 import RouteWrapper from "@components/page-partials/pages/RouteWrapper";
 import Preloader from "./components/page-partials/preloader/preloader";
 import useSetTheme from "./hooks/useSetTheme";
+import useLogin from "./services/firebase/useLogin";
 
 function App() {
+  useLogin();
   subscribeToHoverSound();
   useSetTheme();
   const [isTouch, setIsTouch] = useState(false);

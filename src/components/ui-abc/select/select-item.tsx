@@ -42,46 +42,58 @@ const SelectItem = ({
   };
 
   return (
-    <div className="relative">
-      <SoundHoverElement
-        as="button"
-        hoverTypeElement={SoundTypeElement.LOGO}
-        className="p-3 rounded-full relative z-10"
-        hoverAnimType="translate"
-        onClick={() => {
-          setIsOpen(!isOpen);
-        }}
-      >
-        {selectNode}
-      </SoundHoverElement>
-      <div
-        className={`${isOpen ? "pointer-events-auto" : "pointer-events-none"}`}
-      >
-        <AnimatePresence>
+    <>
+      <div className="relative">
+        <SoundHoverElement
+          as="button"
+          hoverTypeElement={SoundTypeElement.LOGO}
+          className="p-3 rounded-full relative z-50"
+          hoverAnimType="translate"
+          onClick={() => {
+            setIsOpen(!isOpen);
+          }}
+        >
+          {selectNode}
+        </SoundHoverElement>
+        <div
+          className={`${
+            isOpen ? "pointer-events-auto" : "pointer-events-none"
+          }`}
+        >
+          <AnimatePresence>
+            {isOpen && (
+              <div
+                className="absolute z-10 left-0"
+                style={{
+                  transform: `translate(${dropPosition.x}px, ${dropPosition.y}px)`,
+                }}
+              >
+                <WrapperHoverElement
+                  className="flex flex-col gap-1"
+                  initial="hidden"
+                  animate="visible"
+                  as="ul"
+                  exit="hidden"
+                  key={isOpen ? "visible" : "hidden"} // 👈 це важливо
+                  variants={containerVariants}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {renderItems(itemVariants)}
+                </WrapperHoverElement>
+              </div>
+            )}
+          </AnimatePresence>
           {isOpen && (
             <div
-              className="absolute z-10 left-0"
-              style={{
-                transform: `translate(${dropPosition.x}px, ${dropPosition.y}px)`,
+              className="fixed h-screen w-screen top-0 right-0 z-0"
+              onClick={() => {
+                setIsOpen(false);
               }}
-            >
-              <WrapperHoverElement
-                className="flex flex-col gap-1"
-                initial="hidden"
-                animate="visible"
-                as="ul"
-                exit="hidden"
-                key={isOpen ? "visible" : "hidden"} // 👈 це важливо
-                variants={containerVariants}
-                onClick={() => setIsOpen(false)}
-              >
-                {renderItems(itemVariants)}
-              </WrapperHoverElement>
-            </div>
+            ></div>
           )}
-        </AnimatePresence>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -46,7 +46,7 @@ const TopicBlogDrawer = () => {
       >
         {/* Drawer */}
         <div
-          className="shadow-xl bg-background-alt/70 backdrop-blur-2xl overflow-auto"
+          className="shadow-xl bg-card/70 backdrop-blur-2xl overflow-auto"
           style={{
             width: drawerWidth,
             height: "100%",
@@ -62,7 +62,7 @@ const TopicBlogDrawer = () => {
             hoverStyleElement={HoverStyleElement.quad}
             animValue={0.95}
             onClick={() => setIsOpen(!isOpen)}
-            className="bg-background-alt text-fg mt-4 outline-0 flex items-center justify-center"
+            className="bg-card text-foreground mt-4 outline-0 flex items-center justify-center"
             style={{
               width: btnWidth,
               height: btnWidth,

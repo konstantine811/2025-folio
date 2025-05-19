@@ -19,6 +19,6 @@ export const getConicGradientFromTheme = (
 
 export const setTheme = (themeColors: IThemeColors) => {
   Object.entries(themeColors).forEach(([key, value]) => {
-    document.documentElement.style.setProperty(`--color-${key}`, value);
+    document.documentElement.style.setProperty(`--${key}`, value);
   });
 };

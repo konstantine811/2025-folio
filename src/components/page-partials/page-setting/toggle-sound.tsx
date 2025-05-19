@@ -45,7 +45,7 @@ const ToggleSound = () => {
             transition={MOTION_FRAME_TRANSITION.spring}
             className="absolute"
           >
-            <Volume2 className="w-6 h-6 text-accent" />
+            <Volume2 className="w-6 h-6 text-primary" />
           </motion.span>
         ) : (
           <motion.span
@@ -56,7 +56,7 @@ const ToggleSound = () => {
             transition={MOTION_FRAME_TRANSITION.spring}
             className="absolute"
           >
-            <VolumeX className="w-6 h-6 text-fg" />
+            <VolumeX className="w-6 h-6 text-foreground" />
           </motion.span>
         )}
       </AnimatePresence>

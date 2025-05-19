@@ -15,12 +15,12 @@ const BurgerMenu = forwardRef<HTMLDivElement, Props>(
       <div ref={ref} {...props} className="relative w-6 flex flex-col">
         <motion.span
           animate={{ rotate: isOpen ? 45 : 0, y: isOpen ? 4 : 0 }}
-          className="block w-full h-px bg-fg mb-2"
+          className="block w-full h-px bg-foreground mb-2"
           transition={duration}
         />
         <motion.span
           animate={{ rotate: isOpen ? -45 : 0, y: isOpen ? -4 : 0 }}
-          className="block w-full h-px bg-fg"
+          className="block w-full h-px bg-foreground"
           transition={duration}
         />
       </div>

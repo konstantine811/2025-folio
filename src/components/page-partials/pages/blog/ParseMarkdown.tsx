@@ -41,7 +41,7 @@ const ParseMarkdown = ({
           <h1
             {...props}
             id={createId(props.children)}
-            className="text-4xl md:text-5xl font-bold mb-6 mt-10 text-accent"
+            className="text-4xl md:text-5xl font-bold mb-6 mt-10 text-primary"
           />
         ),
         h2: (props) => {
@@ -49,7 +49,7 @@ const ParseMarkdown = ({
             <h2
               {...props}
               id={createId(props.children)}
-              className="text-3xl md:text-4xl font-semibold mb-5 mt-8 border-b border-background-alt pb-2 text-accent"
+              className="text-3xl md:text-4xl font-semibold mb-5 mt-8 border-b border-card pb-2 text-primary"
             />
           );
         },
@@ -58,7 +58,7 @@ const ParseMarkdown = ({
             <h3
               {...props}
               id={createId(props.children)}
-              className="text-2xl md:text-3xl font-semibold mb-4 mt-6 text-accent"
+              className="text-2xl md:text-3xl font-semibold mb-4 mt-6 text-primary"
             />
           );
         },
@@ -66,21 +66,21 @@ const ParseMarkdown = ({
           <h4
             {...props}
             id={createId(props.children)}
-            className="text-xl md:text-2xl font-medium mb-3 mt-5 text-accent"
+            className="text-xl md:text-2xl font-medium mb-3 mt-5 text-primary"
           />
         ),
         h5: (props) => (
           <h5
             {...props}
             id={createId(props.children)}
-            className="text-lg md:text-xl font-medium mb-2 mt-4 text-accent"
+            className="text-lg md:text-xl font-medium mb-2 mt-4 text-primary"
           />
         ),
         h6: (props) => (
           <h6
             {...props}
             id={createId(props.children)}
-            className="text-base md:text-lg font-medium mb-2 mt-3 uppercase tracking-wide text-accent"
+            className="text-base md:text-lg font-medium mb-2 mt-3 uppercase tracking-wide text-primary"
           />
         ),
         a: ({ href, children }) => {
@@ -96,7 +96,7 @@ const ParseMarkdown = ({
                   navigateTo(path);
                   return;
                 }}
-                className="text-accent hover:underline underline-offset-2 transition-colors duration-150 cursor-pointer"
+                className="text-primary hover:underline underline-offset-2 transition-colors duration-150 cursor-pointer"
               >
                 {children}
               </SoundHoverElement>
@@ -108,14 +108,14 @@ const ParseMarkdown = ({
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-accent hover:underline underline-offset-2 transition-colors duration-150"
+              className="text-primary hover:underline underline-offset-2 transition-colors duration-150"
             >
               {children}
             </a>
           );
         },
         blockquote: ({ children }) => (
-          <blockquote className="border-l-4 border-accent pl-4 italic text-highlight my-4">
+          <blockquote className="border-l-4 border-primary pl-4 italic text-highlight my-4">
             {children}
           </blockquote>
         ),
@@ -143,21 +143,24 @@ const ParseMarkdown = ({
           <div className="overflow-x-auto my-6">
             <table
               {...props}
-              className="w-full border-2 border-background-alt border-collapse text-sm md:text-base"
+              className="w-full border-2 border-card border-collapse text-sm md:text-base"
             />
           </div>
         ),
         thead: (props) => (
-          <thead {...props} className="border border-fg/50 text-left text-fg" />
+          <thead
+            {...props}
+            className="border border-foreground/50 text-left text-foreground"
+          />
         ),
         th: (props) => (
           <th
             {...props}
-            className="border border-fg/50 px-4 py-2 font-semibold"
+            className="border border-foreground/50 px-4 py-2 font-semibold"
           />
         ),
         td: (props) => (
-          <td {...props} className="border border-fg/50 px-4 py-2" />
+          <td {...props} className="border border-foreground/50 px-4 py-2" />
         ),
         ul: ({ children }) => (
           <ul className="list-disc list-outside ml-4 my-2 space-y-1 text-base md:text-lg leading-7">

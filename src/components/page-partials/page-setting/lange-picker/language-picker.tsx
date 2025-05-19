@@ -47,7 +47,7 @@ const LanguagePicker = () => {
               <img
                 className={`w-6 h-6 ${
                   isSelected
-                    ? "border-2 border-accent rounded-full opacity-30"
+                    ? "border-2 border-primary rounded-full opacity-30"
                     : ""
                 }`}
                 src={icons[value]}

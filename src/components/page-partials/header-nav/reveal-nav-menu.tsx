@@ -65,7 +65,7 @@ const RevealNavMenu = memo(() => {
             exit={{ height: 0, opacity: 0 }}
             transition={MOTION_FRAME_TRANSITION.spring}
             layout="size"
-            className="absolute z-10 bottom-0 left-0 w-full bg-background-alt/99  translate-y-full rounded-br-md shadow-md shadow-background"
+            className="absolute z-10 bottom-0 left-0 w-full bg-card  translate-y-full rounded-br-md shadow-md shadow-background"
           >
             <motion.nav className="flex items-center justify-center ">
               <WrapperHoverElement
@@ -98,7 +98,7 @@ const RevealNavMenu = memo(() => {
                     >
                       <SoundHoverElement
                         variants={itemVariants}
-                        className="relative  w-full py-2 px-4 text-fg text-lg font-medium hover:bg-main/5 rounded-md"
+                        className="relative  w-full py-2 px-4 text-foreground text-lg font-medium hover:bg-main/5 rounded-md"
                         hoverTypeElement={SoundTypeElement.LINK}
                         hoverStyleElement={HoverStyleElement.quad}
                         hoverAnimType="scale"
@@ -112,11 +112,11 @@ const RevealNavMenu = memo(() => {
               </WrapperHoverElement>
             </motion.nav>
             {isMdSize && (
-              <div className="flex px-5 py-5 justify-between items-center text-fg/55 border-t border-background">
+              <div className="flex px-5 py-5 justify-between items-center text-foreground/55 border-t border-background">
                 <div className="flex gap-2">
                   <ToggleSound />
-                  <LanguagePicker />
                   <ColorPicker />
+                  <LanguagePicker />
                 </div>
               </div>
             )}

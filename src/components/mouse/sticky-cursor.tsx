@@ -16,7 +16,7 @@ const StickCursor = () => {
 
   const smoothMouseProps = { stiffness: 733, damping: 36, mass: 0.3 };
   const smoothSizeProps = { stiffness: 500, damping: 30, mass: 0.1 };
-  const classBorderColor = "border-accent";
+  const classBorderColor = "border-primary";
   const classHoverLink = `${classBorderColor} absolute w-3 h-3`;
   // розмір курсора — плавний
   const sizeWidth = useMotionValue(defaultSize);

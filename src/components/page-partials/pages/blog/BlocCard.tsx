@@ -16,7 +16,7 @@ const BlocCard = ({ post }: { post: PostCover }) => {
       hoverTypeElement={SoundTypeElement.SELECT}
       hoverStyleElement={HoverStyleElement.quad}
       as="li"
-      className="bg-background-alt text-fg rounded-xs overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col h-full"
+      className="bg-background-card text-foreground rounded-xs overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col h-full"
       onClick={() => {
         navigateTo(`${RoutPath.BLOG}/${post.id}`);
       }}
@@ -34,9 +34,11 @@ const BlocCard = ({ post }: { post: PostCover }) => {
           </div>
         )}
       </div>
-      <div className="p-4 flex flex-col flex-grow bg-background-alt/15 backdrop-blur-2xl">
+      <div className="p-4 flex flex-col flex-grow bg-card/15 backdrop-blur-2xl">
         <h4 className="text-lg font-semibold mb-2">{post.title}</h4>
-        <p className="text-sm text-muted flex-grow">{post.description}</p>
+        <p className="text-sm text-muted-foreground flex-grow">
+          {post.description}
+        </p>
       </div>
     </SoundHoverElement>
   );

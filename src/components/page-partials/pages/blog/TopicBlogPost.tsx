@@ -29,10 +29,12 @@ const TopicBlogPost = ({
     <div>
       <div
         ref={refTopic}
-        className="bg-background-alt p-6 md:sticky top-0 flex flex-wrap gap-2 items-center z-10 bottom-0"
+        className="bg-card p-6 md:sticky top-0 flex flex-wrap gap-2 items-center z-10 bottom-0"
         style={{ top: hSize }}
       >
-        <h2 className="text-fg text-2xl uppercase font-bold">{topic}</h2>
+        <h2 className="text-foreground text-2xl uppercase font-bold">
+          {topic}
+        </h2>
         {Object.keys(subtopics).length > 1 && (
           <WrapperHoverElement as="div" className="flex flex-wrap items-center">
             <SoundHoverElement
@@ -40,8 +42,8 @@ const TopicBlogPost = ({
               hoverTypeElement={SoundTypeElement.SELECT_2}
               hoverStyleElement={HoverStyleElement.quad}
               as="h6"
-              className={`text-fg hover:underline  hover:cursor-pointer p-3 ${
-                selectedSubtopic === null ? "underline decoration-accent" : ""
+              className={`text-foreground hover:underline  hover:cursor-pointer p-3 ${
+                selectedSubtopic === null ? "underline decoration-primary" : ""
               }`}
               onClick={() => setSelectedSubtopic(null)}
             >
@@ -53,9 +55,9 @@ const TopicBlogPost = ({
                 hoverTypeElement={SoundTypeElement.SELECT_2}
                 hoverStyleElement={HoverStyleElement.quad}
                 as="h6"
-                className={`text-fg hover:underline  hover:cursor-pointer p-3 ${
+                className={`text-foreground hover:underline  hover:cursor-pointer p-3 ${
                   selectedSubtopic === subtopic
-                    ? "underline decoration-accent"
+                    ? "underline decoration-primary"
                     : ""
                 }`}
                 key={subtopic}
@@ -78,11 +80,11 @@ const TopicBlogPost = ({
             return subtopics === selectedSubtopic;
           })
           .map(([subtopic, posts]) => (
-            <li className="text-fg m-4" key={subtopic}>
+            <li className="text-foreground m-4" key={subtopic}>
               {subtopic !== "null" && (
                 <h3
                   className={
-                    "bg-background-alt/5 backdrop-blur-2xl inline-block text-fg font-bold uppercase p-4 sticky z-1"
+                    "bg-card/5 backdrop-blur-2xl inline-block text-foreground font-bold uppercase p-4 sticky z-1"
                   }
                   style={{
                     top: isMdSize ? hSize : offsetTopic,

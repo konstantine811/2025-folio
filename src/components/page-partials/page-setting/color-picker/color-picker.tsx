@@ -46,7 +46,7 @@ const ColorPicker = () => {
               <div
                 className={`w-7 h-7 rounded-full p-2 ${
                   themeName === selectedTheme
-                    ? "border-4 border-accent"
+                    ? "border-4 border-primary"
                     : "border-none border-transparent"
                 }`}
                 style={{ background: getConicGradientFromTheme(themeColors) }}

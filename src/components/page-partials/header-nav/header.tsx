@@ -6,6 +6,7 @@ import LanguagePicker from "../page-setting/lange-picker/language-picker";
 import HeaderBanner from "./header-banner";
 import ToggleSound from "../page-setting/toggle-sound";
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
+import Login from "./login";
 
 const Header = memo(() => {
   const headerRef = useRef<HTMLDivElement>(null!);
@@ -25,16 +26,17 @@ const Header = memo(() => {
       <div className="grid grid-cols-1 md:grid-cols-3 items-center">
         <NavMenu />
         {!isMdSize && (
-          <div className="text-fg/70 font-mono tracking-wide text-center">
+          <div className="text-foreground/70 font-mono tracking-wide text-center">
             <HeaderBanner />
           </div>
         )}
 
         {!isMdSize && (
-          <div className="text-fg pr-4 items-center justify-end flex">
+          <div className="text-foreground pr-4 items-center justify-end flex">
             <ToggleSound />
-            <LanguagePicker />
             <ColorPicker />
+            <LanguagePicker />
+            <Login />
           </div>
         )}
       </div>

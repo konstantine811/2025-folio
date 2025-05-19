@@ -25,7 +25,7 @@ const ArticleHeading = ({
   };
   return (
     <div className="pl-4 pt-5">
-      <h4 className="text-md font-mono font-bold tracking-wide text-fg uppercase">
+      <h4 className="text-md font-mono font-bold tracking-wide text-foreground uppercase">
         {title}
       </h4>
       <ul className="">
@@ -39,13 +39,13 @@ const ArticleHeading = ({
                 fontSize: `${1.1 - (heading.depth - 2) * 0.1}rem`,
               }}
               className={`${
-                isActive ? "before:bg-accent" : "before:bg-fg/20"
+                isActive ? "before:bg-primary" : "before:bg-foreground/20"
               } before:h-full  before:absolute before:-left-4 before:w-[1px] before:top-1/2 before:-translate-y-1/2 relative transition-all`}
             >
               <button
                 onClick={() => scrollToId(heading.id)}
                 className={`${
-                  isActive ? "text-accent" : "text-fg"
+                  isActive ? "text-primary" : "text-foreground"
                 } hover:underline text-left w-full`}
               >
                 {heading.text}
