@@ -41,7 +41,7 @@ const TopicBlogDrawerContent = ({ onClose }: { onClose: () => void }) => {
                     key={post.id}
                     className={`${
                       isActive
-                        ? "cursor-none pointer-events-none bg-primary text-muted-foreground "
+                        ? "cursor-none pointer-events-none bg-primary text-background"
                         : "cursor-pointer pointer-events-auto text-foreground last:border-0 border-b border-background"
                     }  text-lg  py-2 cursor-pointer pl-5 transition-background duration-1000`}
                     onClick={() => {

@@ -5,10 +5,17 @@ import { SoundTypeElement } from "@custom-types/sound";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import SelectItem from "@/components/ui-abc/select/select-item";
 import { ArrowRightLeft, LogOut, User } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const Login = () => {
   const { user, setUser, logout } = useAuthStore();
-
+  const [t] = useTranslation();
   const handleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
@@ -30,6 +37,7 @@ const Login = () => {
         hoverTypeElement={SoundTypeElement.SELECT}
         hoverAnimType="scale"
         onClick={handleLogin}
+        tooltipText={t("login.to_google")}
         className="w-8 h-8 p-2 flex  items-center justify-center  bg-primary/30 rounded-full "
       >
         <User />
@@ -44,11 +52,20 @@ const Login = () => {
         y: 0,
       }}
       selectNode={
-        <img
-          src={user.photoURL || "/icons/user-placeholder.png"}
-          alt="User avatar"
-          className="w-8 h-8 rounded-full"
-        />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <img
+                src={user.photoURL || "/logo.svg"}
+                alt="User avatar"
+                className="w-8 h-8 rounded-full"
+              />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-background">{user.email}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       }
       renderItems={(itemVariants) => (
         <>
@@ -58,6 +75,7 @@ const Login = () => {
             hoverTypeElement={SoundTypeElement.SELECT}
             hoverAnimType="scale"
             onClick={handleLogout}
+            tooltipText={t("login.out")}
             className="w-8 h-8 p-2 flex items-center justify-center  bg-card rounded-full"
           >
             <LogOut />
@@ -69,6 +87,7 @@ const Login = () => {
             hoverTypeElement={SoundTypeElement.SELECT}
             hoverAnimType="scale"
             onClick={handleLogin}
+            tooltipText={t("login.switch")}
             className="w-8 h-8 p-2  flex items-center justify-center bg-card rounded-full"
           >
             <ArrowRightLeft />

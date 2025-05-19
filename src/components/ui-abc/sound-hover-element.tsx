@@ -7,6 +7,12 @@ import { motion, MotionProps } from "motion/react";
 import { MOTION_FRAME_TRANSITION } from "@config/animations";
 import { useClickStore } from "@/storage/clickStore";
 import { useSoundEnabledStore } from "@/storage/soundEnabled";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type SoundHoverElementProps = {
   children: ReactNode;
@@ -17,6 +23,7 @@ type SoundHoverElementProps = {
   animValue?: number;
   hoverStyleElement?: HoverStyleElement;
   onClick?: (e: Event) => void;
+  tooltipText?: string;
 } & React.HTMLAttributes<HTMLElement> &
   MotionProps;
 
@@ -31,6 +38,7 @@ const SoundHoverElement = forwardRef<HTMLElement, SoundHoverElementProps>(
       animValue = 1.1,
       hoverStyleElement = HoverStyleElement.circle,
       onClick,
+      tooltipText,
       ...rest
     },
     forwardedRef
@@ -97,7 +105,18 @@ const SoundHoverElement = forwardRef<HTMLElement, SoundHoverElementProps>(
         whileHover={getHoverTypeAnimation()}
         {...rest}
       >
-        {children}
+        {tooltipText ? (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>{children}</TooltipTrigger>
+              <TooltipContent>
+                <p className="text-background">{tooltipText}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          children
+        )}
       </MotionTag>
     );
   }

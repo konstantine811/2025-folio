@@ -119,7 +119,7 @@ const Article = () => {
 
   return (
     <div
-      className="bg-background pb-20 relative"
+      className="bg-background pb-20 relative z-1"
       style={{ minHeight: `calc(100vh - ${hSize}px)` }}
       ref={scrollRef}
     >

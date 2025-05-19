@@ -4,6 +4,11 @@
   "date_format": "D MMMM YYYY [at] HH:mm",
   "copy": "Copy",
   "copied": "Copied",
+  "login": {
+    "to_google": "Login with Google",
+    "out": "Logout",
+    "switch": "Login to another account"
+  },
   "blog": {
     "topics": {
       "all": "All Topics",

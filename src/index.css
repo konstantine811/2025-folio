@@ -43,7 +43,7 @@
 }
 
 @layer components {
-  /* .text-highlight {
+  .text-highlight {
     @apply rounded px-2 py-0.5 my-0.5 inline-block;
   }
 
@@ -52,12 +52,12 @@
   }
 
   .highlight-grey {
-    @apply bg-background-alt border border-fg text-fg rounded-lg px-1.5;
+    @apply bg-card border border-foreground text-foreground rounded-lg px-1.5;
   }
 
   .highlight-green {
-    @apply bg-green-300 border border-fg !text-black rounded-lg px-1.5;
-  } */
+    @apply bg-green-300 border border-foreground !text-black rounded-lg px-1.5;
+  }
 }
 
 @theme inline {

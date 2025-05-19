@@ -30,15 +30,15 @@ const ArticleCover = ({ article }: { article: PostContent }) => {
         />
       )}
       <div className="relative z-10 w-full grow flex flex-col items-center bg-background-card/40 backdrop-contrast-150 pt-22 pb-10 md:py-10 px-13">
-        <div className="text-foreground/80 text-shadow-md max-w-4xl mx-auto text-shadow-background/30">
-          <p className="text-xs font-mono tracking-wide text-foreground uppercase">
+        <div className="text-foreground max-w-4xl mx-auto bg-background/30 rounded-lg p-2">
+          <p className="text-xs font-mono tracking-wide uppercase">
             {dayjs(article.created_at.seconds * 1000).format(t("date_format"))}
           </p>
           <h1 className="text-[clamp(1.5rem,5vw,3rem)] leading-tight md:text-6xl lg:text-8xl font-extrabold mb-4 break-words text-balance  text-center max-w-screen-md mx-auto px-4">
             {article.title}
           </h1>
 
-          <p className="text-xl lg:text-3xl inline-block w-auto p-2 rounded-xs overflow-hidden bg-background-card/50 backdrop-blur-xl border border-background">
+          <p className="text-xl lg:text-2xl inline-block w-auto p-2 font-monospace font-normal rounded-xs overflow-hidden">
             {article.description}
           </p>
         </div>

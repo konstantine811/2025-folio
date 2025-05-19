@@ -47,7 +47,7 @@ const SelectItem = ({
         <SoundHoverElement
           as="button"
           hoverTypeElement={SoundTypeElement.LOGO}
-          className="p-3 rounded-full relative z-50"
+          className="p-3 rounded-full relative z-[1000]"
           hoverAnimType="translate"
           onClick={() => {
             setIsOpen(!isOpen);
