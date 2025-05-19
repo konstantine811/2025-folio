@@ -18,9 +18,9 @@ export default defineConfig({
         description: "Abramov Constantin Abc Folio",
         theme_color: "#ffffff",
         background_color: "#ffffff",
-        display: "standalone",
+        display: "browser",
         scope: "/",
-        start_url: "/",
+        start_url: "/?source=pwa",
         icons: [
           {
             src: "logo-3d.png",
