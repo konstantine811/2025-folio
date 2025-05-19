@@ -63,6 +63,13 @@ const Login = () => {
     logout(); // очистити стан
   };
 
+  useEffect(() => {
+    console.log("User state changed:", user);
+  }, [user]);
+  useEffect(() => {
+    console.log("Auth state changed:", auth.currentUser);
+  });
+
   if (!user) {
     return (
       <SoundHoverElement
