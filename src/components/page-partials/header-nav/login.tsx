@@ -12,7 +12,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useEffect } from "react";
 
 const Login = () => {
   const { user, setUser, logout } = useAuthStore();
@@ -20,7 +19,7 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      // auth.languageCode = "en";
+      auth.languageCode = "en";
       const result = await signInWithPopup(auth, provider);
       setUser(result.user);
     } catch (err) {
@@ -32,13 +31,6 @@ const Login = () => {
     await signOut(auth);
     logout(); // очистити стан
   };
-
-  useEffect(() => {
-    console.log("User state changed:", user);
-  }, [user]);
-  useEffect(() => {
-    console.log("Auth state changed:", auth.currentUser);
-  });
 
   if (!user) {
     return (

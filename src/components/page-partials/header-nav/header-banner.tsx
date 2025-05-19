@@ -12,7 +12,7 @@ const HeaderBanner = () => {
   }, [location.pathname]);
   return (
     <>
-      <h3 className="text-mono">@ 2025 abc-folio upd_4</h3>
+      <h3 className="text-mono">@ 2025 abc-folio</h3>
       <TextEffect as="h4" key={pathName} per="char" preset="slide">
         {pathName}
       </TextEffect>
