@@ -12,9 +12,9 @@ import useSetTheme from "./hooks/useSetTheme";
 import useLogin from "./services/firebase/useLogin";
 
 function App() {
-  useLogin();
   subscribeToHoverSound();
-  useSetTheme();
+  useLogin(); // ✅
+  useSetTheme(); // ✅
   const [isTouch, setIsTouch] = useState(false);
 
   useEffect(() => {
