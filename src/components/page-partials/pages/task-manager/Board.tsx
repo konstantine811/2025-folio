@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Task {
@@ -31,22 +31,34 @@ export const TasksWithCategories: React.FC = () => {
   const [draggedCategoryId, setDraggedCategoryId] = useState<number | null>(
     null
   );
+  const touchTaskId = useRef<number | null>(null);
 
   const handleDragStart = (e: React.DragEvent, taskId: number) => {
     e.dataTransfer.setData("taskId", taskId.toString());
   };
 
-  const handleDrop = (e: React.DragEvent, newCategoryId?: number) => {
-    e.stopPropagation();
-    const taskId = Number(e.dataTransfer.getData("taskId"));
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === taskId ? { ...task, categoryId: newCategoryId } : task
-      )
-    );
+  const handleDrop = (
+    e: React.DragEvent | TouchEvent,
+    newCategoryId?: number
+  ) => {
+    let taskId: number | null = null;
+    if ("dataTransfer" in e) {
+      e.stopPropagation();
+      taskId = Number(e.dataTransfer.getData("taskId"));
+    } else if (touchTaskId.current !== null) {
+      taskId = touchTaskId.current;
+    }
+    if (taskId !== null) {
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id === taskId ? { ...task, categoryId: newCategoryId } : task
+        )
+      );
+      touchTaskId.current = null;
+    }
   };
 
-  const allowDrop = (e: React.DragEvent) => {
+  const allowDrop = (e: React.DragEvent | React.TouchEvent) => {
     e.preventDefault();
   };
 
@@ -65,6 +77,15 @@ export const TasksWithCategories: React.FC = () => {
     const [moved] = reordered.splice(oldIndex, 1);
     reordered.splice(newIndex, 0, moved);
     setCategories(reordered);
+  };
+
+  const handleTouchStart = (taskId: number) => {
+    console.log("Touch start", taskId);
+    touchTaskId.current = taskId;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent, newCategoryId?: number) => {
+    handleDrop(e.nativeEvent, newCategoryId);
   };
 
   return (
@@ -98,6 +119,7 @@ export const TasksWithCategories: React.FC = () => {
                 layout
                 onDragOver={allowDrop}
                 onDrop={(e) => handleDrop(e, category.id)}
+                onTouchEnd={(e) => handleTouchEnd(e, category.id)}
                 className="space-y-2 min-h-[40px]"
               >
                 <AnimatePresence>
@@ -113,12 +135,8 @@ export const TasksWithCategories: React.FC = () => {
                         <div
                           className="bg-card px-4 py-2 rounded shadow cursor-grab active:cursor-grabbing text-foreground hover:bg-accent transition-colors"
                           draggable
-                          onDragStart={(e) =>
-                            handleDragStart(
-                              e as React.DragEvent<HTMLDivElement>,
-                              task.id
-                            )
-                          }
+                          onDragStart={(e) => handleDragStart(e, task.id)}
+                          onTouchStart={() => handleTouchStart(task.id)}
                         >
                           {task.title}
                         </div>
@@ -140,6 +158,7 @@ export const TasksWithCategories: React.FC = () => {
         layout
         onDragOver={allowDrop}
         onDrop={(e) => handleDrop(e, undefined)}
+        onTouchEnd={(e) => handleTouchEnd(e, undefined)}
         className="border-t pt-6"
       >
         <h3 className="text-lg font-semibold mb-2">Задачі без категорії</h3>
@@ -158,12 +177,8 @@ export const TasksWithCategories: React.FC = () => {
                   <div
                     className="bg-card px-4 py-2 rounded shadow cursor-grab active:cursor-grabbing text-foreground hover:bg-accent transition-colors"
                     draggable
-                    onDragStart={(e) =>
-                      handleDragStart(
-                        e as React.DragEvent<HTMLDivElement>,
-                        task.id
-                      )
-                    }
+                    onDragStart={(e) => handleDragStart(e, task.id)}
+                    onTouchStart={() => handleTouchStart(task.id)}
                   >
                     {task.title}
                   </div>
