@@ -36,7 +36,13 @@ const Login = () => {
         console.error("Redirect login error:", err);
       });
   }, [setUser]);
-
+  useEffect(() => {
+    const unsub = auth.onAuthStateChanged((user) => {
+      console.log("Auth state changed:", user);
+      if (user) setUser(user);
+    });
+    return () => unsub();
+  }, []);
   const handleLogin = async () => {
     try {
       await setPersistence(auth, browserSessionPersistence);
