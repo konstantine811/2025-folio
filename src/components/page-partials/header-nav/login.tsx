@@ -1,19 +1,11 @@
 import { auth, provider } from "@/config/firebase.config";
 import { useAuthStore } from "@/storage/useAuthStore";
-import {
-  browserSessionPersistence,
-  getRedirectResult,
-  setPersistence,
-  signInWithPopup,
-  signInWithRedirect,
-  signOut,
-} from "firebase/auth";
+import { signInWithPopup, signOut } from "firebase/auth";
 import { SoundTypeElement } from "@custom-types/sound";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import SelectItem from "@/components/ui-abc/select/select-item";
 import { ArrowRightLeft, LogOut, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { isMobile } from "react-device-detect";
 import {
   Tooltip,
   TooltipContent,
@@ -25,34 +17,12 @@ import { useEffect } from "react";
 const Login = () => {
   const { user, setUser, logout } = useAuthStore();
   const [t] = useTranslation();
-  useEffect(() => {
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result?.user) {
-          setUser(result.user);
-        }
-      })
-      .catch((err) => {
-        console.error("Redirect login error:", err);
-      });
-  }, [setUser]);
-  useEffect(() => {
-    const unsub = auth.onAuthStateChanged((user) => {
-      console.log("Auth state changed:", user);
-      if (user) setUser(user);
-    });
-    return () => unsub();
-  }, []);
+
   const handleLogin = async () => {
     try {
-      await setPersistence(auth, browserSessionPersistence);
-
-      if (isMobile) {
-        signInWithRedirect(auth, provider);
-      } else {
-        const result = await signInWithPopup(auth, provider);
-        setUser(result.user);
-      }
+      auth.languageCode = "en";
+      const result = await signInWithPopup(auth, provider);
+      setUser(result.user);
     } catch (err) {
       console.error("Login error:", err);
     }
