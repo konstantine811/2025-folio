@@ -1,7 +1,9 @@
 import { auth, provider } from "@/config/firebase.config";
 import { useAuthStore } from "@/storage/useAuthStore";
 import {
+  browserSessionPersistence,
   getRedirectResult,
+  setPersistence,
   signInWithPopup,
   signInWithRedirect,
   signOut,
@@ -37,11 +39,12 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
+      await setPersistence(auth, browserSessionPersistence);
+
       if (isMobile) {
-        signInWithRedirect(auth, provider); // ❗️без await
+        signInWithRedirect(auth, provider);
       } else {
         const result = await signInWithPopup(auth, provider);
-
         setUser(result.user);
       }
     } catch (err) {
