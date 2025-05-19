@@ -20,7 +20,7 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      auth.languageCode = "en";
+      // auth.languageCode = "en";
       const result = await signInWithPopup(auth, provider);
       setUser(result.user);
     } catch (err) {
