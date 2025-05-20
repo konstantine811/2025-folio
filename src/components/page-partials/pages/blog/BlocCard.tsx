@@ -16,7 +16,7 @@ const BlocCard = ({ post }: { post: PostCover }) => {
       hoverTypeElement={SoundTypeElement.SELECT}
       hoverStyleElement={HoverStyleElement.quad}
       as="li"
-      className="bg-background-card text-foreground rounded-xs overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col h-full"
+      className="bg-card text-foreground rounded-xs overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col h-full"
       onClick={() => {
         navigateTo(`${RoutPath.BLOG}/${post.id}`);
       }}

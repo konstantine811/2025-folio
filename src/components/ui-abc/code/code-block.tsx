@@ -69,7 +69,7 @@ export const CodeBlock: Components["code"] = ({
 
         {/* Код */}
         <div
-          className="[&_pre]:!bg-transparent [&_code]:!bg-transparent p-4 font-mono"
+          className="[&_pre]:!bg-transparent [&_code]:!bg-transparent p-4 font-mono word-break break-all [&_pre]:min-w-full [&_code]:whitespace-pre-wrap"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       </div>
