@@ -39,7 +39,7 @@ export interface Props {
   wrapperStyle?: React.CSSProperties;
   value: React.ReactNode;
   onRemove?(): void;
-  renderItem: (args: RenderItemProps) => React.ReactElement;
+  renderItem?: (args: RenderItemProps) => React.ReactElement;
 }
 
 export const Item = React.memo(

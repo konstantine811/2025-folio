@@ -492,7 +492,6 @@ export function MultipleContainers({
             >
               <SortableContext items={items[containerId]} strategy={strategy}>
                 {items[containerId].map((value, index) => {
-                  if (!renderItem) return;
                   return (
                     <SortableItem
                       disabled={isSortingContainer}
@@ -541,7 +540,6 @@ export function MultipleContainers({
   );
 
   function renderSortableItemDragOverlay(id: UniqueIdentifier) {
-    if (!renderItem) return;
     return (
       <Item
         value={id}
@@ -564,7 +562,6 @@ export function MultipleContainers({
   }
 
   function renderContainerDragOverlay(containerId: UniqueIdentifier) {
-    if (!renderItem) return;
     return (
       <Container
         label={`Column ${containerId}`}
@@ -680,7 +677,7 @@ interface SortableItemProps {
     containerId: UniqueIdentifier;
   }): React.CSSProperties;
   getIndex(id: UniqueIdentifier): number;
-  renderItem: (args: RenderItemProps) => React.ReactElement;
+  renderItem?: (args: RenderItemProps) => React.ReactElement;
   wrapperStyle({ index }: { index: number }): React.CSSProperties;
 }
 
