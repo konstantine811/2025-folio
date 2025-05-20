@@ -11,12 +11,14 @@ const HeaderBanner = () => {
     setPathName(capitalizeFirstLetter(location.pathname.split("/")[1]));
   }, [location.pathname]);
   return (
-    <>
+    <div className="flex flex-col items-center justify-center">
       <h3 className="text-mono">@ 2025 abc-folio</h3>
-      <TextEffect as="h4" key={pathName} per="char" preset="slide">
-        {pathName}
-      </TextEffect>
-    </>
+      {pathName && (
+        <TextEffect as="h4" key={pathName} per="char" preset="slide">
+          {pathName}
+        </TextEffect>
+      )}
+    </div>
   );
 };
 
