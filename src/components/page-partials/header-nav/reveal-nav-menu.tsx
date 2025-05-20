@@ -114,7 +114,7 @@ const RevealNavMenu = memo(() => {
               </motion.nav>
               {isMdSize && (
                 <div className="flex px-5 py-5 justify-between items-center text-foreground/55 border-t border-background">
-                  <div className="flex gap-2">
+                  <div className="flex gap-5 items-center justify-center">
                     <ToggleSound />
                     <ColorPicker />
                     <LanguagePicker />
