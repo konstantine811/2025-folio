@@ -1,9 +1,11 @@
 import React, { useEffect } from "react";
 import type { DraggableSyntheticListeners } from "@dnd-kit/core";
 import type { Transform } from "@dnd-kit/utilities";
-
-import { Handle } from "./Handle";
-import { Remove } from "./Remove";
+import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
+import { SoundTypeElement } from "@/types/sound";
+import { Button } from "@/components/ui/button";
+import { Grip, X } from "lucide-react";
+import { ItemTask } from "@/types/drag-and-drop.model";
 
 export type RenderItemProps = {
   dragOverlay: boolean;
@@ -17,6 +19,7 @@ export type RenderItemProps = {
   transform: Props["transform"];
   transition: Props["transition"];
   value: Props["value"];
+  task: ItemTask;
 };
 
 export interface Props {
@@ -36,8 +39,8 @@ export interface Props {
   sorting?: boolean;
   style?: React.CSSProperties;
   transition?: string | null;
-  wrapperStyle?: React.CSSProperties;
   value: React.ReactNode;
+  task: ItemTask;
   onRemove?(): void;
   renderItem?: (args: RenderItemProps) => React.ReactElement;
 }
@@ -46,7 +49,6 @@ export const Item = React.memo(
   React.forwardRef<HTMLLIElement, Props>(
     (
       {
-        color,
         dragOverlay,
         dragging,
         fadeIn,
@@ -61,7 +63,7 @@ export const Item = React.memo(
         transition,
         transform,
         value,
-        wrapperStyle,
+        task,
         ...props
       },
       ref
@@ -91,36 +93,12 @@ export const Item = React.memo(
           transform,
           transition,
           value,
+          task,
         })
       ) : (
-        <li
-          className=""
-          style={
-            {
-              ...wrapperStyle,
-              transition: [transition, wrapperStyle?.transition]
-                .filter(Boolean)
-                .join(", "),
-              "--translate-x": transform
-                ? `${Math.round(transform.x)}px`
-                : undefined,
-              "--translate-y": transform
-                ? `${Math.round(transform.y)}px`
-                : undefined,
-              "--scale-x": transform?.scaleX
-                ? `${transform.scaleX}`
-                : undefined,
-              "--scale-y": transform?.scaleY
-                ? `${transform.scaleY}`
-                : undefined,
-              "--index": index,
-              "--color": color,
-            } as React.CSSProperties
-          }
-          ref={ref}
-        >
+        <li className="list-none" ref={ref}>
           <div
-            className="bg-background border p-2 my-1 rounded shadow-sm cursor-move"
+            className="bg-card p-1 my-1 rounded shadow-sm cursor-move"
             style={style}
             data-cypress="draggable-item"
             {...(!handle ? listeners : undefined)}
@@ -129,8 +107,32 @@ export const Item = React.memo(
           >
             {value}
             <span>
-              {onRemove ? <Remove onClick={onRemove} /> : null}
-              {handle ? <Handle {...handleProps} {...listeners} /> : null}
+              {onRemove && (
+                <SoundHoverElement
+                  animValue={0.9}
+                  hoverTypeElement={SoundTypeElement.SELECT_2}
+                >
+                  <Button variant="ghost" size="icon" onClick={onRemove}>
+                    <X />
+                  </Button>
+                </SoundHoverElement>
+              )}
+              {handle && (
+                <SoundHoverElement
+                  animValue={0.9}
+                  hoverTypeElement={SoundTypeElement.SELECT}
+                >
+                  <Button
+                    {...handleProps}
+                    {...listeners}
+                    variant="ghost"
+                    size="icon"
+                    className="cursor-move"
+                  >
+                    <Grip />
+                  </Button>
+                </SoundHoverElement>
+              )}
             </span>
           </div>
         </li>

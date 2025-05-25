@@ -1,7 +1,10 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useState } from "react";
 
-import { Handle } from "./Handle";
-import { Remove } from "./Remove";
+import InputCombobox from "@/components/ui-abc/inputs/input-combobox";
+import { Button } from "@/components/ui/button";
+import { Grip, Pen, PenOff, X } from "lucide-react";
+import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
+import { SoundTypeElement } from "@/types/sound";
 
 export interface Props {
   children: React.ReactNode;
@@ -15,6 +18,7 @@ export interface Props {
   placeholder?: boolean;
   onClick?(): void;
   onRemove?(): void;
+  onValueChange?: (value: string) => void;
 }
 
 export const Container = forwardRef<HTMLDivElement, Props>(
@@ -27,12 +31,13 @@ export const Container = forwardRef<HTMLDivElement, Props>(
       label,
       placeholder,
       style,
+      onValueChange,
       ...props
     }: Props,
     ref
   ) => {
     const Component = "div";
-
+    const [isEdit, setIsEdit] = useState(false);
     return (
       <Component
         {...props}
@@ -46,11 +51,60 @@ export const Container = forwardRef<HTMLDivElement, Props>(
         className=""
       >
         {label ? (
-          <div className="">
-            {label}
-            <div className="">
-              {onRemove ? <Remove onClick={onRemove} /> : undefined}
-              <Handle {...handleProps} />
+          <div className="flex items-center w-full gap-1">
+            <div className="flex w-full gap-2 items-center justify-between">
+              {isEdit ? (
+                <InputCombobox
+                  onValueChange={onValueChange}
+                  outerValue={label}
+                />
+              ) : (
+                <label className="text-foreground text-xl ml-3">{label}</label>
+              )}
+
+              <SoundHoverElement
+                animValue={0.9}
+                hoverTypeElement={SoundTypeElement.SELECT}
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsEdit(!isEdit)}
+                >
+                  {isEdit ? <PenOff /> : <Pen />}
+                </Button>
+              </SoundHoverElement>
+            </div>
+
+            <div className="flex items-center gap-1">
+              {onRemove && (
+                <SoundHoverElement
+                  animValue={0.9}
+                  hoverTypeElement={SoundTypeElement.SELECT_2}
+                >
+                  <Button
+                    variant="destructive"
+                    className="bg-transparent"
+                    size="icon"
+                    onClick={onRemove}
+                  >
+                    <X />
+                  </Button>
+                </SoundHoverElement>
+              )}
+              <SoundHoverElement
+                animValue={0.9}
+                hoverTypeElement={SoundTypeElement.SELECT}
+              >
+                <Button
+                  {...handleProps}
+                  variant="ghost"
+                  size="icon"
+                  className="cursor-move"
+                >
+                  <Grip />
+                </Button>
+              </SoundHoverElement>
             </div>
           </div>
         ) : null}

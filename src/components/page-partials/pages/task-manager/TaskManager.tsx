@@ -1,4 +1,4 @@
-import { MultipleContainers } from "./dnd/MultipleContainer";
+import { MultipleContainers } from "./dnd/multiple-container";
 import { rectSortingStrategy } from "@dnd-kit/sortable";
 
 const TaskManager = () => {
@@ -7,11 +7,13 @@ const TaskManager = () => {
       <h1 className="text-foreground text-9xl">Task Manager page</h1>
       {/* <TasksWithCategories />
       <TaskTree /> */}
-      <MultipleContainers
-        itemCount={5}
-        strategy={rectSortingStrategy}
-        vertical
-      />
+      <div className="max-w-2xl m-auto">
+        <MultipleContainers
+          itemCount={5}
+          strategy={rectSortingStrategy}
+          vertical
+        />
+      </div>
     </div>
   );
 };

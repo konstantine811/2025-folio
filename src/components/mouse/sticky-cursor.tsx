@@ -86,7 +86,7 @@ const StickCursor = () => {
     <>
       {hoverStyleElement !== HoverStyleElement.none && (
         <motion.div
-          className={`fixed rounded-full z-[100000] pointer-events-none cursor-none   ${
+          className={`fixed rounded-md z-[100000] pointer-events-none cursor-none   ${
             !isHoveringWrapper || hoverStyleElement !== HoverStyleElement.quad
               ? `border ${classBorderColor}`
               : "border-none"
@@ -103,22 +103,22 @@ const StickCursor = () => {
               <>
                 {/* top-left */}
                 <span
-                  className={`${classHoverLink} top-0 left-0 border-t-2 border-l-2 rounded-tl-[4px]`}
+                  className={`${classHoverLink} top-0 left-0 border-t-2 border-l-2 rounded-tl-xs`}
                 />
 
                 {/* top-right */}
                 <span
-                  className={`${classHoverLink} top-0 right-0 border-t-2 border-r-2 rounded-tr-[4px]`}
+                  className={`${classHoverLink} top-0 right-0 border-t-2 border-r-2 rounded-tr-xs`}
                 />
 
                 {/* bottom-left */}
                 <span
-                  className={`${classHoverLink} bottom-0 left-0 border-b-2 border-l-2 rounded-bl-[4px]`}
+                  className={`${classHoverLink} bottom-0 left-0 border-b-2 border-l-2 rounded-bl-xs`}
                 />
 
                 {/* bottom-right */}
                 <span
-                  className={`${classHoverLink} bottom-0 right-0 border-b-2 border-r-2 rounded-br-[4px]`}
+                  className={`${classHoverLink} bottom-0 right-0 border-b-2 border-r-2 rounded-br-xs`}
                 />
               </>
             )}
