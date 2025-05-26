@@ -1,5 +1,5 @@
 import { Checkbox } from "@/components/ui/checkbox";
-import { ItemTask } from "@/types/drag-and-drop.model";
+import { ItemTask, Priority } from "@/types/drag-and-drop.model";
 import { Settings2 } from "lucide-react";
 import {
   getPriorityBorderClass,
@@ -10,6 +10,7 @@ import { UniqueIdentifier } from "@dnd-kit/core";
 import { checkInSound, checkOutSound } from "@/config/sounds";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { SoundTypeElement } from "@/types/sound";
+import DialogTask from "./dialog-task";
 
 export function TaskItem({
   index = "",
@@ -17,10 +18,18 @@ export function TaskItem({
   onDelete,
   onToggle,
   children,
+  onChangeTask,
 }: {
   index?: number | string;
   task: ItemTask;
   onToggle?: (id: UniqueIdentifier, value: boolean) => void;
+  onChangeTask: (
+    id: UniqueIdentifier,
+    title: string,
+    priority: Priority,
+    time: number,
+    wastedTime: number
+  ) => void;
   onDelete?: () => void;
   children?: React.ReactNode;
 }) {
@@ -84,16 +93,23 @@ export function TaskItem({
           className={`flex-1 text-left text-sm ${
             task.isDone
               ? "text-accent font-medium"
-              : `${getPriorityClassByPrefix(task.priority)} opacity-70`
+              : `${getPriorityClassByPrefix(task.priority)}`
           }`}
         >
           {task.title}
         </span>
 
-        <button className="p-1 hover:text-foreground transition flex items-center gap-2">
-          <Settings2 className="w-4 h-4 text-muted-foreground" />
+        <div className="flex items-center gap-2">
+          <DialogTask
+            task={task}
+            onChangeTask={(title, priority, time, wastedTime) => {
+              if (onChangeTask) {
+                onChangeTask(task.id, title, priority, time, wastedTime);
+              }
+            }}
+          />
           {children}
-        </button>
+        </div>
 
         {/* {isChecked && onDelete && (
         <button

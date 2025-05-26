@@ -5,8 +5,12 @@ import { useTranslation } from "react-i18next";
 
 export function TimePickerInputs({
   onChange,
+  time,
+  title,
 }: {
   onChange: (timeSeconds: number) => void;
+  time?: number;
+  title: string;
 }) {
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
@@ -28,41 +32,51 @@ export function TimePickerInputs({
   };
 
   useEffect(() => {
+    if (time) {
+      const totalMinutes = Math.floor(time / 60);
+      const totalHours = Math.floor(totalMinutes / 60);
+      const remainingMinutes = totalMinutes % 60;
+      setHours(totalHours);
+      setMinutes(remainingMinutes);
+    }
+  }, [time]);
+
+  useEffect(() => {
     const totalSeconds = hours * 3600 + minutes * 60;
     onChange(totalSeconds);
   }, [hours, minutes, onChange]);
 
   return (
-    <div className="flex gap-4 items-center">
-      <Label className="text-right">
-        {t("task_manager.dialog_create_task.task.time.label")}
-      </Label>
-      <div className="flex flex-col items-center space-y-1">
-        <Label htmlFor="hours">
-          {t("task_manager.dialog_create_task.task.time.hours")}
-        </Label>
-        <NumberInput
-          min={0}
-          max={12}
-          value={hours}
-          onChange={(value) => {
-            handleHoursChange(value);
-          }}
-        />
-      </div>
+    <div className="flex gap-4 items-center justify-between">
+      {title && <Label className="text-right">{title} :</Label>}
+      <div className="flex gap-1">
+        <div className="flex flex-col items-center space-y-1">
+          <Label htmlFor="hours">
+            {t("task_manager.dialog_create_task.task.time.hours")}
+          </Label>
+          <NumberInput
+            min={0}
+            max={12}
+            value={hours}
+            onChange={(value) => {
+              handleHoursChange(value);
+            }}
+          />
+        </div>
 
-      <div className="flex flex-col items-center space-y-1">
-        <Label htmlFor="minutes">
-          {t("task_manager.dialog_create_task.task.time.minutes")}
-        </Label>
-        <NumberInput
-          min={0}
-          max={60}
-          value={minutes}
-          onChange={(value) => {
-            handleMinutesChange(value);
-          }}
-        />
+        <div className="flex flex-col items-center space-y-1">
+          <Label htmlFor="minutes">
+            {t("task_manager.dialog_create_task.task.time.minutes")}
+          </Label>
+          <NumberInput
+            min={0}
+            max={60}
+            value={minutes}
+            onChange={(value) => {
+              handleMinutesChange(value);
+            }}
+          />
+        </div>
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { SoundTypeElement } from "@/types/sound";
 import { Button } from "@/components/ui/button";
 import { Grip, GripVertical, X } from "lucide-react";
-import { ItemTask } from "@/types/drag-and-drop.model";
+import { ItemTask, Priority } from "@/types/drag-and-drop.model";
 import { TaskItem } from "./task-item";
 
 export type RenderItemProps = {
@@ -48,6 +48,13 @@ export interface Props {
   onRemove?(): void;
   renderItem?: (args: RenderItemProps) => React.ReactElement;
   onToggle?: (id: UniqueIdentifier, value: boolean) => void;
+  onChangeTask?: (
+    id: UniqueIdentifier,
+    title: string,
+    priority: Priority,
+    time: number,
+    wastedTime: number
+  ) => void;
 }
 
 export const Item = React.memo(
@@ -62,6 +69,7 @@ export const Item = React.memo(
         index,
         listeners,
         onRemove,
+        onChangeTask,
         renderItem,
         sorting,
         style,
@@ -103,7 +111,16 @@ export const Item = React.memo(
         })
       ) : (
         <li className="list-none" ref={ref} tabIndex={!handle ? 0 : undefined}>
-          <TaskItem index={index} task={task} onToggle={onToggle}>
+          <TaskItem
+            index={index}
+            task={task}
+            onToggle={onToggle}
+            onChangeTask={(id, title, priority, time, timeDone) => {
+              if (onChangeTask) {
+                onChangeTask(id, title, priority, time, timeDone);
+              }
+            }}
+          >
             {
               <div>
                 <SoundHoverElement

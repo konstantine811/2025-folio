@@ -48,7 +48,7 @@ export function getPriorityClassByPrefix(
     case Priority.HIGH:
       return `${type}-destructive`;
     case Priority.MEDIUM:
-      return `${type}-yellow-200`;
+      return `${type}-foreground`;
     case Priority.LOW:
       return `${type}-primary`;
     default:

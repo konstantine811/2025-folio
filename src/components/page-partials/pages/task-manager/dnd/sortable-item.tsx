@@ -2,7 +2,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { getColor } from "./utils/dnd.utils";
 import { Item, RenderItemProps } from "./item";
 import { UniqueIdentifier } from "@dnd-kit/core";
-import { Items, ItemTask } from "@/types/drag-and-drop.model";
+import { Items, ItemTask, Priority } from "@/types/drag-and-drop.model";
 
 interface SortableItemProps {
   containerId: UniqueIdentifier;
@@ -24,6 +24,13 @@ interface SortableItemProps {
   items: Items;
   task: ItemTask;
   onToggle?: (id: UniqueIdentifier, value: boolean) => void;
+  onChangeTask: (
+    id: UniqueIdentifier,
+    title: string,
+    priority: Priority,
+    time: number,
+    wastedTime: number
+  ) => void;
 }
 
 function SortableItem({
@@ -38,6 +45,7 @@ function SortableItem({
   items,
   onToggle,
   task,
+  onChangeTask,
 }: SortableItemProps) {
   const {
     setNodeRef,
@@ -77,6 +85,7 @@ function SortableItem({
       listeners={listeners}
       renderItem={renderItem}
       task={task}
+      onChangeTask={onChangeTask}
     />
   );
 }

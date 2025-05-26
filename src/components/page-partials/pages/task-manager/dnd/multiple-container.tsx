@@ -146,6 +146,23 @@ export function MultipleContainers({
     );
   };
 
+  const handleChangeTask = (
+    taskId: UniqueIdentifier,
+    title: string,
+    priority: Priority,
+    time: number,
+    timeDone: number
+  ) => {
+    setItems((prevItems) =>
+      prevItems.map((container) => ({
+        ...container,
+        tasks: container.tasks.map((t) =>
+          t.id === taskId ? { ...t, title, priority, time, timeDone } : t
+        ),
+      }))
+    );
+  };
+
   useEffect(() => {
     requestAnimationFrame(() => {
       recentlyMovedToNewContainer.current = false;
@@ -201,25 +218,32 @@ export function MultipleContainers({
                 items={category.tasks.map((t) => t.id)}
                 strategy={strategy}
               >
-                {category.tasks.map((task, index) => (
-                  <SortableItem
-                    disabled={isSortingContainer}
-                    key={task.id}
-                    id={task.id}
-                    index={index}
-                    handle={handle}
-                    items={items}
-                    style={getItemStyles}
-                    wrapperStyle={wrapperStyle}
-                    renderItem={renderItem}
-                    containerId={category.id}
-                    getIndex={getIndex}
-                    task={task}
-                    onToggle={(id, value) => {
-                      handleToggleTask(id, value);
-                    }}
-                  />
-                ))}
+                {category.tasks.length > 0 ? (
+                  category.tasks.map((task, index) => (
+                    <SortableItem
+                      disabled={isSortingContainer}
+                      key={task.id}
+                      id={task.id}
+                      index={index}
+                      handle={handle}
+                      items={items}
+                      style={getItemStyles}
+                      wrapperStyle={wrapperStyle}
+                      renderItem={renderItem}
+                      containerId={category.id}
+                      getIndex={getIndex}
+                      task={task}
+                      onToggle={(id, value) => {
+                        handleToggleTask(id, value);
+                      }}
+                      onChangeTask={handleChangeTask}
+                    />
+                  ))
+                ) : (
+                  <li className="h-[64px] rounded-xl border border-dashed border-muted/20 flex items-center justify-center text-muted-foreground text-sm">
+                    Перетягни сюди задачу
+                  </li>
+                )}
               </SortableContext>
             </DroppableContainer>
           ))}

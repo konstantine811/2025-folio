@@ -7,7 +7,7 @@ import { Container, Props } from "./container";
 import { CSS } from "@dnd-kit/utilities";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { Items, ItemTask, Priority } from "@/types/drag-and-drop.model";
-import DialogCreateTask from "./dialog-create-task";
+import DialogCreateTask from "./dialog-task";
 
 const animateLayoutChanges: AnimateLayoutChanges = (args) =>
   defaultAnimateLayoutChanges({ ...args, wasDragging: true });
@@ -47,7 +47,12 @@ function DroppableContainer({
     animateLayoutChanges,
   });
 
-  const handleAddTask = (title: string, priority: Priority, time: number) => {
+  const handleAddTask = (
+    title: string,
+    priority: Priority,
+    time: number,
+    wastedTime: number
+  ) => {
     if (!setItems) return;
 
     const newTask: ItemTask = {
@@ -55,7 +60,7 @@ function DroppableContainer({
       title,
       isDone: false,
       time,
-      timeDone: 0,
+      timeDone: wastedTime,
       priority,
     };
 
@@ -102,8 +107,8 @@ function DroppableContainer({
       {/* Add task button */}
       {!placeholder && (
         <DialogCreateTask
-          onCreateTask={(title, prioriy, time) => {
-            handleAddTask(title, prioriy, time);
+          onChangeTask={(title, prioriy, time, wastedTime) => {
+            handleAddTask(title, prioriy, time, wastedTime);
           }}
         />
       )}

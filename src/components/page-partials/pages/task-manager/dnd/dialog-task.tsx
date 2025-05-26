@@ -22,35 +22,63 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useHoverStore } from "@/storage/hoverStore";
-import { Priority } from "@/types/drag-and-drop.model";
+import { ItemTask, Priority } from "@/types/drag-and-drop.model";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import { getRandomFromTo } from "@/utils/random";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getPriorityClassByPrefix } from "./utils/dnd.utils";
 import { Textarea } from "@/components/ui/textarea";
 import { TimePickerInputs } from "./time-picker-inputs";
+import { Settings2 } from "lucide-react";
 
-const DialogCreateTask = ({
-  onCreateTask,
+const DialogTask = ({
+  onChangeTask,
+  task,
 }: {
-  onCreateTask: (title: string, priority: Priority, time: number) => void;
+  onChangeTask: (
+    title: string,
+    priority: Priority,
+    time: number,
+    wastedTime: number
+  ) => void;
+  task?: ItemTask;
 }) => {
   const [t] = useTranslation();
   const setHover = useHoverStore((s) => s.setHover);
   const [title, setTitle] = useState<string>("");
   const [priority, setPriority] = useState<Priority>(Priority.LOW);
   const [time, setTime] = useState<number>(0);
+  const [wastedTime, setWastedTime] = useState<number>(0);
   const [translateRandom, setTranslateRandom] = useState(1);
 
   const handleCreateTask = () => {
     if (title.trim() === "") return;
-    onCreateTask(title, priority, time);
-    setTitle("");
-    setPriority(Priority.LOW);
-    setTime(0);
+    onChangeTask(title, priority, time, wastedTime);
+    if (!task) {
+      setTitle("");
+      setPriority(Priority.LOW);
+      setTime(0);
+    }
+
     setHover(false, null, HoverStyleElement.circle);
   };
+
+  useEffect(() => {
+    if (task) {
+      setTitle(task.title);
+      setPriority(task.priority);
+      setTime(task.time);
+      setWastedTime(task.timeDone);
+    }
+  }, [task]);
+
+  const onOpenDialog = useCallback(() => {
+    setTimeout(() => {
+      setHover(false, null, HoverStyleElement.circle);
+    }, 300);
+    setTranslateRandom(getRandomFromTo(1, 4));
+  }, [setHover]);
 
   return (
     <Dialog>
@@ -62,18 +90,24 @@ const DialogCreateTask = ({
               hoverTypeElement={SoundTypeElement.LINK}
               hoverStyleElement={HoverStyleElement.quad}
             >
-              <Button
-                onClick={() => {
-                  setTimeout(() => {
-                    setHover(false, null, HoverStyleElement.circle);
-                  }, 300);
-                  setTranslateRandom(getRandomFromTo(1, 4));
-                }}
-                variant="link"
-                className="cursor-pointer"
-              >
-                {t("task_manager.add")}
-              </Button>
+              {task ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onOpenDialog}
+                  className="hover:bg-card/50 hover:text-foreground"
+                >
+                  <Settings2 className="w-4 h-4 text-muted-foreground" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={onOpenDialog}
+                  variant="link"
+                  className="cursor-pointer"
+                >
+                  {t("task_manager.add")}
+                </Button>
+              )}
             </SoundHoverElement>
           </WrapperHoverElement>
         </div>
@@ -149,10 +183,21 @@ const DialogCreateTask = ({
             </Select>
           </div>
           <TimePickerInputs
+            title={t("task_manager.dialog_create_task.task.time.label")}
+            time={time}
             onChange={(value) => {
               setTime(value);
             }}
           />
+          {task && (
+            <TimePickerInputs
+              title={t("task_manager.dialog_create_task.task.time.wasted_time")}
+              time={wastedTime}
+              onChange={(value) => {
+                setWastedTime(value);
+              }}
+            />
+          )}
         </div>
         <DialogFooter>
           <DialogClose
@@ -167,14 +212,13 @@ const DialogCreateTask = ({
             >
               <Button
                 onClick={() => {
-                  console.log("Close dialog");
                   handleCreateTask();
                 }}
                 disabled={title === ""}
                 variant="outline"
                 className="cursor-pointer"
               >
-                {t("task_manager.add")}
+                {task ? t("task_manager.edit") : t("task_manager.add")}
               </Button>
             </SoundHoverElement>
           </DialogClose>
@@ -184,4 +228,4 @@ const DialogCreateTask = ({
   );
 };
 
-export default DialogCreateTask;
+export default DialogTask;

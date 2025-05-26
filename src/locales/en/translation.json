@@ -40,6 +40,7 @@
         },
         "time": {
           "label": "Planned Time",
+          "wasted_time": "Wasted Time",
           "hours": "Hours",
           "minutes": "Minutes",
           "description": "How much time do you want to dedicate to this task?"

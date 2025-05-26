@@ -60,23 +60,23 @@ const useDrag = ({
   const onDragOver = (active: Active, over: Over | null) => {
     const overId = over?.id;
     if (!overId || overId === TRASH_ID) return;
-
     const activeTaskId = active.id;
     const overTaskId = overId;
 
     const activeCategory = items.find((cat) =>
       cat.tasks.some((t) => t.id === activeTaskId)
     );
-    const overCategory = items.find((cat) =>
-      cat.tasks.some((t) => t.id === overTaskId)
+    const overCategory = items.find(
+      (cat) =>
+        cat.id === overTaskId || cat.tasks.some((t) => t.id === overTaskId)
     );
-
     if (
       !activeCategory ||
       !overCategory ||
       activeCategory.id === overCategory.id
-    )
+    ) {
       return;
+    }
 
     const activeTask = activeCategory.tasks.find((t) => t.id === activeTaskId);
     if (!activeTask) return;

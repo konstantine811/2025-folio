@@ -49,14 +49,22 @@ const useCollisionDectionStrategy = ({
 
         const matchedCategory = items.find((cat) => cat.id === overId);
 
-        if (matchedCategory && matchedCategory.tasks.length > 0) {
-          const closest = closestCenter({
-            ...args,
-            droppableContainers: args.droppableContainers.filter((container) =>
-              matchedCategory.tasks.some((t) => t.id === container.id)
-            ),
-          });
-          overId = closest[0]?.id;
+        if (matchedCategory) {
+          if (matchedCategory.tasks.length > 0) {
+            const closest = closestCenter({
+              ...args,
+              droppableContainers: args.droppableContainers.filter(
+                (container) =>
+                  matchedCategory.tasks.some((t) => t.id === container.id)
+              ),
+            });
+
+            overId = closest[0]?.id ?? overId;
+          }
+
+          // ✅ Важливо: дозволяємо дропнути на порожню категорію
+          lastOverId.current = matchedCategory.id;
+          return [{ id: matchedCategory.id }];
         }
 
         lastOverId.current = overId;
