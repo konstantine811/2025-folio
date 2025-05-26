@@ -22,8 +22,8 @@ export interface ItemTask {
   id: UniqueIdentifier;
   title: string;
   isDone: boolean;
-  time: string; // запланований час (наприклад "30m", "2h")
-  timeDone: string;
+  time: number; // запланований час (наприклад "30m", "2h")
+  timeDone: number;
   priority: Priority; // фактично витрачено (аналогічно)
 }
 

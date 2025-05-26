@@ -1,9 +1,15 @@
-import { Items } from "@/types/drag-and-drop.model";
+import { Items, Priority } from "@/types/drag-and-drop.model";
 import {
   defaultDropAnimationSideEffects,
   DropAnimation,
   UniqueIdentifier,
 } from "@dnd-kit/core";
+
+export enum PriorityPrefixClass {
+  text = "text",
+  border = "border",
+  from = "from",
+}
 
 export const findContainer = (id: UniqueIdentifier, items: Items) => {
   return items.find((cat) => cat.tasks.some((t) => t.id === id))?.id;
@@ -32,6 +38,35 @@ export function getColor(id: UniqueIdentifier) {
   }
 
   return undefined;
+}
+
+export function getPriorityClassByPrefix(
+  priority: Priority,
+  type: PriorityPrefixClass = PriorityPrefixClass.text
+) {
+  switch (priority) {
+    case Priority.HIGH:
+      return `${type}-destructive`;
+    case Priority.MEDIUM:
+      return `${type}-yellow-200`;
+    case Priority.LOW:
+      return `${type}-primary`;
+    default:
+      return "";
+  }
+}
+
+export function getPriorityBorderClass(priority: Priority) {
+  switch (priority) {
+    case Priority.HIGH:
+      return "border-destructive";
+    case Priority.MEDIUM:
+      return "border-yellow-200";
+    case Priority.LOW:
+      return "border-primary";
+    default:
+      return "";
+  }
 }
 
 export const dropAnimation: DropAnimation = {

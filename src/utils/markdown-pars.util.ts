@@ -5,12 +5,12 @@ import { Heading, Parent, Text, RootContent } from "mdast";
 import { Children, isValidElement, ReactElement, ReactNode } from "react";
 import slugify from "slugify";
 import { IArticleHeading } from "@/types/blog-storage";
-import { getBlogArticleId } from "@/config/supabaseClient";
 import {
   DEFAULT_LOCALE_PLUG,
   DEFAULT_OBSIDIAN_VAULT,
   RoutPath,
 } from "@/config/router-config";
+import { getBlogArticleId } from "@/services/firebase/fetchBlogData";
 
 export const extractText = (node: RootContent): string => {
   if (node.type === "text") return (node as Text).value;
@@ -92,7 +92,6 @@ export async function replaceObsidianLinksWithCustomId(
           langPath[2],
           langPath[3]
         );
-
         if (id) {
           replacement = `[${label}](${DEFAULT_LOCALE_PLUG}${RoutPath.BLOG}/${id})`;
         }

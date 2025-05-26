@@ -134,3 +134,13 @@ export const whooshSound = new Howl({
     second: [1800, 1000],
   },
 });
+
+export const checkInSound = new Howl({
+  src: [getEfxPath("check-in")],
+  volume: 1.0,
+});
+
+export const checkOutSound = new Howl({
+  src: [getEfxPath("check-out")],
+  volume: 0.2,
+});

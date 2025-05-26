@@ -5,14 +5,31 @@ import {
   whooshSound,
   selectSound_3,
   selectSound_2,
+  buttonClickSound,
 } from "@config/sounds";
 import { SoundTypeElement } from "@custom-types/sound";
 import { useHoverStore } from "@storage/hoverStore";
 
+let lastType: SoundTypeElement | null = null;
+let lastTime = 0;
+const SOUND_THROTTLE_MS = 50;
+
 export function subscribeToHoverSound() {
   useHoverStore.subscribe((state) => {
     const isSoundEnabled = useSoundEnabledStore.getState().isSoundEnabled;
-    if (!isSoundEnabled) return; // не виконуємо звуки, якщо вимкнено
+    if (!isSoundEnabled) return;
+
+    const now = Date.now();
+
+    const isSameType = state.hoverTypeElement === lastType;
+    const isThrottled = now - lastTime < SOUND_THROTTLE_MS;
+
+    // 🔇 НЕ граємо звук при повторному enter/leave з тією ж самою кнопкою
+    if (isSameType && isThrottled) return;
+
+    lastType = state.hoverTypeElement;
+    lastTime = now;
+
     if (state.isHovering) {
       whooshSound.stop();
       switch (state.hoverTypeElement) {
@@ -29,8 +46,12 @@ export function subscribeToHoverSound() {
         case SoundTypeElement.LOGO:
           selectSound.play("second");
           break;
+        case SoundTypeElement.SHIFT:
+          buttonClickSound.play("first");
+          break;
       }
     } else {
+      // 🧠 не граємо end звук, якщо вже було false
       switch (state.hoverTypeElement) {
         case SoundTypeElement.BUTTON:
         case SoundTypeElement.LINK:
@@ -47,6 +68,11 @@ export function subscribeToHoverSound() {
         case SoundTypeElement.SELECT_2:
           selectSound_3.stop();
           whooshSound.play("second");
+          break;
+        case SoundTypeElement.SHIFT:
+          buttonClickSound.stop();
+          whooshSound.play("second");
+          break;
       }
     }
   });

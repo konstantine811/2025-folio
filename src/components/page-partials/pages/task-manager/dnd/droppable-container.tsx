@@ -47,16 +47,16 @@ function DroppableContainer({
     animateLayoutChanges,
   });
 
-  const handleAddTask = () => {
+  const handleAddTask = (title: string, priority: Priority, time: number) => {
     if (!setItems) return;
 
     const newTask: ItemTask = {
       id: `${id}-${Date.now()}`,
-      title: `Нова задача`,
+      title,
       isDone: false,
-      time: "30m",
-      timeDone: "0m",
-      priority: Priority.MEDIUM,
+      time,
+      timeDone: 0,
+      priority,
     };
 
     setItems((prev) =>
@@ -69,7 +69,6 @@ function DroppableContainer({
   };
 
   const handleChangeCategory = (value: string) => {
-    console.log("handleChangeCategory", value);
     if (!setItems || !setContainers) return;
     setItems((prev) =>
       prev.map((cat) => (cat.id === id ? { ...cat, title: value } : cat))
@@ -98,10 +97,16 @@ function DroppableContainer({
       columns={columns}
       {...props}
     >
-      <ul>{children}</ul>
+      <ul className="flex flex-col gap-1">{children}</ul>
 
       {/* Add task button */}
-      {!placeholder && <DialogCreateTask />}
+      {!placeholder && (
+        <DialogCreateTask
+          onCreateTask={(title, prioriy, time) => {
+            handleAddTask(title, prioriy, time);
+          }}
+        />
+      )}
     </Container>
   );
 }

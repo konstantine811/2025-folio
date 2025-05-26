@@ -25,7 +25,7 @@ const SortableItemDragOverlay = ({
   return (
     <Item
       task={task} // 🟢 додаємо task
-      value={task.id}
+      value={task?.title ?? id} // показує title, якщо знайдено
       handle={handle}
       style={getItemStyles({
         containerId: container.id,

@@ -25,6 +25,12 @@ interface HoverState {
   setHoverStyle: (hoverStyle: HoverStyleElement) => void;
 }
 
+let lastHoverState = {
+  isHovering: false,
+  hoverTypeElement: null as SoundTypeElement | null,
+  hoverStyleElement: HoverStyleElement.circle,
+};
+
 export const useHoverStore = create<HoverState>((set) => ({
   isHovering: false,
   boundingBox: null,
@@ -33,13 +39,29 @@ export const useHoverStore = create<HoverState>((set) => ({
   isHoveringWrapper: false,
   setHoverStyle: (hoverStyle: HoverStyleElement) =>
     set({ hoverStyleElement: hoverStyle }),
-  setHover: (hovering, hoverType, hoverStyle, box) =>
+  setHover: (hovering, hoverType, hoverStyle, box) => {
+    // ✅ Уникаємо дублювань — важливо для звуку
+    if (
+      hovering === lastHoverState.isHovering &&
+      hoverType === lastHoverState.hoverTypeElement &&
+      hoverStyle === lastHoverState.hoverStyleElement
+    ) {
+      return;
+    }
+
+    lastHoverState = {
+      isHovering: hovering,
+      hoverTypeElement: hoverType,
+      hoverStyleElement: hoverStyle,
+    };
+
     set({
       isHovering: hovering,
       hoverTypeElement: hoverType,
       hoverStyleElement: hoverStyle,
       boundingBox: box ?? null,
-    }),
+    });
+  },
   setHoverWrapper: (hovering) => set({ isHoveringWrapper: hovering }),
   setHoverType: (hoverType) => set({ hoverTypeElement: hoverType }),
 }));

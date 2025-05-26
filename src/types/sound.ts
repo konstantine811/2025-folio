@@ -5,6 +5,7 @@ export enum SoundTypeElement {
   LINK = "link",
   LOGO = "logo",
   NONE = "none",
+  SHIFT = "shift",
 }
 
 export enum HoverStyleElement {

@@ -11,7 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -28,13 +27,30 @@ import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import { getRandomFromTo } from "@/utils/random";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { getPriorityClassByPrefix } from "./utils/dnd.utils";
+import { Textarea } from "@/components/ui/textarea";
+import { TimePickerInputs } from "./time-picker-inputs";
 
-const DialogCreateTask = () => {
+const DialogCreateTask = ({
+  onCreateTask,
+}: {
+  onCreateTask: (title: string, priority: Priority, time: number) => void;
+}) => {
   const [t] = useTranslation();
   const setHover = useHoverStore((s) => s.setHover);
   const [title, setTitle] = useState<string>("");
   const [priority, setPriority] = useState<Priority>(Priority.LOW);
+  const [time, setTime] = useState<number>(0);
   const [translateRandom, setTranslateRandom] = useState(1);
+
+  const handleCreateTask = () => {
+    if (title.trim() === "") return;
+    onCreateTask(title, priority, time);
+    setTitle("");
+    setPriority(Priority.LOW);
+    setTime(0);
+    setHover(false, null, HoverStyleElement.circle);
+  };
 
   return (
     <Dialog>
@@ -62,7 +78,7 @@ const DialogCreateTask = () => {
           </WrapperHoverElement>
         </div>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="overflow-y-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>
             {t(`task_manager.dialog_create_task.${translateRandom}.title`)}
@@ -78,7 +94,7 @@ const DialogCreateTask = () => {
             <Label htmlFor="name" className="text-right">
               {t("task_manager.dialog_create_task.task.title.label")}
             </Label>
-            <Input
+            <Textarea
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -118,7 +134,10 @@ const DialogCreateTask = () => {
                       animValue={0.99}
                       hoverStyleElement={HoverStyleElement.none}
                     >
-                      <SelectItem value={p}>
+                      <SelectItem
+                        value={p}
+                        className={`${getPriorityClassByPrefix(p)}`}
+                      >
                         {t(
                           `task_manager.dialog_create_task.task.priority.options.${p.toLowerCase()}`
                         )}
@@ -129,11 +148,17 @@ const DialogCreateTask = () => {
               </SelectContent>
             </Select>
           </div>
+          <TimePickerInputs
+            onChange={(value) => {
+              setTime(value);
+            }}
+          />
         </div>
         <DialogFooter>
           <DialogClose
             onClick={() => setHover(false, null, HoverStyleElement.circle)}
             asChild
+            disabled={title === ""}
           >
             <SoundHoverElement
               animValue={0.98}
@@ -142,8 +167,10 @@ const DialogCreateTask = () => {
             >
               <Button
                 onClick={() => {
-                  // setHover(false, null, HoverStyleElement.circle);
+                  console.log("Close dialog");
+                  handleCreateTask();
                 }}
+                disabled={title === ""}
                 variant="outline"
                 className="cursor-pointer"
               >

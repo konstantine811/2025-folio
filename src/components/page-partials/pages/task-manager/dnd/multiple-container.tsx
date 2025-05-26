@@ -84,8 +84,8 @@ export function MultipleContainers({
         id: `${id}${index + 1}`,
         title: `Задача ${id}${index + 1}`,
         isDone: false,
-        time: "30m",
-        timeDone: "0m",
+        time: 0,
+        timeDone: 0,
         priority: Priority.MEDIUM,
       })),
     }));
@@ -134,6 +134,17 @@ export function MultipleContainers({
       coordinateGetter,
     })
   );
+
+  const handleToggleTask = (taskId: UniqueIdentifier, newIsDone: boolean) => {
+    setItems((prevItems) =>
+      prevItems.map((container) => ({
+        ...container,
+        tasks: container.tasks.map((t) =>
+          t.id === taskId ? { ...t, isDone: newIsDone } : t
+        ),
+      }))
+    );
+  };
 
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -204,6 +215,9 @@ export function MultipleContainers({
                     containerId={category.id}
                     getIndex={getIndex}
                     task={task}
+                    onToggle={(id, value) => {
+                      handleToggleTask(id, value);
+                    }}
                   />
                 ))}
               </SortableContext>

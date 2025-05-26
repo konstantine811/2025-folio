@@ -63,3 +63,27 @@ export const fetchPosts = async (lang: LanguageType): Promise<PostCover[]> => {
     };
   });
 };
+
+export async function getBlogArticleId(
+  lang: string,
+  topic: string,
+  subtopic: string | null,
+  title: string
+): Promise<string | null> {
+  const q = query(
+    collection(db, BlogFirebaseCollection.articles),
+    where(BlogArticleProps.lang, "==", lang),
+    where(BlogArticleProps.topic, "==", topic),
+    where(BlogArticleProps.subtopic, "==", subtopic),
+    where(BlogArticleProps.title, "==", title)
+  );
+
+  const snap = await getDocs(q);
+
+  if (!snap.empty) {
+    return snap.docs[0].id; // Повертаємо ID першого знайденого документа
+  } else {
+    console.error("❌ Статтю не знайдено за вказаними параметрами.");
+    return null;
+  }
+}

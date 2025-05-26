@@ -1,11 +1,15 @@
 import React, { useEffect } from "react";
-import type { DraggableSyntheticListeners } from "@dnd-kit/core";
+import type {
+  DraggableSyntheticListeners,
+  UniqueIdentifier,
+} from "@dnd-kit/core";
 import type { Transform } from "@dnd-kit/utilities";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { SoundTypeElement } from "@/types/sound";
 import { Button } from "@/components/ui/button";
-import { Grip, X } from "lucide-react";
+import { Grip, GripVertical, X } from "lucide-react";
 import { ItemTask } from "@/types/drag-and-drop.model";
+import { TaskItem } from "./task-item";
 
 export type RenderItemProps = {
   dragOverlay: boolean;
@@ -43,6 +47,7 @@ export interface Props {
   task: ItemTask;
   onRemove?(): void;
   renderItem?: (args: RenderItemProps) => React.ReactElement;
+  onToggle?: (id: UniqueIdentifier, value: boolean) => void;
 }
 
 export const Item = React.memo(
@@ -64,6 +69,7 @@ export const Item = React.memo(
         transform,
         value,
         task,
+        onToggle,
         ...props
       },
       ref
@@ -96,16 +102,29 @@ export const Item = React.memo(
           task,
         })
       ) : (
-        <li className="list-none" ref={ref}>
-          <div
-            className="bg-card p-1 my-1 rounded shadow-sm cursor-move"
-            style={style}
-            data-cypress="draggable-item"
-            {...(!handle ? listeners : undefined)}
-            {...props}
-            tabIndex={!handle ? 0 : undefined}
-          >
-            {value}
+        <li className="list-none" ref={ref} tabIndex={!handle ? 0 : undefined}>
+          <TaskItem index={index} task={task} onToggle={onToggle}>
+            {
+              <div>
+                <SoundHoverElement
+                  animValue={0.9}
+                  hoverTypeElement={SoundTypeElement.SHIFT}
+                >
+                  <Button
+                    data-cypress="draggable-item"
+                    {...(!handle ? listeners : undefined)}
+                    {...props}
+                    variant="ghost"
+                    size="icon"
+                    className="cursor-move hover:bg-background hover:text-foreground"
+                  >
+                    <GripVertical />
+                  </Button>
+                </SoundHoverElement>
+              </div>
+            }
+          </TaskItem>
+          {/* <div className="bg-card p-1 my-1 rounded shadow-sm " style={style}>
             <span>
               {onRemove && (
                 <SoundHoverElement
@@ -134,7 +153,7 @@ export const Item = React.memo(
                 </SoundHoverElement>
               )}
             </span>
-          </div>
+          </div> */}
         </li>
       );
     }

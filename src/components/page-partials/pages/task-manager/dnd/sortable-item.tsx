@@ -23,6 +23,7 @@ interface SortableItemProps {
   wrapperStyle({ index }: { index: number }): React.CSSProperties;
   items: Items;
   task: ItemTask;
+  onToggle?: (id: UniqueIdentifier, value: boolean) => void;
 }
 
 function SortableItem({
@@ -35,6 +36,7 @@ function SortableItem({
   containerId,
   getIndex,
   items,
+  onToggle,
   task,
 }: SortableItemProps) {
   const {
@@ -54,12 +56,13 @@ function SortableItem({
   return (
     <Item
       ref={disabled ? undefined : setNodeRef}
-      value={id}
+      value={task.title}
       dragging={isDragging}
       sorting={isSorting}
       handle={handle}
       handleProps={handle ? { ref: setActivatorNodeRef } : undefined}
       index={index}
+      onToggle={onToggle}
       style={style({
         index,
         value: id,

@@ -2,7 +2,7 @@ import React, { forwardRef, useState } from "react";
 
 import InputCombobox from "@/components/ui-abc/inputs/input-combobox";
 import { Button } from "@/components/ui/button";
-import { Grip, Pen, PenOff, X } from "lucide-react";
+import { GripVertical, Pen, PenOff, X } from "lucide-react";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { SoundTypeElement } from "@/types/sound";
 
@@ -103,15 +103,15 @@ export const Container = forwardRef<HTMLDivElement, Props>(
                 )}
                 <SoundHoverElement
                   animValue={0.9}
-                  hoverTypeElement={SoundTypeElement.SELECT}
+                  hoverTypeElement={SoundTypeElement.SHIFT}
                 >
                   <Button
                     {...handleProps}
                     variant="ghost"
                     size="icon"
-                    className="cursor-move"
+                    className="cursor-move hover:bg-background hover:text-foreground"
                   >
-                    <Grip />
+                    <GripVertical />
                   </Button>
                 </SoundHoverElement>
               </div>

@@ -40,6 +40,24 @@
 
 @theme static {
   --background: var(--background);
+  --animate-gradient: gradientMove 3s linear infinite;
+
+  @keyframes gradientMove {
+    0% {
+      background-position: 0% 0%;
+    }
+    100% {
+      background-position: 0% 100%;
+    }
+  }
+}
+
+@layer utilities {
+  @keyframes spark-move {
+    to {
+      offset-distance: 100%;
+    }
+  }
 }
 
 @layer components {
