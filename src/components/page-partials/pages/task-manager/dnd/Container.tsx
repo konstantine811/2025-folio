@@ -48,18 +48,26 @@ export const Container = forwardRef<HTMLDivElement, Props>(
             "--columns": columns,
           } as React.CSSProperties
         }
-        className=""
+        className="relative"
       >
         {label ? (
-          <div className="flex items-center w-full gap-1">
+          <div className="flex items-center w-full gap-1 relative z-20">
             <div className="flex w-full gap-2 items-center justify-between">
               {isEdit ? (
                 <InputCombobox
-                  onValueChange={onValueChange}
+                  onValueChange={(value: string) => {
+                    if (onValueChange) onValueChange(value);
+                    setIsEdit(false);
+                  }}
                   outerValue={label}
                 />
               ) : (
-                <label className="text-foreground text-xl ml-3">{label}</label>
+                <label
+                  onDoubleClick={() => setIsEdit(true)}
+                  className="text-foreground text-xl ml-3"
+                >
+                  {label}
+                </label>
               )}
 
               <SoundHoverElement
@@ -76,39 +84,47 @@ export const Container = forwardRef<HTMLDivElement, Props>(
               </SoundHoverElement>
             </div>
 
-            <div className="flex items-center gap-1">
-              {onRemove && (
+            {!isEdit && (
+              <div className="flex items-center gap-1">
+                {onRemove && (
+                  <SoundHoverElement
+                    animValue={0.9}
+                    hoverTypeElement={SoundTypeElement.SELECT_2}
+                  >
+                    <Button
+                      variant="destructive"
+                      className="bg-transparent"
+                      size="icon"
+                      onClick={onRemove}
+                    >
+                      <X />
+                    </Button>
+                  </SoundHoverElement>
+                )}
                 <SoundHoverElement
                   animValue={0.9}
-                  hoverTypeElement={SoundTypeElement.SELECT_2}
+                  hoverTypeElement={SoundTypeElement.SELECT}
                 >
                   <Button
-                    variant="destructive"
-                    className="bg-transparent"
+                    {...handleProps}
+                    variant="ghost"
                     size="icon"
-                    onClick={onRemove}
+                    className="cursor-move"
                   >
-                    <X />
+                    <Grip />
                   </Button>
                 </SoundHoverElement>
-              )}
-              <SoundHoverElement
-                animValue={0.9}
-                hoverTypeElement={SoundTypeElement.SELECT}
-              >
-                <Button
-                  {...handleProps}
-                  variant="ghost"
-                  size="icon"
-                  className="cursor-move"
-                >
-                  <Grip />
-                </Button>
-              </SoundHoverElement>
-            </div>
+              </div>
+            )}
           </div>
         ) : null}
         {placeholder ? children : <ul>{children}</ul>}
+        {isEdit && (
+          <div
+            onClick={() => setIsEdit(false)}
+            className="fixed top-0 left-0 w-full h-full z-[10] bg-card/90"
+          ></div>
+        )}
       </Component>
     );
   }

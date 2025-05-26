@@ -26,29 +26,34 @@ const ContainerDragOverlay = ({
 
   return (
     <Container
-      label={category.id.toString()}
+      label={
+        items.find((cat) => cat.id === containerId)?.title ??
+        containerId.toString()
+      }
       columns={columns}
       style={{ height: "100%" }}
     >
-      {category.tasks.map((task) => (
-        <Item
-          key={task.id}
-          value={task.id}
-          task={task}
-          handle={handle}
-          style={getItemStyles({
-            containerId: category.id,
-            overIndex: -1,
-            index: getIndex(task.id, items),
-            value: task.id,
-            isDragging: false,
-            isSorting: false,
-            isDragOverlay: false,
-          })}
-          color={getColor(task.id)}
-          renderItem={renderItem}
-        />
-      ))}
+      {items
+        .find((cat) => cat.id === containerId)
+        ?.tasks.map((task) => (
+          <Item
+            key={task.id}
+            value={task.id}
+            handle={handle}
+            style={getItemStyles({
+              containerId,
+              overIndex: -1,
+              index: getIndex(task.id, items),
+              value: task.id,
+              isDragging: false,
+              isSorting: false,
+              isDragOverlay: false,
+            })}
+            color={getColor(task.id)}
+            renderItem={renderItem}
+            task={task}
+          />
+        ))}
     </Container>
   );
 };

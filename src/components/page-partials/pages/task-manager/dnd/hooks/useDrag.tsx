@@ -61,26 +61,29 @@ const useDrag = ({
     const overId = over?.id;
     if (!overId || overId === TRASH_ID) return;
 
-    const overCategory = items.find((cat) =>
-      cat.tasks.some((t) => t.id === overId)
-    );
+    const activeTaskId = active.id;
+    const overTaskId = overId;
+
     const activeCategory = items.find((cat) =>
-      cat.tasks.some((t) => t.id === active.id)
+      cat.tasks.some((t) => t.id === activeTaskId)
+    );
+    const overCategory = items.find((cat) =>
+      cat.tasks.some((t) => t.id === overTaskId)
     );
 
     if (
-      !overCategory ||
       !activeCategory ||
-      overCategory.id === activeCategory.id
+      !overCategory ||
+      activeCategory.id === overCategory.id
     )
       return;
 
-    const activeItemIndex = activeCategory.tasks.findIndex(
-      (t) => t.id === active.id
-    );
-    const overItemIndex = overCategory.tasks.findIndex((t) => t.id === overId);
+    const activeTask = activeCategory.tasks.find((t) => t.id === activeTaskId);
+    if (!activeTask) return;
 
-    const activeTask = activeCategory.tasks[activeItemIndex];
+    const overItemIndex = overCategory.tasks.findIndex(
+      (t) => t.id === overTaskId
+    );
 
     recentlyMovedToNewContainer.current = true;
 
@@ -89,7 +92,7 @@ const useDrag = ({
         if (cat.id === activeCategory.id) {
           return {
             ...cat,
-            tasks: cat.tasks.filter((t) => t.id !== active.id),
+            tasks: cat.tasks.filter((t) => t.id !== activeTaskId),
           };
         }
         if (cat.id === overCategory.id) {

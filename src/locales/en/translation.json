@@ -20,5 +20,54 @@
     "articles": {
       "on_this_page": "On this page"
     }
+  },
+  "task_manager": {
+    "add": "Add Task",
+    "edit": "Edit Task",
+    "delete": "Delete Task",
+    "complete": "Complete Task",
+    "incomplete": "Incomplete Task",
+    "completed": "Completed Tasks",
+    "incomplete_tasks": "Incomplete Tasks",
+    "no_tasks": "No tasks available",
+    "task_name": "Task Name",
+    "task_description": "Task Description",
+    "dialog_create_task": {
+      "task": {
+        "title": {
+          "label": "Task Title",
+          "description": "Briefly describe what you want to do."
+        },
+        "time": {
+          "label": "Planned Time",
+          "description": "How much time do you want to dedicate to this task?"
+        },
+        "priority": {
+          "label": "Priority",
+          "description": "How important is this task for today?",
+          "options": {
+            "low": "Low",
+            "medium": "Medium",
+            "high": "High"
+          }
+        }
+      },
+      "1": {
+        "title": "New Task",
+        "description": "Formulate your intention for the day. A small step — a big impact."
+      },
+      "2": {
+        "title": "Plan What Matters",
+        "description": "Add a task that helps you focus, stay balanced, and move toward your goals."
+      },
+      "3": {
+        "title": "Create Task",
+        "description": "Specify the title, priority, and desired completion time. This will help organize your day better."
+      },
+      "4": {
+        "title": "Main Action of the Day",
+        "description": "What truly matters today? Describe it clearly and briefly."
+      }
+    }
   }
 }

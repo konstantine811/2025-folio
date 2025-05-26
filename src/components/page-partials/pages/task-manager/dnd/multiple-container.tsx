@@ -91,6 +91,10 @@ export function MultipleContainers({
     }));
   });
 
+  useEffect(() => {
+    console.log("Items updated:", items);
+  }, [items]);
+
   const [containers, setContainers] = useState<UniqueIdentifier[]>(
     items.map((cat) => cat.id)
   );
@@ -178,17 +182,7 @@ export function MultipleContainers({
               setItems={setItems}
               scrollable={scrollable}
               style={containerStyle}
-              onValueChange={(value) => {
-                setItems((prev) => {
-                  return prev.map((cat) =>
-                    cat.id === category.id ? { ...cat, title: value } : cat
-                  );
-                });
-
-                setContainers((prev) => {
-                  return prev.map((id) => (id === category.id ? value : id));
-                });
-              }}
+              setContainers={setContainers}
               {...(minimal ? { unstyled: true } : {})}
               onRemove={() => handleRemove(category.id)}
             >
