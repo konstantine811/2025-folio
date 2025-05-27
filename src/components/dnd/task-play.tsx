@@ -12,9 +12,11 @@ import { useEffect } from "react";
 const TaskPlay = ({
   task,
   onPlay,
+  templated,
 }: {
   task: ItemTask;
   onPlay: (status: boolean) => void;
+  templated: boolean;
 }) => {
   const playingTask = useTaskManagerStore((s) => s.playingTask);
   const setPlayingTask = useTaskManagerStore((s) => s.setPlayingTask);
@@ -36,24 +38,26 @@ const TaskPlay = ({
   }, [isPlaying, onPlay]);
   return (
     <div className="flex items-center gap-1">
-      <SoundHoverElement
-        hoverTypeElement={SoundTypeElement.NONE}
-        hoverStyleElement={
-          task.isDone ? HoverStyleElement.none : HoverStyleElement.circle
-        }
-      >
-        <Button
-          size="icon"
-          variant="ghost"
-          className={`hover:bg-card/10 hover:text-foreground ${
-            task.isDone && "cursor-not-allowed text-foreground/10"
-          }`}
-          onClick={handleClick}
-          disabled={task.isDone}
+      {!templated && (
+        <SoundHoverElement
+          hoverTypeElement={SoundTypeElement.NONE}
+          hoverStyleElement={
+            task.isDone ? HoverStyleElement.none : HoverStyleElement.circle
+          }
         >
-          {isPlaying ? <Pause /> : <Play />}
-        </Button>
-      </SoundHoverElement>
+          <Button
+            size="icon"
+            variant="ghost"
+            className={`hover:bg-card/10 hover:text-foreground ${
+              task.isDone && "cursor-not-allowed text-foreground/10"
+            }`}
+            onClick={handleClick}
+            disabled={task.isDone}
+          >
+            {isPlaying ? <Pause /> : <Play />}
+          </Button>
+        </SoundHoverElement>
+      )}
       <div className="flex flex-col gap-1">
         {isPlaying ? (
           <>

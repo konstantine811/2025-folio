@@ -25,6 +25,7 @@ interface SortableItemProps {
   task: ItemTask;
   onToggle?: (id: UniqueIdentifier, value: boolean) => void;
   onEditTask: (task: ItemTask) => void;
+  templated: boolean;
 }
 
 function SortableItem({
@@ -40,6 +41,7 @@ function SortableItem({
   onToggle,
   task,
   onEditTask,
+  templated,
 }: SortableItemProps) {
   const {
     setNodeRef,
@@ -62,6 +64,7 @@ function SortableItem({
       sorting={isSorting}
       handle={handle}
       index={index}
+      templated={templated}
       onToggle={onToggle}
       style={style({
         index,

@@ -49,6 +49,7 @@ export interface Props {
   renderItem?: (args: RenderItemProps) => React.ReactElement;
   onToggle?: (id: UniqueIdentifier, value: boolean) => void;
   onEditTask?: (task: ItemTask) => void;
+  templated: boolean;
 }
 
 export const Item = React.memo(
@@ -70,6 +71,7 @@ export const Item = React.memo(
         value,
         task,
         onToggle,
+        templated,
         ...props
       },
       ref
@@ -105,6 +107,7 @@ export const Item = React.memo(
         <li className="list-none" ref={ref} tabIndex={!handle ? 0 : undefined}>
           <TaskItem
             index={index}
+            templated={templated}
             dragging={dragOverlay}
             task={task}
             onToggle={onToggle}

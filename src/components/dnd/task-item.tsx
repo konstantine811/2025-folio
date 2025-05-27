@@ -20,6 +20,7 @@ export function TaskItem({
   children,
   dragging = false,
   onEditTask,
+  templated,
 }: {
   index?: number | string;
   task: ItemTask;
@@ -28,6 +29,7 @@ export function TaskItem({
   onDelete?: () => void;
   children?: React.ReactNode;
   dragging?: boolean;
+  templated: boolean;
 }) {
   const [isPlay, setIsPlay] = useState(false);
 
@@ -42,29 +44,31 @@ export function TaskItem({
              border border-foreground/10 rounded-xl px-4 py-3 text-foreground 
              group transition-all hover:border-foreground/10 hover:bg-card/10 duration-500 ease-in-out"
       >
-        <SoundHoverElement
-          className="h-5 w-5"
-          animValue={1.4}
-          hoverTypeElement={SoundTypeElement.SELECT}
-        >
-          <Checkbox
-            className={`w-5 h-5`}
-            id={`isDone-${task.id}`}
-            checked={task.isDone}
-            onCheckedChange={() => {
-              if (onToggle) {
-                if (!task.isDone) {
-                  checkOutSound.stop();
-                  checkInSound.play();
-                } else {
-                  checkInSound.stop();
-                  checkOutSound.play();
+        {!templated && (
+          <SoundHoverElement
+            className="h-5 w-5"
+            animValue={1.4}
+            hoverTypeElement={SoundTypeElement.SELECT}
+          >
+            <Checkbox
+              className={`w-5 h-5`}
+              id={`isDone-${task.id}`}
+              checked={task.isDone}
+              onCheckedChange={() => {
+                if (onToggle) {
+                  if (!task.isDone) {
+                    checkOutSound.stop();
+                    checkInSound.play();
+                  } else {
+                    checkInSound.stop();
+                    checkOutSound.play();
+                  }
+                  onToggle(task.id, !task.isDone);
                 }
-                onToggle(task.id, !task.isDone);
-              }
-            }}
-          />
-        </SoundHoverElement>
+              }}
+            />
+          </SoundHoverElement>
+        )}
 
         <span
           className={`w-6 text-xs ${
@@ -89,23 +93,34 @@ export function TaskItem({
         <div className="flex items-center gap-2">
           {!dragging && (
             <>
-              <TaskPlay onPlay={setIsPlay} task={task} />
+              <TaskPlay templated={templated} onPlay={setIsPlay} task={task} />
               {onEditTask && (
                 <WrapperHoverElement>
                   <SoundHoverElement
                     animValue={0.99}
-                    hoverTypeElement={SoundTypeElement.LINK}
-                    hoverStyleElement={HoverStyleElement.quad}
+                    hoverTypeElement={
+                      task.isDone
+                        ? SoundTypeElement.NONE
+                        : SoundTypeElement.SELECT
+                    }
+                    hoverStyleElement={
+                      task.isDone
+                        ? HoverStyleElement.none
+                        : HoverStyleElement.quad
+                    }
                   >
                     <Button
                       variant="ghost"
+                      disabled={task.isDone}
                       size="icon"
                       onClick={() => {
                         onEditTask(task);
                       }}
-                      className="hover:bg-card/50 hover:text-foreground"
+                      className={`hover:bg-card/50 hover:text-foreground ${
+                        task.isDone && "text-muted-foreground/30"
+                      }`}
                     >
-                      <Settings2 className="w-4 h-4 text-muted-foreground" />
+                      <Settings2 className="w-4 h-4" />
                     </Button>
                   </SoundHoverElement>
                 </WrapperHoverElement>

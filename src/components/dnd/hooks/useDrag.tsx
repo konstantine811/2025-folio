@@ -64,6 +64,17 @@ const useDrag = ({
   }
 
   function handleRemove(containerID: UniqueIdentifier) {
+    const { playingTask, stopPlayingTask } = useTaskManagerStore.getState();
+
+    // Якщо активна задача належить до видаляємої категорії — зупиняємо її
+    const container = items.find((cat) => cat.id === containerID);
+    const taskIds = container?.tasks.map((t) => t.id) ?? [];
+
+    if (playingTask && taskIds.includes(playingTask.id)) {
+      stopPlayingTask();
+    }
+
+    // Тепер видаляємо
     setContainers((containers) =>
       containers.filter((id) => id !== containerID)
     );

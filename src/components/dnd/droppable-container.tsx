@@ -29,6 +29,7 @@ function DroppableContainer({
   setContainers,
   onAddTask,
   style,
+  templated,
   ...props
 }: Props & {
   disabled?: boolean;
@@ -38,6 +39,7 @@ function DroppableContainer({
   setItems?: React.Dispatch<React.SetStateAction<Items>>;
   setContainers?: React.Dispatch<React.SetStateAction<UniqueIdentifier[]>>;
   onAddTask?: (containerId: UniqueIdentifier) => void;
+  templated: boolean;
 }) {
   const {
     attributes,
@@ -95,7 +97,7 @@ function DroppableContainer({
       columns={columns}
       {...props}
     >
-      {items.length > 0 && (
+      {items.length > 0 && !templated && (
         <div className="px-4">
           <div className="text-xs text-muted-foreground text-center mt-1">
             {donePercentage}%

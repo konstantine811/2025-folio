@@ -30,6 +30,7 @@ const DialogTask = ({
   setOpen,
   task,
   containerId,
+  templated,
 }: {
   isOpen: boolean;
   onChangeTask: (
@@ -43,6 +44,7 @@ const DialogTask = ({
   setOpen: (open: boolean) => void;
   task?: ItemTask | null;
   containerId: UniqueIdentifier | null;
+  templated: boolean;
 }) => {
   const [t] = useTranslation();
   const setHover = useHoverStore((s) => s.setHover);
@@ -221,7 +223,7 @@ const DialogTask = ({
                     setTime(value);
                   }}
                 />
-                {task && (
+                {task && !templated && (
                   <TimePickerInputs
                     title={t(
                       "task_manager.dialog_create_task.task.time.wasted_time"

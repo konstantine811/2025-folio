@@ -24,7 +24,6 @@ import {
 
 import { coordinateGetter as multipleContainersCoordinateGetter } from "./utils/multipleContainersKeyboardCoordinates";
 import { RenderItemProps } from "./item";
-import { createRange } from "./utils/createRange";
 import DroppableContainer from "./droppable-container";
 import {
   GetItemStyles,
@@ -47,6 +46,9 @@ import SoundHoverElement from "../ui-abc/sound-hover-element";
 import { Button } from "../ui/button";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import { useTranslation } from "react-i18next";
+import WrapperHoverElement from "../ui-abc/wrapper-hover-element";
+import TaskTimer from "./task-timer";
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 
 interface Props {
   adjustScale?: boolean;
@@ -66,11 +68,11 @@ interface Props {
   trashable?: boolean;
   scrollable?: boolean;
   vertical?: boolean;
+  templated?: boolean;
 }
 
 export function MultipleContainers({
   adjustScale = false,
-  itemCount = 3,
   cancelDrop,
   columns,
   handle = false,
@@ -85,25 +87,12 @@ export function MultipleContainers({
   strategy = verticalListSortingStrategy,
   trashable = false,
   vertical = false,
+  templated = true,
   scrollable,
 }: Props) {
   const [t] = useTranslation();
-  const [items, setItems] = useState<Items>(() => {
-    if (initialItems) return initialItems;
-    return ["A", "B", "C", "D"].map((id) => ({
-      id,
-      title: id,
-      tasks: createRange(itemCount, (index) => ({
-        id: `${id}${index + 1}`,
-        title: `Задача ${id}${index + 1}`,
-        isDone: false,
-        time: 10000,
-        timeDone: 0,
-        priority: Priority.MEDIUM,
-      })),
-    }));
-  });
-
+  const [items, setItems] = useState<Items>(() => initialItems ?? []);
+  const sH = useHeaderSizeStore((s) => s.size);
   useEffect(() => {
     console.log("Items updated:", items);
   }, [items]);
@@ -244,6 +233,7 @@ export function MultipleContainers({
         isOpen={isDialogOpen}
         containerId={addTaskContainerId}
         task={editTask}
+        templated={templated}
         onChangeTask={(
           taskId,
           title,
@@ -274,7 +264,14 @@ export function MultipleContainers({
           setIsDialogOpen(status);
         }}
       />
-
+      {!templated && (
+        <div
+          style={{ top: sH }}
+          className="sticky flex justify-center items-center z-50  py-5 bg-background/50 backdrop-blur-xs"
+        >
+          <TaskTimer />
+        </div>
+      )}
       <DndContext
         sensors={sensors}
         collisionDetection={collisionDetectionStrategy}
@@ -296,7 +293,7 @@ export function MultipleContainers({
         onDragCancel={onDragCancel}
         modifiers={modifiers}
       >
-        <div className="w-full max-w-2xl">
+        <div className={`${templated && "mt-5"}`}>
           <SortableContext
             items={[...containers, PLACEHOLDER_ID]}
             strategy={
@@ -309,6 +306,7 @@ export function MultipleContainers({
               <DroppableContainer
                 key={category.id}
                 id={category.id}
+                templated={templated}
                 label={minimal ? undefined : category.title}
                 columns={columns}
                 items={category.tasks}
@@ -333,6 +331,7 @@ export function MultipleContainers({
                         <SortableItem
                           disabled={isSortingContainer}
                           key={task.id}
+                          templated={templated}
                           id={task.id}
                           index={index}
                           handle={handle}
@@ -369,22 +368,28 @@ export function MultipleContainers({
             {!minimal && (
               <DroppableContainer
                 id={PLACEHOLDER_ID}
+                templated={templated}
                 disabled={isSortingContainer}
                 items={[]}
                 onClick={handleAddColumn}
                 placeholder
               >
                 <div className="flex justify-center items-center">
-                  <SoundHoverElement
-                    animValue={1.09}
-                    hoverTypeElement={SoundTypeElement.LINK}
-                    hoverStyleElement={HoverStyleElement.quad}
-                    className="w-full"
-                  >
-                    <Button className="w-full uppercase" variant="ghost">
-                      {t("task_manager.add_container")}
-                    </Button>
-                  </SoundHoverElement>
+                  <WrapperHoverElement className="w-full">
+                    <SoundHoverElement
+                      animValue={1.09}
+                      hoverTypeElement={SoundTypeElement.LINK}
+                      hoverStyleElement={HoverStyleElement.quad}
+                      className="w-full"
+                    >
+                      <Button
+                        className="w-full uppercase hover:bg-transparent hover:text-primary"
+                        variant="ghost"
+                      >
+                        {t("task_manager.add_container")}
+                      </Button>
+                    </SoundHoverElement>
+                  </WrapperHoverElement>
                 </div>
               </DroppableContainer>
             )}
