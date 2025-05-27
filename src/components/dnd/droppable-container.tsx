@@ -100,7 +100,7 @@ function DroppableContainer({
           <div className="text-xs text-muted-foreground text-center mt-1">
             {donePercentage}%
           </div>
-          <Progress className="h-10" value={donePercentage} />
+          <Progress value={donePercentage} />
         </div>
       )}
       <ul className="flex flex-col gap-1">{children}</ul>
