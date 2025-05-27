@@ -7,8 +7,7 @@ import { MultipleContainers } from "@/components/dnd/multiple-container";
 const TaskManager = () => {
   const sH = useHeaderSizeStore((s) => s.size);
   return (
-    <div className="min-h-screen">
-      <h1 className="text-foreground text-9xl">Task Manager page</h1>
+    <div className="min-h-screen px-2">
       {/* <TasksWithCategories />
       <TaskTree /> */}
       <div className="max-w-2xl m-auto">

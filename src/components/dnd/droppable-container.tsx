@@ -6,8 +6,12 @@ import {
 import { Container, Props } from "./container";
 import { CSS } from "@dnd-kit/utilities";
 import { UniqueIdentifier } from "@dnd-kit/core";
-import { Items, ItemTask, Priority } from "@/types/drag-and-drop.model";
-import DialogCreateTask from "./dialog-task";
+import { Items, ItemTask } from "@/types/drag-and-drop.model";
+import WrapperHoverElement from "../ui-abc/wrapper-hover-element";
+import SoundHoverElement from "../ui-abc/sound-hover-element";
+import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
+import { Button } from "../ui/button";
+import { useTranslation } from "react-i18next";
 
 const animateLayoutChanges: AnimateLayoutChanges = (args) =>
   defaultAnimateLayoutChanges({ ...args, wasDragging: true });
@@ -21,6 +25,7 @@ function DroppableContainer({
   setItems,
   placeholder,
   setContainers,
+  onAddTask,
   style,
   ...props
 }: Props & {
@@ -30,6 +35,7 @@ function DroppableContainer({
   style?: React.CSSProperties;
   setItems?: React.Dispatch<React.SetStateAction<Items>>;
   setContainers?: React.Dispatch<React.SetStateAction<UniqueIdentifier[]>>;
+  onAddTask?: (containerId: UniqueIdentifier) => void;
 }) {
   const {
     attributes,
@@ -47,31 +53,7 @@ function DroppableContainer({
     animateLayoutChanges,
   });
 
-  const handleAddTask = (
-    title: string,
-    priority: Priority,
-    time: number,
-    wastedTime: number
-  ) => {
-    if (!setItems) return;
-
-    const newTask: ItemTask = {
-      id: `${id}-${Date.now()}`,
-      title,
-      isDone: false,
-      time,
-      timeDone: wastedTime,
-      priority,
-    };
-
-    setItems((prev) =>
-      prev.map((category) =>
-        category.id === id
-          ? { ...category, tasks: [...category.tasks, newTask] }
-          : category
-      )
-    );
-  };
+  const [t] = useTranslation();
 
   const handleChangeCategory = (value: string) => {
     if (!setItems || !setContainers) return;
@@ -105,12 +87,24 @@ function DroppableContainer({
       <ul className="flex flex-col gap-1">{children}</ul>
 
       {/* Add task button */}
-      {!placeholder && (
-        <DialogCreateTask
-          onChangeTask={(title, prioriy, time, wastedTime) => {
-            handleAddTask(title, prioriy, time, wastedTime);
-          }}
-        />
+      {!placeholder && onAddTask && (
+        <div className="flex justify-center">
+          <WrapperHoverElement>
+            <SoundHoverElement
+              animValue={0.99}
+              hoverTypeElement={SoundTypeElement.LINK}
+              hoverStyleElement={HoverStyleElement.quad}
+            >
+              <Button
+                onClick={() => onAddTask(id)}
+                variant="link"
+                className="cursor-pointer"
+              >
+                {t("task_manager.add")}
+              </Button>
+            </SoundHoverElement>
+          </WrapperHoverElement>
+        </div>
       )}
     </Container>
   );

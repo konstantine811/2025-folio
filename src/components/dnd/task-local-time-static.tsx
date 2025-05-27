@@ -21,11 +21,11 @@ const TaskLocalTimeStatic = ({
     <Tooltip>
       <TooltipTrigger asChild>
         <div
-          className={`flex items-center gap-0.5 font-mono text-xs pl-5 relative ${
+          className={`flex items-center gap-0.5 font-mono text-xs relative ${
             isNegative ? "text-destructive/70" : "text-accent/70"
           } ${!revert && "text-muted-foreground"}`}
         >
-          {revert && isNegative && <span className="absolute left-2">-</span>}
+          {revert && isNegative && <span className="absolute -left-2">-</span>}
           <span>{String(hours).padStart(2, "0")}</span>
           <span className="text-muted-foreground">:</span>
           <span>{String(minutes).padStart(2, "0")}</span>

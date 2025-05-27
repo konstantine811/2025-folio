@@ -1,28 +1,26 @@
 import { Checkbox } from "@/components/ui/checkbox";
-import { ItemTask, Priority } from "@/types/drag-and-drop.model";
+import { ItemTask } from "@/types/drag-and-drop.model";
 import { getPriorityClassByPrefix } from "./utils/dnd.utils";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { checkInSound, checkOutSound } from "@/config/sounds";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
-import { SoundTypeElement } from "@/types/sound";
+import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import TaskPlay from "./task-play";
+import WrapperHoverElement from "../ui-abc/wrapper-hover-element";
+import { Button } from "../ui/button";
+import { Settings2 } from "lucide-react";
 export function TaskItem({
   index = "",
   task,
   onToggle,
   children,
   dragging = false,
+  onEditTask,
 }: {
   index?: number | string;
   task: ItemTask;
   onToggle?: (id: UniqueIdentifier, value: boolean) => void;
-  onChangeTask: (
-    id: UniqueIdentifier,
-    title: string,
-    priority: Priority,
-    time: number,
-    wastedTime: number
-  ) => void;
+  onEditTask?: (task: ItemTask) => void;
   onDelete?: () => void;
   children?: React.ReactNode;
   dragging?: boolean;
@@ -97,14 +95,26 @@ export function TaskItem({
           {!dragging && (
             <>
               <TaskPlay task={task} />
-              {/* <DialogTask
-                task={task}
-                onChangeTask={(title, priority, time, wastedTime) => {
-                  if (onChangeTask) {
-                    onChangeTask(task.id, title, priority, time, wastedTime);
-                  }
-                }}
-              /> */}
+              {onEditTask && (
+                <WrapperHoverElement>
+                  <SoundHoverElement
+                    animValue={0.99}
+                    hoverTypeElement={SoundTypeElement.LINK}
+                    hoverStyleElement={HoverStyleElement.quad}
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        onEditTask(task);
+                      }}
+                      className="hover:bg-card/50 hover:text-foreground"
+                    >
+                      <Settings2 className="w-4 h-4 text-muted-foreground" />
+                    </Button>
+                  </SoundHoverElement>
+                </WrapperHoverElement>
+              )}
             </>
           )}
 

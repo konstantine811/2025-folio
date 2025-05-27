@@ -26,7 +26,12 @@ import { coordinateGetter as multipleContainersCoordinateGetter } from "./utils/
 import { RenderItemProps } from "./item";
 import { createRange } from "./utils/createRange";
 import DroppableContainer from "./droppable-container";
-import { GetItemStyles, Priority, Items } from "@/types/drag-and-drop.model";
+import {
+  GetItemStyles,
+  Priority,
+  Items,
+  ItemTask,
+} from "@/types/drag-and-drop.model";
 import { PLACEHOLDER_ID, TRASH_ID } from "./config/dnd.config";
 import useCollisionDectionStrategy from "./hooks/useCollisionDectionStrategy";
 import { dropAnimation, getIndex } from "./utils/dnd.utils";
@@ -37,6 +42,7 @@ import ContainerDragOverlay from "./container-drag-overlay";
 import SortableItemDragOverlay from "./sortable-item-drag-overlay";
 import { useTaskManagerStore } from "@/storage/task-manager/task-manager";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import DialogTask from "./dialog-task";
 
 interface Props {
   adjustScale?: boolean;
@@ -100,6 +106,10 @@ export function MultipleContainers({
   const [containers, setContainers] = useState<UniqueIdentifier[]>(
     items.map((cat) => cat.id)
   );
+  const [addTaskContainerId, setAddTaskContainerId] =
+    useState<UniqueIdentifier | null>(null);
+  const [editTask, setEditTask] = useState<ItemTask | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const lastOverId = useRef<UniqueIdentifier | null>(null);
   const recentlyMovedToNewContainer = useRef(false);
@@ -164,21 +174,55 @@ export function MultipleContainers({
     );
   };
 
-  const handleChangeTask = (
+  const handleAddTask = (
+    title: string,
+    priority: Priority,
+    time: number,
+    wastedTime: number,
+    id: UniqueIdentifier
+  ) => {
+    if (!setItems) return;
+
+    const newTask: ItemTask = {
+      id: `${id}-${Date.now()}`,
+      title,
+      isDone: false,
+      time,
+      timeDone: wastedTime,
+      priority,
+    };
+
+    setItems((prev) =>
+      prev.map((category) =>
+        category.id === id
+          ? { ...category, tasks: [...category.tasks, newTask] }
+          : category
+      )
+    );
+  };
+
+  const handleEditTask = (
     taskId: UniqueIdentifier,
     title: string,
     priority: Priority,
     time: number,
-    timeDone: number
+    timeDone: number,
+    containerId: UniqueIdentifier
   ) => {
-    console.log("Changing task:");
     setItems((prevItems) =>
-      prevItems.map((container) => ({
-        ...container,
-        tasks: container.tasks.map((t) =>
-          t.id === taskId ? { ...t, title, priority, time, timeDone } : t
-        ),
-      }))
+      prevItems.map((container) => {
+        if (container.id === containerId) {
+          return {
+            ...container,
+            tasks: container.tasks.map((task) =>
+              task.id === taskId
+                ? { ...task, title, priority, time, timeDone }
+                : task
+            ),
+          };
+        }
+        return container;
+      })
     );
   };
 
@@ -189,127 +233,173 @@ export function MultipleContainers({
   }, [items]);
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={collisionDetectionStrategy}
-      measuring={{
-        droppable: {
-          strategy: MeasuringStrategy.Always,
-        },
-      }}
-      onDragStart={({ active }) => {
-        onDragStart(active);
-      }}
-      onDragOver={({ active, over }) => {
-        return onDragOver(active, over);
-      }}
-      onDragEnd={({ active, over }) => {
-        return onDragEnd(active, over);
-      }}
-      cancelDrop={cancelDrop}
-      onDragCancel={onDragCancel}
-      modifiers={modifiers}
-    >
-      <div className="w-full max-w-2xl">
-        <SortableContext
-          items={[...containers, PLACEHOLDER_ID]}
-          strategy={
-            vertical
-              ? verticalListSortingStrategy
-              : horizontalListSortingStrategy
-          }
-        >
-          {items.map((category) => (
-            <DroppableContainer
-              key={category.id}
-              id={category.id}
-              label={minimal ? undefined : category.title}
-              columns={columns}
-              items={category.tasks}
-              setItems={setItems}
-              scrollable={scrollable}
-              style={containerStyle}
-              setContainers={setContainers}
-              {...(minimal ? { unstyled: true } : {})}
-              onRemove={() => handleRemove(category.id)}
-            >
-              <SortableContext
-                items={category.tasks.map((t) => t.id)}
-                strategy={strategy}
-              >
-                {category.tasks.length > 0 ? (
-                  <TooltipProvider>
-                    {category.tasks.map((task, index) => (
-                      <SortableItem
-                        disabled={isSortingContainer}
-                        key={task.id}
-                        id={task.id}
-                        index={index}
-                        handle={handle}
-                        items={items}
-                        style={getItemStyles}
-                        wrapperStyle={wrapperStyle}
-                        renderItem={renderItem}
-                        containerId={category.id}
-                        getIndex={getIndex}
-                        task={task}
-                        onToggle={(id, value) => {
-                          handleToggleTask(id, value);
-                        }}
-                        onChangeTask={handleChangeTask}
-                      />
-                    ))}
-                  </TooltipProvider>
-                ) : (
-                  <li className="h-[64px] rounded-xl border border-dashed border-muted/20 flex items-center justify-center text-muted-foreground text-sm">
-                    Перетягни сюди задачу
-                  </li>
-                )}
-              </SortableContext>
-            </DroppableContainer>
-          ))}
-
-          {!minimal && (
-            <DroppableContainer
-              id={PLACEHOLDER_ID}
-              disabled={isSortingContainer}
-              items={[]}
-              onClick={handleAddColumn}
-              placeholder
-            >
-              + Add column
-            </DroppableContainer>
-          )}
-        </SortableContext>
-      </div>
-      {createPortal(
-        <DragOverlay adjustScale={adjustScale} dropAnimation={dropAnimation}>
-          {activeId ? (
-            containers.includes(activeId) ? (
-              <ContainerDragOverlay
-                items={items}
-                getItemStyles={getItemStyles}
-                handle={handle}
-                renderItem={renderItem}
-                columns={columns}
-                containerId={activeId}
-              />
-            ) : (
-              <SortableItemDragOverlay
-                items={items}
-                getItemStyles={getItemStyles}
-                handle={handle}
-                renderItem={renderItem}
-                id={activeId}
-              />
-            )
-          ) : null}
-        </DragOverlay>,
-        document.body
+    <>
+      {isDialogOpen && (
+        <DialogTask
+          isOpen={isDialogOpen}
+          containerId={addTaskContainerId}
+          task={editTask}
+          onChangeTask={(
+            taskId,
+            title,
+            priority,
+            time,
+            wastedTime,
+            containerId
+          ) => {
+            if (taskId && containerId) {
+              handleEditTask(
+                taskId,
+                title,
+                priority,
+                time,
+                wastedTime,
+                containerId
+              );
+            } else if (containerId) {
+              handleAddTask(title, priority, time, wastedTime, containerId);
+            }
+            setIsDialogOpen(false);
+            setAddTaskContainerId(null);
+            setEditTask(null);
+          }}
+          setOpen={(status) => {
+            setAddTaskContainerId(null);
+            setEditTask(null);
+            setIsDialogOpen(status);
+          }}
+        />
       )}
-      {trashable && activeId && !containers.includes(activeId) ? (
-        <Trash id={TRASH_ID} />
-      ) : null}
-    </DndContext>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={collisionDetectionStrategy}
+        measuring={{
+          droppable: {
+            strategy: MeasuringStrategy.Always,
+          },
+        }}
+        onDragStart={({ active }) => {
+          onDragStart(active);
+        }}
+        onDragOver={({ active, over }) => {
+          return onDragOver(active, over);
+        }}
+        onDragEnd={({ active, over }) => {
+          return onDragEnd(active, over);
+        }}
+        cancelDrop={cancelDrop}
+        onDragCancel={onDragCancel}
+        modifiers={modifiers}
+      >
+        <div className="w-full max-w-2xl">
+          <SortableContext
+            items={[...containers, PLACEHOLDER_ID]}
+            strategy={
+              vertical
+                ? verticalListSortingStrategy
+                : horizontalListSortingStrategy
+            }
+          >
+            {items.map((category) => (
+              <DroppableContainer
+                key={category.id}
+                id={category.id}
+                label={minimal ? undefined : category.title}
+                columns={columns}
+                items={category.tasks}
+                setItems={setItems}
+                scrollable={scrollable}
+                style={containerStyle}
+                onAddTask={(id) => {
+                  setAddTaskContainerId(id);
+                  setIsDialogOpen(true);
+                }}
+                setContainers={setContainers}
+                {...(minimal ? { unstyled: true } : {})}
+                onRemove={() => handleRemove(category.id)}
+              >
+                <SortableContext
+                  items={category.tasks.map((t) => t.id)}
+                  strategy={strategy}
+                >
+                  {category.tasks.length > 0 ? (
+                    <TooltipProvider>
+                      {category.tasks.map((task, index) => (
+                        <SortableItem
+                          disabled={isSortingContainer}
+                          key={task.id}
+                          id={task.id}
+                          index={index}
+                          handle={handle}
+                          items={items}
+                          style={getItemStyles}
+                          wrapperStyle={wrapperStyle}
+                          renderItem={renderItem}
+                          containerId={category.id}
+                          getIndex={getIndex}
+                          task={task}
+                          onToggle={(id, value) => {
+                            handleToggleTask(id, value);
+                          }}
+                          onEditTask={(task) => {
+                            setEditTask(task);
+                            setAddTaskContainerId(category.id);
+                            setIsDialogOpen(true);
+                          }}
+                        />
+                      ))}
+                    </TooltipProvider>
+                  ) : (
+                    <li className="h-[64px] rounded-xl border border-dashed border-muted/20 flex items-center justify-center text-muted-foreground text-sm">
+                      Перетягни сюди задачу
+                    </li>
+                  )}
+                </SortableContext>
+              </DroppableContainer>
+            ))}
+
+            {!minimal && (
+              <DroppableContainer
+                id={PLACEHOLDER_ID}
+                disabled={isSortingContainer}
+                items={[]}
+                onClick={handleAddColumn}
+                placeholder
+              >
+                + Add column
+              </DroppableContainer>
+            )}
+          </SortableContext>
+        </div>
+        {createPortal(
+          <DragOverlay adjustScale={adjustScale} dropAnimation={dropAnimation}>
+            {activeId ? (
+              containers.includes(activeId) ? (
+                <ContainerDragOverlay
+                  items={items}
+                  getItemStyles={getItemStyles}
+                  handle={handle}
+                  renderItem={renderItem}
+                  columns={columns}
+                  containerId={activeId}
+                />
+              ) : (
+                <SortableItemDragOverlay
+                  items={items}
+                  getItemStyles={getItemStyles}
+                  handle={handle}
+                  renderItem={renderItem}
+                  id={activeId}
+                />
+              )
+            ) : null}
+          </DragOverlay>,
+          document.body
+        )}
+        {trashable && activeId && !containers.includes(activeId) ? (
+          <Trash id={TRASH_ID} />
+        ) : null}
+      </DndContext>
+    </>
   );
 }
