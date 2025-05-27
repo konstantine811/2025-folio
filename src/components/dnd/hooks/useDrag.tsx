@@ -6,6 +6,8 @@ import { unstable_batchedUpdates } from "react-dom";
 import { useState } from "react";
 import { useHoverStore } from "@/storage/hoverStore";
 import { HoverStyleElement } from "@/types/sound";
+import { useTaskManagerStore } from "@/storage/task-manager/task-manager";
+import { useTranslation } from "react-i18next";
 
 const useDrag = ({
   items,
@@ -23,9 +25,25 @@ const useDrag = ({
 }) => {
   const [clonedItems, setClonedItems] = useState<Items | null>(null);
   const setHover = useHoverStore((s) => s.setHover);
+  const playingTask = useTaskManagerStore((s) => s.playingTask);
+  const stopPlayingTask = useTaskManagerStore((s) => s.stopPlayingTask);
+  const [t] = useTranslation();
 
   function handleAddColumn() {
-    const newContainerId = getNextContainerId();
+    const prefix = t("task_manager.category"); // наприклад "Категорія"
+
+    const maxNumber = Math.max(
+      0,
+      ...items.map((item) => {
+        const regex = new RegExp(`^${prefix} (\\d+)$`);
+        const match = item.title.match(regex);
+        return match ? parseInt(match[1], 10) : 0;
+      })
+    );
+
+    const newNumber = maxNumber + 1;
+    const newContainerId = `${prefix} ${newNumber}`;
+
     unstable_batchedUpdates(() => {
       setContainers((containers) => [...containers, newContainerId]);
       setItems((items) => [
@@ -116,7 +134,6 @@ const useDrag = ({
     const isDraggingCategory = items.some((cat) => cat.id === active.id);
     const isOverCategory = over && items.some((cat) => cat.id === over.id);
 
-    // 🟡 Якщо це переміщення категорії
     if (isDraggingCategory && isOverCategory && over) {
       const oldIndex = items.findIndex((cat) => cat.id === active.id);
       const newIndex = items.findIndex((cat) => cat.id === over.id);
@@ -136,7 +153,14 @@ const useDrag = ({
       ? items.find((cat) => cat.tasks.some((t) => t.id === over.id))
       : null;
 
+    // 🟥 Якщо це видалення (перетягнули в trash)
     if (over?.id === TRASH_ID && activeCategory) {
+      // Зупинити таймер, якщо видаляється активна задача
+      if (playingTask?.id === active.id) {
+        stopPlayingTask();
+      }
+
+      // Видалити задачу
       setItems((prev) =>
         prev.map((cat) =>
           cat.id === activeCategory.id
@@ -144,10 +168,12 @@ const useDrag = ({
             : cat
         )
       );
+
       setActiveId(null);
       return;
     }
 
+    // 🔄 Переміщення між категоріями
     if (!over || !activeCategory || !overCategory) {
       setActiveId(null);
       return;

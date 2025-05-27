@@ -234,34 +234,7 @@ const DialogTask = ({
                 )}
               </div>
               <div>
-                <div className="flex flex-wrap flex-col-reverse justify-end gap-1">
-                  {task && (
-                    <WrapperHoverElement>
-                      <SoundHoverElement
-                        animValue={0.99}
-                        hoverTypeElement={SoundTypeElement.SELECT}
-                        hoverStyleElement={HoverStyleElement.quad}
-                      >
-                        <Button
-                          variant="destructive"
-                          className="cursor-pointer"
-                          onClick={() => {
-                            onChangeTask(
-                              task.id,
-                              title,
-                              priority,
-                              time,
-                              wastedTime,
-                              containerId
-                            );
-                            setOpen(false);
-                          }}
-                        >
-                          {t("task_manager.delete")}
-                        </Button>
-                      </SoundHoverElement>
-                    </WrapperHoverElement>
-                  )}
+                <div className="flex gap-1 justify-end">
                   <SoundHoverElement
                     animValue={0.98}
                     hoverTypeElement={SoundTypeElement.LINK}

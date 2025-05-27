@@ -25,6 +25,7 @@
     "add": "Add Task",
     "add_container": "Add Container",
     "edit": "Edit Task",
+    "category": "Category",
     "delete": "Delete Task",
     "complete": "Complete Task",
     "drag_task_here": "Drag task here",

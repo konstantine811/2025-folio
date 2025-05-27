@@ -12,6 +12,8 @@ import SoundHoverElement from "../ui-abc/sound-hover-element";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import { Button } from "../ui/button";
 import { useTranslation } from "react-i18next";
+import { useEffect, useState } from "react";
+import { Progress } from "../ui/progress";
 
 const animateLayoutChanges: AnimateLayoutChanges = (args) =>
   defaultAnimateLayoutChanges({ ...args, wasDragging: true });
@@ -54,6 +56,7 @@ function DroppableContainer({
   });
 
   const [t] = useTranslation();
+  const [donePercentage, setDonePercentage] = useState(0);
 
   const handleChangeCategory = (value: string) => {
     if (!setItems || !setContainers) return;
@@ -66,6 +69,14 @@ function DroppableContainer({
       )
     );
   };
+
+  useEffect(() => {
+    const totalTasks = items.length;
+    const doneTasks = items.filter((task) => task.isDone).length;
+    const donePercentage =
+      totalTasks === 0 ? 0 : Math.round((doneTasks / totalTasks) * 100);
+    setDonePercentage(donePercentage);
+  }, [items]);
 
   return (
     <Container
@@ -84,11 +95,19 @@ function DroppableContainer({
       columns={columns}
       {...props}
     >
+      {items.length > 0 && (
+        <div className="px-4">
+          <div className="text-xs text-muted-foreground text-center mt-1">
+            {donePercentage}%
+          </div>
+          <Progress className="h-10" value={donePercentage} />
+        </div>
+      )}
       <ul className="flex flex-col gap-1">{children}</ul>
 
       {/* Add task button */}
       {!placeholder && onAddTask && (
-        <div className="flex justify-center">
+        <div className="flex justify-center mt-2">
           <WrapperHoverElement>
             <SoundHoverElement
               animValue={0.99}
