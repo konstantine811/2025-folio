@@ -43,6 +43,10 @@ import SortableItemDragOverlay from "./sortable-item-drag-overlay";
 import { useTaskManagerStore } from "@/storage/task-manager/task-manager";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import DialogTask from "./dialog-task";
+import SoundHoverElement from "../ui-abc/sound-hover-element";
+import { Button } from "../ui/button";
+import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   adjustScale?: boolean;
@@ -83,6 +87,7 @@ export function MultipleContainers({
   vertical = false,
   scrollable,
 }: Props) {
+  const [t] = useTranslation();
   const [items, setItems] = useState<Items>(() => {
     if (initialItems) return initialItems;
     return ["A", "B", "C", "D"].map((id) => ({
@@ -92,8 +97,8 @@ export function MultipleContainers({
         id: `${id}${index + 1}`,
         title: `Задача ${id}${index + 1}`,
         isDone: false,
-        time: 100,
-        timeDone: 100,
+        time: 10000,
+        timeDone: 0,
         priority: Priority.MEDIUM,
       })),
     }));
@@ -269,6 +274,7 @@ export function MultipleContainers({
           setIsDialogOpen(status);
         }}
       />
+
       <DndContext
         sensors={sensors}
         collisionDetection={collisionDetectionStrategy}
@@ -353,7 +359,7 @@ export function MultipleContainers({
                     </TooltipProvider>
                   ) : (
                     <li className="h-[64px] rounded-xl border border-dashed border-muted/20 flex items-center justify-center text-muted-foreground text-sm">
-                      Перетягни сюди задачу
+                      {t("task_manager.drag_task_here")}
                     </li>
                   )}
                 </SortableContext>
@@ -368,7 +374,18 @@ export function MultipleContainers({
                 onClick={handleAddColumn}
                 placeholder
               >
-                + Add column
+                <div className="flex justify-center items-center">
+                  <SoundHoverElement
+                    animValue={1.09}
+                    hoverTypeElement={SoundTypeElement.LINK}
+                    hoverStyleElement={HoverStyleElement.quad}
+                    className="w-full"
+                  >
+                    <Button className="w-full uppercase" variant="ghost">
+                      {t("task_manager.add_container")}
+                    </Button>
+                  </SoundHoverElement>
+                </div>
               </DroppableContainer>
             )}
           </SortableContext>

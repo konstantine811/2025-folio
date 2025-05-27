@@ -1,4 +1,5 @@
 import { UniqueIdentifier, useDroppable } from "@dnd-kit/core";
+import { Trash2 } from "lucide-react";
 
 const Trash = ({ id }: { id: UniqueIdentifier }) => {
   const { setNodeRef, isOver } = useDroppable({
@@ -7,23 +8,12 @@ const Trash = ({ id }: { id: UniqueIdentifier }) => {
 
   return (
     <div
+      className={`${
+        isOver ? "bg-destructive" : "bg-transparent"
+      } fixed right-0 md:top-1/2 md:translate-y-[-50%] bottom-0 w-10 my-auto md:h-1/2 h-20 border rounded-lg flex items-center justify-center text-foreground text-2xl z-50 mb-5 border-destructive transition-all duration-500`}
       ref={setNodeRef}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "fixed",
-        left: "50%",
-        marginLeft: -150,
-        bottom: 20,
-        width: 300,
-        height: 60,
-        borderRadius: 5,
-        border: "1px solid",
-        borderColor: isOver ? "red" : "#DDD",
-      }}
     >
-      Drop here to delete
+      <Trash2 />
     </div>
   );
 };

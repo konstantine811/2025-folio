@@ -2,13 +2,20 @@ import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { Button } from "@/components/ui/button";
 import { useTaskManagerStore } from "@/storage/task-manager/task-manager";
 import { ItemTask } from "@/types/drag-and-drop.model";
-import { SoundTypeElement } from "@/types/sound";
+import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import { Pause, Play } from "lucide-react";
 import TaskLocalTime from "./task-local-time";
 import { useTranslation } from "react-i18next";
 import TaskLocalTimeStatic from "./task-local-time-static";
+import { useEffect } from "react";
 
-const TaskPlay = ({ task }: { task: ItemTask }) => {
+const TaskPlay = ({
+  task,
+  onPlay,
+}: {
+  task: ItemTask;
+  onPlay: (status: boolean) => void;
+}) => {
   const playingTask = useTaskManagerStore((s) => s.playingTask);
   const setPlayingTask = useTaskManagerStore((s) => s.setPlayingTask);
   const stopPlayingTask = useTaskManagerStore((s) => s.stopPlayingTask);
@@ -23,14 +30,26 @@ const TaskPlay = ({ task }: { task: ItemTask }) => {
       setPlayingTask(task);
     }
   };
+
+  useEffect(() => {
+    onPlay(isPlaying);
+  }, [isPlaying, onPlay]);
   return (
     <div className="flex items-center gap-1">
-      <SoundHoverElement hoverTypeElement={SoundTypeElement.LINK}>
+      <SoundHoverElement
+        hoverTypeElement={SoundTypeElement.NONE}
+        hoverStyleElement={
+          task.isDone ? HoverStyleElement.none : HoverStyleElement.circle
+        }
+      >
         <Button
           size="icon"
           variant="ghost"
-          className="hover:bg-card/10 hover:text-foreground"
+          className={`hover:bg-card/10 hover:text-foreground ${
+            task.isDone && "cursor-not-allowed text-foreground/10"
+          }`}
           onClick={handleClick}
+          disabled={task.isDone}
         >
           {isPlaying ? <Pause /> : <Play />}
         </Button>

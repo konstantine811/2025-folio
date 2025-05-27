@@ -23,9 +23,11 @@
   },
   "task_manager": {
     "add": "Add Task",
+    "add_container": "Add Container",
     "edit": "Edit Task",
     "delete": "Delete Task",
     "complete": "Complete Task",
+    "drag_task_here": "Drag task here",
     "incomplete": "Incomplete Task",
     "completed": "Completed Tasks",
     "incomplete_tasks": "Incomplete Tasks",

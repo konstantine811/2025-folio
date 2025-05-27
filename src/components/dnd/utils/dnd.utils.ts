@@ -56,14 +56,27 @@ export function getPriorityClassByPrefix(
   }
 }
 
+export function getPriorityClassFrom(priority: Priority) {
+  switch (priority) {
+    case Priority.HIGH:
+      return "from-destructive";
+    case Priority.MEDIUM:
+      return "from-foreground";
+    case Priority.LOW:
+      return "from-primary";
+    default:
+      return "";
+  }
+}
+
 export function getPriorityBorderClass(priority: Priority) {
   switch (priority) {
     case Priority.HIGH:
       return "border-destructive";
     case Priority.MEDIUM:
-      return "border-yellow-200";
+      return "border-accent";
     case Priority.LOW:
-      return "border-primary";
+      return "border-primary/50";
     default:
       return "";
   }

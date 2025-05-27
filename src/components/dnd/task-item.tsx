@@ -1,6 +1,9 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { ItemTask } from "@/types/drag-and-drop.model";
-import { getPriorityClassByPrefix } from "./utils/dnd.utils";
+import {
+  getPriorityBorderClass,
+  getPriorityClassByPrefix,
+} from "./utils/dnd.utils";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { checkInSound, checkOutSound } from "@/config/sounds";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
@@ -9,6 +12,7 @@ import TaskPlay from "./task-play";
 import WrapperHoverElement from "../ui-abc/wrapper-hover-element";
 import { Button } from "../ui/button";
 import { Settings2 } from "lucide-react";
+import { useState } from "react";
 export function TaskItem({
   index = "",
   task,
@@ -25,23 +29,14 @@ export function TaskItem({
   children?: React.ReactNode;
   dragging?: boolean;
 }) {
+  const [isPlay, setIsPlay] = useState(false);
+
   return (
-    <div className="relative group overflow-hidden rounded-xl border border-foreground/10">
-      {/* <div
-        className={`${getPriorityClassByPrefix(
-          task.priority,
-          PriorityPrefixClass.from
-        )} absolute aspect-square w-[100px] pointer-events-none bg-linear-210 to-card h-[3.8px] rounded-2xl`}
-        style={{
-          offsetPath: "rect(0px auto auto 0px round 999px)",
-          offsetDistance: "0%",
-          WebkitMaskImage:
-            "linear-gradient(white, white) padding-box, linear-gradient(white, white)",
-          WebkitMaskComposite: "destination-in",
-          maskComposite: "intersect",
-          animation: `spark-move ${Number(index) + 1 * 100}s linear infinite`,
-        }}
-      /> */}
+    <div
+      className={`relative group rounded-xl border ${
+        isPlay ? getPriorityBorderClass(task.priority) : "border-foreground/10"
+      }`}
+    >
       <div
         className="flex items-center justify-between gap-2 bg-card 
              border border-foreground/10 rounded-xl px-4 py-3 text-foreground 
@@ -94,7 +89,7 @@ export function TaskItem({
         <div className="flex items-center gap-2">
           {!dragging && (
             <>
-              <TaskPlay task={task} />
+              <TaskPlay onPlay={setIsPlay} task={task} />
               {onEditTask && (
                 <WrapperHoverElement>
                   <SoundHoverElement
