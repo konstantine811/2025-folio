@@ -1,7 +1,8 @@
-import { MultipleContainers } from "./dnd/multiple-container";
 import { rectSortingStrategy } from "@dnd-kit/sortable";
-import TaskTimer from "./dnd/task-timer";
+
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
+import TaskTimer from "@/components/dnd/task-timer";
+import { MultipleContainers } from "@/components/dnd/multiple-container";
 
 const TaskManager = () => {
   const sH = useHeaderSizeStore((s) => s.size);
