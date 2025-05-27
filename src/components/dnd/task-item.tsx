@@ -26,7 +26,7 @@ export function TaskItem({
   dragging?: boolean;
 }) {
   return (
-    <div className="relative group overflow-hidden rounded-full border border-foreground/10">
+    <div className="relative group overflow-hidden rounded-xl border border-foreground/10">
       {/* <div
         className={`${getPriorityClassByPrefix(
           task.priority,
@@ -44,7 +44,7 @@ export function TaskItem({
       /> */}
       <div
         className="flex items-center justify-between gap-2 bg-card 
-             border border-foreground/10 rounded-full px-4 py-3 text-foreground 
+             border border-foreground/10 rounded-xl px-4 py-3 text-foreground 
              group transition-all hover:border-foreground/10 hover:bg-card/10 duration-500 ease-in-out"
       >
         <SoundHoverElement

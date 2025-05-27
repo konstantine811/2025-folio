@@ -3,7 +3,8 @@ import { Input } from "@/components/ui/input";
 
 import { cn } from "@/lib/utils"; // якщо використовуєш clsx / cn
 import SoundHoverElement from "../sound-hover-element";
-import { SoundTypeElement } from "@/types/sound";
+import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
+import WrapperHoverElement from "../wrapper-hover-element";
 
 interface NumberInputProps {
   value: number;
@@ -39,17 +40,24 @@ export default function NumberInput({
         className
       )}
     >
-      <SoundHoverElement hoverTypeElement={SoundTypeElement.SELECT}>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-lg"
-          onClick={decrement}
-          disabled={value <= min}
+      <WrapperHoverElement>
+        <SoundHoverElement
+          hoverTypeElement={SoundTypeElement.SELECT}
+          hoverStyleElement={HoverStyleElement.quad}
         >
-          −
-        </Button>
-      </SoundHoverElement>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`text-lg hover:bg-card/80 hover:text-foreground ${
+              value <= min && "text-foreground/30"
+            }`}
+            onClick={decrement}
+            disabled={value <= min}
+          >
+            −
+          </Button>
+        </SoundHoverElement>
+      </WrapperHoverElement>
       <Input
         type="text"
         value={value}
@@ -63,17 +71,24 @@ export default function NumberInput({
         inputMode="numeric" // показує цифрову клавіатуру на мобілках
         className="w-12 text-center font-bold text-lg border-none focus:outline-none"
       />
-      <SoundHoverElement hoverTypeElement={SoundTypeElement.SELECT}>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-lg"
-          onClick={increment}
-          disabled={value >= max}
+      <WrapperHoverElement>
+        <SoundHoverElement
+          hoverTypeElement={SoundTypeElement.SELECT}
+          hoverStyleElement={HoverStyleElement.quad}
         >
-          +
-        </Button>
-      </SoundHoverElement>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`text-lg hover:bg-card/80 hover:text-foreground ${
+              value >= max && "text-foreground/30"
+            }`}
+            onClick={increment}
+            disabled={value >= max}
+          >
+            +
+          </Button>
+        </SoundHoverElement>
+      </WrapperHoverElement>
     </div>
   );
 }

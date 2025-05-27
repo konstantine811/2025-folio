@@ -47,7 +47,7 @@ export function TimePickerInputs({
   }, [hours, minutes, onChange]);
 
   return (
-    <div className="flex gap-4 items-center justify-between">
+    <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
       {title && <Label className="text-right">{title}:</Label>}
       <div className="flex gap-1">
         <div className="flex flex-col items-center space-y-1">

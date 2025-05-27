@@ -92,8 +92,8 @@ export function MultipleContainers({
         id: `${id}${index + 1}`,
         title: `Задача ${id}${index + 1}`,
         isDone: false,
-        time: 0,
-        timeDone: 0,
+        time: 100,
+        timeDone: 100,
         priority: Priority.MEDIUM,
       })),
     }));
@@ -234,42 +234,41 @@ export function MultipleContainers({
 
   return (
     <>
-      {isDialogOpen && (
-        <DialogTask
-          isOpen={isDialogOpen}
-          containerId={addTaskContainerId}
-          task={editTask}
-          onChangeTask={(
-            taskId,
-            title,
-            priority,
-            time,
-            wastedTime,
-            containerId
-          ) => {
-            if (taskId && containerId) {
-              handleEditTask(
-                taskId,
-                title,
-                priority,
-                time,
-                wastedTime,
-                containerId
-              );
-            } else if (containerId) {
-              handleAddTask(title, priority, time, wastedTime, containerId);
-            }
-            setIsDialogOpen(false);
-            setAddTaskContainerId(null);
-            setEditTask(null);
-          }}
-          setOpen={(status) => {
-            setAddTaskContainerId(null);
-            setEditTask(null);
-            setIsDialogOpen(status);
-          }}
-        />
-      )}
+      <DialogTask
+        key={editTask?.id ?? "new-task"}
+        isOpen={isDialogOpen}
+        containerId={addTaskContainerId}
+        task={editTask}
+        onChangeTask={(
+          taskId,
+          title,
+          priority,
+          time,
+          wastedTime,
+          containerId
+        ) => {
+          if (taskId && containerId) {
+            handleEditTask(
+              taskId,
+              title,
+              priority,
+              time,
+              wastedTime,
+              containerId
+            );
+          } else if (containerId) {
+            handleAddTask(title, priority, time, wastedTime, containerId);
+          }
+          setIsDialogOpen(false);
+          setAddTaskContainerId(null);
+          setEditTask(null);
+        }}
+        setOpen={(status) => {
+          setAddTaskContainerId(null);
+          setEditTask(null);
+          setIsDialogOpen(status);
+        }}
+      />
       <DndContext
         sensors={sensors}
         collisionDetection={collisionDetectionStrategy}
@@ -342,9 +341,12 @@ export function MultipleContainers({
                             handleToggleTask(id, value);
                           }}
                           onEditTask={(task) => {
-                            setEditTask(task);
-                            setAddTaskContainerId(category.id);
-                            setIsDialogOpen(true);
+                            setEditTask(null); // 🔧 обнуляємо, щоб гарантовано змінити посилання
+                            setTimeout(() => {
+                              setEditTask(task);
+                              setAddTaskContainerId(category.id);
+                              setIsDialogOpen(true);
+                            }, 0); // наступний event loop
                           }}
                         />
                       ))}
