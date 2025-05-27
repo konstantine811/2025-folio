@@ -7,7 +7,7 @@ import type { Transform } from "@dnd-kit/utilities";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { SoundTypeElement } from "@/types/sound";
 import { Button } from "@/components/ui/button";
-import { Grip, GripVertical, X } from "lucide-react";
+import { GripVertical } from "lucide-react";
 import { ItemTask, Priority } from "@/types/drag-and-drop.model";
 import { TaskItem } from "./task-item";
 
@@ -65,10 +65,8 @@ export const Item = React.memo(
         dragging,
         fadeIn,
         handle,
-        handleProps,
         index,
         listeners,
-        onRemove,
         onChangeTask,
         renderItem,
         sorting,
@@ -83,10 +81,10 @@ export const Item = React.memo(
       ref
     ) => {
       useEffect(() => {
+        console.log("Setting cursor to grabbing", dragOverlay);
         if (!dragOverlay) {
           return;
         }
-
         document.body.style.cursor = "grabbing";
 
         return () => {
@@ -113,6 +111,7 @@ export const Item = React.memo(
         <li className="list-none" ref={ref} tabIndex={!handle ? 0 : undefined}>
           <TaskItem
             index={index}
+            dragging={dragOverlay}
             task={task}
             onToggle={onToggle}
             onChangeTask={(id, title, priority, time, timeDone) => {
@@ -141,36 +140,6 @@ export const Item = React.memo(
               </div>
             }
           </TaskItem>
-          {/* <div className="bg-card p-1 my-1 rounded shadow-sm " style={style}>
-            <span>
-              {onRemove && (
-                <SoundHoverElement
-                  animValue={0.9}
-                  hoverTypeElement={SoundTypeElement.SELECT_2}
-                >
-                  <Button variant="ghost" size="icon" onClick={onRemove}>
-                    <X />
-                  </Button>
-                </SoundHoverElement>
-              )}
-              {handle && (
-                <SoundHoverElement
-                  animValue={0.9}
-                  hoverTypeElement={SoundTypeElement.SELECT}
-                >
-                  <Button
-                    {...handleProps}
-                    {...listeners}
-                    variant="ghost"
-                    size="icon"
-                    className="cursor-move"
-                  >
-                    <Grip />
-                  </Button>
-                </SoundHoverElement>
-              )}
-            </span>
-          </div> */}
         </li>
       );
     }

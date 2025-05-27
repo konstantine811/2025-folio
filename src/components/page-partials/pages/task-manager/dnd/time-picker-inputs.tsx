@@ -48,7 +48,7 @@ export function TimePickerInputs({
 
   return (
     <div className="flex gap-4 items-center justify-between">
-      {title && <Label className="text-right">{title} :</Label>}
+      {title && <Label className="text-right">{title}:</Label>}
       <div className="flex gap-1">
         <div className="flex flex-col items-center space-y-1">
           <Label htmlFor="hours">

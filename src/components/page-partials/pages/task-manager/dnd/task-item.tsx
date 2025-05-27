@@ -1,24 +1,17 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { ItemTask, Priority } from "@/types/drag-and-drop.model";
-import { Settings2 } from "lucide-react";
-import {
-  getPriorityBorderClass,
-  getPriorityClassByPrefix,
-  PriorityPrefixClass,
-} from "./utils/dnd.utils";
+import { getPriorityClassByPrefix } from "./utils/dnd.utils";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { checkInSound, checkOutSound } from "@/config/sounds";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { SoundTypeElement } from "@/types/sound";
-import DialogTask from "./dialog-task";
-
+import TaskPlay from "./task-play";
 export function TaskItem({
   index = "",
   task,
-  onDelete,
   onToggle,
   children,
-  onChangeTask,
+  dragging = false,
 }: {
   index?: number | string;
   task: ItemTask;
@@ -32,6 +25,7 @@ export function TaskItem({
   ) => void;
   onDelete?: () => void;
   children?: React.ReactNode;
+  dragging?: boolean;
 }) {
   return (
     <div className="relative group overflow-hidden rounded-full border border-foreground/10">
@@ -80,13 +74,13 @@ export function TaskItem({
         </SoundHoverElement>
 
         <span
-          className={`w-6 text-sm ${
+          className={`w-6 text-xs ${
             task.isDone
               ? getPriorityClassByPrefix(task.priority)
               : "text-muted-foreground"
           }`}
         >
-          {index || (index === 0 && Number(index) + 1)}
+          {(index || index === 0) && Number(index) + 1}
         </span>
 
         <span
@@ -100,14 +94,20 @@ export function TaskItem({
         </span>
 
         <div className="flex items-center gap-2">
-          <DialogTask
-            task={task}
-            onChangeTask={(title, priority, time, wastedTime) => {
-              if (onChangeTask) {
-                onChangeTask(task.id, title, priority, time, wastedTime);
-              }
-            }}
-          />
+          {!dragging && (
+            <>
+              <TaskPlay task={task} />
+              {/* <DialogTask
+                task={task}
+                onChangeTask={(title, priority, time, wastedTime) => {
+                  if (onChangeTask) {
+                    onChangeTask(task.id, title, priority, time, wastedTime);
+                  }
+                }}
+              /> */}
+            </>
+          )}
+
           {children}
         </div>
 

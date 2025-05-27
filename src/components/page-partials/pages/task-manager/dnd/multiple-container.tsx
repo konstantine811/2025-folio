@@ -35,6 +35,8 @@ import SortableItem from "./sortable-item";
 import Trash from "./trash";
 import ContainerDragOverlay from "./container-drag-overlay";
 import SortableItemDragOverlay from "./sortable-item-drag-overlay";
+import { useTaskManagerStore } from "@/storage/task-manager/task-manager";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 interface Props {
   adjustScale?: boolean;
@@ -102,6 +104,7 @@ export function MultipleContainers({
   const lastOverId = useRef<UniqueIdentifier | null>(null);
   const recentlyMovedToNewContainer = useRef(false);
   const isSortingContainer = activeId ? containers.includes(activeId) : false;
+  const taskTimeDone = useTaskManagerStore((s) => s.updatedTask);
 
   const collisionDetectionStrategy: CollisionDetection =
     useCollisionDectionStrategy({
@@ -126,6 +129,21 @@ export function MultipleContainers({
     setActiveId,
     activeId,
   });
+  const updateTaskTime = (taskId: UniqueIdentifier, newTimeDone: number) => {
+    setItems((prev) =>
+      prev.map((container) => ({
+        ...container,
+        tasks: container.tasks.map((task) =>
+          task.id === taskId ? { ...task, timeDone: newTimeDone } : task
+        ),
+      }))
+    );
+  };
+  useEffect(() => {
+    if (taskTimeDone) {
+      updateTaskTime(taskTimeDone.id, taskTimeDone?.timeDone);
+    }
+  }, [taskTimeDone]);
 
   const sensors = useSensors(
     useSensor(MouseSensor),
@@ -153,6 +171,7 @@ export function MultipleContainers({
     time: number,
     timeDone: number
   ) => {
+    console.log("Changing task:");
     setItems((prevItems) =>
       prevItems.map((container) => ({
         ...container,
@@ -219,26 +238,28 @@ export function MultipleContainers({
                 strategy={strategy}
               >
                 {category.tasks.length > 0 ? (
-                  category.tasks.map((task, index) => (
-                    <SortableItem
-                      disabled={isSortingContainer}
-                      key={task.id}
-                      id={task.id}
-                      index={index}
-                      handle={handle}
-                      items={items}
-                      style={getItemStyles}
-                      wrapperStyle={wrapperStyle}
-                      renderItem={renderItem}
-                      containerId={category.id}
-                      getIndex={getIndex}
-                      task={task}
-                      onToggle={(id, value) => {
-                        handleToggleTask(id, value);
-                      }}
-                      onChangeTask={handleChangeTask}
-                    />
-                  ))
+                  <TooltipProvider>
+                    {category.tasks.map((task, index) => (
+                      <SortableItem
+                        disabled={isSortingContainer}
+                        key={task.id}
+                        id={task.id}
+                        index={index}
+                        handle={handle}
+                        items={items}
+                        style={getItemStyles}
+                        wrapperStyle={wrapperStyle}
+                        renderItem={renderItem}
+                        containerId={category.id}
+                        getIndex={getIndex}
+                        task={task}
+                        onToggle={(id, value) => {
+                          handleToggleTask(id, value);
+                        }}
+                        onChangeTask={handleChangeTask}
+                      />
+                    ))}
+                  </TooltipProvider>
                 ) : (
                   <li className="h-[64px] rounded-xl border border-dashed border-muted/20 flex items-center justify-center text-muted-foreground text-sm">
                     Перетягни сюди задачу
