@@ -8,7 +8,12 @@
     "home": "Головна",
     "blog": "Блог",
     "task-manager": "Менеджер завдань",
-    "experimental": "Експерименти"
+    "experimental": "Експерименти",
+    "task": {
+      "template": "Шаблон задачі",
+      "daily": "Щоденні завдання",
+      "analytics": "Аналітика"
+    }
   },
   "login": {
     "to_google": "Увійти через Google",

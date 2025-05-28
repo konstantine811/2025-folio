@@ -20,7 +20,7 @@ export const saveDailyTasks = async (items: Items) => {
       items,
     });
 
-    console.info("✅ Tasks saved successfully for", uid);
+    // console.info("✅ Tasks saved successfully for", uid);
     return;
   } catch (error) {
     console.error("🔥 Error saving tasks:", error);

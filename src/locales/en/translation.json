@@ -8,7 +8,12 @@
     "home": "Home",
     "blog": "Blog",
     "task-manager": "Task Manager",
-    "experimental": "Experiments"
+    "experimental": "Experiments",
+    "task": {
+      "template": "Task Template",
+      "daily": "Daily Tasks",
+      "analytics": "Analytics"
+    }
   },
 
   "login": {
