@@ -9,6 +9,7 @@ const SortableItemDragOverlay = ({
   getItemStyles,
   items,
   renderItem,
+  templated,
 }: {
   id: UniqueIdentifier;
   handle?: boolean;
@@ -16,6 +17,7 @@ const SortableItemDragOverlay = ({
   items: Items;
   renderItem?: (args: RenderItemProps) => React.ReactElement;
   columns?: number;
+  templated: boolean;
 }) => {
   const container = items.find((cat) => cat.tasks.some((t) => t.id === id));
   const task = container?.tasks.find((t) => t.id === id);
@@ -27,6 +29,7 @@ const SortableItemDragOverlay = ({
       task={task} // 🟢 додаємо task
       value={task?.title ?? id} // показує title, якщо знайдено
       handle={handle}
+      templated={templated}
       style={getItemStyles({
         containerId: container.id,
         overIndex: -1,

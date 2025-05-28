@@ -471,10 +471,12 @@ export function MultipleContainers({
                   renderItem={renderItem}
                   columns={columns}
                   containerId={activeId}
+                  templated={templated}
                 />
               ) : (
                 <SortableItemDragOverlay
                   items={items}
+                  templated={templated}
                   getItemStyles={getItemStyles}
                   handle={handle}
                   renderItem={renderItem}

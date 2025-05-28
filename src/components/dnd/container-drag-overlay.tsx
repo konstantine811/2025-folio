@@ -12,6 +12,7 @@ const ContainerDragOverlay = ({
   handle,
   renderItem,
   columns,
+  templated,
 }: {
   containerId: UniqueIdentifier;
   items: Items;
@@ -19,6 +20,7 @@ const ContainerDragOverlay = ({
   handle?: boolean;
   renderItem?: (args: RenderItemProps) => React.ReactElement;
   columns?: number;
+  templated: boolean;
 }) => {
   const category = items.find((cat) => cat.id === containerId);
 
@@ -40,6 +42,7 @@ const ContainerDragOverlay = ({
             key={task.id}
             value={task.id}
             handle={handle}
+            templated={templated}
             style={getItemStyles({
               containerId,
               overIndex: -1,
