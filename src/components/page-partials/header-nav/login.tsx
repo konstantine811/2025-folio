@@ -1,10 +1,8 @@
-import { auth, provider } from "@/config/firebase.config";
 import { useAuthStore } from "@/storage/useAuthStore";
-import { signInWithPopup, signOut } from "firebase/auth";
 import { SoundTypeElement } from "@custom-types/sound";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import SelectItem from "@/components/ui-abc/select/select-item";
-import { ArrowRightLeft, LogOut, User } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   Tooltip,
@@ -12,25 +10,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import useFirebaseLogin from "@/hooks/auth/firebase-login";
 
 const Login = () => {
-  const { user, setUser, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const [t] = useTranslation();
-
-  const handleLogin = async () => {
-    try {
-      auth.languageCode = "en";
-      const result = await signInWithPopup(auth, provider);
-      setUser(result.user);
-    } catch (err) {
-      console.error("Login error:", err);
-    }
-  };
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    logout(); // очистити стан
-  };
+  const { handleLogin, handleLogout } = useFirebaseLogin();
 
   if (!user) {
     return (
@@ -82,18 +67,6 @@ const Login = () => {
             className="w-8 h-8 p-2 flex items-center justify-center  bg-card rounded-full"
           >
             <LogOut />
-          </SoundHoverElement>
-
-          <SoundHoverElement
-            as="li"
-            variants={itemVariants}
-            hoverTypeElement={SoundTypeElement.SELECT}
-            hoverAnimType="scale"
-            onClick={handleLogin}
-            tooltipText={t("login.switch")}
-            className="w-8 h-8 p-2  flex items-center justify-center bg-card rounded-full"
-          >
-            <ArrowRightLeft />
           </SoundHoverElement>
         </>
       )}

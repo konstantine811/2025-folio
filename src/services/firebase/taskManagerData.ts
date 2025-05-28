@@ -16,10 +16,12 @@ export const saveDailyTasks = async (items: Items) => {
   try {
     await setDoc(ref, {
       updatedAt: new Date().toISOString(),
+      email: user.email,
       items,
     });
 
     console.info("✅ Tasks saved successfully for", uid);
+    return;
   } catch (error) {
     console.error("🔥 Error saving tasks:", error);
   }

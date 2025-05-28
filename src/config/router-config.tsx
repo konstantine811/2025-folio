@@ -1,3 +1,4 @@
+import AuthGuard from "@/components/auth/auth-guard";
 import { lazy } from "react";
 
 const HomePage = lazy(() => import("../components/page-partials/pages/Home"));
@@ -16,12 +17,15 @@ const TaskManager = lazy(
   () => import("../components/page-partials/pages/task-manager/TaskManager")
 );
 
+const LoginPage = lazy(() => import("../components/page-partials/pages/Login"));
+
 export enum RoutPath {
   HOME = "/",
   EXPERIMENTAL = "/experimental",
   BLOG = "/blog",
   ARTICLE = "/blog/:id",
   TASK_MANAGER = "/task-manager",
+  LOGIN = "/login",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -56,9 +60,19 @@ export const router = [
   },
   {
     path: RoutPath.TASK_MANAGER,
-    Component: TaskManager,
+    Component: () => (
+      <AuthGuard>
+        <TaskManager />
+      </AuthGuard>
+    ),
     isNav: true,
     id: "task-manager",
+  },
+  {
+    path: RoutPath.LOGIN,
+    Component: LoginPage,
+    isNav: false,
+    id: "login",
   },
   {
     path: "*",

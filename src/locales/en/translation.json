@@ -4,6 +4,13 @@
   "date_format": "D MMMM YYYY [at] HH:mm",
   "copy": "Copy",
   "copied": "Copied",
+  "pages": {
+    "home": "Home",
+    "blog": "Blog",
+    "task-manager": "Task Manager",
+    "experimental": "Experiments"
+  },
+
   "login": {
     "to_google": "Login with Google",
     "out": "Logout",
@@ -23,7 +30,7 @@
   },
   "task_manager": {
     "add": "Add Task",
-    "add_container": "Add Container",
+    "add_container": "Add category",
     "edit": "Edit Task",
     "category": "Category",
     "delete": "Delete Task",

@@ -14,9 +14,11 @@ import ToggleSound from "../page-setting/toggle-sound";
 import { useSoundEnabledStore } from "@/storage/soundEnabled";
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
+import { useTranslation } from "react-i18next";
 
 const RevealNavMenu = memo(() => {
   const { isOpen, setOpen } = useNavMenuStore((state) => state);
+  const [t] = useTranslation();
   const location = useLocation();
   const navigateTo = useTransitionRouteTo();
   const setClick = useClickStore((state) => state.setClick);
@@ -106,7 +108,7 @@ const RevealNavMenu = memo(() => {
                           animValue={0.98}
                           as="li"
                         >
-                          {route.id}
+                          {t(`pages.${route.id}`)}
                         </SoundHoverElement>
                       </a>
                     ))}

@@ -4,6 +4,12 @@
   "date_format": "D MMMM YYYY [о] HH:mm",
   "copy": "Скопіювати",
   "copied": "Скопійовано",
+  "pages": {
+    "home": "Головна",
+    "blog": "Блог",
+    "task-manager": "Менеджер завдань",
+    "experimental": "Експерименти"
+  },
   "login": {
     "to_google": "Увійти через Google",
     "out": "Вийти",
@@ -25,7 +31,7 @@
   "task_manager": {
     "add": "Додати завдання",
     "category": "Категорія",
-    "add_container": "Додати контейнер",
+    "add_container": "Додати категорію",
     "drag_task_here": "Перетягни сюди задачу",
     "edit": "Редагувати завдання",
     "delete": "Видалити завдання",

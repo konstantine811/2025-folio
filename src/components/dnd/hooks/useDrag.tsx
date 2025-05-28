@@ -43,13 +43,13 @@ const useDrag = ({
 
     const newNumber = maxNumber + 1;
     const newContainerId = `${prefix} ${newNumber}`;
-
+    const newId = `cat-${Date.now()}`; // або: crypto.randomUUID()
     unstable_batchedUpdates(() => {
       setContainers((containers) => [...containers, newContainerId]);
       setItems((items) => [
         ...items,
         {
-          id: newContainerId,
+          id: newId,
           title: newContainerId,
           tasks: [],
         },

@@ -11,12 +11,15 @@ import Preloader from "../../preloader/preloader";
 const TaskManager = () => {
   const [dailyTasks, setDailyTasks] = useState<Items>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+
   useEffect(() => {
     setIsLoaded(true);
     loadDailyTasks()
       .then((tasks) => {
         if (tasks) {
           setDailyTasks(tasks);
+        } else {
+          setDailyTasks([]); // 🔄 Явно вказати порожній масив
         }
         setIsLoaded(false);
       })
