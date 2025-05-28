@@ -8,16 +8,6 @@ export interface TaskCategory {
 
 export type Items = TaskCategory[]; // <-- нова структура
 
-export interface GetItemStylesArgs {
-  value: UniqueIdentifier;
-  index: number;
-  overIndex: number;
-  isDragging: boolean;
-  containerId: UniqueIdentifier;
-  isSorting: boolean;
-  isDragOverlay: boolean;
-}
-
 export interface ItemTask {
   id: UniqueIdentifier;
   title: string;
@@ -31,6 +21,16 @@ export enum Priority {
   LOW = "low",
   MEDIUM = "medium",
   HIGH = "high",
+}
+
+export interface GetItemStylesArgs {
+  value: UniqueIdentifier;
+  index: number;
+  overIndex: number;
+  isDragging: boolean;
+  containerId: UniqueIdentifier;
+  isSorting: boolean;
+  isDragOverlay: boolean;
 }
 
 export type GetItemStyles = (args: GetItemStylesArgs) => React.CSSProperties;

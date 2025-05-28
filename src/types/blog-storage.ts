@@ -6,10 +6,6 @@ export enum BlogSupabaseTable {
   articlesImageFolder = "blog-images",
 }
 
-export enum BlogFirebaseCollection {
-  articles = "articles-blog",
-}
-
 export enum BlogArticleProps {
   id = "id",
   title = "title",

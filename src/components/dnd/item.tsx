@@ -77,7 +77,6 @@ export const Item = React.memo(
       ref
     ) => {
       useEffect(() => {
-        console.log("Setting cursor to grabbing", dragOverlay);
         if (!dragOverlay) {
           return;
         }

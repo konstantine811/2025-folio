@@ -102,8 +102,8 @@ const DialogTask = ({
     setTranslateRandom(getRandomFromTo(1, 4));
     setTimeout(() => {
       setHover(false, null, HoverStyleElement.circle);
-    }, 300);
-  }, [setHover]);
+    }, 100);
+  }, [setHover, isOpen]);
 
   return (
     <AnimatePresence>

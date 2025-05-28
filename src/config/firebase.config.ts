@@ -23,3 +23,8 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const provider = new GoogleAuthProvider();
+
+export enum FirebaseCollection {
+  articles = "articles-blog",
+  dailyTasks = "daily-tasks",
+}

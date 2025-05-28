@@ -72,6 +72,7 @@ interface Props {
   vertical?: boolean;
   templated?: boolean;
   testedCount?: number;
+  onChangeTasks?: (items: Items) => void;
 }
 
 const TASK_ITEM_HEIGHT = 72;
@@ -95,13 +96,11 @@ export function MultipleContainers({
   templated = true,
   testedCount,
   scrollable,
+  onChangeTasks = () => {},
 }: Props) {
   const [t] = useTranslation();
   const [items, setItems] = useState<Items>(() => initialItems ?? []);
   const sH = useHeaderSizeStore((s) => s.size);
-  useEffect(() => {
-    console.log("Items updated:", items);
-  }, [items]);
 
   const [containers, setContainers] = useState<UniqueIdentifier[]>(
     items.map((cat) => cat.id)
@@ -115,7 +114,7 @@ export function MultipleContainers({
   const recentlyMovedToNewContainer = useRef(false);
   const isSortingContainer = activeId ? containers.includes(activeId) : false;
   const taskTimeDone = useTaskManagerStore((s) => s.updatedTask);
-
+  const [hasInitialized, setHasInitialized] = useState(false);
   const collisionDetectionStrategy: CollisionDetection =
     useCollisionDectionStrategy({
       activeId,
@@ -149,6 +148,19 @@ export function MultipleContainers({
       }))
     );
   };
+
+  useEffect(() => {
+    if (initialItems) {
+      setItems(initialItems);
+      setHasInitialized(true); // ✅
+    }
+  }, [initialItems]);
+
+  useEffect(() => {
+    if (hasInitialized) {
+      onChangeTasks(items);
+    }
+  }, [items, hasInitialized, onChangeTasks]);
 
   useEffect(() => {
     if (testedCount) {
