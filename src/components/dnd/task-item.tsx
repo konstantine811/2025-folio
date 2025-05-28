@@ -32,7 +32,7 @@ export function TaskItem({
   templated: boolean;
 }) {
   const [isPlay, setIsPlay] = useState(false);
-
+  const hasLongWord = task.title.split(" ").some((word) => word.length > 40); // можна змінити 20 на поріг
   return (
     <div
       className={`relative group rounded-xl border ${
@@ -80,15 +80,17 @@ export function TaskItem({
           {(index || index === 0) && Number(index) + 1}
         </span>
 
-        <span
-          className={`flex-1 text-left text-sm ${
+        <p
+          className={`flex-1 text-left text-sm ${hasLongWord && "truncate"} ${
             task.isDone
               ? "text-accent font-medium"
               : `${getPriorityClassByPrefix(task.priority)}`
           }`}
+          style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+          title={hasLongWord ? task.title : ""}
         >
           {task.title}
-        </span>
+        </p>
 
         <div className="flex items-center gap-2">
           {!dragging && (

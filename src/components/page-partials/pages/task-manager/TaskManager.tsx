@@ -11,7 +11,8 @@ const TaskManager = () => {
           strategy={rectSortingStrategy}
           vertical
           trashable
-          templated={true}
+          templated={false}
+          testedCount={5}
         />
       </div>
     </div>

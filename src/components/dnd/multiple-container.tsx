@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { FixedSizeList as List } from "react-window";
 import {
   CancelDrop,
   CollisionDetection,
@@ -49,6 +50,7 @@ import { useTranslation } from "react-i18next";
 import WrapperHoverElement from "../ui-abc/wrapper-hover-element";
 import TaskTimer from "./task-timer";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
+import { createRange } from "./utils/createRange";
 
 interface Props {
   adjustScale?: boolean;
@@ -69,7 +71,10 @@ interface Props {
   scrollable?: boolean;
   vertical?: boolean;
   templated?: boolean;
+  testedCount?: number;
 }
+
+const TASK_ITEM_HEIGHT = 72;
 
 export function MultipleContainers({
   adjustScale = false,
@@ -88,6 +93,7 @@ export function MultipleContainers({
   trashable = false,
   vertical = false,
   templated = true,
+  testedCount,
   scrollable,
 }: Props) {
   const [t] = useTranslation();
@@ -143,6 +149,25 @@ export function MultipleContainers({
       }))
     );
   };
+
+  useEffect(() => {
+    if (testedCount) {
+      setItems(
+        ["A", "B", "C", "D"].map((id) => ({
+          id,
+          title: id,
+          tasks: createRange(testedCount, (index) => ({
+            id: `${id}${index + 1}`,
+            title: `Задача ${id}${index + 1}`,
+            isDone: false,
+            time: 10000,
+            timeDone: 0,
+            priority: Priority.MEDIUM,
+          })),
+        }))
+      );
+    }
+  }, [testedCount]);
   useEffect(() => {
     if (taskTimeDone) {
       updateTaskTime(taskTimeDone.id, taskTimeDone?.timeDone);
@@ -267,7 +292,7 @@ export function MultipleContainers({
       {!templated && (
         <div
           style={{ top: sH }}
-          className="sticky flex justify-center items-center z-50  py-5 bg-background/50 backdrop-blur-xs"
+          className="sticky flex justify-center items-center z-10  py-5 bg-background/50 backdrop-blur-xs"
         >
           <TaskTimer />
         </div>
@@ -325,14 +350,60 @@ export function MultipleContainers({
                   items={category.tasks.map((t) => t.id)}
                   strategy={strategy}
                 >
-                  {category.tasks.length > 0 ? (
+                  {category.tasks.length === 0 ? (
+                    <li className="h-[64px] rounded-xl border border-dashed border-muted/20 flex items-center justify-center text-muted-foreground text-sm">
+                      {t("task_manager.drag_task_here")}
+                    </li>
+                  ) : category.tasks.length > 10 ? (
+                    <List
+                      height={Math.min(
+                        500,
+                        category.tasks.length * TASK_ITEM_HEIGHT
+                      )}
+                      itemCount={category.tasks.length}
+                      itemSize={TASK_ITEM_HEIGHT}
+                      width="100%"
+                      outerElementType="ul"
+                    >
+                      {({ index, style }) => {
+                        const task = category.tasks[index];
+                        return (
+                          <div style={style} key={task.id}>
+                            <SortableItem
+                              disabled={isSortingContainer}
+                              id={task.id}
+                              templated={templated}
+                              index={index}
+                              handle={handle}
+                              items={items}
+                              style={getItemStyles}
+                              wrapperStyle={wrapperStyle}
+                              renderItem={renderItem}
+                              containerId={category.id}
+                              getIndex={getIndex}
+                              task={task}
+                              onToggle={handleToggleTask}
+                              onEditTask={(task) => {
+                                setEditTask(null);
+                                setTimeout(() => {
+                                  setEditTask(task);
+                                  setAddTaskContainerId(category.id);
+                                  setIsDialogOpen(true);
+                                }, 0);
+                              }}
+                            />
+                          </div>
+                        );
+                      }}
+                    </List>
+                  ) : (
                     <TooltipProvider>
                       {category.tasks.map((task, index) => (
                         <SortableItem
                           disabled={isSortingContainer}
                           key={task.id}
-                          templated={templated}
                           id={task.id}
+                          templated={templated}
                           index={index}
                           handle={handle}
                           items={items}
@@ -342,24 +413,18 @@ export function MultipleContainers({
                           containerId={category.id}
                           getIndex={getIndex}
                           task={task}
-                          onToggle={(id, value) => {
-                            handleToggleTask(id, value);
-                          }}
+                          onToggle={handleToggleTask}
                           onEditTask={(task) => {
-                            setEditTask(null); // 🔧 обнуляємо, щоб гарантовано змінити посилання
+                            setEditTask(null);
                             setTimeout(() => {
                               setEditTask(task);
                               setAddTaskContainerId(category.id);
                               setIsDialogOpen(true);
-                            }, 0); // наступний event loop
+                            }, 0);
                           }}
                         />
                       ))}
                     </TooltipProvider>
-                  ) : (
-                    <li className="h-[64px] rounded-xl border border-dashed border-muted/20 flex items-center justify-center text-muted-foreground text-sm">
-                      {t("task_manager.drag_task_here")}
-                    </li>
                   )}
                 </SortableContext>
               </DroppableContainer>
