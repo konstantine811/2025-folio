@@ -1,5 +1,8 @@
 import AuthGuard from "@/components/auth/auth-guard";
+import { AppRoute } from "@/types/route";
+import { LayoutDashboard } from "lucide-react";
 import { lazy } from "react";
+import { Navigate } from "react-router";
 
 const HomePage = lazy(() => import("../components/page-partials/pages/Home"));
 const ExperimentalPage = lazy(
@@ -16,6 +19,13 @@ const ArticlePage = lazy(
 const TaskManager = lazy(
   () => import("../components/page-partials/pages/task-manager/TaskManager")
 );
+const TemplateTask = lazy(
+  () =>
+    import("../components/page-partials/pages/task-manager/pages/TemplateTask")
+);
+const DailyTask = lazy(
+  () => import("../components/page-partials/pages/task-manager/pages/DailyTask")
+);
 
 const LoginPage = lazy(() => import("../components/page-partials/pages/Login"));
 
@@ -25,6 +35,8 @@ export enum RoutPath {
   BLOG = "/blog",
   ARTICLE = "/blog/:id",
   TASK_MANAGER = "/task-manager",
+  TASK_MANAGER_TEMPLATE = "template",
+  TASK_MANAGER_DAILY = "daily",
   LOGIN = "/login",
 }
 
@@ -33,7 +45,24 @@ export const DEFAULT_OBSIDIAN_VAULT = {
   blogVault: "Blog",
 };
 
-export const router = [
+export const TASK_MANAGER_ROUTERS = [
+  {
+    path: RoutPath.TASK_MANAGER_TEMPLATE,
+    Component: TemplateTask,
+    id: "task-manager-template",
+    isNav: false,
+    icon: <LayoutDashboard />,
+  },
+  {
+    path: RoutPath.TASK_MANAGER_DAILY,
+    Component: DailyTask,
+    id: "task-manager-daily",
+    isNav: false,
+    icon: "🚶",
+  },
+];
+
+export const router: AppRoute[] = [
   {
     path: RoutPath.HOME,
     Component: HomePage,
@@ -67,6 +96,17 @@ export const router = [
     ),
     isNav: true,
     id: "task-manager",
+    children: [
+      ...TASK_MANAGER_ROUTERS,
+      {
+        path: "",
+        Component: () => (
+          <Navigate to={RoutPath.TASK_MANAGER_TEMPLATE} replace />
+        ),
+        id: "task-manager-redirect",
+        isNav: false,
+      },
+    ],
   },
   {
     path: RoutPath.LOGIN,

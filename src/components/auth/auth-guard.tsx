@@ -4,6 +4,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/config/firebase.config";
 import { Navigate } from "react-router";
 import { RoutPath } from "@/config/router-config";
+import Preloader from "../page-partials/preloader/preloader";
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -12,7 +13,7 @@ interface AuthGuardProps {
 
 export default function AuthGuard({
   children,
-  fallback = "Loading...",
+  fallback = <Preloader />,
 }: AuthGuardProps) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 

@@ -20,6 +20,12 @@ function App() {
   useEffect(() => {
     setIsTouch("ontouchstart" in window || navigator.maxTouchPoints > 0);
   }, []);
+  const renderRoutes = (routes: typeof router) =>
+    routes.map(({ path, Component, children, id }) => (
+      <Route key={id} path={path} element={<Component />}>
+        {children && renderRoutes(children)} {/* 🔁 рекурсія */}
+      </Route>
+    ));
   return (
     <>
       {!isTouch && (
@@ -32,15 +38,7 @@ function App() {
         <Header />
         <Suspense fallback={<Preloader />}>
           <RouteWrapper>
-            <Routes>
-              {router.map((route) => (
-                <Route
-                  key={route.path}
-                  path={route.path}
-                  element={<route.Component />}
-                />
-              ))}
-            </Routes>
+            <Routes>{renderRoutes(router)}</Routes>
           </RouteWrapper>
         </Suspense>
         {/* <Map /> */}
