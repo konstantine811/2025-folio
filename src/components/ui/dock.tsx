@@ -20,6 +20,7 @@ import {
   useState,
 } from "react";
 import { cn } from "@/lib/utils";
+import { isTouchDevice } from "@/utils/touch-inspect";
 
 const DOCK_HEIGHT = 128;
 const DEFAULT_MAGNIFICATION = 80;
@@ -110,11 +111,28 @@ function Dock({
       className="mx-2 flex max-w-full items-end overflow-x-auto"
     >
       <motion.div
-        onMouseMove={({ pageX }) => {
-          isHovered.set(1);
-          mouseX.set(pageX);
-        }}
+        onMouseMove={
+          !isTouchDevice
+            ? (e) => {
+                isHovered.set(1);
+                mouseX.set(e.pageX);
+              }
+            : undefined
+        }
+        onTouchMove={
+          isTouchDevice
+            ? (e) => {
+                const touch = e.touches[0];
+                isHovered.set(1);
+                mouseX.set(touch.pageX);
+              }
+            : undefined
+        }
         onMouseLeave={() => {
+          isHovered.set(0);
+          mouseX.set(Infinity);
+        }}
+        onTouchEnd={() => {
           isHovered.set(0);
           mouseX.set(Infinity);
         }}

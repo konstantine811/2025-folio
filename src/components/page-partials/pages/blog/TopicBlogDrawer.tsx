@@ -46,7 +46,7 @@ const TopicBlogDrawer = () => {
       >
         {/* Drawer */}
         <div
-          className="shadow-xl bg-card/70 backdrop-blur-2xl overflow-auto pb-20"
+          className="shadow-xl bg-card/70 backdrop-blur-2xl overflow-auto pb-24"
           style={{
             width: drawerWidth,
             height: "100%",

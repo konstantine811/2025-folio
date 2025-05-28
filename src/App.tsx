@@ -10,6 +10,7 @@ import RouteWrapper from "@components/page-partials/pages/RouteWrapper";
 import Preloader from "./components/page-partials/preloader/preloader";
 import useSetTheme from "./hooks/useSetTheme";
 import useLogin from "./services/firebase/useLogin";
+import { isTouchDevice } from "./utils/touch-inspect";
 
 function App() {
   subscribeToHoverSound();
@@ -18,7 +19,7 @@ function App() {
   const [isTouch, setIsTouch] = useState(false);
 
   useEffect(() => {
-    setIsTouch("ontouchstart" in window || navigator.maxTouchPoints > 0);
+    setIsTouch(isTouchDevice);
   }, []);
   const renderRoutes = (routes: typeof router) =>
     routes.map(({ path, Component, children, id }) => (
