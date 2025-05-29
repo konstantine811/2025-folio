@@ -40,7 +40,6 @@ import SortableItem from "./sortable-item";
 import Trash from "./trash";
 import ContainerDragOverlay from "./container-drag-overlay";
 import SortableItemDragOverlay from "./sortable-item-drag-overlay";
-import { useTaskManagerStore } from "@/storage/task-manager/task-manager";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import DialogTask from "./dialog-task";
 import SoundHoverElement from "../ui-abc/sound-hover-element";
@@ -51,6 +50,7 @@ import WrapperHoverElement from "../ui-abc/wrapper-hover-element";
 import TaskTimer from "./task-timer";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { createRange } from "./utils/createRange";
+import { useTaskManager } from "./context/use-task-manger-context";
 
 interface Props {
   adjustScale?: boolean;
@@ -113,7 +113,7 @@ export function MultipleContainers({
   const lastOverId = useRef<UniqueIdentifier | null>(null);
   const recentlyMovedToNewContainer = useRef(false);
   const isSortingContainer = activeId ? containers.includes(activeId) : false;
-  const taskTimeDone = useTaskManagerStore((s) => s.updatedTask);
+  const taskTimeDone = useTaskManager((s) => s.updatedTask);
   const [hasInitialized, setHasInitialized] = useState(false);
   const collisionDetectionStrategy: CollisionDetection =
     useCollisionDectionStrategy({

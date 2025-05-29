@@ -19,7 +19,7 @@ type SoundHoverElementProps = {
   hoverTypeElement?: SoundTypeElement;
   as?: ElementType;
   className?: string;
-  hoverAnimType?: "scale" | "rotate" | "translate"; // тип анімації при наведенні
+  hoverAnimType?: "scale" | "rotate" | "translate" | "translate-x"; // тип анімації при наведенні
   animValue?: number;
   hoverStyleElement?: HoverStyleElement;
   onClick?: (e: Event) => void;
@@ -83,6 +83,18 @@ const SoundHoverElement = forwardRef<HTMLElement, SoundHoverElementProps>(
             y: animValue,
             transition: hoverTransition,
           };
+        case "translate-x":
+          return {
+            x: animValue,
+            transition: hoverTransition,
+          };
+        case "rotate":
+          return {
+            rotate: animValue,
+            transition: hoverTransition,
+          };
+        default:
+          return {};
       }
     }
 

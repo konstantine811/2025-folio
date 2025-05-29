@@ -14,7 +14,7 @@ export const ThemePalette: IThemePalette = {
     muted: "#1a1a1a",
     "muted-foreground": "#666666",
     accent: "#4a80e8",
-    "accent-foreground": "#1a1a1a",
+    "accent-foreground": "#d9d9d9",
     destructive: "#ff3333",
     input: "#333333",
     ring: "#4a80e8",

@@ -1,20 +1,26 @@
 import { MultipleContainers } from "@/components/dnd/multiple-container";
 import Preloader from "@/components/page-partials/preloader/preloader";
 import {
-  loadDailyTasks,
-  saveDailyTasks,
+  loadTemplateTasks,
+  saveTemplateTasks,
 } from "@/services/firebase/taskManagerData";
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { Items } from "@/types/drag-and-drop.model";
+import { cn } from "@/utils/classname";
 import { rectSortingStrategy } from "@dnd-kit/sortable";
 import { useEffect, useState } from "react";
+import { useOutletContext } from "react-router";
+import { TaskManagerOutletContext } from "../TaskManager";
+import { TaskManagerProvider } from "@/components/dnd/context/task-manager-context";
 
 const TemplateTask = () => {
+  const outletContext = useOutletContext<TaskManagerOutletContext>();
   const [dailyTasks, setDailyTasks] = useState<Items>([]);
   const [isLoaded, setIsLoaded] = useState(false);
-
+  const hS = useHeaderSizeStore((s) => s.size);
   useEffect(() => {
     setIsLoaded(true);
-    loadDailyTasks()
+    loadTemplateTasks()
       .then((tasks) => {
         if (tasks) {
           setDailyTasks(tasks);
@@ -29,19 +35,26 @@ const TemplateTask = () => {
       });
   }, []);
   return (
-    <div className="px-2">
+    <div
+      className={`${cn(
+        `px-2 flex flex-col justify-center ${outletContext.className}`
+      )}`}
+      style={{ minHeight: `calc(100vh - ${hS}px)` }}
+    >
       {!isLoaded ? (
-        <div className="max-w-2xl m-auto">
-          <MultipleContainers
-            strategy={rectSortingStrategy}
-            vertical
-            trashable
-            templated={true}
-            items={dailyTasks}
-            onChangeTasks={(tasks) => {
-              saveDailyTasks(tasks);
-            }}
-          />
+        <div className="max-w-2xl w-full m-auto">
+          <TaskManagerProvider>
+            <MultipleContainers
+              strategy={rectSortingStrategy}
+              vertical
+              trashable
+              templated={true}
+              items={dailyTasks}
+              onChangeTasks={(tasks) => {
+                saveTemplateTasks(tasks);
+              }}
+            />
+          </TaskManagerProvider>
         </div>
       ) : (
         <Preloader />

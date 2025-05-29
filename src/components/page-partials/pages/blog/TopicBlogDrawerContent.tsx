@@ -5,25 +5,26 @@ import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
 import { usePostsStore } from "@/storage/blog-data/blogCoverData";
 import { useTransitionStore } from "@/storage/transitionRoutePath";
 import { HoverStyleElement } from "@/types/sound";
+import { Description, DialogTitle } from "@radix-ui/react-dialog";
 import { useParams } from "react-router";
 
-const TopicBlogDrawerContent = ({ onClose }: { onClose: () => void }) => {
+const TopicBlogDrawerContent = ({ onClose }: { onClose?: () => void }) => {
   const { id } = useParams(); // Отримуємо ідентифікатор статті з URL
   const activeTopic = usePostsStore((state) => state.activeTopic);
   const navigateTo = useTransitionRouteTo();
   const onTransition = useTransitionStore((state) => state.onIsTransition);
   return (
     <>
-      <h3 className="text-2xl text-foreground font-bold my-4 mx-4">
+      <DialogTitle className="text-2xl text-foreground font-bold my-4 mx-4">
         📂 {activeTopic.topic}
-      </h3>
+      </DialogTitle>
       <div>
         {Object.entries(activeTopic.subtopics).map(([subtopic, posts]) => (
           <div key={subtopic} className="">
             {subtopic !== "null" && (
-              <h4 className="text-2xl text-primary font-bold bg-card p-4">
+              <Description className="text-2xl text-primary font-bold bg-card p-4">
                 {subtopic}
-              </h4>
+              </Description>
             )}
             <WrapperHoverElement
               as="ol"
@@ -43,12 +44,12 @@ const TopicBlogDrawerContent = ({ onClose }: { onClose: () => void }) => {
                       isActive
                         ? "cursor-none pointer-events-none bg-primary text-background"
                         : "cursor-pointer pointer-events-auto text-foreground last:border-0 border-b border-background"
-                    }  text-lg  py-2 cursor-pointer pl-5 transition-background duration-1000`}
+                    }  text-lg  py-2 cursor-pointer px-3 md:px-5 transition-background duration-1000`}
                     onClick={() => {
                       if (isActive) return; // якщо стаття активна, нічого не робимо
                       onTransition(true); // 🔥 запускаємо лише якщо маршрут інший
                       navigateTo(`${RoutPath.BLOG}/${post.id}`);
-                      onClose();
+                      if (onClose) onClose(); // Закриваємо Drawer, якщо передано onClose
                     }}
                   >
                     {post.title}

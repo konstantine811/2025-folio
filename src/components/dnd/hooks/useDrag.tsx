@@ -6,8 +6,8 @@ import { unstable_batchedUpdates } from "react-dom";
 import { useState } from "react";
 import { useHoverStore } from "@/storage/hoverStore";
 import { HoverStyleElement } from "@/types/sound";
-import { useTaskManagerStore } from "@/storage/task-manager/task-manager";
 import { useTranslation } from "react-i18next";
+import { useTaskManager } from "../context/use-task-manger-context";
 
 const useDrag = ({
   items,
@@ -25,8 +25,8 @@ const useDrag = ({
 }) => {
   const [clonedItems, setClonedItems] = useState<Items | null>(null);
   const setHover = useHoverStore((s) => s.setHover);
-  const playingTask = useTaskManagerStore((s) => s.playingTask);
-  const stopPlayingTask = useTaskManagerStore((s) => s.stopPlayingTask);
+  const playingTask = useTaskManager((s) => s.playingTask);
+  const stopPlayingTask = useTaskManager((s) => s.stopPlayingTask);
   const [t] = useTranslation();
 
   function handleAddColumn() {
@@ -64,8 +64,6 @@ const useDrag = ({
   }
 
   function handleRemove(containerID: UniqueIdentifier) {
-    const { playingTask, stopPlayingTask } = useTaskManagerStore.getState();
-
     // Якщо активна задача належить до видаляємої категорії — зупиняємо її
     const container = items.find((cat) => cat.id === containerID);
     const taskIds = container?.tasks.map((t) => t.id) ?? [];

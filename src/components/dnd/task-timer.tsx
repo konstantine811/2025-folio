@@ -1,11 +1,11 @@
 import { SlidingNumber } from "@/components/ui/sliding-number";
-import { useTaskManagerStore } from "@/storage/task-manager/task-manager";
 import { formatSeconds } from "@/utils/time.util";
 import { useEffect, useState } from "react";
+import { useTaskManager } from "./context/use-task-manger-context";
 
 const TaskTimer = () => {
-  const playingTask = useTaskManagerStore((s) => s.playingTask);
-  const startedAt = useTaskManagerStore((s) => s.startedAt);
+  const playingTask = useTaskManager((s) => s.playingTask);
+  const startedAt = useTaskManager((s) => s.startedAt);
   const [time, setTime] = useState(0);
 
   useEffect(() => {

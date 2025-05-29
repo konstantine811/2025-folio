@@ -36,8 +36,11 @@
   "task_manager": {
     "add": "Add Task",
     "add_container": "Add category",
+    "add_template_task": "Add Task Template",
     "edit": "Edit Task",
     "category": "Category",
+    "template_task": "Task Templates",
+    "new_task": "New Tasks",
     "delete": "Delete Task",
     "complete": "Complete Task",
     "drag_task_here": "Drag task here",

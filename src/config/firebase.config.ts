@@ -27,4 +27,11 @@ export const provider = new GoogleAuthProvider();
 export enum FirebaseCollection {
   articles = "articles-blog",
   dailyTasks = "daily-tasks",
+  templateTasks = "template-tasks",
 }
+
+export const FirebaseCollectionProps = {
+  [FirebaseCollection.dailyTasks]: {
+    days: "days",
+  },
+};

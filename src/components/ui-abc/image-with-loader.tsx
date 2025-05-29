@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@utils/classname";
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 
 const ImageWithLoader = ({
   src,
@@ -13,7 +14,7 @@ const ImageWithLoader = ({
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-
+  const hS = useHeaderSizeStore((state) => state.size);
   return (
     <div className="pt-2 pb-3 md:pb-5 lg:pb-10">
       <div
@@ -48,6 +49,7 @@ const ImageWithLoader = ({
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[1000000] bg-background/80  flex items-center justify-center cursor-zoom-out"
             onClick={() => setIsFullscreen(false)}
+            style={{ top: hS }}
           >
             <motion.img
               src={src}
@@ -56,7 +58,8 @@ const ImageWithLoader = ({
               animate={{ scale: 1 }}
               exit={{ scale: 0.8 }}
               transition={{ duration: 0.3 }}
-              className="max-w-full max-h-full w-full object-contain"
+              className="max-w-full w-full h-full object-contain"
+              style={{ maxHeight: `calc(100vh - ${hS}px)` }}
             />
           </motion.div>
         )}

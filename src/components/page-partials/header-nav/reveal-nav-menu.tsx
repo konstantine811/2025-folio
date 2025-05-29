@@ -7,7 +7,6 @@ import { useClickStore } from "@storage/clickStore";
 import { useNavMenuStore } from "@storage/navMenuStore";
 import { AnimatePresence, motion } from "motion/react";
 import { memo } from "react";
-import { useLocation } from "react-router";
 import LanguagePicker from "../page-setting/lange-picker/language-picker";
 import ColorPicker from "../page-setting/color-picker/color-picker";
 import ToggleSound from "../page-setting/toggle-sound";
@@ -15,15 +14,16 @@ import { useSoundEnabledStore } from "@/storage/soundEnabled";
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
 import { useTranslation } from "react-i18next";
+import useRoutingPath from "@/hooks/useRoutingPath";
 
 const RevealNavMenu = memo(() => {
   const { isOpen, setOpen } = useNavMenuStore((state) => state);
   const [t] = useTranslation();
-  const location = useLocation();
   const navigateTo = useTransitionRouteTo();
   const setClick = useClickStore((state) => state.setClick);
   const isSoundEnabled = useSoundEnabledStore((state) => state.isSoundEnabled);
   const isMdSize = useIsAdoptive();
+  const firstPathName = useRoutingPath("parent");
   const containerVariants = {
     visible: {
       transition: {
@@ -95,7 +95,7 @@ const RevealNavMenu = memo(() => {
                           }
                         }}
                         className={`${
-                          route.path === location.pathname &&
+                          route.path === firstPathName &&
                           "bg-background rounded-sm"
                         }`}
                       >
