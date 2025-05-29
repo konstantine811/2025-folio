@@ -12,7 +12,7 @@ const TopicBlogDrawer = () => {
   return (
     <Drawer direction="left" open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger>
-        <div className="fixed left-0 z-20">
+        <div className="fixed left-0 z-50">
           <Button
             asChild
             className="bg-card hover:bg-background rounded-l-none"
