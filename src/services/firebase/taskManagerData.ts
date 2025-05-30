@@ -1,4 +1,3 @@
-import { DateTemplate } from "@/config/data-config";
 import {
   auth,
   db,
@@ -6,7 +5,7 @@ import {
   FirebaseCollectionProps,
 } from "@/config/firebase.config";
 import { Items } from "@/types/drag-and-drop.model";
-import { format } from "date-fns";
+import { parseDates } from "@/utils/date.util";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 
@@ -34,7 +33,7 @@ export const saveTemplateTasks = async (items: Items) => {
   }
 };
 
-export const saveDailyTasks = async (items: Items, date: Date) => {
+export const saveDailyTasks = async (items: Items, date: string) => {
   const user = await waitForUserAuth();
   if (!user) {
     console.warn("❌ Cannot save tasks. User not authenticated.");
@@ -42,7 +41,6 @@ export const saveDailyTasks = async (items: Items, date: Date) => {
   }
 
   const uid = user.uid;
-  const formattedDate = format(date, DateTemplate.dayMonthYear); // 23.05.2025
   // console.info("🗓️ Saving tasks for date:", formattedDate);
   // document path: dailyTasks/{uid}/days/{formattedDate}
   const ref = doc(
@@ -50,7 +48,7 @@ export const saveDailyTasks = async (items: Items, date: Date) => {
     FirebaseCollection.dailyTasks,
     uid,
     FirebaseCollectionProps[FirebaseCollection.dailyTasks].days,
-    formattedDate
+    date
   );
 
   try {
@@ -81,7 +79,7 @@ export const loadTemplateTasks = async (): Promise<Items | null> => {
 };
 
 export const loadDailyTasksByDate = async (
-  date: Date
+  date: string
 ): Promise<Items | null> => {
   const user = await waitForUserAuth();
   if (!user) {
@@ -90,14 +88,13 @@ export const loadDailyTasksByDate = async (
   }
 
   const uid = user.uid;
-  const formattedDate = format(date, DateTemplate.dayMonthYear); // наприклад "23.05.2025"
 
   const ref = doc(
     db,
     FirebaseCollection.dailyTasks,
     uid,
     FirebaseCollectionProps[FirebaseCollection.dailyTasks].days,
-    formattedDate
+    date
   );
 
   try {
@@ -148,7 +145,7 @@ export const loadAllNonEmptyDailyTaskDates = async (): Promise<Date[]> => {
     });
 
     // console.info("📅 Non-empty task dates:", validDates);
-    return parseDate(validDates);
+    return parseDates(validDates);
   } catch (error) {
     console.error("🔥 Error loading task dates:", error);
     return [];
@@ -163,12 +160,3 @@ const waitForUserAuth = (): Promise<User | null> => {
     });
   });
 };
-
-function parseDate(dates: string[]) {
-  return dates
-    .map((date) => {
-      const [day, month, year] = date.split(".");
-      return new Date(`${year}-${month}-${day}`);
-    })
-    .filter((d) => !isNaN(d.getTime())); // фільтруємо некоректні дати
-}

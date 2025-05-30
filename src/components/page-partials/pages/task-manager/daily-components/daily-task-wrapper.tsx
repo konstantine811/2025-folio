@@ -12,10 +12,13 @@ import DailyAddTemplateButton from "./daily-add-template-button";
 import { mergeItems } from "@/utils/task-manager-utils/merge-tasks";
 import Preloader from "@/components/page-partials/preloader/preloader";
 import { TaskManagerProvider } from "@/components/dnd/context/task-manager-context";
+import { useParams } from "react-router";
+import { parseDate } from "@/utils/date.util";
 
-const DailyTaskWrapper = ({ date }: { date: Date }) => {
+const DailyTaskWrapper = () => {
   const [dailyTasks, setDailyTasks] = useState<Items>([]);
   const [changedTasks, setChangedTasks] = useState<Items>([]);
+  const { id: date } = useParams(); // ← id це твоя дата у форматі "dd.MM.yyyy"
   const currentDateRef = useRef(date);
   const [templatedTasks, setTemplatedTasks] = useState<Items>([]);
   const [isFuture, setIsFuture] = useState(false);
@@ -27,8 +30,10 @@ const DailyTaskWrapper = ({ date }: { date: Date }) => {
     setDailyTasks([]);
     setChangedTasks([]);
     currentDateRef.current = date;
+    if (!date) return;
     setIsSelectedOption(false);
-    setIsFuture(date > new Date()); // 🔄 Перевірка на майбутню дату
+    const parsedDate = parseDate(date);
+    setIsFuture(parsedDate > new Date()); // 🔄 Перевірка на майбутню дату
     loadDailyTasksByDate(date).then((tasks) => {
       if (tasks && tasks.length) {
         setIsSelectedOption(true);
@@ -81,7 +86,7 @@ const DailyTaskWrapper = ({ date }: { date: Date }) => {
                 items={dailyTasks}
                 onChangeTasks={(tasks) => {
                   if (!isLoaded) return; // 💡 Не викликати збереження під час завантаження
-                  saveDailyTasks(tasks, currentDateRef.current);
+                  saveDailyTasks(tasks, currentDateRef.current || "");
                   setChangedTasks(tasks);
                 }}
               />

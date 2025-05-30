@@ -36,7 +36,7 @@ export enum RoutPath {
   ARTICLE = "/blog/:id",
   TASK_MANAGER = "/task-manager",
   TASK_MANAGER_TEMPLATE = "template",
-  TASK_MANAGER_DAILY = "daily",
+  TASK_MANAGER_DAILY = "daily/:id",
   LOGIN = "/login",
 }
 

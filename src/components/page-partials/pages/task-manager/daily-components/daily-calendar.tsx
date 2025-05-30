@@ -1,22 +1,22 @@
 import { Calendar } from "@/components/ui/calendar";
-import { Locale } from "date-fns";
+import { format, Locale } from "date-fns";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { uk, enUS } from "date-fns/locale";
 import { loadAllNonEmptyDailyTaskDates } from "@/services/firebase/taskManagerData";
+import { useNavigate } from "react-router";
+import { RoutPath } from "@/config/router-config";
+import { DateTemplate } from "@/config/data-config";
 
 const locales: Record<string, Locale> = {
   en: enUS,
   ua: uk,
 };
 
-const DailyCalendar = ({
-  onChangeDate,
-}: {
-  onChangeDate: (date: Date) => void;
-}) => {
+const DailyCalendar = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [activeDates, setActiveDates] = useState<Date[]>([]);
+  const navigate = useNavigate();
   const today = new Date();
   useEffect(() => {
     loadAllNonEmptyDailyTaskDates().then((dates) => {
@@ -25,9 +25,15 @@ const DailyCalendar = ({
   });
   useEffect(() => {
     if (date) {
-      onChangeDate(date);
+      const formatted = format(date, DateTemplate.dayMonthYear);
+      navigate(
+        `${RoutPath.TASK_MANAGER}/${RoutPath.TASK_MANAGER_DAILY.replace(
+          ":id",
+          formatted
+        )}`
+      );
     }
-  }, [date, onChangeDate]);
+  }, [date, navigate]);
   const { i18n } = useTranslation();
   const lang = i18n.language;
   return (

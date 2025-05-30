@@ -11,11 +11,7 @@ import {
 import { ArrowBigLeft } from "lucide-react";
 import DailyCalendar from "./daily-calendar";
 
-const DailyRightDrawer = ({
-  onChangeDate,
-}: {
-  onChangeDate: (date: Date) => void;
-}) => {
+const DailyRightDrawer = () => {
   return (
     <Drawer direction="right">
       <DrawerTrigger>
@@ -35,7 +31,7 @@ const DailyRightDrawer = ({
             <DrawerDescription>Set your daily activity goal.</DrawerDescription>
           </DrawerHeader>
           <div>
-            <DailyCalendar onChangeDate={onChangeDate} />
+            <DailyCalendar />
           </div>
         </div>
       </DrawerContent>
