@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { uk, enUS } from "date-fns/locale";
 import { loadAllNonEmptyDailyTaskDates } from "@/services/firebase/taskManagerData";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { RoutPath } from "@/config/router-config";
 import { DateTemplate } from "@/config/data-config";
+import { parseDate } from "@/utils/date.util";
 
 const locales: Record<string, Locale> = {
   en: enUS,
@@ -14,7 +15,11 @@ const locales: Record<string, Locale> = {
 };
 
 const DailyCalendar = () => {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const { id: dateId } = useParams();
+  const parsedDate = parseDate(
+    dateId ?? format(new Date(), DateTemplate.dayMonthYear)
+  );
+  const [date, setDate] = useState<Date | undefined>(parsedDate);
   const [activeDates, setActiveDates] = useState<Date[]>([]);
   const navigate = useNavigate();
   const today = new Date();
