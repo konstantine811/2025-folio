@@ -21,7 +21,7 @@ const CellReveal = ({
   delayPerPixel = 1.5,
   mixBlend = false,
   offsetTop = 0,
-  zIndex = 10,
+  zIndex = 100,
   color = "card",
   invertRipple = true,
 }: {

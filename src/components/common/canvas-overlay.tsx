@@ -46,7 +46,7 @@ const CanvasOverlay = forwardRef<HTMLCanvasElement, CanvasOverlayProps>(
     return (
       <canvas
         className={`fixed inset-0 pointer-events-none ${
-          mixBlend && "mix-blend-difference"
+          mixBlend && "mix-blend-difference z-50"
         }`}
         ref={internalRef}
         style={{

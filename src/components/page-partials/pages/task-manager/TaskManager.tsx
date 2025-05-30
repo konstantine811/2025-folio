@@ -23,9 +23,11 @@ const TaskManager = () => {
         <Dock className="items-end pb-3 bg-card/30 backdrop-blur-sm border border-foreground/10">
           {TASK_MANAGER_ROUTERS.map((item) => {
             let path = item.path;
+            let title: string = item.path;
 
             if (item.path === RoutPath.TASK_MANAGER_DAILY) {
               const today = format(new Date(), DateTemplate.dayMonthYear);
+              title = item.path.replace("/:id", ""); // → daily/23.05.2025
               path = item.path.replace(":id", today) as RoutPath; // → daily/23.05.2025
             }
             return (
@@ -35,7 +37,7 @@ const TaskManager = () => {
                     item.path === nestedPath ? "bg-accent" : "bg-card/50"
                   } transition duration-200 aspect-square rounded-full border border-foreground/10 cursor-pointer`}
                 >
-                  <DockLabel>{t(`pages.task.${item.path}`)}</DockLabel>
+                  <DockLabel>{t(`pages.task.${title}`)}</DockLabel>
                   <DockIcon className="text-3xl ">{item.icon}</DockIcon>
                 </DockItem>
               </Link>
