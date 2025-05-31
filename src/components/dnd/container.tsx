@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { GripVertical, Pen, PenOff, X } from "lucide-react";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { SoundTypeElement } from "@/types/sound";
+import { useTranslation } from "react-i18next";
 
 export interface Props {
   children: React.ReactNode;
@@ -19,6 +20,7 @@ export interface Props {
   onClick?(): void;
   onRemove?(): void;
   onValueChange?: (value: string) => void;
+  options: string[];
 }
 
 export const Container = forwardRef<HTMLDivElement, Props>(
@@ -31,6 +33,7 @@ export const Container = forwardRef<HTMLDivElement, Props>(
       label,
       placeholder,
       style,
+      options,
       onValueChange,
       ...props
     }: Props,
@@ -38,6 +41,8 @@ export const Container = forwardRef<HTMLDivElement, Props>(
   ) => {
     const Component = "div";
     const [isEdit, setIsEdit] = useState(false);
+    const [value, setValue] = useState<string>("");
+    const [t] = useTranslation();
     return (
       <Component
         {...props}
@@ -55,10 +60,8 @@ export const Container = forwardRef<HTMLDivElement, Props>(
             <div className="flex w-full gap-2 items-center justify-between">
               {isEdit ? (
                 <InputCombobox
-                  onValueChange={(value: string) => {
-                    if (onValueChange) onValueChange(value);
-                    setIsEdit(false);
-                  }}
+                  options={options}
+                  onValueChange={setValue}
                   outerValue={label}
                 />
               ) : (
@@ -66,7 +69,7 @@ export const Container = forwardRef<HTMLDivElement, Props>(
                   onDoubleClick={() => setIsEdit(true)}
                   className="text-foreground text-xl ml-3"
                 >
-                  {label}
+                  {t(label)}
                 </label>
               )}
 
@@ -121,7 +124,12 @@ export const Container = forwardRef<HTMLDivElement, Props>(
         {placeholder ? children : <ul>{children}</ul>}
         {isEdit && (
           <div
-            onClick={() => setIsEdit(false)}
+            onClick={() => {
+              setIsEdit(false);
+              if (onValueChange && value !== "") {
+                onValueChange(value);
+              }
+            }}
             className="fixed top-0 left-0 w-full h-full z-[10] bg-card/90"
           ></div>
         )}

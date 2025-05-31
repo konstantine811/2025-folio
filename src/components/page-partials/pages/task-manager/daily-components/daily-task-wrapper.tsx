@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import DailyAddTask from "./daily-add-task";
 import {
   loadTemplateTasks,
   saveDailyTasks,
@@ -8,22 +7,22 @@ import {
 import { Items } from "@/types/drag-and-drop.model";
 import { MultipleContainers } from "@/components/dnd/multiple-container";
 import { rectSortingStrategy } from "@dnd-kit/sortable";
-import DailyAddTemplateButton from "./daily-add-template-button";
+import DailyAddTemplateButton from "./daily-add-button";
 import { mergeItems } from "@/utils/task-manager-utils/merge-tasks";
 import Preloader from "@/components/page-partials/preloader/preloader";
 import { TaskManagerProvider } from "@/components/dnd/context/task-manager-context";
 import { useParams } from "react-router";
 import { parseDate } from "@/utils/date.util";
+import AddFutureTask from "../future-task-components/add-future-task";
+import { FirebaseCollection } from "@/config/firebase.config";
 
 const DailyTaskWrapper = () => {
   const [dailyTasks, setDailyTasks] = useState<Items>([]);
   const [changedTasks, setChangedTasks] = useState<Items>([]);
   const { id: date } = useParams(); // ← id це твоя дата у форматі "dd.MM.yyyy"
   const currentDateRef = useRef(date);
-  const [templatedTasks, setTemplatedTasks] = useState<Items>([]);
   const [isFuture, setIsFuture] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isSelectedOption, setIsSelectedOption] = useState(false);
   useEffect(() => {
     // 💡 Очищення попередніх даних при зміні дати
     setIsLoaded(false);
@@ -31,36 +30,19 @@ const DailyTaskWrapper = () => {
     setChangedTasks([]);
     currentDateRef.current = date;
     if (!date) return;
-    setIsSelectedOption(false);
     const parsedDate = parseDate(date);
     setIsFuture(parsedDate > new Date()); // 🔄 Перевірка на майбутню дату
-    loadDailyTasksByDate(date).then((tasks) => {
-      if (tasks && tasks.length) {
-        setIsSelectedOption(true);
-        setDailyTasks(tasks);
-      } else {
-        setIsSelectedOption(false);
-        setDailyTasks([]); // 🔄 Явно вказати порожній масив
-      }
-      setIsLoaded(true);
-    });
-  }, [date]);
-  useEffect(() => {
-    setIsLoaded(false);
-    loadTemplateTasks()
-      .then((tasks) => {
-        if (tasks) {
-          setTemplatedTasks(tasks);
+    loadDailyTasksByDate<Items>(date, FirebaseCollection.dailyTasks).then(
+      (tasks) => {
+        if (tasks && tasks.length) {
+          setDailyTasks(tasks);
         } else {
-          setTemplatedTasks([]); // 🔄 Явно вказати порожній масив
+          setDailyTasks([]); // 🔄 Явно вказати порожній масив
         }
         setIsLoaded(true);
-      })
-      .catch((error) => {
-        console.error("Error loading tasks:", error);
-        setIsLoaded(true);
-      });
-  }, []);
+      }
+    );
+  }, [date]);
 
   const handleMerageTasks = useCallback(() => {
     setIsLoaded(false);
@@ -73,10 +55,10 @@ const DailyTaskWrapper = () => {
   }, [changedTasks]);
   return (
     <>
-      {!isFuture && (
+      {!isFuture ? (
         <>
           {!isLoaded && <Preloader />}
-          {isLoaded && isSelectedOption && (
+          {isLoaded && (
             <TaskManagerProvider>
               <MultipleContainers
                 strategy={rectSortingStrategy}
@@ -86,24 +68,25 @@ const DailyTaskWrapper = () => {
                 items={dailyTasks}
                 onChangeTasks={(tasks) => {
                   if (!isLoaded) return; // 💡 Не викликати збереження під час завантаження
-                  saveDailyTasks(tasks, currentDateRef.current || "");
+                  saveDailyTasks<Items>(
+                    tasks,
+                    currentDateRef.current || "",
+                    FirebaseCollection.dailyTasks
+                  );
                   setChangedTasks(tasks);
                 }}
               />
             </TaskManagerProvider>
           )}
-          {!isSelectedOption && isLoaded && !dailyTasks.length && (
-            <DailyAddTask
-              onCreateTask={(isTemplate) => {
-                setDailyTasks(isTemplate ? templatedTasks : []);
-                setIsSelectedOption(true);
-              }}
+          {isLoaded && (
+            <DailyAddTemplateButton
+              title={"task_manager.add_template_task"}
+              onClick={handleMerageTasks}
             />
           )}
-          {isSelectedOption && isLoaded && (
-            <DailyAddTemplateButton onClick={handleMerageTasks} />
-          )}
         </>
+      ) : (
+        <AddFutureTask date={date} />
       )}
     </>
   );

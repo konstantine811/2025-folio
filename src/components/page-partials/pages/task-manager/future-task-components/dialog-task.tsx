@@ -1,7 +1,20 @@
+import { useHoverStore } from "@/storage/hoverStore";
+import {
+  ItemTask,
+  ItemTaskCategory,
+  Priority,
+} from "@/types/drag-and-drop.model";
+import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
+import { AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
+import WrapperHoverElement from "@/components/ui-abc/wrapper-hover-element";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
+import { X } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -11,60 +24,47 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useHoverStore } from "@/storage/hoverStore";
-import { ItemTask, Priority } from "@/types/drag-and-drop.model";
-import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
-import { getRandomFromTo } from "@/utils/random";
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { getPriorityClassByPrefix } from "./utils/dnd.utils";
-import { Textarea } from "@/components/ui/textarea";
-import { TimePickerInputs } from "./time-picker-inputs";
-import { UniqueIdentifier } from "@dnd-kit/core";
-import { X } from "lucide-react";
-import WrapperHoverElement from "../ui-abc/wrapper-hover-element";
+import { getPriorityClassByPrefix } from "@/components/dnd/utils/dnd.utils";
+import TimePicker from "@/components/ui-abc/select/select-time";
+import InputCombobox from "@/components/ui-abc/inputs/input-combobox";
+import { CATEGORY_OPTIONS } from "@/components/dnd/config/category-options";
+import { createTask } from "@/components/dnd/utils/createTask";
 
-const DialogTask = ({
+const DialogFeatureTask = ({
   onChangeTask,
   isOpen,
   setOpen,
   task,
-  containerId,
-  templated,
 }: {
   isOpen: boolean;
-  onChangeTask: (
-    taskId: UniqueIdentifier | null,
-    title: string,
-    priority: Priority,
-    time: number,
-    wastedTime: number,
-    containerId: UniqueIdentifier | null
-  ) => void;
+  onChangeTask: (task: ItemTask, categoryName: string) => void;
   setOpen: (open: boolean) => void;
-  task?: ItemTask | null;
-  containerId: UniqueIdentifier | null;
-  templated: boolean;
+  task?: ItemTaskCategory | null;
 }) => {
   const [t] = useTranslation();
   const setHover = useHoverStore((s) => s.setHover);
   const [title, setTitle] = useState<string>("");
   const [priority, setPriority] = useState<Priority>(Priority.LOW);
+  const [categoryName, setCategoryName] = useState<string>("");
   const [time, setTime] = useState<number>(0);
-  const [wastedTime, setWastedTime] = useState<number>(0);
-  const [translateRandom, setTranslateRandom] = useState(1);
   const handleCreateTask = () => {
-    if (title.trim() === "") return;
+    if (title.trim() === "" || categoryName.trim() === "") return;
     if (task) {
-      onChangeTask(task.id, title, priority, time, wastedTime, containerId);
-    } else {
-      onChangeTask(null, title, priority, time, wastedTime, containerId);
-    }
-
-    if (!task) {
+      // If task is being edited, we update it
+      const updatedTask = {
+        ...task,
+        title,
+        priority,
+        time,
+        categoryName,
+      };
+      onChangeTask(updatedTask, categoryName);
       reset();
+      return;
     }
-
+    const newTask = createTask(title, priority, time, true);
+    onChangeTask(newTask, categoryName);
+    reset();
     setHover(false, null, HoverStyleElement.circle);
   };
 
@@ -72,7 +72,6 @@ const DialogTask = ({
     setTitle("");
     setPriority(Priority.LOW);
     setTime(0);
-    setWastedTime(0);
   }
 
   useEffect(() => {
@@ -80,7 +79,6 @@ const DialogTask = ({
       setTitle(task.title);
       setPriority(task.priority);
       setTime(task.time);
-      setWastedTime(task.timeDone);
     } else {
       reset();
     }
@@ -99,7 +97,6 @@ const DialogTask = ({
   }, [isOpen]);
 
   useEffect(() => {
-    setTranslateRandom(getRandomFromTo(1, 4));
     setTimeout(() => {
       setHover(false, null, HoverStyleElement.circle);
     }, 100);
@@ -129,14 +126,10 @@ const DialogTask = ({
               <div className="relative">
                 <div className="flex flex-col gap-2">
                   <h3 className="text-2xl font-semibold break-words">
-                    {t(
-                      `task_manager.dialog_create_task.${translateRandom}.title`
-                    )}
+                    {t(`task_manager.dialog_create_task.2.title`)}
                   </h3>
                   <p className="text-muted-foreground font-mono">
-                    {t(
-                      `task_manager.dialog_create_task.${translateRandom}.description`
-                    )}
+                    {t(`task_manager.dialog_create_task.2.description`)}
                   </p>
                 </div>
                 <WrapperHoverElement>
@@ -157,6 +150,19 @@ const DialogTask = ({
                 </WrapperHoverElement>
               </div>
               <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                  <Label htmlFor="name" className="text-right">
+                    {t("task_manager.dialog_create_task.task.title.label")}
+                  </Label>
+                  <InputCombobox
+                    className="col-span-3"
+                    outerValue={task ? task.categoryName : ""}
+                    options={CATEGORY_OPTIONS}
+                    onValueChange={(value) => {
+                      setCategoryName(value);
+                    }}
+                  />
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
                   <Label htmlFor="name" className="text-right">
                     {t("task_manager.dialog_create_task.task.title.label")}
@@ -216,24 +222,18 @@ const DialogTask = ({
                     </SelectContent>
                   </Select>
                 </div>
-                <TimePickerInputs
-                  title={t("task_manager.dialog_create_task.task.time.label")}
-                  time={time}
-                  onChange={(value) => {
-                    setTime(value);
-                  }}
-                />
-                {task && !templated && (
-                  <TimePickerInputs
-                    title={t(
-                      "task_manager.dialog_create_task.task.time.wasted_time"
-                    )}
-                    time={wastedTime}
-                    onChange={(value) => {
-                      setWastedTime(value);
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                  <Label htmlFor="time" className="text-right">
+                    {t("task_manager.dialog_create_task.task.time.label")}
+                  </Label>
+                  <TimePicker
+                    className="col-span-3"
+                    onChange={(time) => {
+                      setTime(time);
                     }}
+                    time={task ? task.time : 0}
                   />
-                )}
+                </div>
               </div>
               <div>
                 <div className="flex gap-1 justify-end">
@@ -246,7 +246,7 @@ const DialogTask = ({
                       onClick={() => {
                         handleCreateTask();
                       }}
-                      disabled={title === ""}
+                      disabled={title === "" || categoryName === ""}
                       variant="outline"
                       className="cursor-pointer"
                     >
@@ -263,4 +263,4 @@ const DialogTask = ({
   );
 };
 
-export default DialogTask;
+export default DialogFeatureTask;

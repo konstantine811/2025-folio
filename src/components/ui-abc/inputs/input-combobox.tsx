@@ -9,32 +9,25 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import SoundHoverElement from "../sound-hover-element";
-
-const options = [
-  { label: "Здоровʼя", value: "health" },
-  { label: "Фінанси", value: "finance" },
-  { label: "Емоції", value: "emotions" },
-  { label: "Стосунки", value: "relationships" },
-  { label: "Карʼєра", value: "career" },
-  { label: "Духовність", value: "spirituality" },
-  { label: "Особистий ріст", value: "personal_growth" },
-  { label: "Відпочинок", value: "leisure" },
-];
+import { useTranslation } from "react-i18next";
+import { normalizeStr } from "@/utils/string.util";
 
 function InputCombobox({
   onValueChange,
   outerValue = "",
+  options,
+  className = "",
 }: {
   onValueChange?: (value: string) => void;
   outerValue?: string;
+  options: string[];
+  className?: string;
 }) {
   const [editingValue, setEditingValue] = useState(""); // те, що вводиться
-
+  const [open, setOpen] = useState(false); // стан відкриття поповера
+  const [t] = useTranslation();
   const handleSetValue = (newVal: string) => {
     setEditingValue(newVal);
-    if (onValueChange) {
-      onValueChange(newVal);
-    }
   };
 
   useEffect(() => {
@@ -51,16 +44,31 @@ function InputCombobox({
     handleSetValue(label);
   };
 
+  useEffect(() => {
+    if (onValueChange) {
+      onValueChange(editingValue);
+    }
+  }, [editingValue, onValueChange]);
+
   return (
-    <div className="flex gap-1 items-center w-full">
+    <div className={`flex gap-1 items-center w-full ${className}`}>
       <Input
-        value={editingValue}
-        onChange={(e) => setEditingValue(e.target.value)}
+        value={t(editingValue)}
+        onChange={(e) => {
+          const val = e.target.value;
+          const finded = options.find((option) => {
+            return (
+              normalizeStr(t(option).toLowerCase()) ===
+              normalizeStr(val.toLowerCase())
+            );
+          });
+          setEditingValue(finded || val);
+        }}
         onKeyDown={handleKeyDown}
-        placeholder="Введи або обери..."
-        className="!text-xl"
+        placeholder={t("combobox_placeholder")}
+        className="text-xl"
       />
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <div>
             <SoundHoverElement animValue={0.9}>
@@ -70,19 +78,26 @@ function InputCombobox({
             </SoundHoverElement>
           </div>
         </PopoverTrigger>
-        <PopoverContent>
-          <Command>
-            <CommandGroup>
-              {options.map((option) => (
-                <SoundHoverElement animValue={0.99} key={option.value}>
-                  <CommandItem onSelect={() => handleSelect(option.label)}>
-                    {option.label}
-                  </CommandItem>
-                </SoundHoverElement>
-              ))}
-            </CommandGroup>
-          </Command>
-        </PopoverContent>
+        {open && (
+          <PopoverContent>
+            <Command>
+              <CommandGroup>
+                {options.map((option, i) => (
+                  <SoundHoverElement animValue={0.99} key={`option-${i}`}>
+                    <CommandItem
+                      onSelect={() => {
+                        handleSelect(option);
+                        setOpen(false);
+                      }}
+                    >
+                      {t(option)}
+                    </CommandItem>
+                  </SoundHoverElement>
+                ))}
+              </CommandGroup>
+            </Command>
+          </PopoverContent>
+        )}
       </Popover>
     </div>
   );

@@ -1,6 +1,6 @@
 import { GetItemStyles, Items } from "@/types/drag-and-drop.model";
 import { Item, RenderItemProps } from "./item";
-import { getColor, getIndex } from "./utils/dnd.utils";
+import { getIndex } from "./utils/dnd.utils";
 import { UniqueIdentifier } from "@dnd-kit/core";
 
 const SortableItemDragOverlay = ({
@@ -29,7 +29,6 @@ const SortableItemDragOverlay = ({
       task={task} // 🟢 додаємо task
       value={task?.title ?? id} // показує title, якщо знайдено
       handle={handle}
-      templated={templated}
       style={getItemStyles({
         containerId: container.id,
         overIndex: -1,
@@ -39,8 +38,8 @@ const SortableItemDragOverlay = ({
         isDragging: true,
         isDragOverlay: true,
       })}
-      color={getColor(task.id)}
       renderItem={renderItem}
+      templated={templated}
       dragOverlay
     />
   );

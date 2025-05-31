@@ -1,5 +1,5 @@
 import { useSortable } from "@dnd-kit/sortable";
-import { getColor } from "./utils/dnd.utils";
+
 import { Item, RenderItemProps } from "./item";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { Items, ItemTask } from "@/types/drag-and-drop.model";
@@ -74,7 +74,6 @@ function SortableItem({
         overIndex: over ? getIndex(over.id, items) : overIndex,
         containerId,
       })}
-      color={getColor(id)}
       transition={transition}
       transform={transform}
       listeners={listeners}

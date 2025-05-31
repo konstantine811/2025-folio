@@ -111,6 +111,13 @@ export const Item = React.memo(
             task={task}
             onToggle={onToggle}
             onEditTask={onEditTask}
+            style={{
+              transform: transform
+                ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+                : undefined,
+              transition: transition ?? undefined, // ← fix тут
+              ...style,
+            }}
           >
             {
               <div>

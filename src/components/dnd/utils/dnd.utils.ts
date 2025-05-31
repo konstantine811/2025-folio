@@ -25,21 +25,6 @@ export const getIndex = (id: UniqueIdentifier, items: Items) => {
   return container.tasks.findIndex((t) => t.id === id);
 };
 
-export function getColor(id: UniqueIdentifier) {
-  switch (String(id)[0]) {
-    case "A":
-      return "#7193f1";
-    case "B":
-      return "#ffda6c";
-    case "C":
-      return "#00bcd4";
-    case "D":
-      return "#ef769f";
-  }
-
-  return undefined;
-}
-
 export function getPriorityClassByPrefix(
   priority: Priority,
   type: PriorityPrefixClass = PriorityPrefixClass.text
@@ -48,9 +33,9 @@ export function getPriorityClassByPrefix(
     case Priority.HIGH:
       return `${type}-destructive`;
     case Priority.MEDIUM:
-      return `${type}-foreground`;
+      return `${type}-accent`;
     case Priority.LOW:
-      return `${type}-primary`;
+      return `${type}-foreground`;
     default:
       return "";
   }
@@ -61,9 +46,35 @@ export function getPriorityClassFrom(priority: Priority) {
     case Priority.HIGH:
       return "from-destructive";
     case Priority.MEDIUM:
-      return "from-foreground";
+      return "from-accent";
     case Priority.LOW:
-      return "from-primary";
+      return "from-foreground";
+    default:
+      return "";
+  }
+}
+
+export function getPriorityClassBg(priority: Priority) {
+  switch (priority) {
+    case Priority.HIGH:
+      return "bg-destructive";
+    case Priority.MEDIUM:
+      return "bg-accent";
+    case Priority.LOW:
+      return "bg-foreground";
+    default:
+      return "";
+  }
+}
+
+export function getPriorityClassForegroundText(priority: Priority) {
+  switch (priority) {
+    case Priority.HIGH:
+      return "text-foreground";
+    case Priority.MEDIUM:
+      return "text-foreground";
+    case Priority.LOW:
+      return "text-background";
     default:
       return "";
   }
@@ -76,7 +87,7 @@ export function getPriorityBorderClass(priority: Priority) {
     case Priority.MEDIUM:
       return "border-accent";
     case Priority.LOW:
-      return "border-primary/50";
+      return "border-foreground";
     default:
       return "";
   }

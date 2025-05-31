@@ -4,10 +4,17 @@ import {
   FirebaseCollection,
   FirebaseCollectionProps,
 } from "@/config/firebase.config";
-import { Items } from "@/types/drag-and-drop.model";
+import { Items, ItemTaskCategory } from "@/types/drag-and-drop.model";
 import { parseDates } from "@/utils/date.util";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  onSnapshot,
+  setDoc,
+  Unsubscribe,
+} from "firebase/firestore";
 
 export const saveTemplateTasks = async (items: Items) => {
   const user = await waitForUserAuth();
@@ -33,7 +40,11 @@ export const saveTemplateTasks = async (items: Items) => {
   }
 };
 
-export const saveDailyTasks = async (items: Items, date: string) => {
+export const saveDailyTasks = async <T>(
+  items: T,
+  date: string,
+  collection: FirebaseCollection
+) => {
   const user = await waitForUserAuth();
   if (!user) {
     console.warn("❌ Cannot save tasks. User not authenticated.");
@@ -45,9 +56,12 @@ export const saveDailyTasks = async (items: Items, date: string) => {
   // document path: dailyTasks/{uid}/days/{formattedDate}
   const ref = doc(
     db,
-    FirebaseCollection.dailyTasks,
+    collection,
     uid,
-    FirebaseCollectionProps[FirebaseCollection.dailyTasks].days,
+    collection === FirebaseCollection.plannedTasks ||
+      collection === FirebaseCollection.dailyTasks
+      ? FirebaseCollectionProps[collection].days
+      : "",
     date
   );
 
@@ -78,9 +92,10 @@ export const loadTemplateTasks = async (): Promise<Items | null> => {
   }
 };
 
-export const loadDailyTasksByDate = async (
-  date: string
-): Promise<Items | null> => {
+export const loadDailyTasksByDate = async <T>(
+  date: string,
+  collection: FirebaseCollection
+): Promise<T | null> => {
   const user = await waitForUserAuth();
   if (!user) {
     console.warn("❌ Cannot load tasks. User not authenticated.");
@@ -91,9 +106,12 @@ export const loadDailyTasksByDate = async (
 
   const ref = doc(
     db,
-    FirebaseCollection.dailyTasks,
+    collection,
     uid,
-    FirebaseCollectionProps[FirebaseCollection.dailyTasks].days,
+    collection === FirebaseCollection.plannedTasks ||
+      collection === FirebaseCollection.dailyTasks
+      ? FirebaseCollectionProps[collection].days
+      : "",
     date
   );
 
@@ -101,7 +119,7 @@ export const loadDailyTasksByDate = async (
     const snap = await getDoc(ref);
     if (snap.exists()) {
       // console.info("✅ Tasks loaded for date:", formattedDate);
-      return snap.data().items as Items;
+      return snap.data().items as T;
     } else {
       // console.info("📭 No tasks found for date:", formattedDate);
       return null;
@@ -112,44 +130,80 @@ export const loadDailyTasksByDate = async (
   }
 };
 
-export const loadAllNonEmptyDailyTaskDates = async (): Promise<Date[]> => {
+export const subscribeToNonEmptyTaskDates = async <
+  T extends Items | ItemTaskCategory[]
+>(
+  collectionType: FirebaseCollection,
+  onUpdate: (dates: Date[]) => void
+): Promise<Unsubscribe | undefined> => {
   const user = await waitForUserAuth();
   if (!user) {
-    console.warn("❌ Cannot load task dates. User not authenticated.");
-    return [];
+    console.warn("❌ Cannot subscribe to task dates. User not authenticated.");
+    return;
   }
 
   const uid = user.uid;
-
   const daysCollectionRef = collection(
     db,
-    FirebaseCollection.dailyTasks,
+    collectionType,
     uid,
-    FirebaseCollectionProps[FirebaseCollection.dailyTasks].days
+    collectionType === FirebaseCollection.plannedTasks ||
+      collectionType === FirebaseCollection.dailyTasks
+      ? FirebaseCollectionProps[collectionType].days
+      : ""
   );
 
-  try {
-    const querySnapshot = await getDocs(daysCollectionRef);
-
+  const unsubscribe = onSnapshot(daysCollectionRef, (querySnapshot) => {
     const validDates: string[] = [];
 
     querySnapshot.forEach((docSnap) => {
       const data = docSnap.data();
-      const items = data.items as Items;
-
-      const hasNonEmptyItems = items && items.length;
-
-      if (hasNonEmptyItems) {
-        validDates.push(docSnap.id); // formatted date as "23.05.2025"
+      const items = data.items as T;
+      if (items && items.length) {
+        validDates.push(docSnap.id);
       }
     });
 
-    // console.info("📅 Non-empty task dates:", validDates);
-    return parseDates(validDates);
-  } catch (error) {
-    console.error("🔥 Error loading task dates:", error);
-    return [];
+    onUpdate(parseDates(validDates));
+  });
+
+  return unsubscribe;
+};
+
+export const subscribeToPlannedTasksWithCounts = async (
+  onUpdate: (taskCountPerDate: Record<string, number>) => void
+): Promise<Unsubscribe | undefined> => {
+  const user = await waitForUserAuth();
+  if (!user) {
+    console.warn(
+      "❌ Cannot subscribe to planned tasks. User not authenticated."
+    );
+    return;
   }
+
+  const uid = user.uid;
+  const daysCollectionRef = collection(
+    db,
+    FirebaseCollection.plannedTasks,
+    uid,
+    FirebaseCollectionProps[FirebaseCollection.plannedTasks].days
+  );
+
+  const unsubscribe = onSnapshot(daysCollectionRef, (querySnapshot) => {
+    const counts: Record<string, number> = {};
+
+    querySnapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const items = data.items as ItemTaskCategory[];
+      if (items && items.length) {
+        counts[docSnap.id] = items.length;
+      }
+    });
+
+    onUpdate(counts); // { '27.05.2025': 3, '28.05.2025': 1 }
+  });
+
+  return unsubscribe;
 };
 
 const waitForUserAuth = (): Promise<User | null> => {

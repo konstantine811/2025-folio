@@ -143,7 +143,7 @@ const Article = () => {
               {/* Права частина — закріплений CONTENT */}
               {contentReady && (
                 <div className="hidden lg:block col-span-2 relative">
-                  {headings.length && (
+                  {headings.length > 0 && (
                     <div className="sticky" style={{ top: `${hSize}px` }}>
                       <ArticleHeading
                         title={article.title}

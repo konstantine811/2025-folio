@@ -28,10 +28,14 @@ export enum FirebaseCollection {
   articles = "articles-blog",
   dailyTasks = "daily-tasks",
   templateTasks = "template-tasks",
+  plannedTasks = "planned-tasks",
 }
 
 export const FirebaseCollectionProps = {
   [FirebaseCollection.dailyTasks]: {
+    days: "days",
+  },
+  [FirebaseCollection.plannedTasks]: {
     days: "days",
   },
 };

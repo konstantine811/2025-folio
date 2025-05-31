@@ -1,7 +1,7 @@
 import { GetItemStyles, Items } from "@/types/drag-and-drop.model";
 import { UniqueIdentifier } from "@dnd-kit/core";
 
-import { getColor, getIndex } from "./utils/dnd.utils";
+import { getIndex } from "./utils/dnd.utils";
 import { Item, RenderItemProps } from "./item";
 import { Container } from "./container";
 
@@ -13,6 +13,7 @@ const ContainerDragOverlay = ({
   renderItem,
   columns,
   templated,
+  options,
 }: {
   containerId: UniqueIdentifier;
   items: Items;
@@ -21,6 +22,7 @@ const ContainerDragOverlay = ({
   renderItem?: (args: RenderItemProps) => React.ReactElement;
   columns?: number;
   templated: boolean;
+  options: string[];
 }) => {
   const category = items.find((cat) => cat.id === containerId);
 
@@ -33,7 +35,7 @@ const ContainerDragOverlay = ({
         containerId.toString()
       }
       columns={columns}
-      style={{ height: "100%" }}
+      options={options}
     >
       {items
         .find((cat) => cat.id === containerId)
@@ -52,7 +54,6 @@ const ContainerDragOverlay = ({
               isSorting: false,
               isDragOverlay: false,
             })}
-            color={getColor(task.id)}
             renderItem={renderItem}
             task={task}
           />

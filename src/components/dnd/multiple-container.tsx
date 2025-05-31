@@ -51,6 +51,8 @@ import TaskTimer from "./task-timer";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { createRange } from "./utils/createRange";
 import { useTaskManager } from "./context/use-task-manger-context";
+import { CATEGORY_OPTIONS } from "./config/category-options";
+import { createTask } from "./utils/createTask";
 
 interface Props {
   adjustScale?: boolean;
@@ -213,16 +215,7 @@ export function MultipleContainers({
     id: UniqueIdentifier
   ) => {
     if (!setItems) return;
-
-    const newTask: ItemTask = {
-      id: `${id}-${Date.now()}`,
-      title,
-      isDone: false,
-      time,
-      timeDone: wastedTime,
-      priority,
-    };
-
+    const newTask = createTask(title, priority, time, false, wastedTime);
     setItems((prev) =>
       prev.map((category) =>
         category.id === id
@@ -350,6 +343,7 @@ export function MultipleContainers({
                 setItems={setItems}
                 scrollable={scrollable}
                 style={containerStyle}
+                options={CATEGORY_OPTIONS}
                 onAddTask={(id) => {
                   setAddTaskContainerId(id);
                   setIsDialogOpen(true);
@@ -363,7 +357,15 @@ export function MultipleContainers({
                   strategy={strategy}
                 >
                   {category.tasks.length === 0 ? (
-                    <li className="h-[64px] rounded-xl border border-dashed border-muted/20 flex items-center justify-center text-muted-foreground text-sm">
+                    <li
+                      className={`rounded-xl border border-dashed border-muted/20 flex items-center justify-center text-muted-foreground text-sm transition-all duration-200
+    ${category.tasks.length > 0 ? "invisible absolute" : ""}
+  `}
+                      style={{
+                        minHeight: "72px",
+                        height: "72px",
+                      }}
+                    >
                       {t("task_manager.drag_task_here")}
                     </li>
                   ) : category.tasks.length > 10 ? (
@@ -446,6 +448,7 @@ export function MultipleContainers({
               <DroppableContainer
                 id={PLACEHOLDER_ID}
                 templated={templated}
+                options={CATEGORY_OPTIONS}
                 disabled={isSortingContainer}
                 items={[]}
                 onClick={handleAddColumn}
@@ -484,6 +487,7 @@ export function MultipleContainers({
                   columns={columns}
                   containerId={activeId}
                   templated={templated}
+                  options={CATEGORY_OPTIONS}
                 />
               ) : (
                 <SortableItemDragOverlay

@@ -124,3 +124,23 @@
     @apply bg-background text-foreground;
   }
 }
+/* styles/globals.css або tailwind.config.ts plugin */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.has-tasks::after {
+  content: "";
+  display: block;
+  position: absolute;
+  bottom: -5px;
+  width: 4px;
+  height: 4px;
+  background-color: var(--foreground); /* або чорний */
+  border-radius: 9999px;
+  margin: 2px auto 0 auto;
+}

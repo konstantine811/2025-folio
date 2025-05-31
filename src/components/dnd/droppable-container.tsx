@@ -29,12 +29,14 @@ function DroppableContainer({
   setContainers,
   onAddTask,
   style,
+  options,
   templated,
   ...props
 }: Props & {
   disabled?: boolean;
   id: UniqueIdentifier;
   items: ItemTask[];
+  options: string[];
   style?: React.CSSProperties;
   setItems?: React.Dispatch<React.SetStateAction<Items>>;
   setContainers?: React.Dispatch<React.SetStateAction<UniqueIdentifier[]>>;
@@ -82,6 +84,7 @@ function DroppableContainer({
 
   return (
     <Container
+      options={options}
       ref={disabled ? undefined : setNodeRef}
       style={{
         ...style,

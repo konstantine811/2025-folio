@@ -16,9 +16,7 @@ const getBrowserLanguage = () => {
   if (storedLang) {
     return JSON.parse(storedLang) as keyof typeof LanguageType;
   }
-  const lang = navigator.language || navigator.languages[0];
-  if (lang.startsWith(LanguageType.UA)) return LanguageType.UA; // якщо українська
-  return LanguageType.EN; // інакше англійська
+  return LanguageType.UA;
 };
 
 // ресурси

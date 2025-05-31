@@ -21,6 +21,7 @@ export function TaskItem({
   dragging = false,
   onEditTask,
   templated,
+  style, // ✅ додали
 }: {
   index?: number | string;
   task: ItemTask;
@@ -30,11 +31,13 @@ export function TaskItem({
   children?: React.ReactNode;
   dragging?: boolean;
   templated: boolean;
+  style?: React.CSSProperties; // ✅ додали
 }) {
   const [isPlay, setIsPlay] = useState(false);
   const hasLongWord = task.title.split(" ").some((word) => word.length > 40); // можна змінити 20 на поріг
   return (
     <div
+      style={style} // ✅ передаємо стилі для анімації
       className={`relative group rounded-xl border ${
         isPlay ? getPriorityBorderClass(task.priority) : "border-foreground/10"
       }`}

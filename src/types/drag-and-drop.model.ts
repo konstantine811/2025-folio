@@ -15,6 +15,11 @@ export interface ItemTask {
   time: number; // запланований час (наприклад "30m", "2h")
   timeDone: number;
   priority: Priority; // фактично витрачено (аналогічно)
+  isPlanned?: boolean; // чи заплановано
+}
+
+export interface ItemTaskCategory extends ItemTask {
+  categoryName: string;
 }
 
 export enum Priority {
