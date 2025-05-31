@@ -9,9 +9,11 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { ArrowBigLeft } from "lucide-react";
-import DailyCalendar from "./daily-calendar";
+import { useTranslation } from "react-i18next";
+import DailySidePanelContent from "./daily-side-panel-content";
 
 const DailyRightDrawer = () => {
+  const [t] = useTranslation();
   return (
     <Drawer direction="right">
       <DrawerTrigger>
@@ -27,12 +29,12 @@ const DailyRightDrawer = () => {
       <DrawerContent className="border-foreground/10">
         <div className="mx-auto w-full max-w-sm right-0 px-1">
           <DrawerHeader>
-            <DrawerTitle>Move Goal</DrawerTitle>
-            <DrawerDescription>Set your daily activity goal.</DrawerDescription>
+            <DrawerTitle>{t("task_manager.calendar.header.title")}</DrawerTitle>
+            <DrawerDescription>
+              {t("task_manager.calendar.header.description")}
+            </DrawerDescription>
           </DrawerHeader>
-          <div>
-            <DailyCalendar />
-          </div>
+          <DailySidePanelContent />
         </div>
       </DrawerContent>
     </Drawer>

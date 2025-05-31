@@ -8,13 +8,17 @@ import { Items } from "@/types/drag-and-drop.model";
 import { MultipleContainers } from "@/components/dnd/multiple-container";
 import { rectSortingStrategy } from "@dnd-kit/sortable";
 import DailyAddTemplateButton from "./daily-add-button";
-import { mergeItems } from "@/utils/task-manager-utils/merge-tasks";
+import {
+  mergeItems,
+  mergeItemsWithPlannedTasks,
+} from "@/utils/task-manager-utils/merge-tasks";
 import Preloader from "@/components/page-partials/preloader/preloader";
 import { TaskManagerProvider } from "@/components/dnd/context/task-manager-context";
 import { useParams } from "react-router";
 import { parseDate } from "@/utils/date.util";
 import AddFutureTask from "../future-task-components/add-future-task";
 import { FirebaseCollection } from "@/config/firebase.config";
+import { useDailyTaskContext } from "../hooks/useDailyTask";
 
 const DailyTaskWrapper = () => {
   const [dailyTasks, setDailyTasks] = useState<Items>([]);
@@ -23,6 +27,8 @@ const DailyTaskWrapper = () => {
   const currentDateRef = useRef(date);
   const [isFuture, setIsFuture] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const { plannedTasks, updatePlannedTask, deletePlannedTask } =
+    useDailyTaskContext();
   useEffect(() => {
     // 💡 Очищення попередніх даних при зміні дати
     setIsLoaded(false);
@@ -45,14 +51,16 @@ const DailyTaskWrapper = () => {
   }, [date]);
 
   const handleMerageTasks = useCallback(() => {
+    if (!plannedTasks) return;
     setIsLoaded(false);
     loadTemplateTasks().then((tasks) => {
-      if (tasks && tasks.length) {
-        setDailyTasks(mergeItems(changedTasks, tasks));
+      const merged = mergeItemsWithPlannedTasks(tasks, plannedTasks);
+      if (merged && merged.length) {
+        setDailyTasks(mergeItems(changedTasks, merged));
       }
       setIsLoaded(true);
     });
-  }, [changedTasks]);
+  }, [changedTasks, plannedTasks]);
   return (
     <>
       {!isFuture ? (
@@ -75,6 +83,10 @@ const DailyTaskWrapper = () => {
                   );
                   setChangedTasks(tasks);
                 }}
+                onEditPlannedTask={(task) => {
+                  updatePlannedTask(task);
+                }}
+                onDeletePlannedTask={deletePlannedTask}
               />
             </TaskManagerProvider>
           )}

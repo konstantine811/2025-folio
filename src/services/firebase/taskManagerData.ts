@@ -130,6 +130,23 @@ export const loadDailyTasksByDate = async <T>(
   }
 };
 
+export const updatePlannedTasksOnServer = async (
+  date: string,
+  tasks: ItemTaskCategory[]
+) => {
+  const user = await waitForUserAuth();
+  if (!user) throw new Error("User not authenticated");
+  const ref = doc(
+    db,
+    FirebaseCollection.plannedTasks,
+    user.uid,
+    FirebaseCollectionProps[FirebaseCollection.plannedTasks].days,
+    date
+  );
+
+  await setDoc(ref, { items: tasks }, { merge: true });
+};
+
 export const subscribeToNonEmptyTaskDates = async <
   T extends Items | ItemTaskCategory[]
 >(

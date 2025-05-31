@@ -1,6 +1,5 @@
 import { ItemTaskCategory } from "@/types/drag-and-drop.model";
 import { TaskItemFuture } from "./task-item-future";
-import { Dispatch, SetStateAction } from "react";
 import { paresSecondToTime } from "@/utils/time.util";
 import {
   getPriorityClassBg,
@@ -9,12 +8,12 @@ import {
 
 const TaskFutureTimeline = ({
   tasks,
-  setCategoryTasks,
   onEditTask,
+  onDeleteTask,
 }: {
   tasks: ItemTaskCategory[];
-  setCategoryTasks: Dispatch<SetStateAction<ItemTaskCategory[]>>;
-  onEditTask: (task: ItemTaskCategory) => void;
+  onEditTask?: (task: ItemTaskCategory) => void;
+  onDeleteTask?: (id: string) => void;
 }) => {
   const sortedTasks = [...tasks].sort((a, b) => a.time - b.time);
   return (
@@ -48,11 +47,9 @@ const TaskFutureTimeline = ({
               <div className="flex-1 relative z-10">
                 <TaskItemFuture
                   task={task}
-                  onEditTask={() => onEditTask(task)}
-                  onDelete={() =>
-                    setCategoryTasks((prev) =>
-                      prev.filter((t) => t.id !== task.id)
-                    )
+                  onEditTask={onEditTask ? () => onEditTask(task) : undefined}
+                  onDelete={
+                    onDeleteTask ? () => onDeleteTask(task.id) : undefined
                   }
                 />
               </div>

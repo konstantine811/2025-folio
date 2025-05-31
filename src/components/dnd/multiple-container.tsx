@@ -52,7 +52,7 @@ import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { createRange } from "./utils/createRange";
 import { useTaskManager } from "./context/use-task-manger-context";
 import { CATEGORY_OPTIONS } from "./config/category-options";
-import { createTask } from "./utils/createTask";
+import useCategoryHandle from "./hooks/useCategoryHandle";
 
 interface Props {
   adjustScale?: boolean;
@@ -75,6 +75,8 @@ interface Props {
   templated?: boolean;
   testedCount?: number;
   onChangeTasks?: (items: Items) => void;
+  onEditPlannedTask?: (task: ItemTask) => void;
+  onDeletePlannedTask?: (taskId: string) => void;
 }
 
 const TASK_ITEM_HEIGHT = 72;
@@ -99,6 +101,8 @@ export function MultipleContainers({
   testedCount,
   scrollable,
   onChangeTasks = () => {},
+  onEditPlannedTask,
+  onDeletePlannedTask,
 }: Props) {
   const [t] = useTranslation();
   const [items, setItems] = useState<Items>(() => initialItems ?? []);
@@ -125,20 +129,21 @@ export function MultipleContainers({
       recentlyMovedToNewContainer,
     });
 
-  const {
-    onDragOver,
-    onDragEnd,
-    handleAddColumn,
-    onDragCancel,
-    onDragStart,
-    handleRemove,
-  } = useDrag({
+  const { onDragOver, onDragEnd, onDragCancel, onDragStart } = useDrag({
     items,
     setItems,
     recentlyMovedToNewContainer,
-    setContainers,
     setActiveId,
     activeId,
+    onDeletePlannedTask,
+  });
+
+  const { handleAddColumn, handleRemove } = useCategoryHandle({
+    items,
+    setItems,
+    setContainers,
+    activeId,
+    onDeletePlannedTask,
   });
   const updateTaskTime = (taskId: UniqueIdentifier, newTimeDone: number) => {
     setItems((prev) =>
@@ -207,15 +212,8 @@ export function MultipleContainers({
     );
   };
 
-  const handleAddTask = (
-    title: string,
-    priority: Priority,
-    time: number,
-    wastedTime: number,
-    id: UniqueIdentifier
-  ) => {
+  const handleAddTask = (newTask: ItemTask, id: UniqueIdentifier) => {
     if (!setItems) return;
-    const newTask = createTask(title, priority, time, false, wastedTime);
     setItems((prev) =>
       prev.map((category) =>
         category.id === id
@@ -226,22 +224,19 @@ export function MultipleContainers({
   };
 
   const handleEditTask = (
-    taskId: UniqueIdentifier,
-    title: string,
-    priority: Priority,
-    time: number,
-    timeDone: number,
+    editTask: ItemTask,
     containerId: UniqueIdentifier
   ) => {
+    if (onEditPlannedTask && editTask.isPlanned) {
+      onEditPlannedTask(editTask);
+    }
     setItems((prevItems) =>
       prevItems.map((container) => {
         if (container.id === containerId) {
           return {
             ...container,
             tasks: container.tasks.map((task) =>
-              task.id === taskId
-                ? { ...task, title, priority, time, timeDone }
-                : task
+              task.id === editTask.id ? { ...editTask } : task
             ),
           };
         }
@@ -264,25 +259,11 @@ export function MultipleContainers({
         containerId={addTaskContainerId}
         task={editTask}
         templated={templated}
-        onChangeTask={(
-          taskId,
-          title,
-          priority,
-          time,
-          wastedTime,
-          containerId
-        ) => {
-          if (taskId && containerId) {
-            handleEditTask(
-              taskId,
-              title,
-              priority,
-              time,
-              wastedTime,
-              containerId
-            );
+        onChangeTask={(task, containerId) => {
+          if (task && containerId) {
+            handleEditTask(task, containerId);
           } else if (containerId) {
-            handleAddTask(title, priority, time, wastedTime, containerId);
+            handleAddTask(task, containerId);
           }
           setIsDialogOpen(false);
           setAddTaskContainerId(null);

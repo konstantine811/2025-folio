@@ -23,6 +23,7 @@ import { TimePickerInputs } from "./time-picker-inputs";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { X } from "lucide-react";
 import WrapperHoverElement from "../ui-abc/wrapper-hover-element";
+import { createTask } from "./utils/createTask";
 
 const DialogTask = ({
   onChangeTask,
@@ -33,14 +34,7 @@ const DialogTask = ({
   templated,
 }: {
   isOpen: boolean;
-  onChangeTask: (
-    taskId: UniqueIdentifier | null,
-    title: string,
-    priority: Priority,
-    time: number,
-    wastedTime: number,
-    containerId: UniqueIdentifier | null
-  ) => void;
+  onChangeTask: (task: ItemTask, containerId: UniqueIdentifier | null) => void;
   setOpen: (open: boolean) => void;
   task?: ItemTask | null;
   containerId: UniqueIdentifier | null;
@@ -56,9 +50,19 @@ const DialogTask = ({
   const handleCreateTask = () => {
     if (title.trim() === "") return;
     if (task) {
-      onChangeTask(task.id, title, priority, time, wastedTime, containerId);
+      onChangeTask(
+        {
+          ...task,
+          title,
+          priority,
+          time,
+          timeDone: wastedTime,
+        },
+        containerId
+      );
     } else {
-      onChangeTask(null, title, priority, time, wastedTime, containerId);
+      const newTask = createTask(title, priority, time, false, wastedTime);
+      onChangeTask(newTask, containerId);
     }
 
     if (!task) {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import DailyAddTemplateButton from "../daily-components/daily-add-button";
 import DialogFeatureTask from "./dialog-task";
 import { ItemTaskCategory } from "@/types/drag-and-drop.model";
@@ -36,14 +36,18 @@ const AddFutureTask = ({ date }: { date: string | undefined }) => {
     }
   }, [date]);
 
-  useEffect(() => {
-    if (!date || !isLoaded) return;
-    saveDailyTasks<ItemTaskCategory[]>(
-      categoryTasks,
-      date,
-      FirebaseCollection.plannedTasks
-    );
-  }, [categoryTasks, date, isLoaded]);
+  const handleUpdateTask = useCallback(
+    (tasks: ItemTaskCategory[]) => {
+      if (!isLoaded || !date) return;
+      saveDailyTasks<ItemTaskCategory[]>(
+        tasks,
+        date,
+        FirebaseCollection.plannedTasks
+      );
+    },
+    [date, isLoaded]
+  );
+
   return (
     <>
       {isLoaded ? (
@@ -65,24 +69,33 @@ const AddFutureTask = ({ date }: { date: string | undefined }) => {
               setEditTask(null);
               setCategoryTasks((prev) => {
                 const index = prev.findIndex((t) => t.id === categoryTask.id);
+                let updated: ItemTaskCategory[];
+
                 if (index !== -1) {
-                  // Заміна існуючої
-                  const updated = [...prev];
+                  updated = [...prev];
                   updated[index] = categoryTask;
-                  return updated;
+                } else {
+                  updated = [...prev, categoryTask];
                 }
-                // Додавання нової
-                return [...prev, categoryTask];
+
+                handleUpdateTask(updated);
+                return updated;
               });
             }}
           />
           {categoryTasks.length > 0 && (
             <TaskFutureTimeline
               tasks={categoryTasks}
-              setCategoryTasks={setCategoryTasks}
               onEditTask={(task) => {
                 setEditTask(task);
                 setIsOpenDialog(true);
+              }}
+              onDeleteTask={(id) => {
+                setCategoryTasks((prev) => {
+                  const updated = prev.filter((task) => task.id !== id);
+                  handleUpdateTask(updated);
+                  return updated;
+                });
               }}
             />
           )}

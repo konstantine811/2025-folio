@@ -60,6 +60,12 @@
     "no_tasks": "Немає доступних завдань",
     "task_name": "Назва завдання",
     "task_description": "Опис завдання",
+    "calendar": {
+      "header": {
+        "title": "Ціль руху",
+        "description": "Встановіть вашу щоденну ціль активності."
+      }
+    },
     "dialog_create_task": {
       "task": {
         "title": {

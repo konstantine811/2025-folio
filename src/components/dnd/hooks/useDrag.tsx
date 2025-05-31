@@ -2,82 +2,29 @@ import { Active, Over, UniqueIdentifier } from "@dnd-kit/core";
 import { TRASH_ID } from "../config/dnd.config";
 import { Items } from "@/types/drag-and-drop.model";
 import { arrayMove } from "@dnd-kit/sortable";
-import { unstable_batchedUpdates } from "react-dom";
 import { useState } from "react";
 import { useHoverStore } from "@/storage/hoverStore";
 import { HoverStyleElement } from "@/types/sound";
-import { useTranslation } from "react-i18next";
 import { useTaskManager } from "../context/use-task-manger-context";
 
 const useDrag = ({
   items,
   setItems,
   recentlyMovedToNewContainer,
-  setContainers,
   setActiveId,
+  onDeletePlannedTask,
 }: {
   items: Items;
   setItems: React.Dispatch<React.SetStateAction<Items>>;
   recentlyMovedToNewContainer: React.RefObject<boolean>;
-  setContainers: React.Dispatch<React.SetStateAction<UniqueIdentifier[]>>;
   setActiveId: React.Dispatch<React.SetStateAction<UniqueIdentifier | null>>;
   activeId: UniqueIdentifier | null;
+  onDeletePlannedTask?: (taskId: UniqueIdentifier) => void;
 }) => {
   const [clonedItems, setClonedItems] = useState<Items | null>(null);
   const setHover = useHoverStore((s) => s.setHover);
   const playingTask = useTaskManager((s) => s.playingTask);
   const stopPlayingTask = useTaskManager((s) => s.stopPlayingTask);
-  const [t] = useTranslation();
-
-  function handleAddColumn() {
-    const prefix = t("task_manager.category"); // наприклад "Категорія"
-
-    const maxNumber = Math.max(
-      0,
-      ...items.map((item) => {
-        const regex = new RegExp(`^${prefix} (\\d+)$`);
-        const match = item.title.match(regex);
-        return match ? parseInt(match[1], 10) : 0;
-      })
-    );
-
-    const newNumber = maxNumber + 1;
-    const newContainerId = `${prefix} ${newNumber}`;
-    const newId = `cat-${Date.now()}`; // або: crypto.randomUUID()
-    unstable_batchedUpdates(() => {
-      setContainers((containers) => [...containers, newContainerId]);
-      setItems((items) => [
-        ...items,
-        {
-          id: newId,
-          title: newContainerId,
-          tasks: [],
-        },
-      ]);
-    });
-  }
-
-  function getNextContainerId() {
-    const containerIds = items.map((cat) => cat.id);
-    const lastContainerId = containerIds[containerIds.length - 1];
-    return String.fromCharCode((lastContainerId as string).charCodeAt(0) + 1);
-  }
-
-  function handleRemove(containerID: UniqueIdentifier) {
-    // Якщо активна задача належить до видаляємої категорії — зупиняємо її
-    const container = items.find((cat) => cat.id === containerID);
-    const taskIds = container?.tasks.map((t) => t.id) ?? [];
-
-    if (playingTask && taskIds.includes(playingTask.id)) {
-      stopPlayingTask();
-    }
-
-    // Тепер видаляємо
-    setContainers((containers) =>
-      containers.filter((id) => id !== containerID)
-    );
-    setItems((items) => items.filter((cat) => cat.id !== containerID));
-  }
 
   const onDragStart = (active: Active) => {
     setActiveId(active.id);
@@ -173,7 +120,15 @@ const useDrag = ({
       setItems((prev) =>
         prev.map((cat) =>
           cat.id === activeCategory.id
-            ? { ...cat, tasks: cat.tasks.filter((t) => t.id !== active.id) }
+            ? {
+                ...cat,
+                tasks: cat.tasks.filter((t) => {
+                  if (t.id === active.id && t.isPlanned) {
+                    onDeletePlannedTask?.(t.id);
+                  }
+                  return t.id !== active.id;
+                }),
+              }
             : cat
         )
       );
@@ -223,11 +178,8 @@ const useDrag = ({
   return {
     onDragOver,
     onDragEnd,
-    handleAddColumn,
-    getNextContainerId,
     onDragCancel,
     onDragStart,
-    handleRemove,
   };
 };
 

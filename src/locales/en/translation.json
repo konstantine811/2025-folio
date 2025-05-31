@@ -59,6 +59,12 @@
     "no_tasks": "No tasks available",
     "task_name": "Task Name",
     "task_description": "Task Description",
+    "calendar": {
+      "header": {
+        "title": "Move Goal",
+        "description": "Set your daily activity goal."
+      }
+    },
     "dialog_create_task": {
       "task": {
         "title": {

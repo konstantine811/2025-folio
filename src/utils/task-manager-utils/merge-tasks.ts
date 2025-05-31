@@ -1,4 +1,4 @@
-import { Items, ItemTask } from "@/types/drag-and-drop.model";
+import { Items, ItemTask, ItemTaskCategory } from "@/types/drag-and-drop.model";
 
 export function mergeItems(base: Items, incoming: Items): Items {
   const baseMap = new Map(
@@ -30,4 +30,50 @@ export function mergeItems(base: Items, incoming: Items): Items {
   }
 
   return Array.from(baseMap.values());
+}
+
+export function mergeItemsWithPlannedTasks(
+  items: Items | null,
+  plannedTasks: ItemTaskCategory[]
+): Items {
+  // Глибока копія items
+  const result: Items = items
+    ? items.map((category) => ({
+        ...category,
+        tasks: [...category.tasks],
+      }))
+    : [];
+
+  plannedTasks.forEach((task) => {
+    const categoryName = task.categoryName;
+
+    // Пошук існуючої категорії
+    let existingCategory = result.find((c) => c.title === categoryName);
+
+    if (!existingCategory) {
+      // Створення нової категорії
+      existingCategory = {
+        id: `cat-${Date.now()}-${Math.random()}`, // Унікальний id
+        title: categoryName,
+        tasks: [],
+      };
+      result.push(existingCategory);
+    }
+
+    // Перевірка: не додавати дубль задачі (за id)
+    const exists = existingCategory.tasks.some((t) => t.id === task.id);
+    if (!exists) {
+      existingCategory.tasks.push({
+        id: task.id,
+        title: task.title,
+        isDone: task.isDone,
+        time: task.time,
+        timeDone: task.timeDone,
+        priority: task.priority,
+        isPlanned: true,
+      });
+    }
+  });
+
+  return result;
 }
