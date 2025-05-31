@@ -4,7 +4,7 @@ import {
   saveDailyTasks,
   loadDailyTasksByDate,
 } from "@/services/firebase/taskManagerData";
-import { Items } from "@/types/drag-and-drop.model";
+import { DayNumber, Items, ItemTask } from "@/types/drag-and-drop.model";
 import { MultipleContainers } from "@/components/dnd/multiple-container";
 import { rectSortingStrategy } from "@dnd-kit/sortable";
 import DailyAddTemplateButton from "./daily-add-button";
@@ -19,6 +19,8 @@ import { parseDate } from "@/utils/date.util";
 import AddFutureTask from "../future-task-components/add-future-task";
 import { FirebaseCollection } from "@/config/firebase.config";
 import { useDailyTaskContext } from "../hooks/useDailyTask";
+import { getISODay } from "date-fns";
+import { filterTaskByDayOfWeedk } from "@/utils/task-manager-utils/filter-tasks";
 
 const DailyTaskWrapper = () => {
   const [dailyTasks, setDailyTasks] = useState<Items>([]);
@@ -54,15 +56,49 @@ const DailyTaskWrapper = () => {
     if (!plannedTasks) return;
     setIsLoaded(false);
     loadTemplateTasks().then((tasks) => {
-      console.log(tasks);
-      console.log(plannedTasks);
-      const merged = mergeItemsWithPlannedTasks(tasks, plannedTasks);
+      const currentDayOfWeek = getISODay(parseDate(date ?? "")) as DayNumber;
+      const filteredDayOfWeekTasks = filterTaskByDayOfWeedk(
+        tasks,
+        currentDayOfWeek
+      );
+      const merged = mergeItemsWithPlannedTasks(
+        filteredDayOfWeekTasks,
+        plannedTasks
+      );
       if (merged && merged.length) {
-        setDailyTasks(mergeItemsDeep(changedTasks, merged));
+        const meregedTasks = mergeItemsDeep(changedTasks, merged);
+        setDailyTasks(meregedTasks);
+        saveDailyTasks<Items>(
+          meregedTasks,
+          currentDateRef.current || "",
+          FirebaseCollection.dailyTasks
+        );
       }
       setIsLoaded(true);
     });
-  }, [changedTasks, plannedTasks]);
+  }, [changedTasks, plannedTasks, date]);
+
+  const handleChangeTasks = useCallback(
+    (tasks: Items) => {
+      if (!isLoaded) return;
+      saveDailyTasks<Items>(
+        tasks,
+        currentDateRef.current || "",
+        FirebaseCollection.dailyTasks
+      );
+      setTimeout(() => {
+        setChangedTasks(tasks);
+      }, 0); // ⏱️ Відкласти в наступну подію
+    },
+    [isLoaded]
+  );
+
+  const onUpdatePlannedTask = useCallback(
+    (task: ItemTask) => {
+      updatePlannedTask(task);
+    },
+    [updatePlannedTask]
+  );
   return (
     <>
       {!isFuture ? (
@@ -76,18 +112,8 @@ const DailyTaskWrapper = () => {
                 trashable
                 templated={false}
                 items={dailyTasks}
-                onChangeTasks={(tasks) => {
-                  if (!isLoaded) return; // 💡 Не викликати збереження під час завантаження
-                  saveDailyTasks<Items>(
-                    tasks,
-                    currentDateRef.current || "",
-                    FirebaseCollection.dailyTasks
-                  );
-                  setChangedTasks(tasks);
-                }}
-                onEditPlannedTask={(task) => {
-                  updatePlannedTask(task);
-                }}
+                onChangeTasks={handleChangeTasks}
+                onEditPlannedTask={onUpdatePlannedTask}
                 onDeletePlannedTask={deletePlannedTask}
               />
             </TaskManagerProvider>

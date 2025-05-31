@@ -51,7 +51,6 @@ const TemplateTask = () => {
               templated={true}
               items={dailyTasks}
               onChangeTasks={(tasks) => {
-                console.log("tasks", tasks);
                 saveTemplateTasks(tasks);
               }}
             />

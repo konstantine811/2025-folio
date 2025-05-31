@@ -71,12 +71,20 @@ const DialogTask = ({
           priority,
           time,
           timeDone: wastedTime,
+          whenDo: selectedDays,
         },
         containerId,
         true
       );
     } else {
-      const newTask = createTask(title, priority, time, false, wastedTime);
+      const newTask = createTask(
+        title,
+        priority,
+        time,
+        false,
+        wastedTime,
+        selectedDays
+      );
       onChangeTask(newTask, containerId, false);
     }
     reset();

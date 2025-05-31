@@ -100,8 +100,7 @@ const DailyCalendar = () => {
           hasTasks: plannedTasks,
         }}
         modifiersClassNames={{
-          selected:
-            "!bg-accent shadow-md shadow-foreground/60 border border-background",
+          selected: "!bg-accent !text-foreground border border-background",
           today: "bg-background shadow-md shadow-accent border border-accent",
           active: "bg-foreground/20 text-foreground",
           hasTasks:
