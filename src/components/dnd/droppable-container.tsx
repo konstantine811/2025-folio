@@ -6,7 +6,7 @@ import {
 import { Container, Props } from "./container";
 import { CSS } from "@dnd-kit/utilities";
 import { UniqueIdentifier } from "@dnd-kit/core";
-import { Items, ItemTask } from "@/types/drag-and-drop.model";
+import { ItemTask } from "@/types/drag-and-drop.model";
 import WrapperHoverElement from "../ui-abc/wrapper-hover-element";
 import SoundHoverElement from "../ui-abc/sound-hover-element";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
@@ -24,13 +24,12 @@ function DroppableContainer({
   disabled,
   id,
   items,
-  setItems,
   placeholder,
-  setContainers,
   onAddTask,
   style,
   options,
   templated,
+  onChangeCategory,
   ...props
 }: Props & {
   disabled?: boolean;
@@ -38,10 +37,9 @@ function DroppableContainer({
   items: ItemTask[];
   options: string[];
   style?: React.CSSProperties;
-  setItems?: React.Dispatch<React.SetStateAction<Items>>;
-  setContainers?: React.Dispatch<React.SetStateAction<UniqueIdentifier[]>>;
   onAddTask?: (containerId: UniqueIdentifier) => void;
   templated: boolean;
+  onChangeCategory?: (value: string) => void;
 }) {
   const {
     attributes,
@@ -62,18 +60,6 @@ function DroppableContainer({
   const [t] = useTranslation();
   const [donePercentage, setDonePercentage] = useState(0);
 
-  const handleChangeCategory = (value: string) => {
-    if (!setItems || !setContainers) return;
-    setItems((prev) =>
-      prev.map((cat) => (cat.id === id ? { ...cat, title: value } : cat))
-    );
-    setContainers((prev) =>
-      prev.map(
-        (containerId) => (id === id ? id : containerId) // ❗️не міняємо ID, просто оновили title вже в items
-      )
-    );
-  };
-
   useEffect(() => {
     const totalTasks = items.length;
     const doneTasks = items.filter((task) => task.isDone).length;
@@ -92,7 +78,7 @@ function DroppableContainer({
         transform: CSS.Translate.toString(transform),
         opacity: isDragging ? 0.5 : undefined,
       }}
-      onValueChange={handleChangeCategory}
+      onValueChange={onChangeCategory}
       handleProps={{
         ...attributes,
         ...listeners,

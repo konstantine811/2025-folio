@@ -9,7 +9,7 @@ import { MultipleContainers } from "@/components/dnd/multiple-container";
 import { rectSortingStrategy } from "@dnd-kit/sortable";
 import DailyAddTemplateButton from "./daily-add-button";
 import {
-  mergeItems,
+  mergeItemsDeep,
   mergeItemsWithPlannedTasks,
 } from "@/utils/task-manager-utils/merge-tasks";
 import Preloader from "@/components/page-partials/preloader/preloader";
@@ -54,9 +54,11 @@ const DailyTaskWrapper = () => {
     if (!plannedTasks) return;
     setIsLoaded(false);
     loadTemplateTasks().then((tasks) => {
+      console.log(tasks);
+      console.log(plannedTasks);
       const merged = mergeItemsWithPlannedTasks(tasks, plannedTasks);
       if (merged && merged.length) {
-        setDailyTasks(mergeItems(changedTasks, merged));
+        setDailyTasks(mergeItemsDeep(changedTasks, merged));
       }
       setIsLoaded(true);
     });

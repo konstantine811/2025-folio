@@ -42,6 +42,7 @@ const AddFutureTask = ({ date }: { date: string | undefined }) => {
       saveDailyTasks<ItemTaskCategory[]>(
         tasks,
         date,
+        // "01.06.2025",
         FirebaseCollection.plannedTasks
       );
     },

@@ -34,7 +34,11 @@ const DialogTask = ({
   templated,
 }: {
   isOpen: boolean;
-  onChangeTask: (task: ItemTask, containerId: UniqueIdentifier | null) => void;
+  onChangeTask: (
+    task: ItemTask,
+    containerId: UniqueIdentifier | null,
+    isEdit: boolean
+  ) => void;
   setOpen: (open: boolean) => void;
   task?: ItemTask | null;
   containerId: UniqueIdentifier | null;
@@ -58,17 +62,14 @@ const DialogTask = ({
           time,
           timeDone: wastedTime,
         },
-        containerId
+        containerId,
+        true
       );
     } else {
       const newTask = createTask(title, priority, time, false, wastedTime);
-      onChangeTask(newTask, containerId);
+      onChangeTask(newTask, containerId, false);
     }
-
-    if (!task) {
-      reset();
-    }
-
+    reset();
     setHover(false, null, HoverStyleElement.circle);
   };
 

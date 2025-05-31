@@ -9,12 +9,14 @@ const useCategoryHandle = ({
   setItems,
   setContainers,
   onDeletePlannedTask,
+  onChangeTasks,
 }: {
   items: Items;
   setItems: React.Dispatch<React.SetStateAction<Items>>;
   setContainers: React.Dispatch<React.SetStateAction<UniqueIdentifier[]>>;
   activeId: UniqueIdentifier | null;
   onDeletePlannedTask?: (taskId: UniqueIdentifier) => void;
+  onChangeTasks: (items: Items) => void;
 }) => {
   const playingTask = useTaskManager((s) => s.playingTask);
   const stopPlayingTask = useTaskManager((s) => s.stopPlayingTask);
@@ -36,14 +38,18 @@ const useCategoryHandle = ({
     const newId = `cat-${Date.now()}`; // або: crypto.randomUUID()
     unstable_batchedUpdates(() => {
       setContainers((containers) => [...containers, newContainerId]);
-      setItems((items) => [
-        ...items,
-        {
-          id: newId,
-          title: newContainerId,
-          tasks: [],
-        },
-      ]);
+      setItems((items) => {
+        const updates = [
+          ...items,
+          {
+            id: newId,
+            title: newContainerId,
+            tasks: [],
+          },
+        ];
+        onChangeTasks(updates);
+        return updates;
+      });
     });
   }
   function getNextContainerId() {
@@ -61,7 +67,11 @@ const useCategoryHandle = ({
       containers.filter((id) => id !== containerID)
     );
 
-    setItems((items) => items.filter((cat) => cat.id !== containerID));
+    setItems((items) => {
+      const updated = items.filter((cat) => cat.id !== containerID);
+      onChangeTasks(updated);
+      return updated;
+    });
 
     toDeleteTasks.forEach((task) => {
       if (onDeletePlannedTask && task.isPlanned) {

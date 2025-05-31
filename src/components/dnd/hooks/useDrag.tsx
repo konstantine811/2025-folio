@@ -13,6 +13,7 @@ const useDrag = ({
   recentlyMovedToNewContainer,
   setActiveId,
   onDeletePlannedTask,
+  onChangeTasks,
 }: {
   items: Items;
   setItems: React.Dispatch<React.SetStateAction<Items>>;
@@ -20,6 +21,7 @@ const useDrag = ({
   setActiveId: React.Dispatch<React.SetStateAction<UniqueIdentifier | null>>;
   activeId: UniqueIdentifier | null;
   onDeletePlannedTask?: (taskId: UniqueIdentifier) => void;
+  onChangeTasks: (items: Items) => void;
 }) => {
   const [clonedItems, setClonedItems] = useState<Items | null>(null);
   const setHover = useHoverStore((s) => s.setHover);
@@ -61,8 +63,8 @@ const useDrag = ({
 
     recentlyMovedToNewContainer.current = true;
 
-    setItems((prev) =>
-      prev.map((cat) => {
+    setItems((prev) => {
+      const updated = prev.map((cat) => {
         if (cat.id === activeCategory.id) {
           return {
             ...cat,
@@ -82,8 +84,10 @@ const useDrag = ({
           };
         }
         return cat;
-      })
-    );
+      });
+      onChangeTasks(updated);
+      return updated;
+    });
   };
 
   const onDragEnd = (active: Active, over: Over | null) => {
@@ -95,7 +99,11 @@ const useDrag = ({
       const newIndex = items.findIndex((cat) => cat.id === over.id);
 
       if (oldIndex !== newIndex) {
-        setItems((prev) => arrayMove(prev, oldIndex, newIndex));
+        setItems((prev) => {
+          const updated = arrayMove(prev, oldIndex, newIndex);
+          onChangeTasks(updated);
+          return updated;
+        });
       }
 
       setActiveId(null);
@@ -117,8 +125,8 @@ const useDrag = ({
       }
 
       // Видалити задачу
-      setItems((prev) =>
-        prev.map((cat) =>
+      setItems((prev) => {
+        const updated = prev.map((cat) =>
           cat.id === activeCategory.id
             ? {
                 ...cat,
@@ -130,8 +138,10 @@ const useDrag = ({
                 }),
               }
             : cat
-        )
-      );
+        );
+        onChangeTasks(updated);
+        return updated;
+      });
 
       setActiveId(null);
       return;
@@ -150,16 +160,18 @@ const useDrag = ({
       const overIndex = overCategory.tasks.findIndex((t) => t.id === over.id);
 
       if (activeIndex !== overIndex) {
-        setItems((prev) =>
-          prev.map((cat) =>
+        setItems((prev) => {
+          const updated = prev.map((cat) =>
             cat.id === activeCategory.id
               ? {
                   ...cat,
                   tasks: arrayMove(cat.tasks, activeIndex, overIndex),
                 }
               : cat
-          )
-        );
+          );
+          onChangeTasks(updated);
+          return updated;
+        });
       }
     }
 

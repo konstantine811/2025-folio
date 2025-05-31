@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { FixedSizeList as List } from "react-window";
 import {
@@ -63,7 +63,7 @@ interface Props {
   getItemStyles?: GetItemStyles;
   wrapperStyle?(args: { index: number }): React.CSSProperties;
   itemCount?: number;
-  items?: Items;
+  items: Items;
   handle?: boolean;
   renderItem?: (args: RenderItemProps) => React.ReactElement;
   strategy?: SortingStrategy;
@@ -74,7 +74,7 @@ interface Props {
   vertical?: boolean;
   templated?: boolean;
   testedCount?: number;
-  onChangeTasks?: (items: Items) => void;
+  onChangeTasks: (items: Items) => void;
   onEditPlannedTask?: (task: ItemTask) => void;
   onDeletePlannedTask?: (taskId: string) => void;
 }
@@ -105,7 +105,7 @@ export function MultipleContainers({
   onDeletePlannedTask,
 }: Props) {
   const [t] = useTranslation();
-  const [items, setItems] = useState<Items>(() => initialItems ?? []);
+  const [items, setItems] = useState<Items>(initialItems);
   const sH = useHeaderSizeStore((s) => s.size);
 
   const [containers, setContainers] = useState<UniqueIdentifier[]>(
@@ -120,7 +120,6 @@ export function MultipleContainers({
   const recentlyMovedToNewContainer = useRef(false);
   const isSortingContainer = activeId ? containers.includes(activeId) : false;
   const taskTimeDone = useTaskManager((s) => s.updatedTask);
-  const [hasInitialized, setHasInitialized] = useState(false);
   const collisionDetectionStrategy: CollisionDetection =
     useCollisionDectionStrategy({
       activeId,
@@ -136,6 +135,7 @@ export function MultipleContainers({
     setActiveId,
     activeId,
     onDeletePlannedTask,
+    onChangeTasks,
   });
 
   const { handleAddColumn, handleRemove } = useCategoryHandle({
@@ -144,30 +144,23 @@ export function MultipleContainers({
     setContainers,
     activeId,
     onDeletePlannedTask,
+    onChangeTasks,
   });
-  const updateTaskTime = (taskId: UniqueIdentifier, newTimeDone: number) => {
-    setItems((prev) =>
-      prev.map((container) => ({
-        ...container,
-        tasks: container.tasks.map((task) =>
-          task.id === taskId ? { ...task, timeDone: newTimeDone } : task
-        ),
-      }))
-    );
-  };
-
-  useEffect(() => {
-    if (initialItems) {
-      setItems(initialItems);
-      setHasInitialized(true); // ✅
-    }
-  }, [initialItems]);
-
-  useEffect(() => {
-    if (hasInitialized) {
-      onChangeTasks(items);
-    }
-  }, [items, hasInitialized, onChangeTasks]);
+  const updateTaskTime = useCallback(
+    (taskId: UniqueIdentifier, newTimeDone: number) => {
+      setItems((prev) => {
+        const updated = prev.map((container) => ({
+          ...container,
+          tasks: container.tasks.map((task) =>
+            task.id === taskId ? { ...task, timeDone: newTimeDone } : task
+          ),
+        }));
+        onChangeTasks(updated);
+        return updated;
+      });
+    },
+    [onChangeTasks]
+  );
 
   useEffect(() => {
     if (testedCount) {
@@ -191,7 +184,7 @@ export function MultipleContainers({
     if (taskTimeDone) {
       updateTaskTime(taskTimeDone.id, taskTimeDone?.timeDone);
     }
-  }, [taskTimeDone]);
+  }, [taskTimeDone, updateTaskTime]);
 
   const sensors = useSensors(
     useSensor(MouseSensor),
@@ -201,49 +194,80 @@ export function MultipleContainers({
     })
   );
 
-  const handleToggleTask = (taskId: UniqueIdentifier, newIsDone: boolean) => {
-    setItems((prevItems) =>
-      prevItems.map((container) => ({
-        ...container,
-        tasks: container.tasks.map((t) =>
-          t.id === taskId ? { ...t, isDone: newIsDone } : t
-        ),
-      }))
-    );
-  };
+  const handleToggleTask = useCallback(
+    (taskId: UniqueIdentifier, newIsDone: boolean) => {
+      setItems((prevItems) => {
+        const updated = prevItems.map((container) => ({
+          ...container,
+          tasks: container.tasks.map((t) =>
+            t.id === taskId ? { ...t, isDone: newIsDone } : t
+          ),
+        }));
+        onChangeTasks(updated);
+        return updated;
+      });
+    },
+    [onChangeTasks]
+  );
 
-  const handleAddTask = (newTask: ItemTask, id: UniqueIdentifier) => {
-    if (!setItems) return;
-    setItems((prev) =>
-      prev.map((category) =>
-        category.id === id
-          ? { ...category, tasks: [...category.tasks, newTask] }
-          : category
-      )
-    );
-  };
+  const handleAddTask = useCallback(
+    (newTask: ItemTask, id: UniqueIdentifier) => {
+      console.log("handleAddTask", newTask, id);
+      if (!setItems) return;
+      setItems((prev) => {
+        const updated = prev.map((category) =>
+          category.id === id
+            ? { ...category, tasks: [...category.tasks, newTask] }
+            : category
+        );
+        onChangeTasks(updated);
+        return updated;
+      });
+    },
+    [onChangeTasks]
+  );
 
-  const handleEditTask = (
-    editTask: ItemTask,
-    containerId: UniqueIdentifier
-  ) => {
-    if (onEditPlannedTask && editTask.isPlanned) {
-      onEditPlannedTask(editTask);
-    }
-    setItems((prevItems) =>
-      prevItems.map((container) => {
-        if (container.id === containerId) {
-          return {
-            ...container,
-            tasks: container.tasks.map((task) =>
-              task.id === editTask.id ? { ...editTask } : task
-            ),
-          };
-        }
-        return container;
-      })
-    );
-  };
+  const handleEditTask = useCallback(
+    (editTask: ItemTask, containerId: UniqueIdentifier) => {
+      if (onEditPlannedTask && editTask.isPlanned) {
+        onEditPlannedTask(editTask);
+      }
+      setItems((prevItems) => {
+        const updated = prevItems.map((container) => {
+          if (container.id === containerId) {
+            return {
+              ...container,
+              tasks: container.tasks.map((task) =>
+                task.id === editTask.id ? { ...editTask } : task
+              ),
+            };
+          }
+          return container;
+        });
+        onChangeTasks(updated);
+        return updated;
+      });
+    },
+    [onEditPlannedTask, onChangeTasks]
+  );
+
+  const handleChangeCategory = useCallback(
+    (value: string, id: UniqueIdentifier) => {
+      setItems((prev) => {
+        const updated = prev.map((cat) =>
+          cat.id === id ? { ...cat, title: value } : cat
+        );
+        onChangeTasks(updated);
+        return updated;
+      });
+      setContainers((prev) =>
+        prev.map(
+          (containerId) => (id === id ? id : containerId) // ❗️не міняємо ID, просто оновили title вже в items
+        )
+      );
+    },
+    [onChangeTasks]
+  );
 
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -259,8 +283,12 @@ export function MultipleContainers({
         containerId={addTaskContainerId}
         task={editTask}
         templated={templated}
-        onChangeTask={(task, containerId) => {
-          if (task && containerId) {
+        onChangeTask={(task, containerId, isEdit) => {
+          if (!containerId) {
+            console.error("Container ID is required for task operations.");
+            return;
+          }
+          if (isEdit) {
             handleEditTask(task, containerId);
           } else if (containerId) {
             handleAddTask(task, containerId);
@@ -321,7 +349,6 @@ export function MultipleContainers({
                 label={minimal ? undefined : category.title}
                 columns={columns}
                 items={category.tasks}
-                setItems={setItems}
                 scrollable={scrollable}
                 style={containerStyle}
                 options={CATEGORY_OPTIONS}
@@ -329,7 +356,9 @@ export function MultipleContainers({
                   setAddTaskContainerId(id);
                   setIsDialogOpen(true);
                 }}
-                setContainers={setContainers}
+                onChangeCategory={(value) =>
+                  handleChangeCategory(value, category.id)
+                }
                 {...(minimal ? { unstyled: true } : {})}
                 onRemove={() => handleRemove(category.id)}
               >
