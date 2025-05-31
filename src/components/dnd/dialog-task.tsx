@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useHoverStore } from "@/storage/hoverStore";
-import { ItemTask, Priority } from "@/types/drag-and-drop.model";
+import { DayNumber, ItemTask, Priority } from "@/types/drag-and-drop.model";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import { getRandomFromTo } from "@/utils/random";
 import { useEffect, useState } from "react";
@@ -47,11 +47,20 @@ const DialogTask = ({
 }) => {
   const [t] = useTranslation();
   const setHover = useHoverStore((s) => s.setHover);
+  const weekDays = Array.from({ length: 7 }, (_, i) => i + 1) as DayNumber[];
+  const [selectedDays, setSelectedDays] = useState<DayNumber[]>(weekDays);
   const [title, setTitle] = useState<string>("");
   const [priority, setPriority] = useState<Priority>(Priority.LOW);
   const [time, setTime] = useState<number>(0);
   const [wastedTime, setWastedTime] = useState<number>(0);
   const [translateRandom, setTranslateRandom] = useState(1);
+
+  function toggleDay(day: DayNumber) {
+    setSelectedDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+    );
+  }
+
   const handleCreateTask = () => {
     if (title.trim() === "") return;
     if (task) {
@@ -87,6 +96,7 @@ const DialogTask = ({
       setPriority(task.priority);
       setTime(task.time);
       setWastedTime(task.timeDone);
+      setSelectedDays(task.whenDo || []);
     } else {
       reset();
     }
@@ -260,6 +270,29 @@ const DialogTask = ({
                   </>
                 )}
               </div>
+              {templated && (
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                  <Label className="text-right">
+                    {t("task_manager.dialog_create_task.task.time.when_day")}
+                  </Label>
+                  <div className="col-span-3 flex items-center justify-center gap-1">
+                    {weekDays.map((day) => (
+                      <Button
+                        key={day}
+                        variant={"ghost"}
+                        onClick={() => toggleDay(day as DayNumber)}
+                        className={`w-7 h-8 rounded-full border hover:bg-foreground/40 border-foreground/10 transition-all duration-200 ${
+                          selectedDays.includes(day as DayNumber)
+                            ? "bg-foreground text-background border-accent"
+                            : "bg-transparent text-foreground/30 border-foreground/30 "
+                        }`}
+                      >
+                        {t(`task_manager.day_names.${day}`)}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div>
                 <div className="flex gap-1 justify-end">
                   <SoundHoverElement

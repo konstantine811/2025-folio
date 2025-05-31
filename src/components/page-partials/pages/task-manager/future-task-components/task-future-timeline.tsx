@@ -6,6 +6,7 @@ import {
   getPriorityClassForegroundText,
 } from "@/components/dnd/utils/dnd.utils";
 import { cn } from "@/lib/utils";
+import { UniqueIdentifier } from "@dnd-kit/core";
 
 const TaskFutureTimeline = ({
   tasks,
@@ -14,7 +15,7 @@ const TaskFutureTimeline = ({
 }: {
   tasks: ItemTaskCategory[];
   onEditTask?: (task: ItemTaskCategory) => void;
-  onDeleteTask?: (id: string) => void;
+  onDeleteTask?: (id: UniqueIdentifier) => void;
 }) => {
   const sortedTasks = [...tasks].sort((a, b) => a.time - b.time);
   return (

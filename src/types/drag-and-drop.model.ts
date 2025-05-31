@@ -16,6 +16,7 @@ export interface ItemTask {
   timeDone: number;
   priority: Priority; // фактично витрачено (аналогічно)
   isPlanned?: boolean; // чи заплановано
+  whenDo?: DayNumber[]; // дні тижня, коли планується виконання
 }
 
 export interface ItemTaskCategory extends ItemTask {
@@ -27,6 +28,8 @@ export enum Priority {
   MEDIUM = "medium",
   HIGH = "high",
 }
+
+export type DayNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 export interface GetItemStylesArgs {
   value: UniqueIdentifier;

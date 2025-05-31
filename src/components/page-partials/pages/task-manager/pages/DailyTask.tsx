@@ -15,6 +15,7 @@ import { FirebaseCollection } from "@/config/firebase.config";
 import { ItemTask, ItemTaskCategory } from "@/types/drag-and-drop.model";
 import { DailyTaskContext } from "../hooks/useDailyTask";
 import { isFutureDate } from "@/utils/date.util";
+import { UniqueIdentifier } from "@dnd-kit/core";
 
 const DailyTask = () => {
   const mdSize = useIsAdoptive();
@@ -53,7 +54,7 @@ const DailyTask = () => {
   );
 
   const deletePlannedTask = useCallback(
-    (taskId: string) => {
+    (taskId: UniqueIdentifier) => {
       if (!plannedTasks || !date) return;
 
       const updated = plannedTasks.filter((task) => task.id !== taskId);

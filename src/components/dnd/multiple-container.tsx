@@ -76,7 +76,7 @@ interface Props {
   testedCount?: number;
   onChangeTasks: (items: Items) => void;
   onEditPlannedTask?: (task: ItemTask) => void;
-  onDeletePlannedTask?: (taskId: string) => void;
+  onDeletePlannedTask?: (taskId: UniqueIdentifier) => void;
 }
 
 const TASK_ITEM_HEIGHT = 72;

@@ -66,6 +66,15 @@
         "description": "Set your daily activity goal."
       }
     },
+    "day_names": {
+      "1": "Mon",
+      "2": "Tue",
+      "3": "Wed",
+      "4": "Thu",
+      "5": "Fri",
+      "6": "Sat",
+      "7": "Sun"
+    },
     "dialog_create_task": {
       "task": {
         "title": {
@@ -76,6 +85,7 @@
           "label": "Planned Time",
           "wasted_time": "Wasted Time",
           "remaining_time": "Remaining Time",
+          "when_day": "When to do?",
           "hours": "Hours",
           "minutes": "Minutes",
           "description": "How much time do you want to dedicate to this task?"

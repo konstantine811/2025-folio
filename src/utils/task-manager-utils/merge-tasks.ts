@@ -1,4 +1,5 @@
 import { Items, ItemTask, ItemTaskCategory } from "@/types/drag-and-drop.model";
+import { UniqueIdentifier } from "@dnd-kit/core";
 
 // Мердж задач по ID
 export function mergeItemsDeep(base: Items, incoming: Items): Items {
@@ -6,16 +7,19 @@ export function mergeItemsDeep(base: Items, incoming: Items): Items {
     string,
     { task: ItemTask; categoryId: string; categoryTitle: string }
   >();
-  const categoryMap = new Map<string, { id: string; title: string }>();
+  const categoryMap = new Map<
+    UniqueIdentifier,
+    { id: UniqueIdentifier; title: string }
+  >();
 
   // Додаємо базові категорії й задачі
   for (const category of base) {
     categoryMap.set(category.id, { id: category.id, title: category.title });
 
     for (const task of category.tasks) {
-      flatTaskMap.set(task.id, {
+      flatTaskMap.set(task.id.toString(), {
         task: { ...task },
-        categoryId: category.id,
+        categoryId: category.id.toString(),
         categoryTitle: category.title,
       });
     }
@@ -28,16 +32,17 @@ export function mergeItemsDeep(base: Items, incoming: Items): Items {
     }
 
     for (const task of category.tasks) {
-      if (flatTaskMap.has(task.id)) {
-        const existing = flatTaskMap.get(task.id)!;
-        flatTaskMap.set(task.id, {
+      const taskId = task.id.toString();
+      if (flatTaskMap.has(taskId)) {
+        const existing = flatTaskMap.get(taskId)!;
+        flatTaskMap.set(taskId, {
           ...existing,
           task: { ...existing.task, ...task }, // merge fields
         });
       } else {
-        flatTaskMap.set(task.id, {
+        flatTaskMap.set(taskId, {
           task: { ...task },
-          categoryId: category.id,
+          categoryId: category.id.toString(),
           categoryTitle: category.title,
         });
       }
