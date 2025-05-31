@@ -24,6 +24,7 @@ import { UniqueIdentifier } from "@dnd-kit/core";
 import { X } from "lucide-react";
 import WrapperHoverElement from "../ui-abc/wrapper-hover-element";
 import { createTask } from "./utils/createTask";
+import TimePicker from "@/components/ui-abc/select/select-time";
 
 const DialogTask = ({
   onChangeTask,
@@ -221,23 +222,42 @@ const DialogTask = ({
                     </SelectContent>
                   </Select>
                 </div>
-                <TimePickerInputs
-                  title={t("task_manager.dialog_create_task.task.time.label")}
-                  time={time}
-                  onChange={(value) => {
-                    setTime(value);
-                  }}
-                />
-                {task && !templated && (
-                  <TimePickerInputs
-                    title={t(
-                      "task_manager.dialog_create_task.task.time.wasted_time"
+                {task?.isPlanned ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                    <Label htmlFor="time" className="text-right">
+                      {t("task_manager.dialog_create_task.task.time.label")}
+                    </Label>
+                    <TimePicker
+                      className="col-span-3"
+                      onChange={(time) => {
+                        setTime(time);
+                      }}
+                      time={task ? task.time : 0}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <TimePickerInputs
+                      title={t(
+                        "task_manager.dialog_create_task.task.time.label"
+                      )}
+                      time={time}
+                      onChange={(value) => {
+                        setTime(value);
+                      }}
+                    />
+                    {task && !templated && (
+                      <TimePickerInputs
+                        title={t(
+                          "task_manager.dialog_create_task.task.time.wasted_time"
+                        )}
+                        time={wastedTime}
+                        onChange={(value) => {
+                          setWastedTime(value);
+                        }}
+                      />
                     )}
-                    time={wastedTime}
-                    onChange={(value) => {
-                      setWastedTime(value);
-                    }}
-                  />
+                  </>
                 )}
               </div>
               <div>

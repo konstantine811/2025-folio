@@ -3,16 +3,19 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { formatSeconds } from "@/utils/time.util";
 
 const TaskLocalTimeStatic = ({
   timeInSeconds,
   revert = false,
   tooltipText,
+  isPlanned = false,
 }: {
   timeInSeconds: number;
   revert?: boolean;
   tooltipText?: string;
+  isPlanned?: boolean;
 }) => {
   const isNegative = timeInSeconds < 0;
   const { hours, minutes } = formatSeconds(Math.abs(timeInSeconds));
@@ -21,9 +24,13 @@ const TaskLocalTimeStatic = ({
     <Tooltip>
       <TooltipTrigger asChild>
         <div
-          className={`flex items-center gap-0.5 font-mono text-xs relative ${
-            isNegative ? "text-destructive/70" : "text-accent/70"
-          } ${!revert && "text-muted-foreground"}`}
+          className={cn(
+            `flex items-center gap-0.5 font-mono text-xs relative ${
+              isNegative ? "text-destructive/70" : "text-accent/70"
+            } ${!revert && "text-muted-foreground"} ${
+              isPlanned && "text-red-400"
+            }`
+          )}
         >
           {revert && isNegative && <span className="absolute -left-2">-</span>}
           <span>{String(hours).padStart(2, "0")}</span>

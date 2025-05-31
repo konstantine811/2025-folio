@@ -199,15 +199,24 @@ export function MultipleContainers({
       setItems((prevItems) => {
         const updated = prevItems.map((container) => ({
           ...container,
-          tasks: container.tasks.map((t) =>
-            t.id === taskId ? { ...t, isDone: newIsDone } : t
-          ),
+          tasks: container.tasks.map((t) => {
+            if (t.id === taskId) {
+              const updated = { ...t, isDone: newIsDone };
+              if (updated.isPlanned) {
+                onEditPlannedTask?.(updated);
+              }
+              return updated;
+            } else {
+              // Якщо це не той таск, то просто повертаємо його без змін
+              return t;
+            }
+          }),
         }));
         onChangeTasks(updated);
         return updated;
       });
     },
-    [onChangeTasks]
+    [onChangeTasks, onEditPlannedTask]
   );
 
   const handleAddTask = useCallback(

@@ -5,6 +5,7 @@ import {
   getPriorityClassBg,
   getPriorityClassForegroundText,
 } from "@/components/dnd/utils/dnd.utils";
+import { cn } from "@/lib/utils";
 
 const TaskFutureTimeline = ({
   tasks,
@@ -26,12 +27,17 @@ const TaskFutureTimeline = ({
               key={task.id}
               className="relative flex items-center w-full gap-3"
             >
+              {task.isDone && (
+                <div className="z-20 absolute left-0 top-[calc(50%+10px)] w-full h-0.5 bg-destructive/30" />
+              )}
               {/* Кружечок */}
               <div className="flex flex-col items-center mt-5 relative z-10">
                 <div
-                  className={`py-0 px-2 rounded-full border-2 border-accent ${getPriorityClassBg(
-                    task.priority
-                  )}`}
+                  className={cn(
+                    `py-0 px-2 rounded-full transition-all ${getPriorityClassBg(
+                      task.priority
+                    )} ${task.isDone ? "opacity-20" : ""}`
+                  )}
                 >
                   <span
                     className={`text-sm ${getPriorityClassForegroundText(

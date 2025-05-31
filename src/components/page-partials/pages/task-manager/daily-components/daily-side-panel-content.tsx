@@ -9,14 +9,14 @@ const DailySidePanelContent = () => {
   return (
     <div className="flex flex-col gap-4">
       <DailyCalendar />
-      <div>
-        <h3 className="text-md font-medium">
-          {t("task_manager.planned_tasks")}
-        </h3>
-        {plannedTasks && plannedTasks.length > 0 && (
+      {plannedTasks && plannedTasks.length > 0 && (
+        <div>
+          <h3 className="text-md font-medium">
+            {t("task_manager.planned_tasks")}
+          </h3>
           <TaskFutureTimeline tasks={plannedTasks} />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

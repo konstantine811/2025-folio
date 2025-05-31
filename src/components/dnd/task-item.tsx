@@ -13,6 +13,9 @@ import WrapperHoverElement from "../ui-abc/wrapper-hover-element";
 import { Button } from "../ui/button";
 import { Settings2 } from "lucide-react";
 import { useState } from "react";
+
+import TaskLocalTimeStatic from "./task-local-time-static";
+import { useTranslation } from "react-i18next";
 export function TaskItem({
   index = "",
   task,
@@ -34,6 +37,7 @@ export function TaskItem({
   style?: React.CSSProperties; // ✅ додали
 }) {
   const [isPlay, setIsPlay] = useState(false);
+  const [t] = useTranslation();
   const hasLongWord = task.title.split(" ").some((word) => word.length > 40); // можна змінити 20 на поріг
   return (
     <div
@@ -98,7 +102,21 @@ export function TaskItem({
         <div className="flex items-center gap-2">
           {!dragging && (
             <>
-              <TaskPlay templated={templated} onPlay={setIsPlay} task={task} />
+              {task.isPlanned ? (
+                <TaskLocalTimeStatic
+                  timeInSeconds={task.time}
+                  isPlanned={!task.isDone}
+                  tooltipText={t(
+                    "task_manager.dialog_create_task.task.time.label"
+                  )}
+                />
+              ) : (
+                <TaskPlay
+                  templated={templated}
+                  onPlay={setIsPlay}
+                  task={task}
+                />
+              )}
               {onEditTask && (
                 <WrapperHoverElement>
                   <SoundHoverElement

@@ -6,6 +6,7 @@ import { getPriorityClassByPrefix } from "@/components/dnd/utils/dnd.utils";
 import WrapperHoverElement from "@/components/ui-abc/wrapper-hover-element";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 export function TaskItemFuture({
   task,
@@ -20,7 +21,13 @@ export function TaskItemFuture({
   const hasLongWord = task.title.split(" ").some((word) => word.length > 40); // можна змінити 20 на поріг
   const [t] = useTranslation();
   return (
-    <div className={`relative group rounded-xl border mt-6`}>
+    <div
+      className={cn(
+        `relative group rounded-xl transition-all  mt-6 ${
+          task.isDone ? "opacity-30" : ""
+        }`
+      )}
+    >
       <h6 className="absolute -top-5 left-5 bg-accent/30 backdrop-blur-sm px-3 rounded-full border border-foreground/10">
         {t(task.categoryName)}
       </h6>
