@@ -238,15 +238,17 @@ const DialogFeatureTask = ({
                     time={task ? task.time : 0}
                   />
                 </div>
-                <TimePickerInputs
-                  title={t(
-                    "task_manager.dialog_create_task.task.time.wasted_planned_time"
-                  )}
-                  time={timeDone}
-                  onChange={(value) => {
-                    setTimeDone(value);
-                  }}
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
+                  <TimePickerInputs
+                    title={t(
+                      "task_manager.dialog_create_task.task.time.wasted_planned_time"
+                    )}
+                    time={timeDone}
+                    onChange={(value) => {
+                      setTimeDone(value);
+                    }}
+                  />
+                </div>
               </div>
               <div>
                 <div className="flex gap-1 justify-end">

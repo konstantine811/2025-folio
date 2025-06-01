@@ -47,8 +47,8 @@ export function TimePickerInputs({
   }, [hours, minutes, onChange]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
-      {title && <Label className="text-right">{title}:</Label>}
+    <>
+      {title && <Label className="text-right">{title}</Label>}
       <div className="col-span-3 flex gap-1">
         <div className="flex flex-col items-center space-y-1">
           <Label htmlFor="hours" className="text-xs text-foreground/50">
@@ -78,6 +78,6 @@ export function TimePickerInputs({
           />
         </div>
       </div>
-    </div>
+    </>
   );
 }

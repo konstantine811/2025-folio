@@ -54,6 +54,7 @@
     "delete": "Delete Task",
     "complete": "Complete Task",
     "drag_task_here": "Drag task here",
+
     "incomplete": "Incomplete Task",
     "completed": "Completed Tasks",
     "incomplete_tasks": "Incomplete Tasks",
@@ -89,6 +90,8 @@
           "when_day": "When to do?",
           "hours": "Hours",
           "minutes": "Minutes",
+          "is_determined_task": "At a specific time",
+          "count_time": "How much time do you need?",
           "description": "How much time do you want to dedicate to this task?"
         },
         "priority": {

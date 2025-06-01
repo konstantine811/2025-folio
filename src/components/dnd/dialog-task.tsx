@@ -17,6 +17,8 @@ import { createTask } from "./utils/createTask";
 import TimePicker from "@/components/ui-abc/select/select-time";
 import LabelTextArea from "../ui-abc/dialog/task/label-text-area";
 import LabelSelectOption from "../ui-abc/dialog/task/label-select-option";
+import LabelSelectWeek from "../ui-abc/dialog/task/label-select-week";
+import LabelCheckData from "../ui-abc/dialog/task/label-check-data";
 
 const DialogTask = ({
   onChangeTask,
@@ -46,7 +48,7 @@ const DialogTask = ({
   const [time, setTime] = useState<number>(0);
   const [wastedTime, setWastedTime] = useState<number>(0);
   const [translateRandom, setTranslateRandom] = useState(1);
-  // const [isDetermined, setIsDetermined] = useState<boolean>(false);
+  const [isDetermined, setIsDetermined] = useState<boolean>(false);
 
   function toggleDay(day: DayNumber) {
     setSelectedDays((prev) =>
@@ -65,6 +67,7 @@ const DialogTask = ({
           time,
           timeDone: wastedTime,
           whenDo: selectedDays,
+          isDetermined,
         },
         containerId,
         true
@@ -76,7 +79,8 @@ const DialogTask = ({
         time,
         false,
         wastedTime,
-        selectedDays
+        selectedDays,
+        isDetermined
       );
       onChangeTask(newTask, containerId, false);
     }
@@ -98,6 +102,7 @@ const DialogTask = ({
       setTime(task.time);
       setWastedTime(task.timeDone);
       setSelectedDays(task.whenDo || []);
+      setIsDetermined(task.isDetermined || false);
     } else {
       reset();
     }
@@ -232,50 +237,89 @@ const DialogTask = ({
                   </>
                 ) : (
                   <>
-                    <TimePickerInputs
-                      title={t(
-                        "task_manager.dialog_create_task.task.time.label"
-                      )}
-                      time={time}
-                      onChange={(value) => {
-                        setTime(value);
-                      }}
-                    />
-                    {task && !templated && (
-                      <TimePickerInputs
-                        title={t(
-                          "task_manager.dialog_create_task.task.time.wasted_time"
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
+                      <LabelCheckData
+                        id="is_determined_task"
+                        label={t(
+                          "task_manager.dialog_create_task.task.time.is_determined_task"
                         )}
-                        time={wastedTime}
-                        onChange={(value) => {
-                          setWastedTime(value);
+                        onCheckedChange={() => {
+                          setIsDetermined((prev) => {
+                            setTime(0);
+                            setWastedTime(0);
+                            return !prev;
+                          });
                         }}
+                        checked={isDetermined}
                       />
+                    </div>
+                    {isDetermined && (
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
+                          <Label htmlFor="time" className="text-right">
+                            {t(
+                              "task_manager.dialog_create_task.task.time.label"
+                            )}
+                          </Label>
+                          <TimePicker
+                            className="col-span-3"
+                            onChange={(time) => {
+                              setTime(time);
+                            }}
+                            time={task ? task.time : 0}
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
+                          <TimePickerInputs
+                            title={t(
+                              "task_manager.dialog_create_task.task.time.count_time"
+                            )}
+                            time={wastedTime}
+                            onChange={(value) => {
+                              setWastedTime(value);
+                            }}
+                          />
+                        </div>
+                      </>
+                    )}
+                    {!isDetermined && (
+                      <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
+                        <TimePickerInputs
+                          title={t(
+                            "task_manager.dialog_create_task.task.time.label"
+                          )}
+                          time={time}
+                          onChange={(value) => {
+                            setTime(value);
+                          }}
+                        />
+                      </div>
+                    )}
+                    {task && !templated && (
+                      <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
+                        <TimePickerInputs
+                          title={t(
+                            "task_manager.dialog_create_task.task.time.wasted_time"
+                          )}
+                          time={wastedTime}
+                          onChange={(value) => {
+                            setWastedTime(value);
+                          }}
+                        />
+                      </div>
                     )}
                   </>
                 )}
               </div>
               {templated && (
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
-                  <Label className="text-right">
-                    {t("task_manager.dialog_create_task.task.time.when_day")}
-                  </Label>
-                  <div className="col-span-3 flex items-center justify-center gap-1">
-                    {weekDays.map((day) => (
-                      <Button
-                        key={day}
-                        variant={"ghost"}
-                        onClick={() => toggleDay(day as DayNumber)}
-                        className={`w-7 h-8 rounded-full border hover:bg-foreground/40 border-foreground/10 transition-all duration-200 ${
-                          selectedDays.includes(day as DayNumber)
-                            ? "bg-foreground text-background border-accent"
-                            : "bg-transparent text-foreground/30 border-foreground/30 "
-                        }`}
-                      >
-                        {t(`task_manager.day_names.${day}`)}
-                      </Button>
-                    ))}
-                  </div>
+                  <LabelSelectWeek
+                    weekData={weekDays}
+                    selectedDays={selectedDays}
+                    label={"task_manager.dialog_create_task.task.time.when_day"}
+                    prefixWeedDay={"task_manager.day_names"}
+                    toggleDay={toggleDay}
+                  />
                 </div>
               )}
               <div className="flex gap-1 justify-end">
