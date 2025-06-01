@@ -269,17 +269,19 @@ const DialogTask = ({
                             time={task ? task.time : 0}
                           />
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
-                          <TimePickerInputs
-                            title={t(
-                              "task_manager.dialog_create_task.task.time.count_time"
-                            )}
-                            time={wastedTime}
-                            onChange={(value) => {
-                              setWastedTime(value);
-                            }}
-                          />
-                        </div>
+                        {templated && (
+                          <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
+                            <TimePickerInputs
+                              title={t(
+                                "task_manager.dialog_create_task.task.time.count_time"
+                              )}
+                              time={wastedTime}
+                              onChange={(value) => {
+                                setWastedTime(value);
+                              }}
+                            />
+                          </div>
+                        )}
                       </>
                     )}
                     {!isDetermined && (

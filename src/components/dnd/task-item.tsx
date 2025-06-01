@@ -16,6 +16,7 @@ import { useState } from "react";
 
 import TaskLocalTimeStatic from "./task-local-time-static";
 import { useTranslation } from "react-i18next";
+import TaskDeterminedTime from "./task-components/task-determined-time";
 export function TaskItem({
   index = "",
   task,
@@ -136,11 +137,25 @@ export function TaskItem({
                   )}
                 </div>
               ) : (
-                <TaskPlay
-                  templated={templated}
-                  onPlay={setIsPlay}
-                  task={task}
-                />
+                <>
+                  {task.isDetermined ? (
+                    <TaskDeterminedTime
+                      task={task}
+                      titleDeterminedTime={t(
+                        "task_manager.dialog_create_task.task.time.on_time"
+                      )}
+                      titleSpendingTime={t(
+                        "task_manager.dialog_create_task.task.time.wasted_time"
+                      )}
+                    />
+                  ) : (
+                    <TaskPlay
+                      templated={templated}
+                      onPlay={setIsPlay}
+                      task={task}
+                    />
+                  )}
+                </>
               )}
               {onEditTask && (
                 <WrapperHoverElement>

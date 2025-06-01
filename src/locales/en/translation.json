@@ -91,6 +91,7 @@
           "hours": "Hours",
           "minutes": "Minutes",
           "is_determined_task": "At a specific time",
+          "on_time": "At this hour",
           "count_time": "How much time do you need?",
           "description": "How much time do you want to dedicate to this task?"
         },
