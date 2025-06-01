@@ -1,7 +1,6 @@
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { Label } from "@/components/ui/label";
 import { useHoverStore } from "@/storage/hoverStore";
 import { DayNumber, ItemTask, Priority } from "@/types/drag-and-drop.model";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
@@ -19,6 +18,7 @@ import LabelTextArea from "../ui-abc/dialog/task/label-text-area";
 import LabelSelectOption from "../ui-abc/dialog/task/label-select-option";
 import LabelSelectWeek from "../ui-abc/dialog/task/label-select-week";
 import LabelCheckData from "../ui-abc/dialog/task/label-check-data";
+import LabelTooltip from "../ui-abc/dialog/task/label-tooltip";
 
 const DialogTask = ({
   onChangeTask,
@@ -213,31 +213,45 @@ const DialogTask = ({
                 </div>
                 {task?.isPlanned ? (
                   <>
-                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
-                      <Label htmlFor="time" className="text-right">
-                        {t("task_manager.dialog_create_task.task.time.label")}
-                      </Label>
-                      <TimePicker
-                        className="col-span-3"
-                        onChange={(time) => {
-                          setTime(time);
-                        }}
-                        time={task ? task.time : 0}
-                      />
+                    <div className="grid grid-cols-1 xs:grid-cols-4 items-start xs:items-center gap-4 xs:gap-4">
+                      <LabelTooltip
+                        label={t(
+                          "task_manager.dialog_create_task.task.time.determined.label"
+                        )}
+                        tooltip={t(
+                          "task_manager.dialog_create_task.task.time.determined.description"
+                        )}
+                      >
+                        <TimePicker
+                          className="col-span-3"
+                          onChange={(time) => {
+                            setTime(time);
+                          }}
+                          time={task ? task.time : 0}
+                        />
+                      </LabelTooltip>
                     </div>
-                    <TimePickerInputs
-                      title={t(
-                        "task_manager.dialog_create_task.task.time.wasted_time"
-                      )}
-                      time={wastedTime}
-                      onChange={(value) => {
-                        setWastedTime(value);
-                      }}
-                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
+                      <LabelTooltip
+                        label={t(
+                          "task_manager.dialog_create_task.task.time.wasted.label"
+                        )}
+                        tooltip={t(
+                          "task_manager.dialog_create_task.task.time.wasted.description"
+                        )}
+                      >
+                        <TimePickerInputs
+                          time={wastedTime}
+                          onChange={(value) => {
+                            setWastedTime(value);
+                          }}
+                        />
+                      </LabelTooltip>
+                    </div>
                   </>
                 ) : (
                   <>
-                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
+                    <div className="flex items-center gap-4">
                       <LabelCheckData
                         id="is_determined_task"
                         label={t(
@@ -255,59 +269,81 @@ const DialogTask = ({
                     </div>
                     {isDetermined && (
                       <>
-                        <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
-                          <Label htmlFor="time" className="text-right">
-                            {t(
-                              "task_manager.dialog_create_task.task.time.label"
+                        <div className="grid grid-cols-1 xs:grid-cols-4 items-start xs:items-center gap-4 xs:gap-4">
+                          <LabelTooltip
+                            label={t(
+                              "task_manager.dialog_create_task.task.time.determined.label"
                             )}
-                          </Label>
-                          <TimePicker
-                            className="col-span-3"
-                            onChange={(time) => {
-                              setTime(time);
-                            }}
-                            time={task ? task.time : 0}
-                          />
+                            tooltip={t(
+                              "task_manager.dialog_create_task.task.time.determined.description"
+                            )}
+                          >
+                            <TimePicker
+                              onChange={(time) => {
+                                setTime(time);
+                              }}
+                              time={task ? task.time : 0}
+                              className="col-span-3"
+                            ></TimePicker>
+                          </LabelTooltip>
                         </div>
                         {templated && (
                           <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
-                            <TimePickerInputs
-                              title={t(
-                                "task_manager.dialog_create_task.task.time.count_time"
+                            <LabelTooltip
+                              label={t(
+                                "task_manager.dialog_create_task.task.time.wasted.label"
                               )}
-                              time={wastedTime}
-                              onChange={(value) => {
-                                setWastedTime(value);
-                              }}
-                            />
+                              tooltip={t(
+                                "task_manager.dialog_create_task.task.time.wasted.description"
+                              )}
+                            >
+                              <TimePickerInputs
+                                time={wastedTime}
+                                onChange={(value) => {
+                                  setWastedTime(value);
+                                }}
+                              />
+                            </LabelTooltip>
                           </div>
                         )}
                       </>
                     )}
                     {!isDetermined && (
                       <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
-                        <TimePickerInputs
-                          title={t(
-                            "task_manager.dialog_create_task.task.time.label"
+                        <LabelTooltip
+                          label={t(
+                            "task_manager.dialog_create_task.task.time.duration.label"
                           )}
-                          time={time}
-                          onChange={(value) => {
-                            setTime(value);
-                          }}
-                        />
+                          tooltip={t(
+                            "task_manager.dialog_create_task.task.time.duration.description"
+                          )}
+                        >
+                          <TimePickerInputs
+                            time={time}
+                            onChange={(value) => {
+                              setTime(value);
+                            }}
+                          />
+                        </LabelTooltip>
                       </div>
                     )}
                     {task && !templated && (
                       <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
-                        <TimePickerInputs
-                          title={t(
-                            "task_manager.dialog_create_task.task.time.wasted_time"
+                        <LabelTooltip
+                          label={t(
+                            "task_manager.dialog_create_task.task.time.wasted.label"
                           )}
-                          time={wastedTime}
-                          onChange={(value) => {
-                            setWastedTime(value);
-                          }}
-                        />
+                          tooltip={t(
+                            "task_manager.dialog_create_task.task.time.wasted.description"
+                          )}
+                        >
+                          <TimePickerInputs
+                            time={wastedTime}
+                            onChange={(value) => {
+                              setWastedTime(value);
+                            }}
+                          />
+                        </LabelTooltip>
                       </div>
                     )}
                   </>

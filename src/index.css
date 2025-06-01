@@ -41,6 +41,7 @@
 @theme static {
   --background: var(--background);
   --animate-gradient: gradientMove 3s linear infinite;
+  --breakpoint-xs: 25rem;
 
   @keyframes gradientMove {
     0% {

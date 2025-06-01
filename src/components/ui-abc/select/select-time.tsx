@@ -97,15 +97,17 @@ const ScrollColumn = ({
   );
 };
 
+export interface TimePickerProps {
+  onChange?: (val: number) => void;
+  className?: string;
+  time?: number;
+}
+
 export const TimePickerScroll = ({
   onChange,
   className = "",
   time = 0,
-}: {
-  onChange?: (val: number) => void;
-  className?: string;
-  time?: number;
-}) => {
+}: TimePickerProps) => {
   const now = new Date();
   const [hour, setHour] = useState(String(now.getHours()).padStart(2, "0"));
   const [minute, setMinute] = useState("00");

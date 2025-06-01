@@ -30,6 +30,7 @@ import InputCombobox from "@/components/ui-abc/inputs/input-combobox";
 import { CATEGORY_OPTIONS } from "@/components/dnd/config/category-options";
 import { createTask } from "@/components/dnd/utils/createTask";
 import { TimePickerInputs } from "@/components/dnd/time-picker-inputs";
+import LabelTooltip from "@/components/ui-abc/dialog/task/label-tooltip";
 
 const DialogFeatureTask = ({
   onChangeTask,
@@ -226,28 +227,40 @@ const DialogFeatureTask = ({
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
-                  <Label htmlFor="time" className="text-right">
-                    {t("task_manager.dialog_create_task.task.time.label")}
-                  </Label>
-                  <TimePicker
-                    className="col-span-3"
-                    onChange={(time) => {
-                      setTime(time);
-                    }}
-                    time={task ? task.time : 0}
-                  />
+                <div className="grid grid-cols-1 xs:grid-cols-4 items-start xs:items-center gap-4 xs:gap-4">
+                  <LabelTooltip
+                    label={t(
+                      "task_manager.dialog_create_task.task.time.determined.label"
+                    )}
+                    tooltip={t(
+                      "task_manager.dialog_create_task.task.time.determined.description"
+                    )}
+                  >
+                    <TimePicker
+                      className="col-span-3"
+                      onChange={(time) => {
+                        setTime(time);
+                      }}
+                      time={task ? task.time : 0}
+                    />
+                  </LabelTooltip>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
-                  <TimePickerInputs
-                    title={t(
-                      "task_manager.dialog_create_task.task.time.wasted_planned_time"
+                  <LabelTooltip
+                    label={t(
+                      "task_manager.dialog_create_task.task.time.wasted.label"
                     )}
-                    time={timeDone}
-                    onChange={(value) => {
-                      setTimeDone(value);
-                    }}
-                  />
+                    tooltip={t(
+                      "task_manager.dialog_create_task.task.time.wasted.description"
+                    )}
+                  >
+                    <TimePickerInputs
+                      time={timeDone}
+                      onChange={(value) => {
+                        setTimeDone(value);
+                      }}
+                    />
+                  </LabelTooltip>
                 </div>
               </div>
               <div>

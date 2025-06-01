@@ -6,11 +6,9 @@ import { useTranslation } from "react-i18next";
 export function TimePickerInputs({
   onChange,
   time,
-  title,
 }: {
   onChange: (timeSeconds: number) => void;
   time?: number;
-  title: string;
 }) {
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
@@ -48,7 +46,6 @@ export function TimePickerInputs({
 
   return (
     <>
-      {title && <Label className="text-right">{title}</Label>}
       <div className="col-span-3 flex gap-1">
         <div className="flex flex-col items-center space-y-1">
           <Label htmlFor="hours" className="text-xs text-foreground/50">
