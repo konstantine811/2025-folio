@@ -43,9 +43,23 @@ export function TaskItem({
     <div
       style={style} // ✅ передаємо стилі для анімації
       className={`relative group rounded-xl border ${
-        isPlay ? getPriorityBorderClass(task.priority) : "border-foreground/10"
+        isPlay ? getPriorityBorderClass(task.priority) : "border-transparent"
       }`}
     >
+      {templated && (
+        <div className="mt-5">
+          <div className="absolute top-1 flex items-center w-full justify-center">
+            {task.whenDo.map((day) => (
+              <div
+                key={day}
+                className="w-5 h-5 p-1 flex items-center justify-center rounded-full border bg-background text-foreground border-foreground/30 text-[10px]"
+              >
+                {t(`task_manager.day_names.${day}`)}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div
         className="flex items-center justify-between gap-2 bg-card 
              border border-foreground/10 rounded-xl px-4 py-3 text-foreground 
