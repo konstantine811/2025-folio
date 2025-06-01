@@ -47,9 +47,9 @@ export function TimePickerInputs({
   }, [hours, minutes, onChange]);
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+    <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
       {title && <Label className="text-right">{title}:</Label>}
-      <div className="flex gap-1">
+      <div className="col-span-3 flex gap-1">
         <div className="flex flex-col items-center space-y-1">
           <Label htmlFor="hours">
             {t("task_manager.dialog_create_task.task.time.hours")}
