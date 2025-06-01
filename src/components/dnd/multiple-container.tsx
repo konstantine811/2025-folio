@@ -196,7 +196,6 @@ export function MultipleContainers({
 
   const handleAddTask = useCallback(
     (newTask: ItemTask, id: UniqueIdentifier) => {
-      console.log("handleAddTask", newTask, id);
       if (!setItems) return;
       setItems((prev) => {
         const updated = prev.map((category) =>

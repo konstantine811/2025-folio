@@ -1,18 +1,30 @@
-import { DayNumber, Items } from "@/types/drag-and-drop.model";
+import {
+  DayNumber,
+  Items,
+  ItemTaskCategory,
+} from "@/types/drag-and-drop.model";
 
 export const filterTaskByDayOfWeedk = (
   tasks: Items | null | undefined,
   dayOfWeek: DayNumber
-): Items => {
+): { filteredTasks: Items; plannedTasks: ItemTaskCategory[] } => {
   if (!tasks || tasks.length === 0) {
-    return [];
+    return { filteredTasks: [], plannedTasks: [] };
   }
-
-  return tasks
+  const taskItemsCategories: ItemTaskCategory[] = [];
+  const filteredTasks = tasks
     .map((category) => {
-      const filteredTasks = category.tasks.filter((task) =>
-        task.whenDo?.includes(dayOfWeek)
-      );
+      const filteredTasks = category.tasks.filter((task) => {
+        if (task.whenDo?.includes(dayOfWeek)) {
+          if (task.isDetermined) {
+            taskItemsCategories.push({
+              ...task,
+              categoryName: category.title,
+            });
+          }
+          return true;
+        }
+      });
 
       return {
         ...category,
@@ -20,4 +32,5 @@ export const filterTaskByDayOfWeedk = (
       };
     })
     .filter((category) => category.tasks.length > 0);
+  return { filteredTasks, plannedTasks: taskItemsCategories };
 };

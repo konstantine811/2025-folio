@@ -1,76 +1,74 @@
-import { Items, ItemTask, ItemTaskCategory } from "@/types/drag-and-drop.model";
+import {
+  Items,
+  ItemTask,
+  ItemTaskCategory,
+  NormalizedTask,
+} from "@/types/drag-and-drop.model";
 import { UniqueIdentifier } from "@dnd-kit/core";
 
 // Мердж задач по ID
 export function mergeItemsDeep(base: Items, incoming: Items): Items {
-  const flatTaskMap = new Map<
-    string,
-    { task: ItemTask; categoryId: string; categoryTitle: string }
-  >();
-  const categoryMap = new Map<
-    UniqueIdentifier,
-    { id: UniqueIdentifier; title: string }
-  >();
+  const baseN = normalizeItems(base);
+  const baseNIds = new Set(baseN.map((task) => task.id));
+  const incomingN = normalizeItems(incoming);
 
-  // Додаємо базові категорії й задачі
-  for (const category of base) {
-    categoryMap.set(category.id, { id: category.id, title: category.title });
+  incomingN.forEach((incomingTask) => {
+    if (!baseNIds.has(incomingTask.id)) {
+      // Якщо задача з incoming не існує в base, додаємо її
+      baseN.push(incomingTask);
+    }
+  });
 
+  return denormalizeItems(baseN);
+}
+
+export function normalizeItems(items: Items): NormalizedTask[] {
+  const result: NormalizedTask[] = [];
+
+  for (const category of items) {
     for (const task of category.tasks) {
-      flatTaskMap.set(task.id.toString(), {
-        task: { ...task },
+      result.push({
+        ...task,
         categoryId: category.id.toString(),
         categoryTitle: category.title,
       });
     }
   }
 
-  // Додаємо або оновлюємо задачі з incoming
-  for (const category of incoming) {
-    if (!categoryMap.has(category.id)) {
-      categoryMap.set(category.id, { id: category.id, title: category.title });
+  return result;
+}
+
+export function denormalizeItems(normalizedTasks: NormalizedTask[]): Items {
+  const map = new Map<
+    string,
+    { id: string; title: string; tasks: ItemTask[] }
+  >();
+
+  for (const task of normalizedTasks) {
+    if (!map.has(task.categoryId)) {
+      map.set(task.categoryId, {
+        id: task.categoryId,
+        title: task.categoryTitle,
+        tasks: [],
+      });
     }
 
-    for (const task of category.tasks) {
-      const taskId = task.id.toString();
-      if (flatTaskMap.has(taskId)) {
-        const existing = flatTaskMap.get(taskId)!;
-        flatTaskMap.set(taskId, {
-          ...existing,
-          task: { ...existing.task, ...task }, // merge fields
-        });
-      } else {
-        flatTaskMap.set(taskId, {
-          task: { ...task },
-          categoryId: category.id.toString(),
-          categoryTitle: category.title,
-        });
-      }
-    }
-  }
+    const { tasks } = map.get(task.categoryId)!;
 
-  // Відновлюємо структуру Items
-  const mergedMap: Map<string, ItemTask[]> = new Map();
-
-  for (const { task, categoryId } of flatTaskMap.values()) {
-    if (!mergedMap.has(categoryId)) {
-      mergedMap.set(categoryId, []);
-    }
-    mergedMap.get(categoryId)!.push(task);
-  }
-
-  const mergedItems: Items = [];
-
-  for (const [categoryId, tasks] of mergedMap.entries()) {
-    const categoryInfo = categoryMap.get(categoryId)!;
-    mergedItems.push({
-      id: categoryInfo.id,
-      title: categoryInfo.title,
-      tasks,
+    tasks.push({
+      id: task.id,
+      title: task.title,
+      isDone: task.isDone,
+      time: task.time,
+      timeDone: task.timeDone,
+      priority: task.priority,
+      isPlanned: task.isPlanned,
+      whenDo: task.whenDo,
+      isDetermined: task.isDetermined,
     });
   }
 
-  return mergedItems;
+  return Array.from(map.values());
 }
 
 export function mergeItemsWithPlannedTasks(

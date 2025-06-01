@@ -34,6 +34,7 @@ const DailyTask = () => {
   }, [date]);
   const updatePlannedTask = useCallback(
     (updatedTask: ItemTask) => {
+      //
       if (!plannedTasks) return;
       const index = plannedTasks.findIndex(
         (task) => task.id === updatedTask.id
@@ -47,7 +48,6 @@ const DailyTask = () => {
 
       const newTasks = [...plannedTasks];
       newTasks[index] = updated;
-
       setPlannedTasks(newTasks);
       if (!date) return;
       updatePlannedTasksOnServer(date, newTasks) // 🔧 реалізуй збереження
@@ -55,6 +55,32 @@ const DailyTask = () => {
           // console.info("✅ Task updated on server")
         })
         .catch((err) => console.error("❌ Failed to update task:", err));
+    },
+    [plannedTasks, date]
+  );
+
+  const addPlannedTask = useCallback(
+    (newTask: ItemTaskCategory) => {
+      if (!plannedTasks || !date) return;
+
+      const existingIndex = plannedTasks.findIndex((t) => t.id === newTask.id);
+      let newTasks: ItemTaskCategory[];
+
+      if (existingIndex !== -1) {
+        // 🔁 Оновити існуючу
+        newTasks = [...plannedTasks];
+        newTasks[existingIndex] = newTask;
+      } else {
+        // ➕ Додати нову
+        newTasks = [...plannedTasks, newTask];
+      }
+
+      setPlannedTasks(newTasks);
+      updatePlannedTasksOnServer(date, newTasks)
+        .then(() => {
+          // console.info("✅ Task added/updated on server")
+        })
+        .catch((err) => console.error("❌ Failed to save planned tasks:", err));
     },
     [plannedTasks, date]
   );
@@ -67,7 +93,9 @@ const DailyTask = () => {
 
       setPlannedTasks(updated);
       updatePlannedTasksOnServer(date, updated)
-        .then(() => console.log("🗑️ Task deleted on server"))
+        .then(() => {
+          // console.info("✅ Task deleted on server")
+        })
         .catch((err) => console.error("❌ Failed to delete task:", err));
     },
     [plannedTasks, date]
@@ -92,6 +120,7 @@ const DailyTask = () => {
         plannedTasks,
         updatePlannedTask,
         deletePlannedTask,
+        addPlannedTask,
       }}
     >
       <div

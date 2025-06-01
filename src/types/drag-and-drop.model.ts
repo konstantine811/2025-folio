@@ -20,6 +20,11 @@ export interface ItemTask {
   isDetermined?: boolean; // чи заплановано час виконання
 }
 
+export interface NormalizedTask extends ItemTask {
+  categoryId: string;
+  categoryTitle: string;
+}
+
 export interface ItemTaskCategory extends ItemTask {
   categoryName: string;
 }
