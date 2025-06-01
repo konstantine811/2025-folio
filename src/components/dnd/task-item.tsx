@@ -117,13 +117,24 @@ export function TaskItem({
           {!dragging && (
             <>
               {task.isPlanned ? (
-                <TaskLocalTimeStatic
-                  timeInSeconds={task.time}
-                  isPlanned={!task.isDone}
-                  tooltipText={t(
-                    "task_manager.dialog_create_task.task.time.label"
+                <div className="flex justify-center flex-col gap-1">
+                  <TaskLocalTimeStatic
+                    timeInSeconds={task.time}
+                    isPlanned={!task.isDone}
+                    tooltipText={t(
+                      "task_manager.dialog_create_task.task.time.label"
+                    )}
+                  />
+                  {task.isDone && (
+                    <TaskLocalTimeStatic
+                      timeInSeconds={task.timeDone}
+                      isPlanned={!task.isDone}
+                      tooltipText={t(
+                        "task_manager.dialog_create_task.task.time.wasted_time"
+                      )}
+                    />
                   )}
-                />
+                </div>
               ) : (
                 <TaskPlay
                   templated={templated}

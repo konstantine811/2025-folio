@@ -29,6 +29,7 @@ import TimePicker from "@/components/ui-abc/select/select-time";
 import InputCombobox from "@/components/ui-abc/inputs/input-combobox";
 import { CATEGORY_OPTIONS } from "@/components/dnd/config/category-options";
 import { createTask } from "@/components/dnd/utils/createTask";
+import { TimePickerInputs } from "@/components/dnd/time-picker-inputs";
 
 const DialogFeatureTask = ({
   onChangeTask,
@@ -47,6 +48,7 @@ const DialogFeatureTask = ({
   const [priority, setPriority] = useState<Priority>(Priority.LOW);
   const [categoryName, setCategoryName] = useState<string>("");
   const [time, setTime] = useState<number>(0);
+  const [timeDone, setTimeDone] = useState<number>(0);
   const handleCreateTask = () => {
     if (title.trim() === "" || categoryName.trim() === "") return;
     if (task) {
@@ -56,13 +58,14 @@ const DialogFeatureTask = ({
         title,
         priority,
         time,
+        timeDone,
         categoryName,
       };
       onChangeTask(updatedTask, categoryName);
       reset();
       return;
     }
-    const newTask = createTask(title, priority, time, true);
+    const newTask = createTask(title, priority, time, true, timeDone);
     onChangeTask(newTask, categoryName);
     reset();
     setHover(false, null, HoverStyleElement.circle);
@@ -79,6 +82,7 @@ const DialogFeatureTask = ({
       setTitle(task.title);
       setPriority(task.priority);
       setTime(task.time);
+      setTimeDone(task.timeDone);
     } else {
       reset();
     }
@@ -234,6 +238,15 @@ const DialogFeatureTask = ({
                     time={task ? task.time : 0}
                   />
                 </div>
+                <TimePickerInputs
+                  title={t(
+                    "task_manager.dialog_create_task.task.time.wasted_planned_time"
+                  )}
+                  time={timeDone}
+                  onChange={(value) => {
+                    setTimeDone(value);
+                  }}
+                />
               </div>
               <div>
                 <div className="flex gap-1 justify-end">

@@ -118,6 +118,7 @@ export const TimePickerScroll = ({
     [onChange]
   );
   useEffect(() => {
+    if (time === 0) return;
     const { hours, minutes } = paresSecondToTime(time);
     setHour(hours);
     setMinute(minutes);

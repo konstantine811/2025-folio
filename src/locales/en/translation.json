@@ -85,6 +85,7 @@
           "label": "Planned Time",
           "wasted_time": "Wasted Time",
           "remaining_time": "Remaining Time",
+          "wasted_planned_time": "Wasted Planned Time",
           "when_day": "When to do?",
           "hours": "Hours",
           "minutes": "Minutes",

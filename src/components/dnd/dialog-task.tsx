@@ -241,18 +241,29 @@ const DialogTask = ({
                   </Select>
                 </div>
                 {task?.isPlanned ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
-                    <Label htmlFor="time" className="text-right">
-                      {t("task_manager.dialog_create_task.task.time.label")}
-                    </Label>
-                    <TimePicker
-                      className="col-span-3"
-                      onChange={(time) => {
-                        setTime(time);
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                      <Label htmlFor="time" className="text-right">
+                        {t("task_manager.dialog_create_task.task.time.label")}
+                      </Label>
+                      <TimePicker
+                        className="col-span-3"
+                        onChange={(time) => {
+                          setTime(time);
+                        }}
+                        time={task ? task.time : 0}
+                      />
+                    </div>
+                    <TimePickerInputs
+                      title={t(
+                        "task_manager.dialog_create_task.task.time.wasted_time"
+                      )}
+                      time={wastedTime}
+                      onChange={(value) => {
+                        setWastedTime(value);
                       }}
-                      time={task ? task.time : 0}
                     />
-                  </div>
+                  </>
                 ) : (
                   <>
                     <TimePickerInputs
