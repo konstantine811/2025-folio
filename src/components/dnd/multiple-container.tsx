@@ -26,12 +26,7 @@ import {
 import { coordinateGetter as multipleContainersCoordinateGetter } from "./utils/multipleContainersKeyboardCoordinates";
 import { RenderItemProps } from "./item";
 import DroppableContainer from "./droppable-container";
-import {
-  GetItemStyles,
-  Priority,
-  Items,
-  ItemTask,
-} from "@/types/drag-and-drop.model";
+import { GetItemStyles, Items, ItemTask } from "@/types/drag-and-drop.model";
 import { PLACEHOLDER_ID, TRASH_ID } from "./config/dnd.config";
 import useCollisionDectionStrategy from "./hooks/useCollisionDectionStrategy";
 import { dropAnimation, getIndex } from "./utils/dnd.utils";
@@ -49,7 +44,6 @@ import { useTranslation } from "react-i18next";
 import WrapperHoverElement from "../ui-abc/wrapper-hover-element";
 import TaskTimer from "./task-timer";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
-import { createRange } from "./utils/createRange";
 import { useTaskManager } from "./context/use-task-manger-context";
 import { CATEGORY_OPTIONS } from "./config/category-options";
 import useCategoryHandle from "./hooks/useCategoryHandle";
@@ -98,7 +92,6 @@ export function MultipleContainers({
   trashable = false,
   vertical = false,
   templated = true,
-  testedCount,
   scrollable,
   onChangeTasks = () => {},
   onEditPlannedTask,
@@ -162,24 +155,6 @@ export function MultipleContainers({
     [onChangeTasks]
   );
 
-  useEffect(() => {
-    if (testedCount) {
-      setItems(
-        ["A", "B", "C", "D"].map((id) => ({
-          id,
-          title: id,
-          tasks: createRange(testedCount, (index) => ({
-            id: `${id}${index + 1}`,
-            title: `Задача ${id}${index + 1}`,
-            isDone: false,
-            time: 10000,
-            timeDone: 0,
-            priority: Priority.MEDIUM,
-          })),
-        }))
-      );
-    }
-  }, [testedCount]);
   useEffect(() => {
     if (taskTimeDone) {
       updateTaskTime(taskTimeDone.id, taskTimeDone?.timeDone);

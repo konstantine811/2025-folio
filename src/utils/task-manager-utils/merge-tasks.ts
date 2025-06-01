@@ -105,13 +105,14 @@ export function mergeItemsWithPlannedTasks(
     const exists = existingCategory.tasks.some((t) => t.id === task.id);
     if (!exists) {
       existingCategory.tasks.push({
-        id: task.id,
+        id: task.id as UniqueIdentifier,
         title: task.title,
         isDone: task.isDone,
         time: task.time,
         timeDone: task.timeDone,
         priority: task.priority,
         isPlanned: true,
+        whenDo: task.whenDo || [], // Додати whenDo, якщо він є
       });
     }
   });
