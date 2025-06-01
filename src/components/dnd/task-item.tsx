@@ -178,15 +178,6 @@ export function TaskItem({
 
           {children}
         </div>
-
-        {/* {isChecked && onDelete && (
-        <button
-          onClick={onDelete}
-          className="bg-red-500 hover:bg-red-600 transition text-white p-2 rounded-xl ml-2"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
-      )} */}
       </div>
     </div>
   );

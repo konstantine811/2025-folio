@@ -2,15 +2,6 @@ import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useHoverStore } from "@/storage/hoverStore";
 import { DayNumber, ItemTask, Priority } from "@/types/drag-and-drop.model";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
@@ -18,13 +9,14 @@ import { getRandomFromTo } from "@/utils/random";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getPriorityClassByPrefix } from "./utils/dnd.utils";
-import { Textarea } from "@/components/ui/textarea";
 import { TimePickerInputs } from "./time-picker-inputs";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { X } from "lucide-react";
 import WrapperHoverElement from "../ui-abc/wrapper-hover-element";
 import { createTask } from "./utils/createTask";
 import TimePicker from "@/components/ui-abc/select/select-time";
+import LabelTextArea from "../ui-abc/dialog/task/label-text-area";
+import LabelSelectOption from "../ui-abc/dialog/task/label-select-option";
 
 const DialogTask = ({
   onChangeTask,
@@ -54,6 +46,7 @@ const DialogTask = ({
   const [time, setTime] = useState<number>(0);
   const [wastedTime, setWastedTime] = useState<number>(0);
   const [translateRandom, setTranslateRandom] = useState(1);
+  // const [isDetermined, setIsDetermined] = useState<boolean>(false);
 
   function toggleDay(day: DayNumber) {
     setSelectedDays((prev) =>
@@ -149,7 +142,7 @@ const DialogTask = ({
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.25 }}
           >
-            <div>
+            <div className="flex flex-col gap-4">
               <div className="relative">
                 <div className="flex flex-col gap-2">
                   <h3 className="text-2xl font-semibold break-words">
@@ -181,68 +174,41 @@ const DialogTask = ({
                 </WrapperHoverElement>
               </div>
               <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
-                  <Label htmlFor="name" className="text-right">
-                    {t("task_manager.dialog_create_task.task.title.label")}
-                  </Label>
-                  <Textarea
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
+                  <LabelTextArea
+                    id="task-title"
+                    label={t(
+                      "task_manager.dialog_create_task.task.title.label"
+                    )}
                     placeholder={t(
                       "task_manager.dialog_create_task.task.title.description"
                     )}
-                    className="col-span-3"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
                   />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
-                  <Label htmlFor="priority" className="text-right">
-                    {t("task_manager.dialog_create_task.task.priority.label")}
-                  </Label>
-                  <Select
-                    name="priority"
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
+                  <LabelSelectOption<Priority>
+                    id="priority"
+                    label={
+                      "task_manager.dialog_create_task.task.priority.label"
+                    }
+                    options={Priority}
                     value={priority}
-                    onValueChange={(value) => {
-                      setPriority(value as Priority);
-                    }}
-                  >
-                    <SelectTrigger name="prioriy" className="w-full col-span-3">
-                      <SelectValue
-                        placeholder={t(
-                          "task_manager.dialog_create_task.task.priority.description"
-                        )}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>
-                          {t(
-                            "task_manager.dialog_create_task.task.priority.description"
-                          )}
-                        </SelectLabel>
-                        {Object.values(Priority).map((p) => (
-                          <SoundHoverElement
-                            key={p}
-                            animValue={0.99}
-                            hoverStyleElement={HoverStyleElement.none}
-                          >
-                            <SelectItem
-                              value={p}
-                              className={`${getPriorityClassByPrefix(p)}`}
-                            >
-                              {t(
-                                `task_manager.dialog_create_task.task.priority.options.${p.toLowerCase()}`
-                              )}
-                            </SelectItem>
-                          </SoundHoverElement>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                    onChange={setPriority}
+                    prefixTranslationPath="task_manager.dialog_create_task.task.priority.options"
+                    classPrefixFunction={getPriorityClassByPrefix}
+                    placeholder={
+                      "task_manager.dialog_create_task.task.priority.description"
+                    }
+                    selectLabel={
+                      "task_manager.dialog_create_task.task.priority.description"
+                    }
+                  />
                 </div>
                 {task?.isPlanned ? (
                   <>
-                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
                       <Label htmlFor="time" className="text-right">
                         {t("task_manager.dialog_create_task.task.time.label")}
                       </Label>
@@ -290,7 +256,7 @@ const DialogTask = ({
                 )}
               </div>
               {templated && (
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
                   <Label className="text-right">
                     {t("task_manager.dialog_create_task.task.time.when_day")}
                   </Label>
@@ -312,25 +278,23 @@ const DialogTask = ({
                   </div>
                 </div>
               )}
-              <div>
-                <div className="flex gap-1 justify-end">
-                  <SoundHoverElement
-                    animValue={0.98}
-                    hoverTypeElement={SoundTypeElement.LINK}
-                    hoverStyleElement={HoverStyleElement.none}
+              <div className="flex gap-1 justify-end">
+                <SoundHoverElement
+                  animValue={0.98}
+                  hoverTypeElement={SoundTypeElement.LINK}
+                  hoverStyleElement={HoverStyleElement.none}
+                >
+                  <Button
+                    onClick={() => {
+                      handleCreateTask();
+                    }}
+                    disabled={title === ""}
+                    variant="outline"
+                    className="cursor-pointer"
                   >
-                    <Button
-                      onClick={() => {
-                        handleCreateTask();
-                      }}
-                      disabled={title === ""}
-                      variant="outline"
-                      className="cursor-pointer"
-                    >
-                      {task ? t("task_manager.edit") : t("task_manager.add")}
-                    </Button>
-                  </SoundHoverElement>
-                </div>
+                    {task ? t("task_manager.edit") : t("task_manager.add")}
+                  </Button>
+                </SoundHoverElement>
               </div>
             </div>
           </motion.div>

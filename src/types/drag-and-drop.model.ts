@@ -17,6 +17,7 @@ export interface ItemTask {
   priority: Priority; // фактично витрачено (аналогічно)
   isPlanned?: boolean; // чи заплановано
   whenDo: DayNumber[]; // дні тижня, коли планується виконання
+  isDetermined?: boolean; // чи заплановано час виконання
 }
 
 export interface ItemTaskCategory extends ItemTask {

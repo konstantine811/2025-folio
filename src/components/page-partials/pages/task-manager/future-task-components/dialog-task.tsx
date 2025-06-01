@@ -154,7 +154,7 @@ const DialogFeatureTask = ({
                 </WrapperHoverElement>
               </div>
               <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
                   <Label htmlFor="name" className="text-right">
                     {t("task_manager.dialog_create_task.task.title.label")}
                   </Label>
@@ -167,7 +167,7 @@ const DialogFeatureTask = ({
                     }}
                   />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
                   <Label htmlFor="name" className="text-right">
                     {t("task_manager.dialog_create_task.task.title.label")}
                   </Label>
@@ -181,7 +181,7 @@ const DialogFeatureTask = ({
                     className="col-span-3"
                   />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
                   <Label htmlFor="priority" className="text-right">
                     {t("task_manager.dialog_create_task.task.priority.label")}
                   </Label>
@@ -226,7 +226,7 @@ const DialogFeatureTask = ({
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
                   <Label htmlFor="time" className="text-right">
                     {t("task_manager.dialog_create_task.task.time.label")}
                   </Label>

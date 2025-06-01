@@ -6,7 +6,8 @@ export const createTask = (
   time: number,
   isPlanned = false,
   wastedTime = 0,
-  whenDo: DayNumber[] = []
+  whenDo: DayNumber[] = [],
+  isDetermined = false
 ) => {
   const newTask: ItemTask = {
     id: `${title}-${Date.now()}`,
@@ -17,6 +18,7 @@ export const createTask = (
     isPlanned,
     priority,
     whenDo, // Дні тижня, коли потрібно виконати завдання
+    isDetermined,
   };
   return newTask;
 };

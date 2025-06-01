@@ -19,7 +19,7 @@ const DailyRightDrawer = () => {
       <DrawerTrigger>
         <Button
           asChild
-          className="bg-card hover:bg-card/10 rounded-r-none fixed right-0 z-50"
+          className="bg-card hover:bg-card/10 rounded-r-none fixed right-0 z-30"
         >
           <SoundHoverElement animValue={-3.3} hoverAnimType="translate-x">
             <ArrowBigLeft />

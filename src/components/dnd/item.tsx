@@ -120,7 +120,7 @@ export const Item = React.memo(
             }}
           >
             {
-              <div>
+              <>
                 <SoundHoverElement
                   animValue={0.9}
                   hoverTypeElement={SoundTypeElement.SHIFT}
@@ -136,7 +136,7 @@ export const Item = React.memo(
                     <GripVertical />
                   </Button>
                 </SoundHoverElement>
-              </div>
+              </>
             }
           </TaskItem>
         </li>
