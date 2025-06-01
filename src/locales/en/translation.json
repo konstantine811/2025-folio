@@ -46,6 +46,8 @@
     "add": "Add Task",
     "add_container": "Add category",
     "add_template_task": "Add Task Template",
+    "template_daily_task_title": "Daily Task Template",
+    "daily_task_title": "Your Tasks for",
     "edit": "Edit Task",
     "category": "Category",
     "planned_tasks": "Planned Tasks",
@@ -82,11 +84,23 @@
           "label": "Task Title",
           "description": "Briefly describe what you want to do."
         },
+
         "time": {
+          "determined": {
+            "label": "Planned for",
+            "description": "Specify the exact time you want to complete this task."
+          },
+          "duration": {
+            "label": "Expected Duration",
+            "description": "How long do you expect this task to take (e.g., 1 hour 30 minutes)"
+          },
+          "wasted": {
+            "label": "Wasted Time",
+            "description": "How much time was actually spent on execution (e.g., 45 minutes)"
+          },
           "label": "Planned Time",
           "wasted_time": "Wasted Time",
           "remaining_time": "Remaining Time",
-          "wasted_planned_time": "Wasted Planned Time",
           "when_day": "When to do?",
           "hours": "Hours",
           "minutes": "Minutes",

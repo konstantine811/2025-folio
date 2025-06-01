@@ -11,7 +11,7 @@ const DailySidePanelContent = () => {
       <DailyCalendar />
       {plannedTasks && plannedTasks.length > 0 && (
         <div>
-          <h3 className="text-md font-medium">
+          <h3 className="text-foreground/50 text-sm mb-4 mt-2">
             {t("task_manager.planned_tasks")}
           </h3>
           <TaskFutureTimeline tasks={plannedTasks} />

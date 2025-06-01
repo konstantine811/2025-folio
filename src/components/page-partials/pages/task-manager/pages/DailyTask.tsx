@@ -16,16 +16,22 @@ import { ItemTask, ItemTaskCategory } from "@/types/drag-and-drop.model";
 import { DailyTaskContext } from "../hooks/useDailyTask";
 import { isFutureDate } from "@/utils/date.util";
 import { UniqueIdentifier } from "@dnd-kit/core";
+import { useTranslation } from "react-i18next";
 
 const DailyTask = () => {
   const mdSize = useIsAdoptive();
   const hS = useHeaderSizeStore((s) => s.size);
   const outletContext = useOutletContext<TaskManagerOutletContext>();
+  const [dateVal, setDateVal] = useState<string | undefined>();
   const { id: date } = useParams(); // ← id це твоя дата у форматі "dd.MM.yyyy"
   const [plannedTasks, setPlannedTasks] = useState<ItemTaskCategory[] | null>(
     null
   );
+  const [t] = useTranslation();
 
+  useEffect(() => {
+    setDateVal(date);
+  }, [date]);
   const updatePlannedTask = useCallback(
     (updatedTask: ItemTask) => {
       if (!plannedTasks) return;
@@ -100,6 +106,10 @@ const DailyTask = () => {
           className={`w-full max-w-2xl px-4 flex flex-col justify-center ${outletContext.className}`}
           style={{ minHeight: `calc(100vh - ${hS}px)` }}
         >
+          <h2 className="text-center text-foreground/50 text-sm mb-4 mt-2">
+            {`${t("task_manager.daily_task_title")} : ${dateVal || ""}`}
+          </h2>
+
           <DailyTaskWrapper />
         </main>
 

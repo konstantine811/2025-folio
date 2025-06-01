@@ -12,12 +12,14 @@ import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router";
 import { TaskManagerOutletContext } from "../TaskManager";
 import { TaskManagerProvider } from "@/components/dnd/context/task-manager-context";
+import { useTranslation } from "react-i18next";
 
 const TemplateTask = () => {
   const outletContext = useOutletContext<TaskManagerOutletContext>();
   const [dailyTasks, setDailyTasks] = useState<Items>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const hS = useHeaderSizeStore((s) => s.size);
+  const [t] = useTranslation();
   useEffect(() => {
     setIsLoaded(true);
     loadTemplateTasks()
@@ -41,6 +43,10 @@ const TemplateTask = () => {
       )}`}
       style={{ minHeight: `calc(100vh - ${hS}px)` }}
     >
+      <h2 className="text-center text-foreground/50 text-sm mb-4 mt-2">
+        {t("task_manager.template_daily_task_title")}
+      </h2>
+
       {!isLoaded ? (
         <div className="max-w-2xl w-full m-auto">
           <TaskManagerProvider>
