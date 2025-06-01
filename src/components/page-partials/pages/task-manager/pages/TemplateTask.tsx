@@ -43,12 +43,11 @@ const TemplateTask = () => {
       )}`}
       style={{ minHeight: `calc(100vh - ${hS}px)` }}
     >
-      <h2 className="text-center text-foreground/50 text-sm mb-4 mt-2">
-        {t("task_manager.template_daily_task_title")}
-      </h2>
-
       {!isLoaded ? (
         <div className="max-w-2xl w-full m-auto">
+          <h2 className="text-center text-foreground/50 text-sm mb-4 mt-2">
+            {t("task_manager.template_daily_task_title")}
+          </h2>
           <TaskManagerProvider>
             <MultipleContainers
               strategy={rectSortingStrategy}
