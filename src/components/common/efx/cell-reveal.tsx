@@ -14,8 +14,8 @@ interface Cell {
 }
 
 const CellReveal = ({
-  rows = 15,
-  columns = 15,
+  rows = 5,
+  columns = 5,
   show = true,
   duration = 300,
   delayPerPixel = 1.5,
