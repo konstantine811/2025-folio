@@ -5,7 +5,7 @@ import { useHoverStore } from "@/storage/hoverStore";
 import { DayNumber, ItemTask, Priority } from "@/types/drag-and-drop.model";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import { getRandomFromTo } from "@/utils/random";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getPriorityClassByPrefix } from "./utils/dnd.utils";
 import { TimePickerInputs } from "./time-picker-inputs";
@@ -88,12 +88,14 @@ const DialogTask = ({
     setHover(false, null, HoverStyleElement.circle);
   };
 
-  function reset() {
+  const reset = useCallback(() => {
     setTitle("");
     setPriority(Priority.LOW);
     setTime(0);
     setWastedTime(0);
-  }
+    setSelectedDays(weekDays);
+    setIsDetermined(false);
+  }, [weekDays]);
 
   useEffect(() => {
     if (task) {
@@ -103,10 +105,8 @@ const DialogTask = ({
       setWastedTime(task.timeDone);
       setSelectedDays(task.whenDo || []);
       setIsDetermined(task.isDetermined || false);
-    } else {
-      reset();
     }
-  }, [task]);
+  }, [task, reset]);
 
   useEffect(() => {
     if (isOpen) {
