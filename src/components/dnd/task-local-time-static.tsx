@@ -11,11 +11,13 @@ const TaskLocalTimeStatic = ({
   revert = false,
   tooltipText,
   isPlanned = false,
+  className = "",
 }: {
   timeInSeconds: number;
   revert?: boolean;
   tooltipText?: string;
   isPlanned?: boolean;
+  className?: string;
 }) => {
   const isNegative = timeInSeconds < 0;
   const { hours, minutes } = formatSeconds(Math.abs(timeInSeconds));
@@ -29,7 +31,7 @@ const TaskLocalTimeStatic = ({
               isNegative ? "text-destructive/70" : "text-accent/70"
             } ${!revert && "text-muted-foreground"} ${
               isPlanned && "text-red-400"
-            }`
+            } ${className}`
           )}
         >
           {revert && isNegative && <span className="absolute -left-2">-</span>}

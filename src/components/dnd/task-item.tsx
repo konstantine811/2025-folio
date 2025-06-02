@@ -125,6 +125,7 @@ export function TaskItem({
                     tooltipText={t(
                       "task_manager.dialog_create_task.task.time.label"
                     )}
+                    className="text-md"
                   />
                   {task.isDone && (
                     <TaskLocalTimeStatic

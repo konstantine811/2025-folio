@@ -78,6 +78,14 @@
       "6": "Sat",
       "7": "Sun"
     },
+    "dialog_category": {
+      "delete": {
+        "title": "Delete Category",
+        "description": "Are you sure you want to delete this category? All tasks in it will be deleted.",
+        "yes": "Yes, delete",
+        "no": "No, leave it"
+      }
+    },
     "dialog_create_task": {
       "task": {
         "title": {

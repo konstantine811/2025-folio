@@ -47,6 +47,7 @@ import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { useTaskManager } from "./context/use-task-manger-context";
 import { CATEGORY_OPTIONS } from "./config/category-options";
 import useCategoryHandle from "./hooks/useCategoryHandle";
+import DialogAgree from "./dialog/dialog-agree";
 
 interface Props {
   adjustScale?: boolean;
@@ -113,6 +114,9 @@ export function MultipleContainers({
   const recentlyMovedToNewContainer = useRef(false);
   const isSortingContainer = activeId ? containers.includes(activeId) : false;
   const taskTimeDone = useTaskManager((s) => s.updatedTask);
+  const [isOpenAgreeDialog, setIsOpenAgreeDialog] = useState(false);
+  const [removeContainerId, setRemoveContainerId] =
+    useState<UniqueIdentifier | null>(null);
   const collisionDetectionStrategy: CollisionDetection =
     useCollisionDectionStrategy({
       activeId,
@@ -260,6 +264,20 @@ export function MultipleContainers({
 
   return (
     <>
+      <DialogAgree
+        isOpen={isOpenAgreeDialog}
+        setIsOpen={setIsOpenAgreeDialog}
+        title={t("task_manager.dialog_category.delete.title")}
+        description={t("task_manager.dialog_category.delete.description")}
+        buttonYesTitle={t("task_manager.dialog_category.delete.yes")}
+        buttonNoTitle={t("task_manager.dialog_category.delete.no")}
+        onAgree={(status) => {
+          setIsOpenAgreeDialog(false);
+          if (status && removeContainerId) {
+            handleRemove(removeContainerId);
+          }
+        }}
+      ></DialogAgree>
       <DialogTask
         key={editTask?.id ?? "new-task"}
         isOpen={isDialogOpen}
@@ -343,7 +361,10 @@ export function MultipleContainers({
                   handleChangeCategory(value, category.id)
                 }
                 {...(minimal ? { unstyled: true } : {})}
-                onRemove={() => handleRemove(category.id)}
+                onRemove={() => {
+                  setIsOpenAgreeDialog(true);
+                  setRemoveContainerId(category.id);
+                }}
               >
                 <SortableContext
                   items={category.tasks.map((t) => t.id)}

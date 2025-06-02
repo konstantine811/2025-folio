@@ -11,15 +11,18 @@ const TaskDeterminedTime = ({
   titleSpendingTime: string;
 }) => {
   return (
-    <div className="flex flex-col items-center gap-1">
+    <div className="flex gap-2">
       <TaskLocalTimeStatic
         timeInSeconds={task.time}
         tooltipText={titleDeterminedTime}
+        className="text-md text-accent"
       />
+      /
       <TaskLocalTimeStatic
         timeInSeconds={task.timeDone}
         revert
         tooltipText={titleSpendingTime}
+        className="text-foreground/50"
       />
     </div>
   );
