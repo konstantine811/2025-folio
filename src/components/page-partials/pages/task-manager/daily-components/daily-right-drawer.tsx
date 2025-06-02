@@ -27,7 +27,7 @@ const DailyRightDrawer = () => {
         </Button>
       </DrawerTrigger>
       <DrawerContent className="border-foreground/10">
-        <div className="mx-auto w-full max-w-sm right-0 px-1">
+        <div className="mx-auto w-full max-w-sm right-0 px-4">
           <DrawerHeader>
             <DrawerTitle>{t("task_manager.calendar.header.title")}</DrawerTitle>
             <DrawerDescription>

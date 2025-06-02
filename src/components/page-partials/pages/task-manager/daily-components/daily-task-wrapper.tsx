@@ -14,6 +14,7 @@ import { MultipleContainers } from "@/components/dnd/multiple-container";
 import { rectSortingStrategy } from "@dnd-kit/sortable";
 import DailyAddTemplateButton from "./daily-add-button";
 import {
+  findPlannedOrDeterminedTask,
   mergeItemsDeep,
   mergeItemsWithPlannedTasks,
 } from "@/utils/task-manager-utils/merge-tasks";
@@ -76,14 +77,13 @@ const DailyTaskWrapper = () => {
   const handleMerageTasks = useCallback(() => {
     if (!plannedTasks) return;
     setIsLoaded(false);
+    currentDateRef.current = date || "";
     loadTemplateTasks().then((tasks) => {
       const currentDayOfWeek = getISODay(parseDate(date ?? "")) as DayNumber;
-      const { filteredTasks, plannedTasks } = filterTaskByDayOfWeedk(
-        tasks,
-        currentDayOfWeek
-      );
+      const { filteredTasks, plannedTasks: templatePlannedTasks } =
+        filterTaskByDayOfWeedk(tasks, currentDayOfWeek);
       // save to timeline preset
-      mergeNewPlannedTasks(plannedTasks);
+      mergeNewPlannedTasks(templatePlannedTasks);
       //  merge determined tasks with planned tasks
       const merged = mergeItemsWithPlannedTasks(filteredTasks, plannedTasks);
       if (merged && merged.length) {
@@ -100,11 +100,34 @@ const DailyTaskWrapper = () => {
     });
   }, [dailyTasks, plannedTasks, date, mergeNewPlannedTasks]);
 
+  const updatePlannedDeterminedTask = useCallback(
+    (tasks: Items) => {
+      if (!addPlannedTask) return;
+      findPlannedOrDeterminedTask(tasks).forEach((task) => {
+        const updatedTask: ItemTaskCategory = {
+          id: task.id,
+          title: task.title,
+          isDone: task.isDone,
+          time: task.time,
+          timeDone: task.timeDone,
+          priority: task.priority,
+          isPlanned: true,
+          whenDo: task.whenDo || [],
+          isDetermined: task.isDetermined || false,
+          categoryName: task.categoryTitle,
+        };
+        addPlannedTask(updatedTask);
+      });
+    },
+    [addPlannedTask]
+  );
+
   const handleChangeTasks = useCallback(
     (tasks: Items) => {
       if (!isLoaded) return;
       setTimeout(() => {
         setDailyTasks(tasks);
+        updatePlannedDeterminedTask(tasks);
       }, 0);
       saveDailyTasks<Items>(
         tasks,

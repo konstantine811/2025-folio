@@ -22,6 +22,11 @@ export function mergeItemsDeep(base: Items, incoming: Items): Items {
   return denormalizeItems(baseN);
 }
 
+export function findPlannedOrDeterminedTask(task: Items): NormalizedTask[] {
+  const taskN = normalizeItems(task);
+  return taskN.filter((t) => t.isPlanned || t.isDetermined);
+}
+
 export function normalizeItems(items: Items): NormalizedTask[] {
   const result: NormalizedTask[] = [];
 
@@ -111,6 +116,7 @@ export function mergeItemsWithPlannedTasks(
         priority: task.priority,
         isPlanned: true,
         whenDo: task.whenDo || [], // Додати whenDo, якщо він є
+        isDetermined: task.isDetermined || false, // Додати isDetermined, якщо він є
       });
     }
   });

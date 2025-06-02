@@ -5,7 +5,7 @@ import DailySidePanelContent from "./daily-side-panel-content";
 const DailySidePanelWrapper = () => {
   const [t] = useTranslation();
   return (
-    <div className="mx-auto w-full max-w-sm right-0 px-1">
+    <div className="mx-auto w-full max-w-sm right-0 px-4">
       <header className="grid gap-1.5 p-4 text-center sm:text-left">
         <h2 className="text-lg text-foreground font-semibold leading-none tracking-tight">
           {t("task_manager.calendar.header.title")}
