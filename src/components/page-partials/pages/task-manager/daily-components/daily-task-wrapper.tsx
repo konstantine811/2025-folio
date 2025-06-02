@@ -135,7 +135,7 @@ const DailyTaskWrapper = () => {
         FirebaseCollection.dailyTasks
       );
     },
-    [isLoaded]
+    [isLoaded, updatePlannedDeterminedTask]
   );
 
   return (

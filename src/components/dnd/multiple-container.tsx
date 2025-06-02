@@ -181,7 +181,7 @@ export function MultipleContainers({
           tasks: container.tasks.map((t) => {
             if (t.id === taskId) {
               const updated = { ...t, isDone: newIsDone };
-              if (updated.isPlanned) {
+              if (updated.isPlanned || updated.isDetermined) {
                 onEditPlannedTask?.(updated);
               }
               return updated;
