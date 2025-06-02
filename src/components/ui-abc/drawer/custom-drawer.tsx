@@ -1,4 +1,3 @@
-import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -8,11 +7,19 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { ArrowBigLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import DailySidePanelContent from "./daily-side-panel-content";
+import SoundHoverElement from "../sound-hover-element";
+import { ArrowBigLeft } from "lucide-react";
 
-const DailyRightDrawer = () => {
+const CustomDrawer = ({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) => {
   const [t] = useTranslation();
   return (
     <Drawer direction="right">
@@ -29,16 +36,14 @@ const DailyRightDrawer = () => {
       <DrawerContent className="border-foreground/10">
         <div className="mx-auto w-full max-w-sm right-0 px-4">
           <DrawerHeader>
-            <DrawerTitle>{t("task_manager.calendar.header.title")}</DrawerTitle>
-            <DrawerDescription>
-              {t("task_manager.calendar.header.description")}
-            </DrawerDescription>
+            <DrawerTitle>{t(title)}</DrawerTitle>
+            <DrawerDescription>{t(description)}</DrawerDescription>
           </DrawerHeader>
-          <DailySidePanelContent />
+          {children}
         </div>
       </DrawerContent>
     </Drawer>
   );
 };
 
-export default DailyRightDrawer;
+export default CustomDrawer;

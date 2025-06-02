@@ -1,5 +1,4 @@
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
-import DailyRightDrawer from "../daily-components/daily-right-drawer";
 
 import DailyTaskWrapper from "../daily-components/daily-task-wrapper";
 import { useOutletContext, useParams } from "react-router";
@@ -17,6 +16,7 @@ import { DailyTaskContext } from "../hooks/useDailyTask";
 import { isFutureDate } from "@/utils/date.util";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { useTranslation } from "react-i18next";
+import CustomDrawer from "@/components/ui-abc/drawer/custom-drawer";
 
 const DailyTask = () => {
   const mdSize = useIsAdoptive();
@@ -144,7 +144,16 @@ const DailyTask = () => {
 
         {/* Права колонка */}
         <div className="flex-1 pt-8">
-          {mdSize ? <DailyRightDrawer /> : <DailySidePanelWrapper />}
+          {mdSize ? (
+            <CustomDrawer
+              title={"task_manager.calendar.header.title"}
+              description={"task_manager.calendar.header.description"}
+            >
+              <DailySidePanelWrapper />
+            </CustomDrawer>
+          ) : (
+            <DailySidePanelWrapper />
+          )}
         </div>
       </div>
     </DailyTaskContext.Provider>
