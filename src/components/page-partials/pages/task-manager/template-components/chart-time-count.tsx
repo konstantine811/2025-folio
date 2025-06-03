@@ -101,25 +101,56 @@ const ChartTimeCount = ({
         d3.axisBottom(x).tickFormat((d) => {
           return t(`task_manager.day_names.${d}`);
         })
-      );
+      )
+      .call((g) => {
+        g.select(".domain").remove(); // <– ця лінія внизу
+        g.selectAll(".tick line").remove(); // <– видаляє вертикальні лінії (опційно)
+      });
 
     // Add Y Axis label
     group
       .append("g")
       .attr("transform", `translate(${margin.right - 20},0)`)
-      .attr("class", "text-foreground/80 text-md")
+      .attr("class", "text-foreground/90 text-md")
       .call(
         d3
           .axisLeft(y)
           .tickValues(tickValues)
           .tickFormat((time) => {
-            if (!time) return "";
             const { hours } = paresSecondToTime(time as number);
-            return hours;
+            return String(Number(hours));
           })
       )
-      .call((g) => g.selectAll(".domain").remove());
+      .call((g) => {
+        g.selectAll(".domain").remove();
+        g.selectAll(".tick line").remove();
+      });
 
+    // add grid lines
+    group
+      .append("g")
+      .selectAll("line.grid-x")
+      .data(x.domain())
+      .join("line")
+      .attr("class", "grid-x stroke stroke-foreground/30")
+      .attr("x1", (d) => x(d)! + x.bandwidth() / 2)
+      .attr("x2", (d) => x(d)! + x.bandwidth() / 2)
+      .attr("y1", 0)
+      .attr("y2", heightOffset);
+
+    group
+      .append("g")
+      .selectAll("line.grid-y")
+      .data(tickValues)
+      .join("line")
+      .attr("class", "grid-y")
+      .attr("x1", 0)
+      .attr("x2", widthOffset)
+      .attr("y1", (d) => y(d))
+      .attr("y2", (d) => y(d))
+      .attr("stroke", "currentColor") // або ThemePalette[themeName].foreground
+      .attr("stroke-opacity", 0.2)
+      .attr("stroke-width", 1);
     // add vertical label
     group
       .append("g")
