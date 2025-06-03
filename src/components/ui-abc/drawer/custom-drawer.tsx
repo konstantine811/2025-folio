@@ -44,8 +44,8 @@ const CustomDrawer = ({
         </Button>
       </DrawerTrigger>
       <DrawerContent className="border-foreground/10 overflow-y-auto overflow-x-hidden touch-auto overscroll-contain">
-        <ScrollArea className="overflow-y-auto">
-          <div className="mx-auto w-full max-w-sm right-0 px-4">
+        <ScrollArea className="h-screen w-full touch-auto overscroll-contain">
+          <div className="mx-auto w-full max-w-sm px-4 box-border">
             <DrawerHeader>
               <DrawerTitle>{t(title)}</DrawerTitle>
               <DrawerDescription>{t(description)}</DrawerDescription>
