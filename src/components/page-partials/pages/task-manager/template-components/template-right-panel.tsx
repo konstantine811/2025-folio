@@ -1,18 +1,17 @@
-import { getTaskAnalyticsData } from "@/services/analytics/task-menager/template-handle-data";
-import { TaskAnalytics } from "@/types/analytics/task-analytics.model";
+import {
+  ItemTimeMapKeys,
+  TemplateTypeChart,
+} from "@/types/analytics/task-analytics.model";
 import { Items } from "@/types/drag-and-drop.model";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import ChartTimeCount from "./chart-time-count";
 import ChartTimeCategory from "./chart-time-category";
+import ChartToogleItem from "./chart-toogle-item";
 
 const TemplateRightPanel = ({ templateTasks }: { templateTasks: Items }) => {
-  const [analyticsData, setAnalyticsData] = useState<TaskAnalytics>();
+  const [selectedItem, setSelectedItem] = useState<TemplateTypeChart[]>([]);
   const hS = useHeaderSizeStore((s) => s.size);
-  useEffect(() => {
-    const analyticsData = getTaskAnalyticsData(templateTasks); // 🔄 Виклик функції для обробки шаблонних завдань
-    setAnalyticsData(analyticsData);
-  }, [templateTasks]);
 
   return (
     <>
@@ -20,8 +19,37 @@ const TemplateRightPanel = ({ templateTasks }: { templateTasks: Items }) => {
         className="min-w-xs w-full pt-8 sticky top-0"
         style={{ top: `${hS}px` }}
       >
-        {analyticsData ? <ChartTimeCount taskAnalytics={analyticsData} /> : ""}
-        <ChartTimeCategory templateTasks={templateTasks} />
+        <div className="flex justify-center">
+          <ChartToogleItem onToggleItems={setSelectedItem} />
+        </div>
+        {selectedItem.map((item) => {
+          switch (item) {
+            case TemplateTypeChart.timeCount:
+              return (
+                <ChartTimeCount templateTasks={templateTasks} key={item} />
+              );
+            case TemplateTypeChart.category:
+              return (
+                <ChartTimeCategory
+                  templateTasks={templateTasks}
+                  title="chart.period_count_category_title"
+                  type={ItemTimeMapKeys.category}
+                  key={item}
+                />
+              );
+            case TemplateTypeChart.task:
+              return (
+                <ChartTimeCategory
+                  templateTasks={templateTasks}
+                  title="chart.period_count_task_title"
+                  type={ItemTimeMapKeys.task}
+                  key={item}
+                />
+              );
+            default:
+              return null;
+          }
+        })}
       </div>
     </>
   );

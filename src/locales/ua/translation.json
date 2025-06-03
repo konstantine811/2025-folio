@@ -50,8 +50,11 @@
     "minute": "хв",
     "count_chart_title": "Сумарна тривалість задач кожного дня",
     "period_count_category_title": "Сумарна тривалість категорій за період",
-    "period_count_chart_title": "Сумарна тривалість задач за період",
-    "period": "Період"
+    "period_count_task_title": "Сумарна тривалість задач за період",
+    "period": "Період",
+    "category": "Категорії",
+    "task": "Задачі",
+    "timeCount": "Tривалість"
   },
 
   "task_manager": {

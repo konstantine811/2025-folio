@@ -17,7 +17,7 @@ export interface FlattenedTask {
   duration: number;
 }
 
-export type CategoryCountTime = {
+export type ItemTimeMap = {
   [title: string]: number; // ключ — назва категорії
 };
 
@@ -30,5 +30,16 @@ export type TaskAnalytics = {
   weekTaskEntity: WeekTaskEntity;
   flattenTasks: FlattenedTask[];
 };
+
+export enum ItemTimeMapKeys {
+  category = "category",
+  task = "task",
+}
+
+export enum TemplateTypeChart {
+  timeCount = "timeCount",
+  category = ItemTimeMapKeys.category,
+  task = ItemTimeMapKeys.task,
+}
 
 export type TypeAnalyticsPeriod = (typeof ANALYTICS_PERIODS)[number];

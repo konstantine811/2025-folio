@@ -5,27 +5,32 @@ import {
   StackedDay,
   TaskAnalytics,
 } from "@/types/analytics/task-analytics.model";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as d3 from "d3";
 import { paresSecondToTime } from "@/utils/time.util";
 import ChartTitle from "../chart/chart-title";
+import useChartTooltip from "../chart/hooks/use-chart-tooltip";
+import { Items } from "@/types/drag-and-drop.model";
+import { getTaskAnalyticsData } from "@/services/analytics/task-menager/template-handle-data";
 
-const ChartTimeCount = ({
-  taskAnalytics,
-}: {
-  taskAnalytics: TaskAnalytics;
-}) => {
+const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
+  const [analyticsData, setAnalyticsData] = useState<TaskAnalytics>();
   const hS = useHeaderSizeStore((s) => s.size);
   const [t] = useTranslation();
   const themeName = useThemeStore((s) => s.selectedTheme);
-
+  const { TooltipElement, showTooltip, hideTooltip } = useChartTooltip();
   const ref = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
+    const analyticsData = getTaskAnalyticsData(templateTasks); // 🔄 Виклик функції для обробки шаблонних завдань
+    setAnalyticsData(analyticsData);
+  }, [templateTasks]);
+
+  useEffect(() => {
     if (!ref.current) return;
-    if (!taskAnalytics) return;
-    const tasks = taskAnalytics.flattenTasks;
+    if (!analyticsData) return;
+    const tasks = analyticsData.flattenTasks;
     const margin = { top: 20, right: 20, bottom: 30, left: 70 };
     const width = 800;
     const height = 600;
@@ -201,7 +206,6 @@ const ChartTimeCount = ({
       .attr("offset", `${(1 - y(40 * 3600) / y(0)) * 100}%`)
       .attr("stop-color", colors.destructive); // 16h (червоний)
 
-    const tooltip = d3.select("#tooltip");
     group
       .append("g")
       .selectAll("rect")
@@ -235,41 +239,21 @@ const ChartTimeCount = ({
         const parentGroup = d3.select(event.currentTarget.parentNode);
         const taskTitle = (parentGroup.datum() as { key: string }).key;
         const timeInSeconds = d[1] - d[0];
-        const { hours, minutes } = paresSecondToTime(timeInSeconds);
-
-        const svgRect = ref.current!.getBoundingClientRect(); // ← ключовий момент
-
-        const x = event.clientX - svgRect.left;
-        const y = event.clientY - svgRect.top;
-
         d3.select(this).attr("class", "fill-foreground/50");
-
-        tooltip
-          .style(
-            "transform",
-            `translate(calc(${x}px - 100% - 20px), ${y - 28}px)`
-          )
-          .style("display", "flex")
-          .style("opacity", 1).html(`
-      <h3 class="text-foreground/80 text-center text-sm"><strong>${taskTitle}</strong></h3>
-      <div class="bg-accent/50 rounded-md text-center text-sm border border-foreground/50 inline-block px-2">
-        ${
-          hours !== "00" ? hours + t("chart.hour") : ""
-        } ${minutes !== "00" ? minutes + t("chart.minute") : ""}
-      </div>
-    `);
+        showTooltip({
+          event,
+          title: taskTitle,
+          time: timeInSeconds,
+        });
       })
       .on("mouseleave", function () {
         d3.select(this).attr("class", "fill-transparent");
-        tooltip.style("display", "none");
+        hideTooltip();
       });
-  }, [taskAnalytics, ref, hS, t, themeName]);
+  }, [analyticsData, ref, hS, t, themeName, showTooltip, hideTooltip]);
   return (
     <div className="w-full relative">
-      <div
-        id="tooltip"
-        className="absolute z-50 max-w-sm p-2 top-0 left-0 text-sm bg-background border border-foreground/20  foreground rounded shadow-lg shadow-background will-change-transform pointer-events-none opacity-0 items-center flex-col gap-2"
-      />
+      {TooltipElement}
       <ChartTitle title="chart.count_chart_title" />
       <svg ref={ref} className="w-full h-auto" />
     </div>

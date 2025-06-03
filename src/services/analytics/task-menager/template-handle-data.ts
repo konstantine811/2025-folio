@@ -1,9 +1,10 @@
 import {
-  CategoryCountTime,
+  ItemTimeMap,
   FlattenedTask,
   TaskAnalytics,
   TypeAnalyticsPeriod,
   WeekTaskEntity,
+  ItemTimeMapKeys,
 } from "@/types/analytics/task-analytics.model";
 import { DayNumber, Items, ItemTask } from "@/types/drag-and-drop.model";
 
@@ -39,30 +40,33 @@ export const getTaskAnalyticsData = (tasks: Items): TaskAnalytics => {
   return { weekTaskEntity, flattenTasks };
 };
 
-export const getCategoryTimeCountByPeriod = (
+export const getItemTimeMapByPeriod = (
   tasks: Items,
-  analyticsPerid: TypeAnalyticsPeriod = "by_all_week"
-): CategoryCountTime => {
-  const categoryCountTime: CategoryCountTime = {};
+  analyticsPerid: TypeAnalyticsPeriod = "by_all_week",
+  type: ItemTimeMapKeys = ItemTimeMapKeys.category
+): ItemTimeMap => {
+  const itemTimeMap: ItemTimeMap = {};
 
   tasks.forEach((category) => {
     category.tasks.forEach((task) => {
       const timeToAdd = task.isDetermined ? task.timeDone : task.time;
-      switchCategoryTimeCountByPeriod(
-        categoryCountTime,
-        category.title,
+      const itemKey =
+        type === ItemTimeMapKeys.category ? category.title : task.title;
+      switchItemTimeMapByPeriod(
+        itemTimeMap,
+        itemKey,
         analyticsPerid,
         task,
         timeToAdd
       );
     });
   });
-  return categoryCountTime;
+  return itemTimeMap;
 };
 
-function switchCategoryTimeCountByPeriod(
-  categoryCountTime: CategoryCountTime,
-  categoryName: string,
+function switchItemTimeMapByPeriod(
+  itemTimeMap: ItemTimeMap,
+  name: string,
   period: TypeAnalyticsPeriod,
   task: ItemTask,
   timeToAdd: number
@@ -73,7 +77,12 @@ function switchCategoryTimeCountByPeriod(
     task.whenDo.includes(period as DayNumber);
 
   if (shouldAdd) {
-    categoryCountTime[categoryName] ??= 0;
-    categoryCountTime[categoryName] += timeToAdd;
+    const multiplier =
+      period === "all" || period === "by_all_week"
+        ? task.whenDo.length || 1
+        : 1;
+
+    itemTimeMap[name] ??= 0;
+    itemTimeMap[name] += timeToAdd * multiplier;
   }
 }

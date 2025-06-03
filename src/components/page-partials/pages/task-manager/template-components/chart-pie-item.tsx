@@ -1,0 +1,168 @@
+import {
+  ItemTimeMap,
+  ItemTimeMapKeys,
+} from "@/types/analytics/task-analytics.model";
+import { paresSecondToTime } from "@/utils/time.util";
+import * as d3 from "d3";
+import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import useChartTooltip from "../chart/hooks/use-chart-tooltip";
+
+interface PieChartProps {
+  data: ItemTimeMap; // CategoryCountTime
+  width?: number;
+  height?: number;
+  type: ItemTimeMapKeys;
+}
+
+const ChartPieItem = ({
+  data,
+  width = 400,
+  height = 400,
+  type,
+}: PieChartProps) => {
+  const ref = useRef<SVGSVGElement | null>(null);
+  const [t] = useTranslation();
+  const { TooltipElement, showTooltip, hideTooltip } = useChartTooltip();
+  // Всередині компонента
+  useEffect(() => {
+    if (!ref.current) return;
+    const offset = 40;
+    const names = Object.keys(data);
+    const values = Object.values(data);
+    const dataset = names.map((name, i) => ({ name, value: values[i] }));
+
+    const radius = Math.min(width, height) / 2;
+
+    const pie = d3.pie<{ name: string; value: number }>().value((d) => d.value);
+    const arc = d3
+      .arc<d3.PieArcDatum<{ name: string; value: number }>>()
+      .innerRadius(radius * 0.1)
+      .outerRadius(radius - 10)
+      .padAngle(0.02)
+      .cornerRadius(20);
+
+    const arcLabel = d3
+      .arc<d3.PieArcDatum<{ name: string; value: number }>>()
+      .innerRadius(radius * 0.9)
+      .outerRadius(radius * 0.9);
+
+    const svg = d3.select(ref.current);
+    svg.selectAll("*").remove();
+
+    const maxValue = d3.max(dataset, (d) => d.value) ?? 1;
+
+    const group = svg
+      .attr(
+        "viewBox",
+        `${-width / 2} ${-height / 2} ${width + offset} ${height + offset}`
+      )
+      .attr("class", "text-xs")
+      .append("g");
+
+    const arcs = pie(dataset);
+
+    const paths = group
+      .selectAll("path")
+      .data(arcs)
+      .join("path")
+      .attr("d", arc)
+      .attr("class", "fill-accent stroke-2 stroke-foreground/20")
+      .attr("style", (d) => {
+        const opacity = Math.max(0.1, d.data.value / maxValue);
+        return `fill-opacity: ${opacity}; transition: transform 0.2s ease;`;
+      })
+      .attr("stroke", "white")
+      .attr("stroke-width", 1)
+      .attr("transform", "scale(1)");
+
+    if (type === ItemTimeMapKeys.task) {
+      paths
+        .on("pointerenter pointermove", function (event, d) {
+          // Scale
+          d3.select(this)
+            .transition()
+            .duration(10)
+            .attr(
+              "transform",
+              `translate(${arc.centroid(
+                d
+              )}) scale(1.28) translate(${-arc.centroid(d)[0]}, ${-arc.centroid(
+                d
+              )[1]})`
+            );
+
+          showTooltip({
+            event,
+            title: t(d.data.name),
+            time: d.data.value,
+          });
+        })
+        .on("mouseleave", function () {
+          // Scale back
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr("transform", "scale(1)");
+
+          hideTooltip();
+        });
+    }
+
+    group
+      .selectAll("text")
+      .data(arcs)
+      .join("text")
+      .attr("transform", (d) => {
+        const [x, y] = arcLabel.centroid(d);
+        const angle = ((d.startAngle + d.endAngle) / 2) * (180 / Math.PI);
+        return `translate(${x}, ${y}) rotate(${
+          angle < 180 ? angle - 90 : angle + 90
+        })`;
+      })
+      .attr("text-anchor", (d) =>
+        (d.endAngle + d.startAngle) / 2 > Math.PI ? "start" : "end"
+      )
+      .attr("alignment-baseline", "middle")
+      .attr("fill", "currentColor")
+      .attr("class", (d) => {
+        const opacity = d.data.value / maxValue;
+        return opacity < 0.4 ? "text-accent" : "text-background";
+      })
+      .each(function (d) {
+        const text = d3.select(this);
+        if (type === ItemTimeMapKeys.task) {
+          const { hours, minutes } = paresSecondToTime(d.data.value);
+          text
+            .append("tspan")
+            .attr("x", 0)
+            .attr("dy", "0.2em")
+            .attr("fill-opacity", 0.7)
+            .text(`${hours}:${minutes}`);
+        } else {
+          text
+            .append("tspan")
+            .attr("font-weight", "bold")
+            .attr("x", 0)
+            .text(t(d.data.name));
+          const { hours, minutes } = paresSecondToTime(d.data.value);
+          text
+            .append("tspan")
+            .attr("x", 0)
+            .attr("dy", "1em")
+            .attr("fill-opacity", 0.7)
+            .text(`${hours}:${minutes}`);
+        }
+      });
+  }, [data, width, height, t, type, showTooltip, hideTooltip]);
+
+  // В render:
+  return (
+    <div className="relative w-full">
+      {type === ItemTimeMapKeys.task && TooltipElement}
+      <svg ref={ref} className="w-full h-auto overflow-visible" />
+    </div>
+  );
+};
+
+export default ChartPieItem;

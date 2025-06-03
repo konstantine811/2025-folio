@@ -49,8 +49,11 @@
     "minute": "min",
     "count_chart_title": "Total Duration of Tasks Each Day",
     "period_count_category_title": "Total Duration of Categories for Period",
-    "period_count_chart_title": "Total Duration of Tasks for Period",
-    "period": "Period"
+    "period_count_task_title": "Total Duration of Tasks for Period",
+    "period": "Period",
+    "category": "Categories",
+    "task": "Tasks",
+    "timeCount": "Duration"
   },
   "task_manager": {
     "add": "Add Task",
