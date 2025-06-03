@@ -19,7 +19,7 @@ const TemplateRightPanel = ({ templateTasks }: { templateTasks: Items }) => {
         className="min-w-xs w-full pt-8 sticky top-0"
         style={{ top: `${hS}px` }}
       >
-        <div className="flex justify-center">
+        <div className="flex justify-center mb-2">
           <ChartToogleItem onToggleItems={setSelectedItem} />
         </div>
         {selectedItem.map((item) => {
