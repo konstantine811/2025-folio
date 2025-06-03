@@ -33,7 +33,7 @@ const ChartTimeCategory = ({ templateTasks }: { templateTasks: Items }) => {
       {analyticsData && (
         <>
           <div className="flex flex-wrap justify-center items-center gap-2">
-            <ChartTitle title="chart.period_count_chart_title" />
+            <ChartTitle title="chart.period_count_category_title" />
             <SelectPeriodTime onChange={setPeriod} />
           </div>
           <div className="max-w-md mx-auto">

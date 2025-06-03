@@ -46,7 +46,7 @@ const SelectPeriodTime = ({
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 border-foreground/30">
-        <DropdownMenuLabel>Period</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("chart.period")}</DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-foreground/40" />
         <DropdownMenuRadioGroup
           value={period}

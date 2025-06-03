@@ -17,6 +17,7 @@ import { isFutureDate } from "@/utils/date.util";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { useTranslation } from "react-i18next";
 import CustomDrawer from "@/components/ui-abc/drawer/custom-drawer";
+import DailySidePanelContent from "../daily-components/daily-side-panel-content";
 
 const DailyTask = () => {
   const mdSize = useIsAdoptive();
@@ -149,7 +150,7 @@ const DailyTask = () => {
               title={"task_manager.calendar.header.title"}
               description={"task_manager.calendar.header.description"}
             >
-              <DailySidePanelWrapper />
+              <DailySidePanelContent />
             </CustomDrawer>
           ) : (
             <DailySidePanelWrapper />
