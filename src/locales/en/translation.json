@@ -89,7 +89,9 @@
       "4": "Thu",
       "5": "Fri",
       "6": "Sat",
-      "7": "Sun"
+      "7": "Sun",
+      "all": "All",
+      "by_all_week": "By All Days of the Week"
     },
     "dialog_category": {
       "delete": {

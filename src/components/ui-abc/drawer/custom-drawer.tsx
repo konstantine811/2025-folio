@@ -33,7 +33,7 @@ const CustomDrawer = ({
           </SoundHoverElement>
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="border-foreground/10">
+      <DrawerContent className="border-foreground/10 overflow-y-auto overflow-x-hidden">
         <div className="mx-auto w-full max-w-sm right-0 px-4">
           <DrawerHeader>
             <DrawerTitle>{t(title)}</DrawerTitle>

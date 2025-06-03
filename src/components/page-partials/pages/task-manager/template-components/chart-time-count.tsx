@@ -69,7 +69,6 @@ const ChartTimeCount = ({
     const sortedKeys = [...keys].sort(
       (a, b) => (keyDurations.get(a) ?? 0) - (keyDurations.get(b) ?? 0)
     );
-
     // потім вже стек
     const stack = d3.stack<StackedDay>().keys(sortedKeys)(stackData);
 
