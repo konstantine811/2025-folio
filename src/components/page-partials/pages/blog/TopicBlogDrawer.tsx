@@ -6,6 +6,7 @@ import { ArrowBigRight } from "lucide-react";
 import TopicBlogDrawerContent from "./TopicBlogDrawerContent";
 import { HoverStyleElement } from "@/types/sound";
 import { useState } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const TopicBlogDrawer = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,7 +15,9 @@ const TopicBlogDrawer = () => {
       direction="left"
       open={isOpen}
       onOpenChange={setIsOpen}
-      noBodyStyles={true}
+      preventScrollRestoration={false}
+      disablePreventScroll
+      noBodyStyles
     >
       <DrawerTrigger>
         <div className="fixed left-0 z-50">
@@ -32,8 +35,10 @@ const TopicBlogDrawer = () => {
           </Button>
         </div>
       </DrawerTrigger>
-      <DrawerContent className="border-foreground/10 overflow-auto">
-        <TopicBlogDrawerContent />
+      <DrawerContent className="border-foreground/10">
+        <ScrollArea className="overflow-y-auto">
+          <TopicBlogDrawerContent />
+        </ScrollArea>
       </DrawerContent>
     </Drawer>
   );
