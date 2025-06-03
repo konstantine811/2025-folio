@@ -199,7 +199,7 @@ const ChartTimeCount = ({
         return isNaN(h) ? 0 : h;
       })
       .attr("width", x.bandwidth())
-      .attr("rx", 5)
+      .attr("rx", 4)
       .on("pointerenter pointermove", function (event, d) {
         const parentGroup = d3.select(event.currentTarget.parentNode); // ✅ без `this`
         const taskTitle = (parentGroup.datum() as { key: string }).key;
