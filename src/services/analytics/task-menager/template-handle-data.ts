@@ -1,8 +1,13 @@
-import { WeekTaskEntity } from "@/types/analytics/task-analytics.model";
+import {
+  FlattenedTask,
+  TaskAnalytics,
+  WeekTaskEntity,
+} from "@/types/analytics/task-analytics.model";
 import { Items } from "@/types/drag-and-drop.model";
 
-export const countTimeOfWeed = (tasks: Items): WeekTaskEntity => {
+export const countTimeOfWeed = (tasks: Items): TaskAnalytics => {
   const weekTaskEntity: WeekTaskEntity = {};
+  const flattenTasks: FlattenedTask[] = [];
 
   tasks.forEach((category) => {
     category.tasks.forEach((task) => {
@@ -23,9 +28,14 @@ export const countTimeOfWeed = (tasks: Items): WeekTaskEntity => {
           weekTaskEntity[day].categories.push(category.title);
         }
         weekTaskEntity[day].tasks.push(task);
+        flattenTasks.push({
+          day,
+          title: task.title,
+          duration: task.isDetermined ? task.timeDone : task.time,
+        });
       });
     });
   });
 
-  return weekTaskEntity;
+  return { weekTaskEntity, flattenTasks };
 };

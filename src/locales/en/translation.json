@@ -42,6 +42,13 @@
       "on_this_page": "On this page"
     }
   },
+  "chart": {
+    "hours": "Hours",
+    "days": "Days",
+    "hour": "hr",
+    "minute": "min",
+    "count_chart_title": ""
+  },
   "task_manager": {
     "add": "Add Task",
     "add_container": "Add category",

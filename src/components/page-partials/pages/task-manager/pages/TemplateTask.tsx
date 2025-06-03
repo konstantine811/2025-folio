@@ -65,8 +65,10 @@ const TemplateTask = () => {
                 templated={true}
                 items={dailyTasks}
                 onChangeTasks={(tasks) => {
-                  setTemplatedTask(tasks);
                   saveTemplateTasks(tasks);
+                  setTimeout(() => {
+                    setTemplatedTask(tasks);
+                  }, 0);
                 }}
               />
             </TaskManagerProvider>

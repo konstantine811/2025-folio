@@ -9,3 +9,19 @@ export interface WeekTaskData {
   categories: string[];
   tasks: ItemTask[];
 }
+
+export interface FlattenedTask {
+  day: number;
+  title: string;
+  duration: number;
+}
+
+export type StackedDay = {
+  day: number;
+  [title: string]: string | number; // ключ — назва задачі
+};
+
+export type TaskAnalytics = {
+  weekTaskEntity: WeekTaskEntity;
+  flattenTasks: FlattenedTask[];
+};

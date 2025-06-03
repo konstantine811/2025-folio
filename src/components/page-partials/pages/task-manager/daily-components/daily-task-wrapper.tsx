@@ -169,7 +169,6 @@ const DailyTaskWrapper = () => {
 
   const handleAddTemplateTask = useCallback(
     (task: NormalizedTask) => {
-      console.log("handleAddTemplateTask", task);
       const newTask = addNewTask(dailyTasks, task);
       handleChangeTasks(newTask);
     },

@@ -1,11 +1,16 @@
 import { useTranslation } from "react-i18next";
 
 import DailySidePanelContent from "./daily-side-panel-content";
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 
 const DailySidePanelWrapper = () => {
   const [t] = useTranslation();
+  const hS = useHeaderSizeStore((s) => s.size);
   return (
-    <div className="mx-auto w-full max-w-sm right-0 px-4">
+    <div
+      className="mx-auto w-full max-w-sm right-0 px-4 sticky"
+      style={{ top: `${hS}px` }}
+    >
       <header className="grid gap-1.5 p-4 text-center sm:text-left">
         <h2 className="text-lg text-foreground font-semibold leading-none tracking-tight">
           {t("task_manager.calendar.header.title")}
