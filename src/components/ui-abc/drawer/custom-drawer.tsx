@@ -43,6 +43,7 @@ const CustomDrawer = ({
       <DrawerContent className="border-foreground/10 overflow-y-auto overflow-x-hidden touch-auto overscroll-contain">
         <div className="mx-auto w-full max-w-sm right-0 px-4 ios-scroll-fix">
           <DrawerHeader>
+            Updated 1.0
             <DrawerTitle>{t(title)}</DrawerTitle>
             <DrawerDescription>{t(description)}</DrawerDescription>
           </DrawerHeader>
