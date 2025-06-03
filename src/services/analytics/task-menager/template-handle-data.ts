@@ -5,7 +5,7 @@ import {
   TypeAnalyticsPeriod,
   WeekTaskEntity,
 } from "@/types/analytics/task-analytics.model";
-import { Items, ItemTask } from "@/types/drag-and-drop.model";
+import { DayNumber, Items, ItemTask } from "@/types/drag-and-drop.model";
 
 export const getTaskAnalyticsData = (tasks: Items): TaskAnalytics => {
   const weekTaskEntity: WeekTaskEntity = {};
@@ -67,16 +67,13 @@ function switchCategoryTimeCountByPeriod(
   task: ItemTask,
   timeToAdd: number
 ) {
-  if (!categoryCountTime[categoryName]) {
-    categoryCountTime[categoryName] = 0;
-  }
-  if (period === "all") {
-    categoryCountTime[categoryName] += timeToAdd;
-  } else if (period === "by_all_week") {
-    if (task.whenDo.length > 0) {
-      categoryCountTime[categoryName] += timeToAdd;
-    }
-  } else if (task.whenDo.includes(period)) {
+  const shouldAdd =
+    period === "all" ||
+    (period === "by_all_week" && task.whenDo.length > 0) ||
+    task.whenDo.includes(period as DayNumber);
+
+  if (shouldAdd) {
+    categoryCountTime[categoryName] ??= 0;
     categoryCountTime[categoryName] += timeToAdd;
   }
 }

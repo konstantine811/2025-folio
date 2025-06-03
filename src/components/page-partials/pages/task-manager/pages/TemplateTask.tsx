@@ -79,7 +79,7 @@ const TemplateTask = () => {
       </main>
 
       {/* Права колонка */}
-      <div className="flex-1">
+      <div className="flex-1 relative">
         {mdSize ? (
           <CustomDrawer
             title="task_manager.analytics.header.title"

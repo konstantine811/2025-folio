@@ -10,7 +10,12 @@ import { useState } from "react";
 const TopicBlogDrawer = () => {
   const [isOpen, setIsOpen] = useState(false);
   return (
-    <Drawer direction="left" open={isOpen} onOpenChange={setIsOpen}>
+    <Drawer
+      direction="left"
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      noBodyStyles={true}
+    >
       <DrawerTrigger>
         <div className="fixed left-0 z-50">
           <Button
@@ -27,7 +32,7 @@ const TopicBlogDrawer = () => {
           </Button>
         </div>
       </DrawerTrigger>
-      <DrawerContent className="border-foreground/10">
+      <DrawerContent className="border-foreground/10 overflow-auto">
         <TopicBlogDrawerContent />
       </DrawerContent>
     </Drawer>

@@ -10,6 +10,7 @@ import {
 import { useTranslation } from "react-i18next";
 import SoundHoverElement from "../sound-hover-element";
 import { ArrowBigLeft } from "lucide-react";
+import { useState } from "react";
 
 const CustomDrawer = ({
   title,
@@ -20,9 +21,15 @@ const CustomDrawer = ({
   description: string;
   children: React.ReactNode;
 }) => {
+  const [open, setOpen] = useState(false);
   const [t] = useTranslation();
   return (
-    <Drawer direction="right">
+    <Drawer
+      open={open}
+      onOpenChange={setOpen}
+      direction="right"
+      noBodyStyles={true}
+    >
       <DrawerTrigger>
         <Button
           asChild
@@ -33,7 +40,7 @@ const CustomDrawer = ({
           </SoundHoverElement>
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="border-foreground/10 overflow-y-auto overflow-x-hidden">
+      <DrawerContent className="border-foreground/10 overflow-y-auto overflow-x-hidden touch-auto overscroll-contain">
         <div className="mx-auto w-full max-w-sm right-0 px-4">
           <DrawerHeader>
             <DrawerTitle>{t(title)}</DrawerTitle>

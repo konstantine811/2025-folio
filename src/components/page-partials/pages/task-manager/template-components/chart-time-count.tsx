@@ -9,6 +9,7 @@ import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import * as d3 from "d3";
 import { paresSecondToTime } from "@/utils/time.util";
+import ChartTitle from "../chart/chart-title";
 
 const ChartTimeCount = ({
   taskAnalytics,
@@ -269,9 +270,7 @@ const ChartTimeCount = ({
         id="tooltip"
         className="absolute z-50 max-w-sm p-2 top-0 left-0 text-sm bg-background border border-foreground/20  foreground rounded shadow-lg shadow-background will-change-transform pointer-events-none opacity-0 items-center flex-col gap-2"
       />
-      <h4 className="text-xl text-foreground/80 text-center">
-        {t("chart.count_chart_title")}
-      </h4>
+      <ChartTitle title="chart.count_chart_title" />
       <svg ref={ref} className="w-full h-auto" />
     </div>
   );

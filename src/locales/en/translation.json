@@ -47,7 +47,8 @@
     "days": "Days",
     "hour": "hr",
     "minute": "min",
-    "count_chart_title": ""
+    "count_chart_title": "Total Duration of Tasks Each Day",
+    "period_count_chart_title": "Total Duration of Tasks Over Period"
   },
   "task_manager": {
     "add": "Add Task",
@@ -90,7 +91,7 @@
       "5": "Fri",
       "6": "Sat",
       "7": "Sun",
-      "all": "All",
+      "all": "Common Tasks",
       "by_all_week": "By All Days of the Week"
     },
     "dialog_category": {
