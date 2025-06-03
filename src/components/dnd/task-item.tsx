@@ -49,8 +49,8 @@ export function TaskItem({
       }`}
     >
       {templated && (
-        <div className="mt-5">
-          <div className="absolute top-1 flex items-center w-full justify-center">
+        <div className="mt-2">
+          <div className="absolute -top-1 flex items-center w-full justify-center">
             {task.whenDo.map((day) => (
               <div
                 key={day}
@@ -64,7 +64,7 @@ export function TaskItem({
       )}
       <div
         className="flex items-center justify-between gap-2 bg-card 
-             border border-foreground/10 rounded-xl px-4 py-3 text-foreground 
+             border border-foreground/10 rounded-xl px-4 py-1 text-foreground 
              group transition-all hover:border-foreground/10 hover:bg-card/10 duration-300"
       >
         {!templated && (

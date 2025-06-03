@@ -58,6 +58,7 @@ const DialogTask = ({
 
   const handleCreateTask = () => {
     if (title.trim() === "") return;
+    console.log("Creating task fsdfsd:");
     if (task) {
       onChangeTask(
         {
@@ -106,7 +107,7 @@ const DialogTask = ({
       setSelectedDays(task.whenDo || []);
       setIsDetermined(task.isDetermined || false);
     }
-  }, [task, reset]);
+  }, [task]);
 
   useEffect(() => {
     if (isOpen) {
@@ -167,7 +168,10 @@ const DialogTask = ({
                 "task_manager.dialog_create_task.task.title.description"
               )}
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                console.log("on change title");
+                setTitle(e.target.value);
+              }}
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">

@@ -33,7 +33,7 @@ export function TaskItemFuture({
         {t(task.categoryName)}
       </h6>
       <div
-        className="flex items-center justify-between gap-0 md:gap-2 py-2 bg-card 
+        className="flex items-center justify-between gap-0 md:gap-2 py-1 bg-card 
              border border-foreground/10 rounded-xl px-4 text-foreground 
              group transition-all hover:border-foreground/10 hover:bg-background duration-300 ease-in-out"
       >

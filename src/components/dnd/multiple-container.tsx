@@ -47,7 +47,7 @@ import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { useTaskManager } from "./context/use-task-manger-context";
 import { CATEGORY_OPTIONS } from "./config/category-options";
 import useCategoryHandle from "./hooks/useCategoryHandle";
-import DialogAgree from "./dialog/dialog-agree";
+import DialogAgree from "../ui-abc/dialog/dialog-agree";
 
 interface Props {
   adjustScale?: boolean;

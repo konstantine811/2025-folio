@@ -9,12 +9,18 @@ import {
 } from "@/services/firebase/taskManagerData";
 import { FirebaseCollection } from "@/config/firebase.config";
 import Preloader from "@/components/page-partials/preloader/preloader";
+import DialogAgree from "@/components/ui-abc/dialog/dialog-agree";
+import { UniqueIdentifier } from "@dnd-kit/core";
+import { useTranslation } from "react-i18next";
 
 const AddFutureTask = ({ date }: { date: string | undefined }) => {
   const [isOpoenDialog, setIsOpenDialog] = useState(false);
   const [categoryTasks, setCategoryTasks] = useState<ItemTaskCategory[]>([]);
   const [editTask, setEditTask] = useState<ItemTaskCategory | null>(null);
+  const [isOpenAgreeDialog, setIsOpenAgreeDialog] = useState(false);
+  const [deleteTaskId, setDeleteTaskId] = useState<UniqueIdentifier>();
   const [isLoaded, setIsLoaded] = useState(false);
+  const [t] = useTranslation();
   const handleAddTask = () => {
     setIsOpenDialog(true);
   };
@@ -51,6 +57,24 @@ const AddFutureTask = ({ date }: { date: string | undefined }) => {
 
   return (
     <>
+      <DialogAgree
+        isOpen={isOpenAgreeDialog}
+        setIsOpen={setIsOpenAgreeDialog}
+        title={t("task_manager.dialog_delete_task.title")}
+        description={t("task_manager.dialog_delete_task.description")}
+        buttonYesTitle={t("task_manager.dialog_delete_task.yes")}
+        buttonNoTitle={t("task_manager.dialog_delete_task.no")}
+        onAgree={(status) => {
+          if (status && deleteTaskId) {
+            setCategoryTasks((prev) => {
+              const updated = prev.filter((task) => task.id !== deleteTaskId);
+              handleUpdateTask(updated);
+              return updated;
+            });
+          }
+          setDeleteTaskId(undefined);
+        }}
+      />
       {isLoaded ? (
         <div className="flex flex-col gap-4">
           <DailyAddTemplateButton
@@ -92,11 +116,8 @@ const AddFutureTask = ({ date }: { date: string | undefined }) => {
                 setIsOpenDialog(true);
               }}
               onDeleteTask={(id) => {
-                setCategoryTasks((prev) => {
-                  const updated = prev.filter((task) => task.id !== id);
-                  handleUpdateTask(updated);
-                  return updated;
-                });
+                setDeleteTaskId(id);
+                setIsOpenAgreeDialog(true);
               }}
             />
           )}

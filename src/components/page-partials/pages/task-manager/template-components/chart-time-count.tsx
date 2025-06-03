@@ -232,23 +232,32 @@ const ChartTimeCount = ({
       .attr("width", x.bandwidth())
       .attr("rx", 4)
       .on("pointerenter pointermove", function (event, d) {
-        const parentGroup = d3.select(event.currentTarget.parentNode); // ✅ без `this`
+        const parentGroup = d3.select(event.currentTarget.parentNode);
         const taskTitle = (parentGroup.datum() as { key: string }).key;
         const timeInSeconds = d[1] - d[0];
         const { hours, minutes } = paresSecondToTime(timeInSeconds);
+
+        const svgRect = ref.current!.getBoundingClientRect(); // ← ключовий момент
+
+        const x = event.clientX - svgRect.left;
+        const y = event.clientY - svgRect.top;
+
         d3.select(this).attr("class", "fill-foreground/50");
+
         tooltip
           .style(
             "transform",
-            `translate(calc(${event.pageX}px - 100%), ${event.pageY - 28}px)`
+            `translate(calc(${x}px - 100% - 20px), ${y - 28}px)`
           )
           .style("display", "flex")
           .style("opacity", 1).html(`
-           <h3 class="text-foreground/80 text-center text-sm"><strong>${taskTitle}</strong></h3>
-           <div class="bg-accent/50 rounded-md text-center text-sm border border-foreground/50 inline-block px-2">${
-             hours !== "00" ? hours + t(`chart.hour`) : ""
-           }  ${minutes !== "00" ? minutes + t(`chart.minute`) : ""}</div>
-         `);
+      <h3 class="text-foreground/80 text-center text-sm"><strong>${taskTitle}</strong></h3>
+      <div class="bg-accent/50 rounded-md text-center text-sm border border-foreground/50 inline-block px-2">
+        ${
+          hours !== "00" ? hours + t("chart.hour") : ""
+        } ${minutes !== "00" ? minutes + t("chart.minute") : ""}
+      </div>
+    `);
       })
       .on("mouseleave", function () {
         d3.select(this).attr("class", "fill-transparent");
@@ -256,10 +265,10 @@ const ChartTimeCount = ({
       });
   }, [taskAnalytics, ref, hS, t, themeName]);
   return (
-    <div className="relative z-50 w-full">
+    <div className="w-full relative">
       <div
         id="tooltip"
-        className="fixed z-50 max-w-sm p-2 top-0 left-0 text-sm bg-background foreground rounded shadow hidden transition-all duration-100 will-change-transform pointer-events-none opacity-0 items-center flex-col gap-2"
+        className="absolute z-50 max-w-sm p-2 top-0 left-0 text-sm bg-background border border-foreground/20  foreground rounded shadow-lg shadow-background will-change-transform pointer-events-none opacity-0 items-center flex-col gap-2"
       />
       <h4 className="text-xl text-foreground/80 text-center">
         {t("chart.count_chart_title")}

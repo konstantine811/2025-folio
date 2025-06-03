@@ -15,7 +15,10 @@ const TemplateRightPanel = ({ templateTasks }: { templateTasks: Items }) => {
 
   return (
     <>
-      <div className="min-w-xs sm:min-w-md sticky" style={{ top: `${hS}px` }}>
+      <div
+        className="min-w-xs sm:min-w-md sticky pt-8"
+        style={{ top: `${hS}px` }}
+      >
         {analyticsData ? <ChartTimeCount taskAnalytics={analyticsData} /> : ""}
       </div>
     </>
