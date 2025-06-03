@@ -21,8 +21,8 @@ export interface ItemTask {
 }
 
 export interface NormalizedTask extends ItemTask {
-  categoryId: string;
-  categoryTitle: string;
+  categoryId: UniqueIdentifier;
+  categoryName: string;
 }
 
 export interface ItemTaskCategory extends ItemTask {

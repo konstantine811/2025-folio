@@ -17,6 +17,7 @@ import { useState } from "react";
 import TaskLocalTimeStatic from "./task-local-time-static";
 import { useTranslation } from "react-i18next";
 import TaskDeterminedTime from "./task-components/task-determined-time";
+import { StyleWordBreak } from "@/config/styles.config";
 export function TaskItem({
   index = "",
   task,
@@ -108,7 +109,7 @@ export function TaskItem({
               ? "text-accent font-medium"
               : `${getPriorityClassByPrefix(task.priority)}`
           }`}
-          style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+          style={StyleWordBreak}
           title={hasLongWord ? task.title : ""}
         >
           {task.title}

@@ -45,7 +45,7 @@
   "task_manager": {
     "add": "Add Task",
     "add_container": "Add category",
-    "add_template_task": "Add Task Template",
+    "add_template_task": "Add Task Template for Today",
     "template_daily_task_title": "Daily Task Template",
     "daily_task_title": "Your Tasks for",
     "edit": "Edit Task",
@@ -67,6 +67,12 @@
       "header": {
         "title": "Move Goal",
         "description": "Set your daily activity goal."
+      }
+    },
+    "add_all_tasks": {
+      "header": {
+        "title": "All Tasks from Template",
+        "description": "You can add all tasks from the template to your task list."
       }
     },
     "day_names": {

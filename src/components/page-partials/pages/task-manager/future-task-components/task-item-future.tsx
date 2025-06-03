@@ -7,6 +7,7 @@ import WrapperHoverElement from "@/components/ui-abc/wrapper-hover-element";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { StyleWordBreak } from "@/config/styles.config";
 
 export function TaskItemFuture({
   task,
@@ -42,7 +43,7 @@ export function TaskItemFuture({
               ? "text-accent font-medium"
               : `${getPriorityClassByPrefix(task.priority)}`
           }`}
-          style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+          style={StyleWordBreak}
           title={hasLongWord ? task.title : ""}
         >
           {task.title}

@@ -54,6 +54,8 @@ const TemplateRightPanel = ({ templateTasks }: { templateTasks: Items }) => {
       });
     });
 
+    // console.log("Flattened tasks:", tasks);
+
     // Group and pivot
     const grouped = d3.group(tasks, (d) => d.day);
     const keys = Array.from(new Set(tasks.map((d) => d.title)));

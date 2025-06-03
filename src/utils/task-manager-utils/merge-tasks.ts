@@ -22,6 +22,15 @@ export function mergeItemsDeep(base: Items, incoming: Items): Items {
   return denormalizeItems(baseN);
 }
 
+export function addNewTask(base: Items, incoming: NormalizedTask): Items {
+  const baseN = normalizeItems(base);
+  const finded = baseN.find((task) => task.id === incoming.id);
+  if (!finded) {
+    baseN.push(incoming);
+  }
+  return denormalizeItems(baseN);
+}
+
 export function findPlannedOrDeterminedTask(task: Items): NormalizedTask[] {
   const taskN = normalizeItems(task);
   return taskN.filter((t) => t.isPlanned || t.isDetermined);
@@ -35,7 +44,7 @@ export function normalizeItems(items: Items): NormalizedTask[] {
       result.push({
         ...task,
         categoryId: category.id.toString(),
-        categoryTitle: category.title,
+        categoryName: category.title,
       });
     }
   }
@@ -45,15 +54,15 @@ export function normalizeItems(items: Items): NormalizedTask[] {
 
 export function denormalizeItems(normalizedTasks: NormalizedTask[]): Items {
   const map = new Map<
-    string,
-    { id: string; title: string; tasks: ItemTask[] }
+    UniqueIdentifier,
+    { id: UniqueIdentifier; title: string; tasks: ItemTask[] }
   >();
 
   for (const task of normalizedTasks) {
     if (!map.has(task.categoryId)) {
       map.set(task.categoryId, {
         id: task.categoryId,
-        title: task.categoryTitle,
+        title: task.categoryName,
         tasks: [],
       });
     }

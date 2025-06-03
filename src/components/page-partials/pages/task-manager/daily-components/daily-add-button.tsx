@@ -1,6 +1,7 @@
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import WrapperHoverElement from "@/components/ui-abc/wrapper-hover-element";
 import { Button } from "@/components/ui/button";
+import { StyleWordBreak } from "@/config/styles.config";
 import { HoverStyleElement } from "@/types/sound";
 import { Plus } from "lucide-react";
 import { ButtonHTMLAttributes } from "react";
@@ -24,8 +25,9 @@ const DailyAddTemplateButton = ({
       >
         <Button
           {...rest}
+          style={StyleWordBreak}
           variant="ghost"
-          className="w-full text-foreground border border-foreground/10 hover:bg-transparent hover:text-accent"
+          className="w-full truncate text-foreground border border-foreground/10 hover:bg-transparent hover:text-accent"
         >
           <Plus />
           {t(title)}

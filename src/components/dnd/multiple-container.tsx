@@ -105,6 +105,9 @@ export function MultipleContainers({
   const [containers, setContainers] = useState<UniqueIdentifier[]>(
     items.map((cat) => cat.id)
   );
+  useEffect(() => {
+    setItems(initialItems);
+  }, [initialItems]);
   const [addTaskContainerId, setAddTaskContainerId] =
     useState<UniqueIdentifier | null>(null);
   const [editTask, setEditTask] = useState<ItemTask | null>(null);

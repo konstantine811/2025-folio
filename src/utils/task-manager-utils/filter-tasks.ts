@@ -2,16 +2,24 @@ import {
   DayNumber,
   Items,
   ItemTaskCategory,
+  NormalizedTask,
 } from "@/types/drag-and-drop.model";
+import { normalizeItems } from "./merge-tasks";
 
 export const filterTaskByDayOfWeedk = (
   tasks: Items | null | undefined,
   dayOfWeek: DayNumber
-): { filteredTasks: Items; plannedTasks: ItemTaskCategory[] } => {
+): {
+  filteredTasks: Items;
+  plannedTasks: ItemTaskCategory[];
+  filteredNormalizedTasks: NormalizedTask[];
+} => {
   if (!tasks || tasks.length === 0) {
-    return { filteredTasks: [], plannedTasks: [] };
+    return { filteredTasks: [], plannedTasks: [], filteredNormalizedTasks: [] };
   }
   const taskItemsCategories: ItemTaskCategory[] = [];
+  const filteredNormalizedTasks: NormalizedTask[] = [];
+
   const filteredTasks = tasks
     .map((category) => {
       const filteredTasks = category.tasks.filter((task) => {
@@ -23,6 +31,13 @@ export const filterTaskByDayOfWeedk = (
             });
           }
           return true;
+        } else {
+          filteredNormalizedTasks.push({
+            ...task,
+            categoryName: category.title,
+            categoryId: category.id,
+          });
+          return false;
         }
       });
 
@@ -32,5 +47,18 @@ export const filterTaskByDayOfWeedk = (
       };
     })
     .filter((category) => category.tasks.length > 0);
-  return { filteredTasks, plannedTasks: taskItemsCategories };
+  return {
+    filteredTasks,
+    plannedTasks: taskItemsCategories,
+    filteredNormalizedTasks,
+  };
+};
+
+export const filterTasksByAnotherTasks = (
+  base: Items,
+  incoming: Items
+): NormalizedTask[] => {
+  const baseN = normalizeItems(base);
+  const incomingN = normalizeItems(incoming).map((task) => task.id);
+  return baseN.filter((task) => !incomingN.includes(task.id));
 };
