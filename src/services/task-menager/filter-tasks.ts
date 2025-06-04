@@ -4,7 +4,7 @@ import {
   ItemTaskCategory,
   NormalizedTask,
 } from "@/types/drag-and-drop.model";
-import { normalizeItems } from "./merge-tasks";
+import { normalizeItems } from "./normalize";
 
 export const filterTaskByDayOfWeedk = (
   tasks: Items | null | undefined,

@@ -54,7 +54,8 @@
     "period": "Період",
     "category": "Категорії",
     "task": "Задачі",
-    "timeCount": "Tривалість"
+    "timeCount": "Tривалість",
+    "task_day_count": "Задачі за сьогодні"
   },
 
   "task_manager": {

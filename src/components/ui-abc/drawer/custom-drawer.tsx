@@ -36,7 +36,7 @@ const CustomDrawer = ({
       <DrawerTrigger>
         <Button
           asChild
-          className="bg-card hover:bg-card/10 rounded-r-none fixed right-0 z-30"
+          className="bg-card hover:bg-card/10 rounded-r-none fixed right-0 z-30 text-foreground"
         >
           <SoundHoverElement animValue={-3.3} hoverAnimType="translate-x">
             <ArrowBigLeft />

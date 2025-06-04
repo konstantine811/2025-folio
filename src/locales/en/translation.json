@@ -53,7 +53,8 @@
     "period": "Period",
     "category": "Categories",
     "task": "Tasks",
-    "timeCount": "Duration"
+    "timeCount": "Duration",
+    "task_day_count": "Tasks for Today"
   },
   "task_manager": {
     "add": "Add Task",

@@ -1,10 +1,10 @@
 import {
   Items,
-  ItemTask,
   ItemTaskCategory,
   NormalizedTask,
 } from "@/types/drag-and-drop.model";
 import { UniqueIdentifier } from "@dnd-kit/core";
+import { denormalizeItems, normalizeItems } from "./normalize";
 
 // Мердж задач по ID
 export function mergeItemsDeep(base: Items, incoming: Items): Items {
@@ -34,55 +34,6 @@ export function addNewTask(base: Items, incoming: NormalizedTask): Items {
 export function findPlannedOrDeterminedTask(task: Items): NormalizedTask[] {
   const taskN = normalizeItems(task);
   return taskN.filter((t) => t.isPlanned || t.isDetermined);
-}
-
-export function normalizeItems(items: Items): NormalizedTask[] {
-  const result: NormalizedTask[] = [];
-
-  for (const category of items) {
-    for (const task of category.tasks) {
-      result.push({
-        ...task,
-        categoryId: category.id.toString(),
-        categoryName: category.title,
-      });
-    }
-  }
-
-  return result;
-}
-
-export function denormalizeItems(normalizedTasks: NormalizedTask[]): Items {
-  const map = new Map<
-    UniqueIdentifier,
-    { id: UniqueIdentifier; title: string; tasks: ItemTask[] }
-  >();
-
-  for (const task of normalizedTasks) {
-    if (!map.has(task.categoryId)) {
-      map.set(task.categoryId, {
-        id: task.categoryId,
-        title: task.categoryName,
-        tasks: [],
-      });
-    }
-
-    const { tasks } = map.get(task.categoryId)!;
-
-    tasks.push({
-      id: task.id,
-      title: task.title,
-      isDone: task.isDone,
-      time: task.time,
-      timeDone: task.timeDone,
-      priority: task.priority,
-      isPlanned: task.isPlanned,
-      whenDo: task.whenDo,
-      isDetermined: task.isDetermined,
-    });
-  }
-
-  return Array.from(map.values());
 }
 
 export function mergeItemsWithPlannedTasks(

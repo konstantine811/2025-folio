@@ -1,5 +1,6 @@
 import { ANALYTICS_PERIODS } from "@/config/task-analytics.config";
-import { DayNumber, ItemTask } from "../drag-and-drop.model";
+import { DayNumber, ItemTask, Priority } from "../drag-and-drop.model";
+import { UniqueIdentifier } from "@dnd-kit/core";
 
 export type WeekTaskEntity = {
   [key in DayNumber]?: WeekTaskData;
@@ -43,3 +44,17 @@ export enum TemplateTypeChart {
 }
 
 export type TypeAnalyticsPeriod = (typeof ANALYTICS_PERIODS)[number];
+
+export type TaskAnalyticsIdEntity = {
+  [id: UniqueIdentifier]: TaskAnalyticsData;
+};
+
+export interface TaskAnalyticsData {
+  title: string;
+  time: number;
+  category: string;
+  isDone: boolean;
+  priority: Priority;
+}
+
+export type TaskAnalyticsBarOrientation = "vertical" | "horizontal";

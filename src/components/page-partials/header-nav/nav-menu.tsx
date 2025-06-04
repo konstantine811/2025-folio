@@ -9,7 +9,7 @@ import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 import Login from "./login";
 
 export default function NavMenu() {
-  const isMdSize = useIsAdoptive();
+  const { isAdoptiveSize: isMdSize } = useIsAdoptive();
   return (
     <div className="relative md:max-w-md w-full">
       <div className="relative z-20 flex items-center justify-between gap-4 w-full bg-card/90 px-5  backdrop-blur-2xl py-2">

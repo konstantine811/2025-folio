@@ -77,8 +77,14 @@ const ChartPieItem = ({
       .attr("transform", "scale(1)");
 
     if (type === ItemTimeMapKeys.task) {
+      let activeNode: d3.BaseType | SVGGElement;
       paths
-        .on("pointerenter pointermove", function (event, d) {
+        .on("pointerenter", function (event, d) {
+          if (activeNode && activeNode !== this) {
+            hideTooltip();
+          }
+
+          activeNode = this as SVGGElement;
           // Scale
           d3.select(this)
             .transition()
@@ -104,8 +110,10 @@ const ChartPieItem = ({
             .transition()
             .duration(200)
             .attr("transform", "scale(1)");
-
-          hideTooltip();
+          if (activeNode === this) {
+            hideTooltip();
+            activeNode = null;
+          }
         });
     }
 

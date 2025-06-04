@@ -22,7 +22,7 @@ const RevealNavMenu = memo(() => {
   const navigateTo = useTransitionRouteTo();
   const setClick = useClickStore((state) => state.setClick);
   const isSoundEnabled = useSoundEnabledStore((state) => state.isSoundEnabled);
-  const isMdSize = useIsAdoptive();
+  const { isAdoptiveSize: isMdSize } = useIsAdoptive();
   const firstPathName = useRoutingPath("parent");
   const containerVariants = {
     visible: {

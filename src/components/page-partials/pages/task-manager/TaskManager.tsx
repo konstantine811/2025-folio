@@ -36,8 +36,8 @@ const TaskManager = () => {
                 <DockItem
                   className={`${
                     nestedPath?.includes(activePath)
-                      ? "bg-accent"
-                      : "bg-card/50"
+                      ? "bg-accent text-background"
+                      : "bg-card/50 text-accent"
                   } transition duration-200 aspect-square rounded-full border border-foreground/10 cursor-pointer`}
                 >
                   <DockLabel>{t(`pages.task.${title}`)}</DockLabel>

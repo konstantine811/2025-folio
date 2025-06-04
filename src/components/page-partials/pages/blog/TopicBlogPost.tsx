@@ -16,7 +16,7 @@ const TopicBlogPost = ({
   subtopics: { [key: string]: PostCover[] };
 }) => {
   const hSize = useHeaderSizeStore((state) => state.size);
-  const isMdSize = useIsAdoptive();
+  const { isAdoptiveSize: isMdSize } = useIsAdoptive();
   const [t] = useTranslation();
   const [selectedSubtopic, setSelectedSubtopic] = useState<string | null>(null);
   const refTopic = useRef<HTMLDivElement>(null!);

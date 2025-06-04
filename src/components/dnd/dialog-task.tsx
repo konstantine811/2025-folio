@@ -58,7 +58,6 @@ const DialogTask = ({
 
   const handleCreateTask = () => {
     if (title.trim() === "") return;
-    console.log("Creating task fsdfsd:");
     if (task) {
       onChangeTask(
         {
@@ -169,7 +168,6 @@ const DialogTask = ({
               )}
               value={title}
               onChange={(e) => {
-                console.log("on change title");
                 setTitle(e.target.value);
               }}
             />

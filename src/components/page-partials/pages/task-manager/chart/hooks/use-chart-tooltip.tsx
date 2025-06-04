@@ -15,6 +15,7 @@ const useChartTooltip = () => {
   const showTooltip = useCallback(
     ({ event, title, time }: ShowTooltipParams) => {
       if (!ref.current) return;
+      const tooltip = ref.current;
       const { hours, minutes } = paresSecondToTime(time);
       const svgRect = (
         ref.current.parentElement?.querySelector("svg") as SVGSVGElement
@@ -28,7 +29,7 @@ const useChartTooltip = () => {
         .select(ref.current)
         .style(
           "transform",
-          `translate(calc(${x}px - 100% - 20px), ${y - 28}px)`
+          `translate(calc(${x}px - 100% - 20px), ${y + 28}px)`
         )
         .style("display", "flex")
         .style("opacity", 1).html(`
@@ -41,6 +42,14 @@ const useChartTooltip = () => {
       }
         </div>
       `);
+
+      const { left } = tooltip.getBoundingClientRect();
+      if (left < 0) {
+        d3.select(ref.current).style(
+          "transform",
+          `translate(calc(${x}px - 20px), ${y + 28}px)`
+        );
+      }
     },
     [t]
   );

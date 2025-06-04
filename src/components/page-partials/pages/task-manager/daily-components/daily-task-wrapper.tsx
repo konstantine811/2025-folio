@@ -19,8 +19,7 @@ import {
   findPlannedOrDeterminedTask,
   mergeItemsDeep,
   mergeItemsWithPlannedTasks,
-  normalizeItems,
-} from "@/utils/task-manager-utils/merge-tasks";
+} from "@/services/task-menager/merge-tasks";
 import Preloader from "@/components/page-partials/preloader/preloader";
 import { TaskManagerProvider } from "@/components/dnd/context/task-manager-context";
 import { useParams } from "react-router";
@@ -29,11 +28,13 @@ import AddFutureTask from "../future-task-components/add-future-task";
 import { FirebaseCollection } from "@/config/firebase.config";
 import { useDailyTaskContext } from "../hooks/useDailyTask";
 import { getISODay } from "date-fns";
+
+import DailyAddAnotherTask from "./daily-add-another-task";
 import {
   filterTaskByDayOfWeedk,
   filterTasksByAnotherTasks,
-} from "@/utils/task-manager-utils/filter-tasks";
-import DailyAddAnotherTask from "./daily-add-another-task";
+} from "@/services/task-menager/filter-tasks";
+import { normalizeItems } from "@/services/task-menager/normalize";
 
 const DailyTaskWrapper = () => {
   const [dailyTasks, setDailyTasks] = useState<Items>([]);
@@ -45,8 +46,13 @@ const DailyTaskWrapper = () => {
     NormalizedTask[]
   >([]); // Додано для зберігання нормалізованих завдань
   const [templatedTasks, setTemplatedTasks] = useState<Items>([]);
-  const { plannedTasks, updatePlannedTask, deletePlannedTask, addPlannedTask } =
-    useDailyTaskContext();
+  const {
+    plannedTasks,
+    updatePlannedTask,
+    deletePlannedTask,
+    addPlannedTask,
+    setDailyTasks: setProviderDailyTask,
+  } = useDailyTaskContext();
   useEffect(() => {
     // 💡 Очищення попередніх даних при зміні дати
     setIsLoaded(false);
@@ -77,6 +83,10 @@ const DailyTaskWrapper = () => {
       setIsLoaded(true);
     });
   }, [date]);
+
+  useEffect(() => {
+    setProviderDailyTask(dailyTasks);
+  }, [dailyTasks, setProviderDailyTask]);
 
   const onUpdatePlannedTask = useCallback(
     (task: ItemTask) => {

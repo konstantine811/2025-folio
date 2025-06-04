@@ -23,7 +23,7 @@ const TopicBlogDrawer = () => {
         <div className="fixed left-0 z-50">
           <Button
             asChild
-            className="bg-card hover:bg-background rounded-l-none"
+            className="bg-card hover:bg-background rounded-l-none text-foreground"
           >
             <SoundHoverElement
               animValue={3.3}

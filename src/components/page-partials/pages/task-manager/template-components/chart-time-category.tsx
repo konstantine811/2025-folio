@@ -1,4 +1,4 @@
-import { getItemTimeMapByPeriod } from "@/services/analytics/task-menager/template-handle-data";
+import { getItemTimeMapByPeriod } from "@/services/task-menager/analytics/template-handle-data";
 import {
   ItemTimeMap,
   ItemTimeMapKeys,

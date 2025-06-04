@@ -24,7 +24,7 @@ export const ThemePalette: IThemePalette = {
     background: "#fbfcf8",
     border: "#808080",
     foreground: "#333333",
-    card: "#fbfcf8",
+    card: "#e8e8e8",
     "card-foreground": "#333333",
     popover: "#fbfcf8",
     "popover-foreground": "#333333",
@@ -78,6 +78,11 @@ export enum ThemeType {
   // GREEN = "green",
   // BLUE = "blue",
 }
+
+export const ThemeStaticPalette = {
+  green: "#65e396",
+  yellow: "#fffe00",
+};
 
 export type IThemePalette = {
   [keyof in ThemeType]: IThemeColors;

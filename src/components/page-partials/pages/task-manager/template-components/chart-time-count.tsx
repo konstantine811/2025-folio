@@ -1,4 +1,4 @@
-import { ThemePalette } from "@/config/theme-colors.config";
+import { ThemePalette, ThemeStaticPalette } from "@/config/theme-colors.config";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { useThemeStore } from "@/storage/themeStore";
 import {
@@ -12,7 +12,7 @@ import { paresSecondToTime } from "@/utils/time.util";
 import ChartTitle from "../chart/chart-title";
 import useChartTooltip from "../chart/hooks/use-chart-tooltip";
 import { Items } from "@/types/drag-and-drop.model";
-import { getTaskAnalyticsData } from "@/services/analytics/task-menager/template-handle-data";
+import { getTaskAnalyticsData } from "@/services/task-menager/analytics/template-handle-data";
 
 const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
   const [analyticsData, setAnalyticsData] = useState<TaskAnalytics>();
@@ -199,7 +199,7 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
     gradient
       .append("stop")
       .attr("offset", `${(1 - y(20 * 3600) / y(0)) * 100}%`)
-      .attr("stop-color", "#FACC15"); // 13h (жовтий)
+      .attr("stop-color", ThemeStaticPalette.yellow); // 13h (жовтий)
 
     gradient
       .append("stop")
@@ -218,6 +218,7 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
       .attr("rx", 8)
       .attr("fill", "url(#barGradient)");
 
+    let activeNode: d3.BaseType | SVGGElement;
     group
       .selectAll("g.layer-outline")
       .data(stack)
@@ -235,7 +236,12 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
       })
       .attr("width", x.bandwidth())
       .attr("rx", 4)
-      .on("pointerenter pointermove", function (event, d) {
+      .on("pointerenter", function (event, d) {
+        if (activeNode && activeNode !== this) {
+          hideTooltip();
+        }
+
+        activeNode = this as SVGGElement;
         const parentGroup = d3.select(event.currentTarget.parentNode);
         const taskTitle = (parentGroup.datum() as { key: string }).key;
         const timeInSeconds = d[1] - d[0];
@@ -248,7 +254,10 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
       })
       .on("mouseleave", function () {
         d3.select(this).attr("class", "fill-transparent");
-        hideTooltip();
+        if (activeNode && activeNode === this) {
+          hideTooltip();
+          activeNode = null;
+        }
       });
   }, [analyticsData, ref, hS, t, themeName, showTooltip, hideTooltip]);
   return (

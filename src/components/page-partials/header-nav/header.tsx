@@ -11,7 +11,7 @@ import Login from "./login";
 const Header = memo(() => {
   const headerRef = useRef<HTMLDivElement>(null!);
   const setHeaderSize = useHeaderSizeStore((state) => state.setHeaderSize);
-  const isMdSize = useIsAdoptive();
+  const { isAdoptiveSize: isMdSize } = useIsAdoptive();
   useEffect(() => {
     if (headerRef.current) {
       const headerHeight = headerRef.current.getBoundingClientRect().height;

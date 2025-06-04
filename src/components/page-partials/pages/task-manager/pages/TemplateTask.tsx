@@ -18,7 +18,7 @@ import CustomDrawer from "@/components/ui-abc/drawer/custom-drawer";
 
 const TemplateTask = () => {
   const outletContext = useOutletContext<TaskManagerOutletContext>();
-  const mdSize = useIsAdoptive();
+  const { isAdoptiveSize: mdSize } = useIsAdoptive();
   const [dailyTasks, setDailyTasks] = useState<Items>([]);
   const [templatedTask, setTemplatedTask] = useState<Items>([]); // 🔄 Додано для зберігання шаблонних завдань
   const [isLoaded, setIsLoaded] = useState(false);
