@@ -136,7 +136,6 @@ const ChartPieItem = ({
       .attr("transform", "scale(1)");
 
     if (type === ItemTimeMapKeys.task) {
-      let activeNode: d3.BaseType | SVGGElement;
       if (isTouchDevice) {
         paths.on("pointerdown", function (event, d) {
           handleInteraction(
@@ -167,10 +166,10 @@ const ChartPieItem = ({
         });
         paths.on("mouseleave", function () {
           // Scale back
-          if (activeNode === this) {
+          if (activeNodeRef.current === this) {
             onHideTooltip(this as SVGGElement);
             hideTooltip();
-            activeNode = null;
+            activeNodeRef.current = null;
           }
         });
       }

@@ -37,7 +37,7 @@ function App() {
           <MouseTrail />
         </>
       )}
-      <div>
+      <div className="overflow-x-hidden">
         <Header />
         <Suspense fallback={<Preloader />}>
           <RouteWrapper>

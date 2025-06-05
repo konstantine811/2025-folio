@@ -5,7 +5,7 @@ import {
   StackedDay,
   TaskAnalytics,
 } from "@/types/analytics/task-analytics.model";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as d3 from "d3";
 import { paresSecondToTime } from "@/utils/time.util";
@@ -13,6 +13,7 @@ import ChartTitle from "../chart/chart-title";
 import useChartTooltip from "../chart/hooks/use-chart-tooltip";
 import { Items } from "@/types/drag-and-drop.model";
 import { getTaskAnalyticsData } from "@/services/task-menager/analytics/template-handle-data";
+import { isTouchDevice } from "@/utils/touch-inspect";
 
 const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
   const [analyticsData, setAnalyticsData] = useState<TaskAnalytics>();
@@ -21,11 +22,51 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
   const themeName = useThemeStore((s) => s.selectedTheme);
   const { TooltipElement, showTooltip, hideTooltip } = useChartTooltip();
   const ref = useRef<SVGSVGElement>(null);
-
+  const activeNodeRef = useRef<SVGGElement | null>(null);
   useEffect(() => {
     const analyticsData = getTaskAnalyticsData(templateTasks); // 🔄 Виклик функції для обробки шаблонних завдань
     setAnalyticsData(analyticsData);
   }, [templateTasks]);
+
+  const onHideTooltip = useCallback((self: SVGGElement) => {
+    d3.select(self).attr("class", "fill-transparent");
+  }, []);
+
+  const handleInteraction = useCallback(
+    (event: PointerEvent, self: SVGGElement, d: d3.SeriesPoint<StackedDay>) => {
+      const activeNode = activeNodeRef.current;
+
+      // Якщо такий же — приховуємо
+      if (activeNode && activeNode === self) {
+        onHideTooltip(self);
+        hideTooltip();
+        activeNodeRef.current = null;
+        return;
+      }
+
+      // Якщо інший активний — ховаємо
+      if (activeNode && activeNode !== self) {
+        onHideTooltip(self);
+        hideTooltip();
+      }
+
+      activeNodeRef.current = self; // Зберігаємо активний елемент
+      const parentNode = (event.currentTarget as Element)
+        .parentNode as Element | null;
+      if (!parentNode) return;
+
+      const parentGroup = d3.select(parentNode);
+      const taskTitle = (parentGroup.datum() as { key: string }).key;
+      const timeInSeconds = d[1] - d[0];
+      d3.select(self).attr("class", "fill-foreground/50");
+      showTooltip({
+        event,
+        title: taskTitle,
+        time: timeInSeconds,
+      });
+    },
+    [showTooltip, hideTooltip, onHideTooltip]
+  );
 
   useEffect(() => {
     if (!ref.current) return;
@@ -45,8 +86,6 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
       .attr("viewBox", `0 0 ${width} ${height + heightViewOffset}`)
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
-
-    // console.log("Flattened tasks:", tasks);
 
     // Group and pivot
     const grouped = d3.group(tasks, (d) => d.day);
@@ -217,9 +256,7 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
       .attr("height", (d) => y(0) - y(d.total))
       .attr("rx", 8)
       .attr("fill", "url(#barGradient)");
-
-    let activeNode: d3.BaseType | SVGGElement;
-    group
+    const path = group
       .selectAll("g.layer-outline")
       .data(stack)
       .join("g")
@@ -236,37 +273,42 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
       })
       .attr("width", x.bandwidth())
       .attr("rx", 4)
-      .on("pointerenter", function (event, d) {
-        if (activeNode && activeNode !== this) {
-          hideTooltip();
-        }
-
-        activeNode = this as SVGGElement;
-        const parentGroup = d3.select(event.currentTarget.parentNode);
-        const taskTitle = (parentGroup.datum() as { key: string }).key;
-        const timeInSeconds = d[1] - d[0];
-        d3.select(this).attr("class", "fill-foreground/50");
-        showTooltip({
-          event,
-          title: taskTitle,
-          time: timeInSeconds,
-        });
-      })
-      .on("mouseleave", function () {
-        d3.select(this).attr("class", "fill-transparent");
-        if (activeNode && activeNode === this) {
-          hideTooltip();
-          activeNode = null;
-        }
+      .attr("id", (d) => {
+        return `rect-${d.data.day}-${d[0]}-${d[1]}`;
       });
-  }, [analyticsData, ref, hS, t, themeName, showTooltip, hideTooltip]);
+    if (isTouchDevice) {
+      path.on("pointerdown", function (event, d) {
+        handleInteraction(event, this as SVGGElement, d);
+      });
+    } else {
+      path
+        .on("pointerenter", function (event, d) {
+          handleInteraction(event, this as SVGGElement, d);
+        })
+        .on("mouseleave", function () {
+          if (activeNodeRef.current === this) {
+            onHideTooltip(this as SVGGElement);
+            hideTooltip();
+            activeNodeRef.current = null;
+          }
+        });
+    }
+  }, [
+    analyticsData,
+    ref,
+    hS,
+    t,
+    themeName,
+    showTooltip,
+    hideTooltip,
+    handleInteraction,
+    onHideTooltip,
+  ]);
   return (
     <div className="w-full relative">
       <ChartTitle title="chart.count_chart_title" />
-      <div className="w-full relative flex justify-center items-center">
-        {TooltipElement}
-        <svg ref={ref} className="w-full h-auto" />
-      </div>
+      {TooltipElement}
+      <svg ref={ref} className="w-full h-auto" />
     </div>
   );
 };
