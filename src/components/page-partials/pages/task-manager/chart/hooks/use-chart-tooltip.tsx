@@ -2,6 +2,7 @@ import { useCallback, useRef } from "react";
 import * as d3 from "d3";
 import { paresSecondToTime } from "@/utils/time.util";
 import { useTranslation } from "react-i18next";
+import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 
 type ShowTooltipParams = {
   event: PointerEvent;
@@ -11,6 +12,7 @@ type ShowTooltipParams = {
 
 const useChartTooltip = () => {
   const ref = useRef<HTMLDivElement | null>(null);
+  const { isAdoptiveSize } = useIsAdoptive();
   const [t] = useTranslation();
   const showTooltip = useCallback(
     ({ event, title, time }: ShowTooltipParams) => {
@@ -25,12 +27,9 @@ const useChartTooltip = () => {
       const x = event.clientX - svgRect.left;
       const y = event.clientY - svgRect.top;
 
-      d3
+      const currentRef = d3
         .select(ref.current)
-        .style(
-          "transform",
-          `translate(calc(${x}px - 100% - 20px), ${y + 28}px)`
-        )
+
         .style("display", "flex")
         .style("opacity", 1).html(`
         <h3 class="text-foreground/80 text-center text-sm"><strong>${t(
@@ -43,9 +42,18 @@ const useChartTooltip = () => {
         </div>
       `);
 
+      if (isAdoptiveSize) {
+        // currentRef.style("left", `calc(${x}px - 50% - 20px)`);
+      } else {
+        currentRef.style(
+          "transform",
+          `translate(calc(${x}px - 100% - 20px), ${y + 28}px)`
+        );
+      }
+
       const { left } = tooltip.getBoundingClientRect();
       if (left < 0) {
-        d3.select(ref.current).style(
+        currentRef.style(
           "transform",
           `translate(calc(${x}px - 20px), ${y + 28}px)`
         );
@@ -62,7 +70,7 @@ const useChartTooltip = () => {
   const TooltipElement = (
     <div
       ref={ref}
-      className="absolute z-50 max-w-sm p-2 top-0 left-0 text-sm bg-background border border-foreground/20 foreground rounded shadow-lg shadow-background will-change-transform pointer-events-none opacity-0 items-center flex-col gap-2"
+      className="absolute z-50 max-w-sm p-2 top-0 text-sm bg-background border border-foreground/20 foreground rounded shadow-lg shadow-background will-change-transform pointer-events-none opacity-0 items-center flex-col gap-2"
     />
   );
 

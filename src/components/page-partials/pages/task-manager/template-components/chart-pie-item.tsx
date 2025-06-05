@@ -4,9 +4,10 @@ import {
 } from "@/types/analytics/task-analytics.model";
 import { paresSecondToTime } from "@/utils/time.util";
 import * as d3 from "d3";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import useChartTooltip from "../chart/hooks/use-chart-tooltip";
+import { isTouchDevice } from "@/utils/touch-inspect";
 
 interface PieChartProps {
   data: ItemTimeMap; // CategoryCountTime
@@ -25,6 +26,10 @@ const ChartPieItem = ({
   const [t] = useTranslation();
   const { TooltipElement, showTooltip, hideTooltip } = useChartTooltip();
 
+  const onHideTooltip = useCallback((self: SVGGElement) => {
+    d3.select(self).transition().duration(200).attr("transform", "scale(1)");
+  }, []);
+
   // Всередині компонента
   useEffect(() => {
     if (!ref.current) return;
@@ -32,7 +37,6 @@ const ChartPieItem = ({
     const names = Object.keys(data);
     const values = Object.values(data);
     const dataset = names.map((name, i) => ({ name, value: values[i] }));
-    let isTouchDevice = false;
     const radius = Math.min(width, height) / 2;
 
     const pie = d3.pie<{ name: string; value: number }>().value((d) => d.value);
@@ -68,6 +72,7 @@ const ChartPieItem = ({
       .data(arcs)
       .join("path")
       .attr("d", arc)
+      .attr("id", (d) => `arc-${d.data.name}`)
       .attr("class", "fill-accent stroke-2 stroke-foreground/20")
       .attr("style", (d) => {
         const opacity = Math.max(0.1, d.data.value / maxValue);
@@ -79,12 +84,17 @@ const ChartPieItem = ({
 
     if (type === ItemTimeMapKeys.task) {
       let activeNode: d3.BaseType | SVGGElement;
-      paths
-        .on("pointerdown", function (event, d) {
-          isTouchDevice = true;
-
+      if (isTouchDevice) {
+        paths.on("pointerdown", function (event, d) {
+          if (activeNode === this) {
+            onHideTooltip(this as SVGGElement);
+            hideTooltip();
+            activeNode = null;
+            return;
+          }
           if (activeNode && activeNode !== this) {
             hideTooltip();
+            onHideTooltip(activeNode as SVGGElement);
           }
 
           activeNode = this as SVGGElement;
@@ -106,11 +116,18 @@ const ChartPieItem = ({
             title: t(d.data.name),
             time: d.data.value,
           });
-        })
-        .on("pointerenter", function (event, d) {
-          if (isTouchDevice) return;
+        });
+      } else {
+        paths.on("pointerenter", function (event, d) {
+          if (activeNode === this) {
+            onHideTooltip(this as SVGGElement);
+            hideTooltip();
+            activeNode = null;
+            return;
+          }
           if (activeNode && activeNode !== this) {
             hideTooltip();
+            onHideTooltip(activeNode as SVGGElement);
           }
 
           activeNode = this as SVGGElement;
@@ -132,18 +149,16 @@ const ChartPieItem = ({
             title: t(d.data.name),
             time: d.data.value,
           });
-        })
-        .on("mouseleave", function () {
+        });
+        paths.on("mouseleave", function () {
           // Scale back
-          d3.select(this)
-            .transition()
-            .duration(200)
-            .attr("transform", "scale(1)");
           if (activeNode === this) {
+            onHideTooltip(this as SVGGElement);
             hideTooltip();
             activeNode = null;
           }
         });
+      }
     }
 
     group
@@ -195,7 +210,7 @@ const ChartPieItem = ({
 
   // В render:
   return (
-    <div className="relative w-full">
+    <div className="relative w-full flex items-center justify-center">
       {type === ItemTimeMapKeys.task && TooltipElement}
       <svg ref={ref} className="w-full h-auto overflow-visible" />
     </div>

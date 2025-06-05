@@ -262,9 +262,11 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
   }, [analyticsData, ref, hS, t, themeName, showTooltip, hideTooltip]);
   return (
     <div className="w-full relative">
-      {TooltipElement}
       <ChartTitle title="chart.count_chart_title" />
-      <svg ref={ref} className="w-full h-auto" />
+      <div className="w-full relative flex justify-center items-center">
+        {TooltipElement}
+        <svg ref={ref} className="w-full h-auto" />
+      </div>
     </div>
   );
 };
