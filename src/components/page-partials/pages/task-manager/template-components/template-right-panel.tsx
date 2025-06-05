@@ -8,14 +8,14 @@ import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import ChartTimeCount from "./chart-time-count";
 import ChartTimeCategory from "./chart-time-category";
 import ChartToogleItem from "./chart-toogle-item";
+import { getSumTime } from "@/services/task-menager/analytics/sum-time";
 
 const TemplateRightPanel = ({ templateTasks }: { templateTasks: Items }) => {
   const [selectedItem, setSelectedItem] = useState<TemplateTypeChart[]>([]);
   const hS = useHeaderSizeStore((s) => s.size);
-
   return (
     <>
-      {templateTasks.length > 0 && (
+      {getSumTime(templateTasks) > 0 && (
         <div
           className="min-w-xs w-full pt-8 sticky top-0"
           style={{ top: `${hS}px` }}

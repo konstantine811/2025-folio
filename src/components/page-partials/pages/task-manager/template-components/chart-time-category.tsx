@@ -23,19 +23,18 @@ const ChartTimeCategory = ({
   const defaultPeriod: TypeAnalyticsPeriod = "all";
   const [period, setPeriod] = useState<TypeAnalyticsPeriod>(defaultPeriod); // Додано для зберігання вибраного періоду
   useEffect(() => {
-    const analyticsData = getItemTimeMapByPeriod(
-      templateTasks,
-      defaultPeriod,
-      type
-    ); // 🔄 Виклик функції для обробки шаблонних завдань
-    setAnalyticsData(analyticsData);
-  }, [templateTasks, type]);
+    const analyticsData = getItemTimeMapByPeriod(templateTasks, period, type);
+    if (type === ItemTimeMapKeys.category) {
+      const keys = Object.keys(analyticsData);
+      const nonZeroCount = keys.filter((key) => analyticsData[key] > 0).length;
 
-  useEffect(() => {
-    if (period) {
-      const analyticsData = getItemTimeMapByPeriod(templateTasks, period, type);
-      setAnalyticsData(analyticsData);
+      if (keys.length < 2 || nonZeroCount < 2) {
+        setAnalyticsData(undefined);
+        return;
+      }
     }
+
+    setAnalyticsData(analyticsData);
   }, [templateTasks, period, type]);
 
   return (
