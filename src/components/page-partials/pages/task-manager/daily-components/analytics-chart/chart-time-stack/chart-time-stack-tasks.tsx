@@ -10,6 +10,7 @@ import {
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemePalette, ThemeStaticPalette } from "@/config/theme-colors.config";
 import { isTouchDevice } from "@/utils/touch-inspect";
+import { useTranslation } from "react-i18next";
 
 const ChartTimeStackTasks = ({
   data,
@@ -20,6 +21,7 @@ const ChartTimeStackTasks = ({
 }) => {
   const ref = useRef<SVGSVGElement>(null);
   const { TooltipElement, showTooltip, hideTooltip } = useChartTooltip();
+  const [t] = useTranslation();
   const themeName = useThemeStore((s) => s.selectedTheme);
   const [svgHeight, setSvgHeight] = useState<number>(0);
   const activeNodeRef = useRef<SVGGElement | null>(null);
@@ -71,7 +73,7 @@ const ChartTimeStackTasks = ({
 
     const margin =
       direction === "horizontal"
-        ? { top: 0, right: 3, bottom: 10, left: 4 }
+        ? { top: 0, right: 3, bottom: 30, left: 4 }
         : { top: 3, right: 0, bottom: 7, left: 17 };
 
     const width =
@@ -248,20 +250,39 @@ const ChartTimeStackTasks = ({
     };
 
     if (direction === "horizontal") {
-      group
+      const axisGroup = group
         .append("g")
         .attr("transform", `translate(0, ${barSize + 1})`)
         .call(
           d3.axisBottom(scale).tickValues(tickValues).tickFormat(tickFormatter)
         )
         .attr("class", "text-lg lg:text-xs text-muted-foreground");
+
+      // 👇 додаємо лейбу до осі X
+      axisGroup
+        .append("text")
+        .attr("x", scale(roundedMax))
+        .attr("y", 40)
+        .attr("text-anchor", "middle")
+        .attr("x", scale(totalTime / 2))
+        .attr("class", "text-md fill-foreground text-center")
+        .text(t("chart.hours"));
     } else {
-      group
+      const axisGroup = group
         .append("g")
         .call(
           d3.axisLeft(scale).tickValues(tickValues).tickFormat(tickFormatter)
         )
         .attr("class", "text-xs text-muted-foreground");
+
+      axisGroup
+        .append("text")
+        .attr("transform", `rotate(-90)`)
+        .attr("x", -scale(totalTime / 2))
+        .attr("y", -30)
+        .attr("text-anchor", "end")
+        .attr("class", "text-md fill-foreground text-center")
+        .text(t("chart.hours"));
     }
   }, [
     data,
@@ -273,6 +294,7 @@ const ChartTimeStackTasks = ({
     themeName,
     onHideTooltip,
     handleInteraction,
+    t,
   ]);
 
   return (
