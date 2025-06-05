@@ -206,11 +206,11 @@ const ChartPieItem = ({
             .text(`${hours}:${minutes}`);
         }
       });
-  }, [data, width, height, t, type, showTooltip, hideTooltip]);
+  }, [data, width, height, t, type, showTooltip, hideTooltip, onHideTooltip]);
 
   // В render:
   return (
-    <div className="relative w-full flex items-center justify-center">
+    <div className="relative">
       {type === ItemTimeMapKeys.task && TooltipElement}
       <svg ref={ref} className="w-full h-auto overflow-visible" />
     </div>
