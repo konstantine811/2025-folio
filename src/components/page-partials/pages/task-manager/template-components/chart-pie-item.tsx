@@ -91,7 +91,6 @@ const ChartPieItem = ({
     const values = Object.values(data);
     const dataset = names.map((name, i) => ({ name, value: values[i] }));
     const radius = Math.min(width, height) / 2;
-
     const pie = d3.pie<{ name: string; value: number }>().value((d) => d.value);
     const arc = d3
       .arc<d3.PieArcDatum<{ name: string; value: number }>>()
@@ -187,7 +186,11 @@ const ChartPieItem = ({
         })`;
       })
       .attr("text-anchor", (d) =>
-        (d.endAngle + d.startAngle) / 2 > Math.PI ? "start" : "end"
+        (d.endAngle + d.startAngle) / 2 > Math.PI
+          ? "start"
+          : names.length > 1
+          ? "end"
+          : "start"
       )
       .attr("alignment-baseline", "middle")
       .attr("fill", "currentColor")
