@@ -1,4 +1,5 @@
 import { LocalStorageKey } from "@/config/local-storage.config";
+import { RoutPath } from "@/config/router-config";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 
@@ -11,9 +12,9 @@ export const useSaveLastRoute = () => {
 
     // Якщо це перший візит і ми на root ("/"), перенаправити
     if (
-      location.pathname === "/" &&
+      location.pathname === RoutPath.HOME &&
       lastRoute &&
-      lastRoute !== "/" &&
+      lastRoute !== RoutPath.HOME &&
       lastRoute !== location.pathname
     ) {
       navigate(lastRoute, { replace: true });
@@ -22,7 +23,7 @@ export const useSaveLastRoute = () => {
 
   useEffect(() => {
     // Не зберігай технічні маршрути (логін, 404, і т.п.)
-    if (location.pathname !== "/login") {
+    if (location.pathname !== RoutPath.LOGIN) {
       localStorage.setItem(
         LocalStorageKey.lastRoute,
         location.pathname + location.search
