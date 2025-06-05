@@ -2,16 +2,20 @@ import { auth, provider } from "@/config/firebase.config";
 import { RoutPath } from "@/config/router-config";
 import { useAuthStore } from "@/storage/useAuthStore";
 import { onAuthStateChanged, signInWithPopup } from "firebase/auth";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 
 const useLogin = () => {
   const setUser = useAuthStore((state) => state.setUser);
   const navigate = useNavigate();
+  const hasNavigated = useRef(false);
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user); // <- автоматично відновлює стан збереженого користувача
-      navigate(`${RoutPath.TASK_MANAGER}/${RoutPath.TASK_MANAGER_TEMPLATE}`);
+      if (user && !hasNavigated.current) {
+        hasNavigated.current = true;
+        navigate(`${RoutPath.TASK_MANAGER}/${RoutPath.TASK_MANAGER_TEMPLATE}`);
+      }
     });
 
     return () => unsubscribe();
