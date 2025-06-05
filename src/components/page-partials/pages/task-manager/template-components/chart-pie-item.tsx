@@ -24,6 +24,7 @@ const ChartPieItem = ({
   const ref = useRef<SVGSVGElement | null>(null);
   const [t] = useTranslation();
   const { TooltipElement, showTooltip, hideTooltip } = useChartTooltip();
+
   // Всередині компонента
   useEffect(() => {
     if (!ref.current) return;
@@ -31,7 +32,7 @@ const ChartPieItem = ({
     const names = Object.keys(data);
     const values = Object.values(data);
     const dataset = names.map((name, i) => ({ name, value: values[i] }));
-
+    let isTouchDevice = false;
     const radius = Math.min(width, height) / 2;
 
     const pie = d3.pie<{ name: string; value: number }>().value((d) => d.value);
@@ -79,7 +80,35 @@ const ChartPieItem = ({
     if (type === ItemTimeMapKeys.task) {
       let activeNode: d3.BaseType | SVGGElement;
       paths
+        .on("pointerdown", function (event, d) {
+          isTouchDevice = true;
+
+          if (activeNode && activeNode !== this) {
+            hideTooltip();
+          }
+
+          activeNode = this as SVGGElement;
+
+          d3.select(this)
+            .transition()
+            .duration(100)
+            .attr(
+              "transform",
+              `translate(${arc.centroid(
+                d
+              )}) scale(1.28) translate(${-arc.centroid(d)[0]}, ${-arc.centroid(
+                d
+              )[1]})`
+            );
+
+          showTooltip({
+            event,
+            title: t(d.data.name),
+            time: d.data.value,
+          });
+        })
         .on("pointerenter", function (event, d) {
+          if (isTouchDevice) return;
           if (activeNode && activeNode !== this) {
             hideTooltip();
           }
