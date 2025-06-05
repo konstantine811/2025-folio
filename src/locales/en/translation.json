@@ -54,7 +54,8 @@
     "category": "Categories",
     "task": "Tasks",
     "timeCount": "Duration",
-    "task_day_count": "Tasks for Today"
+    "task_day_count": "Tasks for Today",
+    "pie_category_daily_time": "Task Completion Status by Categories"
   },
   "task_manager": {
     "add": "Add Task",

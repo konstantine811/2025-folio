@@ -49,6 +49,10 @@ export type TaskAnalyticsIdEntity = {
   [id: UniqueIdentifier]: TaskAnalyticsData;
 };
 
+export type CategoryAnalyticsNameEntity = {
+  [id: string]: CategoryAnalyticsData;
+};
+
 export interface TaskAnalyticsData {
   title: string;
   time: number;
@@ -57,4 +61,11 @@ export interface TaskAnalyticsData {
   priority: Priority;
 }
 
+export interface CategoryAnalyticsData {
+  time: number;
+  countDone: number;
+  countDoneTime: number;
+  taskDone: string[];
+  taskNoDone: string[];
+}
 export type TaskAnalyticsBarOrientation = "vertical" | "horizontal";

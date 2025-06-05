@@ -55,7 +55,8 @@
     "category": "Категорії",
     "task": "Задачі",
     "timeCount": "Tривалість",
-    "task_day_count": "Задачі за сьогодні"
+    "task_day_count": "Задачі за сьогодні",
+    "pie_category_daily_time": "Статус виконання задач за категоріями"
   },
 
   "task_manager": {
