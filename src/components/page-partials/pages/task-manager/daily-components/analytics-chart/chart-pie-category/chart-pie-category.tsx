@@ -84,7 +84,7 @@ const ChartPieCategory = ({
         };
         return arcOverlay(arcProgress);
       })
-      .attr("fill-opacity", (d, i) => {
+      .attr("fill-opacity", (_, i) => {
         const entry = entries[i];
         const progress = entry.doneTime / entry.time;
         return Math.min(progress, 1) * 1.2; // Scale opacity based on progress
