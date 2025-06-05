@@ -46,7 +46,7 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
 
       // Якщо інший активний — ховаємо
       if (activeNode && activeNode !== self) {
-        onHideTooltip(self);
+        onHideTooltip(activeNode);
         hideTooltip();
       }
 
