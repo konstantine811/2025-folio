@@ -4,7 +4,7 @@ import {
 } from "@/types/analytics/task-analytics.model";
 import { paresSecondToTime } from "@/utils/time.util";
 import * as d3 from "d3";
-import { useCallback, useEffect, useRef } from "react";
+import { RefObject, useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import useChartTooltip from "../chart/hooks/use-chart-tooltip";
 import { isTouchDevice } from "@/utils/touch-inspect";
@@ -25,10 +25,63 @@ const ChartPieItem = ({
   const ref = useRef<SVGSVGElement | null>(null);
   const [t] = useTranslation();
   const { TooltipElement, showTooltip, hideTooltip } = useChartTooltip();
-
+  const activeNodeRef = useRef<SVGGElement | null>(null);
   const onHideTooltip = useCallback((self: SVGGElement) => {
     d3.select(self).transition().duration(200).attr("transform", "scale(1)");
   }, []);
+
+  const handleInteraction = useCallback(
+    (
+      self: SVGGElement,
+      d: d3.PieArcDatum<{ name: string; value: number }>,
+      event: PointerEvent,
+      arc: d3.Arc<null, d3.PieArcDatum<{ name: string; value: number }>>,
+      t: (s: string) => string,
+      showTooltip: (data: {
+        event: PointerEvent;
+        title: string;
+        time: number;
+      }) => void,
+      hideTooltip: () => void,
+      onHideTooltip: (el: SVGGElement) => void,
+      activeNodeRef: RefObject<SVGGElement | null>
+    ) => {
+      const activeNode = activeNodeRef.current;
+
+      // Якщо такий же — приховуємо
+      if (activeNode === self) {
+        onHideTooltip(self);
+        hideTooltip();
+        activeNodeRef.current = null;
+        return;
+      }
+
+      // Якщо інший активний — ховаємо
+      if (activeNode && activeNode !== self) {
+        onHideTooltip(activeNode);
+        hideTooltip();
+      }
+
+      activeNodeRef.current = self;
+
+      d3.select(self)
+        .transition()
+        .duration(100)
+        .attr(
+          "transform",
+          `translate(${arc.centroid(d)}) scale(1.28) translate(${-arc.centroid(
+            d
+          )[0]}, ${-arc.centroid(d)[1]})`
+        );
+
+      showTooltip({
+        event,
+        title: t(d.data.name),
+        time: d.data.value,
+      });
+    },
+    []
+  );
 
   // Всередині компонента
   useEffect(() => {
@@ -86,69 +139,31 @@ const ChartPieItem = ({
       let activeNode: d3.BaseType | SVGGElement;
       if (isTouchDevice) {
         paths.on("pointerdown", function (event, d) {
-          if (activeNode === this) {
-            onHideTooltip(this as SVGGElement);
-            hideTooltip();
-            activeNode = null;
-            return;
-          }
-          if (activeNode && activeNode !== this) {
-            hideTooltip();
-            onHideTooltip(activeNode as SVGGElement);
-          }
-
-          activeNode = this as SVGGElement;
-
-          d3.select(this)
-            .transition()
-            .duration(100)
-            .attr(
-              "transform",
-              `translate(${arc.centroid(
-                d
-              )}) scale(1.28) translate(${-arc.centroid(d)[0]}, ${-arc.centroid(
-                d
-              )[1]})`
-            );
-
-          showTooltip({
+          handleInteraction(
+            this as SVGGElement,
+            d,
             event,
-            title: t(d.data.name),
-            time: d.data.value,
-          });
+            arc,
+            t,
+            showTooltip,
+            hideTooltip,
+            onHideTooltip,
+            activeNodeRef
+          );
         });
       } else {
         paths.on("pointerenter", function (event, d) {
-          if (activeNode === this) {
-            onHideTooltip(this as SVGGElement);
-            hideTooltip();
-            activeNode = null;
-            return;
-          }
-          if (activeNode && activeNode !== this) {
-            hideTooltip();
-            onHideTooltip(activeNode as SVGGElement);
-          }
-
-          activeNode = this as SVGGElement;
-          // Scale
-          d3.select(this)
-            .transition()
-            .duration(10)
-            .attr(
-              "transform",
-              `translate(${arc.centroid(
-                d
-              )}) scale(1.28) translate(${-arc.centroid(d)[0]}, ${-arc.centroid(
-                d
-              )[1]})`
-            );
-
-          showTooltip({
+          handleInteraction(
+            this as SVGGElement,
+            d,
             event,
-            title: t(d.data.name),
-            time: d.data.value,
-          });
+            arc,
+            t,
+            showTooltip,
+            hideTooltip,
+            onHideTooltip,
+            activeNodeRef
+          );
         });
         paths.on("mouseleave", function () {
           // Scale back
@@ -206,7 +221,17 @@ const ChartPieItem = ({
             .text(`${hours}:${minutes}`);
         }
       });
-  }, [data, width, height, t, type, showTooltip, hideTooltip, onHideTooltip]);
+  }, [
+    data,
+    width,
+    height,
+    t,
+    type,
+    showTooltip,
+    hideTooltip,
+    onHideTooltip,
+    handleInteraction,
+  ]);
 
   // В render:
   return (
