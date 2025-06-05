@@ -12,16 +12,12 @@ import useSetTheme from "./hooks/useSetTheme";
 import useLogin from "./services/firebase/useLogin";
 import { isTouchDevice } from "./utils/touch-inspect";
 import { useResizeListener } from "./hooks/useResizeListener";
-import { useSaveLastRoute } from "./hooks/useSaveLastRoute";
-
 function App() {
   subscribeToHoverSound();
   useLogin(); // ✅
   useSetTheme(); // ✅
-  useSaveLastRoute();
   const [isTouch, setIsTouch] = useState(false);
   useResizeListener();
-
   useEffect(() => {
     setIsTouch(isTouchDevice);
   }, []);
