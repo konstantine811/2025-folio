@@ -1,13 +1,15 @@
 import * as d3 from "d3";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { paresSecondToTime } from "@/utils/time.util";
 import useChartTooltip from "../../../chart/hooks/use-chart-tooltip";
 import {
   TaskAnalyticsBarOrientation,
+  TaskAnalyticsData,
   TaskAnalyticsIdEntity,
 } from "@/types/analytics/task-analytics.model";
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemePalette, ThemeStaticPalette } from "@/config/theme-colors.config";
+import { isTouchDevice } from "@/utils/touch-inspect";
 
 const ChartTimeStackTasks = ({
   data,
@@ -20,9 +22,49 @@ const ChartTimeStackTasks = ({
   const { TooltipElement, showTooltip, hideTooltip } = useChartTooltip();
   const themeName = useThemeStore((s) => s.selectedTheme);
   const [svgHeight, setSvgHeight] = useState<number>(0);
-
+  const activeNodeRef = useRef<SVGGElement | null>(null);
   const barSize = 30;
   const timeLength = 600;
+
+  const onHideTooltip = useCallback((self: SVGGElement) => {
+    d3.select(self)
+      .select("rect")
+      .transition()
+      .duration(300)
+      .attr("transform", "scale(1)")
+      .attr("fill", "transparent");
+  }, []);
+
+  const handleInteraction = useCallback(
+    (self: SVGGElement, event: PointerEvent, d: TaskAnalyticsData) => {
+      const activeNode = activeNodeRef.current;
+
+      // Якщо такий же — приховуємо
+      if (activeNode === self) {
+        onHideTooltip(self);
+        hideTooltip();
+        activeNodeRef.current = null;
+        return;
+      }
+
+      // Якщо інший активний — ховаємо
+      if (activeNode && activeNode !== self) {
+        onHideTooltip(activeNode);
+        hideTooltip();
+      }
+
+      activeNodeRef.current = self;
+
+      d3.select(self)
+        .select("rect")
+        .transition()
+        .duration(200)
+        .attr("fill", ThemePalette[themeName]["foreground"]);
+
+      showTooltip({ event, title: d.title, time: d.time });
+    },
+    [showTooltip, hideTooltip, onHideTooltip, themeName]
+  );
 
   useEffect(() => {
     if (!ref.current) return;
@@ -138,49 +180,29 @@ const ChartTimeStackTasks = ({
 
     let offset = 0;
 
-    let activeNode: d3.BaseType | SVGGElement;
-
     const taskGroups = group
       .selectAll("g.task")
       .data(tasks)
       .join("g")
-      .attr("class", "task")
-      .on("pointerenter", function (event, d) {
-        // 🔄 скидаємо попередній активний елемент
-        if (activeNode && activeNode !== this) {
-          d3.select(activeNode)
-            .select("rect")
-            .transition()
-            .duration(100)
-            .attr("transform", "scale(1)")
-            .attr("fill", "transparent");
+      .attr("class", "task");
 
-          hideTooltip();
-        }
-
-        // 🟢 активуємо новий
-        activeNode = this as SVGGElement;
-
-        d3.select(this)
-          .select("rect")
-          .transition()
-          .duration(200)
-          .attr("fill", ThemePalette[themeName]["foreground"]);
-
-        showTooltip({ event, title: d.title, time: d.time });
-      })
-      .on("mouseleave", function () {
-        d3.select(this)
-          .select("rect")
-          .transition()
-          .duration(300)
-          .attr("transform", "scale(1)")
-          .attr("fill", "transparent");
-        if (activeNode === this) {
-          hideTooltip();
-          activeNode = null;
-        }
+    if (isTouchDevice) {
+      taskGroups.on("pointerdown", function (event, d) {
+        handleInteraction(this as SVGGElement, event, d);
       });
+    } else {
+      taskGroups
+        .on("pointerenter", function (event, d) {
+          handleInteraction(this as SVGGElement, event, d);
+        })
+        .on("mouseleave", function () {
+          if (activeNodeRef.current === this) {
+            onHideTooltip(this as SVGGElement);
+            hideTooltip();
+            activeNodeRef.current = null;
+          }
+        });
+    }
 
     taskGroups
       .append("rect")
@@ -249,6 +271,8 @@ const ChartTimeStackTasks = ({
     barSize,
     timeLength,
     themeName,
+    onHideTooltip,
+    handleInteraction,
   ]);
 
   return (
