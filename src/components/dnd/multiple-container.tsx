@@ -120,6 +120,7 @@ export function MultipleContainers({
   const [isOpenAgreeDialog, setIsOpenAgreeDialog] = useState(false);
   const [removeContainerId, setRemoveContainerId] =
     useState<UniqueIdentifier | null>(null);
+  const lastUpdatedTaskRef = useRef<UniqueIdentifier | null>(null);
   const collisionDetectionStrategy: CollisionDetection =
     useCollisionDectionStrategy({
       activeId,
@@ -163,8 +164,9 @@ export function MultipleContainers({
   );
 
   useEffect(() => {
-    if (taskTimeDone) {
-      updateTaskTime(taskTimeDone.id, taskTimeDone?.timeDone);
+    if (taskTimeDone && taskTimeDone.id !== lastUpdatedTaskRef.current) {
+      updateTaskTime(taskTimeDone.id, taskTimeDone.timeDone);
+      lastUpdatedTaskRef.current = taskTimeDone.id;
     }
   }, [taskTimeDone, updateTaskTime]);
 

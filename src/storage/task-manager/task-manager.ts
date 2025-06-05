@@ -24,7 +24,6 @@ export const createTaskManagerStore = () =>
       const now = Date.now();
       const prev = get().playingTask;
       const startedAt = get().startedAt;
-
       if (prev && startedAt) {
         const elapsed = Math.floor((now - startedAt) / 1000);
         set({ playingTask: task, startedAt: now });
@@ -43,6 +42,7 @@ export const createTaskManagerStore = () =>
       const startedAt = get().startedAt;
 
       if (playing && startedAt) {
+        console.log("ON UPDATE 2");
         const elapsed = Math.floor((now - startedAt) / 1000);
         get().updateTaskTime(playing.id, playing.timeDone + elapsed);
       }
