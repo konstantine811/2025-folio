@@ -71,7 +71,7 @@ const ChartTimeStackTasks = ({
 
     const margin =
       direction === "horizontal"
-        ? { top: 0, right: 3, bottom: 10, left: 2 }
+        ? { top: 0, right: 3, bottom: 10, left: 4 }
         : { top: 3, right: 0, bottom: 7, left: 17 };
 
     const width =
@@ -254,7 +254,7 @@ const ChartTimeStackTasks = ({
         .call(
           d3.axisBottom(scale).tickValues(tickValues).tickFormat(tickFormatter)
         )
-        .attr("class", "text-xs text-muted-foreground");
+        .attr("class", "text-lg lg:text-xs text-muted-foreground");
     } else {
       group
         .append("g")
