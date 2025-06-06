@@ -39,7 +39,6 @@ const DailyTask = () => {
   const updatePlannedTask = useCallback(
     (updatedTask: ItemTask) => {
       //
-      console.log("✅ Task updated locally");
       if (!plannedTasks) return;
       const index = plannedTasks.findIndex(
         (task) => task.id === updatedTask.id
@@ -67,7 +66,6 @@ const DailyTask = () => {
   const addPlannedTask = useCallback(
     (newTask: ItemTaskCategory) => {
       if (!plannedTasks || !date) return;
-      console.log("🚀 addPlannedTask", newTask);
 
       const existingIndex = plannedTasks.findIndex((t) => t.id === newTask.id);
       let newTasks: ItemTaskCategory[];
@@ -109,7 +107,6 @@ const DailyTask = () => {
 
   useEffect(() => {
     if (!date) return;
-    console.log("Loading daily tasks for date:", date);
     if (isFutureDate(date)) {
       setPlannedTasks([]);
       return;
@@ -159,12 +156,7 @@ const DailyTask = () => {
         </main>
 
         {/* Права колонка */}
-        <div
-          className="flex-1 pt-8"
-          onClick={() => {
-            console.log("Right panel clicked");
-          }}
-        >
+        <div className="flex-1 pt-8">
           {mdSize ? (
             <CustomDrawer
               title={"task_manager.calendar.header.title"}

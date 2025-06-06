@@ -2,21 +2,16 @@ import { useTranslation } from "react-i18next";
 import TaskFutureTimeline from "../future-task-components/task-future-timeline";
 import { useDailyTaskContext } from "../hooks/useDailyTask";
 import DailyCalendar from "./daily-calendar";
-// import { useIsAdoptive } from "@/hooks/useIsAdoptive";
-// import DailyAnalytics from "./daily-analytics";
-// import { BreakPoints } from "@/config/adaptive.config";
+import { useIsAdoptive } from "@/hooks/useIsAdoptive";
+import DailyAnalytics from "./daily-analytics";
+import { BreakPoints } from "@/config/adaptive.config";
 
 const DailySidePanelContent = () => {
   const { plannedTasks } = useDailyTaskContext();
-  // const { screenWidth } = useIsAdoptive();
+  const { screenWidth } = useIsAdoptive();
   const [t] = useTranslation();
   return (
-    <div
-      className="flex flex-col gap-4"
-      onClick={() => {
-        console.log("DailySidePanelContent clicked");
-      }}
-    >
+    <div className="flex flex-col gap-4">
       <DailyCalendar />
       {plannedTasks && plannedTasks.length > 0 && (
         <div>
@@ -26,7 +21,7 @@ const DailySidePanelContent = () => {
           <TaskFutureTimeline tasks={plannedTasks} />
         </div>
       )}
-      {/* {screenWidth < BreakPoints["2xl"] && <DailyAnalytics />} */}
+      {screenWidth < BreakPoints["2xl"] && <DailyAnalytics />}
     </div>
   );
 };

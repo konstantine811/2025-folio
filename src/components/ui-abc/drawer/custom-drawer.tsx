@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import SoundHoverElement from "../sound-hover-element";
 import { ArrowBigLeft } from "lucide-react";
 import { useState } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const CustomDrawer = ({
   title,
@@ -43,13 +44,15 @@ const CustomDrawer = ({
         </Button>
       </DrawerTrigger>
       <DrawerContent className="border-foreground/10 overflow-y-auto overflow-x-hidden touch-auto overscroll-contain">
-        <div className="mx-auto w-full max-w-sm px-4 box-border">
-          <DrawerHeader>
-            <DrawerTitle>{t(title)}</DrawerTitle>
-            <DrawerDescription>{t(description)}</DrawerDescription>
-          </DrawerHeader>
-          {children}
-        </div>
+        <ScrollArea className="h-screen w-full touch-auto overscroll-contain">
+          <div className="mx-auto w-full max-w-sm px-4 box-border">
+            <DrawerHeader>
+              <DrawerTitle>{t(title)}</DrawerTitle>
+              <DrawerDescription>{t(description)}</DrawerDescription>
+            </DrawerHeader>
+            {children}
+          </div>
+        </ScrollArea>
       </DrawerContent>
     </Drawer>
   );
