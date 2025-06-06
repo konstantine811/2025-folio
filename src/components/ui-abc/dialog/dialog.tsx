@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useHoverStore } from "@/storage/hoverStore";
 import { HoverStyleElement } from "@/types/sound";
 import { useEffect } from "react";
