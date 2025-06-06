@@ -7,7 +7,6 @@ const ChartPieCateogoryWrap = ({
 }: {
   data: CategoryAnalyticsNameEntity;
 }) => {
-  console.log(data);
   return (
     <>
       {Object.keys(data).length > 0 && (

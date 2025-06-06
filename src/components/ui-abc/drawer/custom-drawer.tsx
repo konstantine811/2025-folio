@@ -1,4 +1,9 @@
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
+import SoundHoverElement from "../sound-hover-element";
+import { ArrowBigLeft } from "lucide-react";
+import { useState } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Drawer,
   DrawerContent,
@@ -6,12 +11,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer";
-import { useTranslation } from "react-i18next";
-import SoundHoverElement from "../sound-hover-element";
-import { ArrowBigLeft } from "lucide-react";
-import { useState } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from "./drawer";
 
 const CustomDrawer = ({
   title,
@@ -24,15 +24,9 @@ const CustomDrawer = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [t] = useTranslation();
+
   return (
-    <Drawer
-      open={open}
-      onOpenChange={setOpen}
-      direction="right"
-      preventScrollRestoration={false}
-      disablePreventScroll
-      noBodyStyles
-    >
+    <Drawer open={open} onOpenChange={setOpen} direction="right">
       <DrawerTrigger>
         <Button
           asChild
@@ -43,8 +37,8 @@ const CustomDrawer = ({
           </SoundHoverElement>
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="border-foreground/10 overflow-y-auto overflow-x-hidden touch-auto overscroll-contain">
-        <ScrollArea className="h-screen w-full touch-auto overscroll-contain">
+      <DrawerContent className="border-foreground/10 overflow-y-scroll max-h-screen">
+        <ScrollArea className="w-full touch-auto overscroll-contain">
           <div className="mx-auto w-full max-w-sm px-4 box-border">
             <DrawerHeader>
               <DrawerTitle>{t(title)}</DrawerTitle>

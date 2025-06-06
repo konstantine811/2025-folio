@@ -50,7 +50,7 @@ const DialogTask = ({
           <motion.div
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              `bg-background/80 rounded-xl  shadow-lg w-full max-w-lg border border-foreground/20 backdrop-blur-xs max-h-screen overflow-y-auto ${className}`
+              `bg-background/80 rounded-xl  shadow-lg w-full max-w-lg border border-foreground/20 backdrop-blur-xs overflow-y-auto ${className}`
             )}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
