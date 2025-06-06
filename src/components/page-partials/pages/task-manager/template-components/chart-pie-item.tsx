@@ -69,7 +69,7 @@ const ChartPieItem = ({
         .duration(100)
         .attr(
           "transform",
-          `translate(${arc.centroid(d)}) scale(1.28) translate(${-arc.centroid(
+          `translate(${arc.centroid(d)}) scale(1.1) translate(${-arc.centroid(
             d
           )[0]}, ${-arc.centroid(d)[1]})`
         );
@@ -200,27 +200,27 @@ const ChartPieItem = ({
       })
       .each(function (d) {
         const text = d3.select(this);
+        const { hours, minutes } = paresSecondToTime(d.data.value);
+        const parsedHours = String(Number(hours));
         if (type === ItemTimeMapKeys.task) {
-          const { hours, minutes } = paresSecondToTime(d.data.value);
           text
             .append("tspan")
             .attr("x", 0)
             .attr("dy", "0.2em")
             .attr("fill-opacity", 0.7)
-            .text(`${hours}:${minutes}`);
+            .text(`${parsedHours}:${minutes}`);
         } else {
           text
             .append("tspan")
             .attr("font-weight", "bold")
             .attr("x", 0)
             .text(t(d.data.name));
-          const { hours, minutes } = paresSecondToTime(d.data.value);
           text
             .append("tspan")
             .attr("x", 0)
             .attr("dy", "1em")
             .attr("fill-opacity", 0.7)
-            .text(`${hours}:${minutes}`);
+            .text(`${parsedHours}:${minutes}`);
         }
       });
   }, [

@@ -19,6 +19,7 @@ const useChartTooltip = () => {
       if (!ref.current) return;
       const tooltip = ref.current;
       const { hours, minutes } = paresSecondToTime(time);
+      const parsedHours = String(Number(hours));
       const svgRect = (
         ref.current.parentElement?.querySelector("svg") as SVGSVGElement
       )?.getBoundingClientRect();
@@ -36,7 +37,7 @@ const useChartTooltip = () => {
           title
         )}</strong></h3>
         <div class="bg-accent/50 rounded-md text-center text-sm border border-foreground/50 inline-block px-2">
-          ${hours !== "00" ? hours + t("chart.hour") : ""} ${
+          ${parsedHours !== "0" ? parsedHours + t("chart.hour") : ""} ${
         minutes !== "00" ? minutes + t("chart.minute") : ""
       }
         </div>
