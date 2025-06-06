@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { FixedSizeList as List } from "react-window";
 import {
   CancelDrop,
   CollisionDetection,
@@ -73,8 +72,6 @@ interface Props {
   onEditPlannedTask?: (task: ItemTask) => void;
   onDeletePlannedTask?: (taskId: UniqueIdentifier) => void;
 }
-
-const TASK_ITEM_HEIGHT = 72;
 
 export function MultipleContainers({
   adjustScale = false,
@@ -388,47 +385,34 @@ export function MultipleContainers({
                       {t("task_manager.drag_task_here")}
                     </li>
                   ) : category.tasks.length > 10 ? (
-                    <List
-                      height={Math.min(
-                        500,
-                        category.tasks.length * TASK_ITEM_HEIGHT
-                      )}
-                      itemCount={category.tasks.length}
-                      itemSize={TASK_ITEM_HEIGHT}
-                      width="100%"
-                      outerElementType="ul"
-                    >
-                      {({ index, style }) => {
-                        const task = category.tasks[index];
-                        return (
-                          <div style={style} key={task.id}>
-                            <SortableItem
-                              disabled={isSortingContainer}
-                              id={task.id}
-                              templated={templated}
-                              index={index}
-                              handle={handle}
-                              items={items}
-                              style={getItemStyles}
-                              wrapperStyle={wrapperStyle}
-                              renderItem={renderItem}
-                              containerId={category.id}
-                              getIndex={getIndex}
-                              task={task}
-                              onToggle={handleToggleTask}
-                              onEditTask={(task) => {
-                                setEditTask(null);
-                                setTimeout(() => {
-                                  setEditTask(task);
-                                  setAddTaskContainerId(category.id);
-                                  setIsDialogOpen(true);
-                                }, 0);
-                              }}
-                            />
-                          </div>
-                        );
-                      }}
-                    </List>
+                    <ul>
+                      {category.tasks.map((task, index) => (
+                        <SortableItem
+                          disabled={isSortingContainer}
+                          id={task.id}
+                          key={task.id}
+                          templated={templated}
+                          index={index}
+                          handle={handle}
+                          items={items}
+                          style={getItemStyles}
+                          wrapperStyle={wrapperStyle}
+                          renderItem={renderItem}
+                          containerId={category.id}
+                          getIndex={getIndex}
+                          task={task}
+                          onToggle={handleToggleTask}
+                          onEditTask={(task) => {
+                            setEditTask(null);
+                            setTimeout(() => {
+                              setEditTask(task);
+                              setAddTaskContainerId(category.id);
+                              setIsDialogOpen(true);
+                            }, 0);
+                          }}
+                        />
+                      ))}
+                    </ul>
                   ) : (
                     <TooltipProvider>
                       {category.tasks.map((task, index) => (
