@@ -18,29 +18,13 @@ const DialogTask = ({
   const setHover = useHoverStore((s) => s.setHover);
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
     setTimeout(() => {
       setHover(false, null, HoverStyleElement.circle);
     }, 100);
   }, [setHover, isOpen]);
 
   return (
-    <AnimatePresence
-      onExitComplete={() => {
-        document.body.style.overflow = "";
-      }}
-    >
+    <AnimatePresence>
       {isOpen && (
         <motion.div
           key="dialog"
@@ -49,8 +33,7 @@ const DialogTask = ({
           exit={{ opacity: 0, scale: 0.95, y: -30 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
           className={cn(
-            "fixed inset-0 z-50 flex justify-center items-center overflow-y-auto bg-background/80 backdrop-blur-xs w-full",
-            !isOpen && "pointer-events-none"
+            "fixed inset-0 z-50 flex justify-center items-center overflow-y-auto bg-background/80 backdrop-blur-xs w-full"
           )}
           onClick={() => setOpen(false)}
         >
