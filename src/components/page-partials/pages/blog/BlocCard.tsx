@@ -1,10 +1,10 @@
 import { getBlogImage } from "@/config/supabaseClient";
 import { PostCover } from "@/types/blog-storage";
-import LogoAnimated from "../../header-nav/logo";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import { RoutPath } from "@/config/router-config";
 import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
+import LogoAnimated from "@/components/ui-abc/logo";
 
 const BlocCard = ({ post }: { post: PostCover }) => {
   const navigateTo = useTransitionRouteTo();

@@ -1,9 +1,9 @@
 import { ThemePalette } from "@config/theme-colors.config";
 import { useThemeStore } from "@storage/themeStore";
 import { motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 
-const LogoAnimated = () => {
+const LogoAnimated = forwardRef<SVGSVGElement>((_, ref) => {
   const themeType = useThemeStore((state) => state.selectedTheme);
   const [colors, setColors] = useState(ThemePalette.dark);
   const strokeWidth = 3;
@@ -36,7 +36,8 @@ const LogoAnimated = () => {
   ];
 
   return (
-    <svg
+    <motion.svg
+      ref={ref}
       viewBox="0 0 190 150"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
@@ -70,8 +71,8 @@ const LogoAnimated = () => {
           <stop offset="100%" stopColor={colors.primary} />
         </linearGradient>
       </defs>
-    </svg>
+    </motion.svg>
   );
-};
+});
 
 export default LogoAnimated;

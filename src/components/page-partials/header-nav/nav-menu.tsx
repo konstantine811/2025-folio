@@ -2,11 +2,12 @@ import SoundHoverElement from "@components/ui-abc/sound-hover-element";
 
 import NavToggler from "./nav-toggler";
 import RevealNavMenu from "./reveal-nav-menu";
-import LogoAnimated from "./logo";
+
 import { SoundTypeElement } from "@custom-types/sound";
 import HeaderBanner from "./header-banner";
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 import Login from "./login";
+import LogoAnimated from "@/components/ui-abc/logo";
 
 export default function NavMenu() {
   const { isAdoptiveSize: isMdSize } = useIsAdoptive();
