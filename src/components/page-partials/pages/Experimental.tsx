@@ -8,7 +8,7 @@ const Experimental = () => {
   const svgWrapRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto h-[300vh]">
       <h1 className="text-foreground text-xl">Hello from Experimental page</h1>
       <TestDrawerOpen />
       <div
