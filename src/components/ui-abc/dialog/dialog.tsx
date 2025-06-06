@@ -36,7 +36,11 @@ const DialogTask = ({
   }, [setHover, isOpen]);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence
+      onExitComplete={() => {
+        document.body.style.overflow = "";
+      }}
+    >
       {isOpen && (
         <motion.div
           key="dialog"
@@ -44,7 +48,10 @@ const DialogTask = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: -30 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className="fixed inset-0 z-50 flex justify-center items-center overflow-y-auto bg-background/80 backdrop-blur-xs w-full"
+          className={cn(
+            "fixed inset-0 z-50 flex justify-center items-center overflow-y-auto bg-background/80 backdrop-blur-xs w-full",
+            !isOpen && "pointer-events-none"
+          )}
           onClick={() => setOpen(false)}
         >
           <motion.div
