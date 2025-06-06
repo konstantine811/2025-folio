@@ -159,7 +159,12 @@ const DailyTask = () => {
         </main>
 
         {/* Права колонка */}
-        <div className="flex-1 pt-8">
+        <div
+          className="flex-1 pt-8"
+          onClick={() => {
+            console.log("Right panel clicked");
+          }}
+        >
           {mdSize ? (
             <CustomDrawer
               title={"task_manager.calendar.header.title"}
