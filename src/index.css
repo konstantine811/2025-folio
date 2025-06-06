@@ -38,6 +38,14 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+html,
+body {
+  overscroll-behavior: none;
+  height: 100%;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
 @theme static {
   --background: var(--background);
   --animate-gradient: gradientMove 3s linear infinite;
