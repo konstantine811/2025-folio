@@ -153,8 +153,3 @@ body {
   border-radius: 9999px;
   margin: 2px auto 0 auto;
 }
-
-/* у styles/globals.css або відповідному Tailwind layer */
-.ios-scroll-fix {
-  -webkit-overflow-scrolling: touch;
-}

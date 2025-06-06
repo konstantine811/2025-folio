@@ -2,17 +2,14 @@ import LogoAnimated from "@/components/ui-abc/logo";
 import { Button } from "@/components/ui/button";
 import { exportHtmlToPng, exportSvgToFile } from "@/utils/export-to-png";
 import { useRef } from "react";
-import TestDrawerOpen from "./experimental/test-drawer-open";
 
 const Experimental = () => {
   const svgWrapRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   return (
     <div className="container mx-auto h-[30000px]">
-      <h1 className="text-foreground text-xl">
-        Hello from Experimental page Updated 5.0
-      </h1>
-      <TestDrawerOpen />
+      <h1 className="text-foreground text-xl"></h1>
+
       <div
         ref={svgWrapRef}
         className="w-16 h-16 bg-card p-2 rounded-md flex items-center justify-center"
