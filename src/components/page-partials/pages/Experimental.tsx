@@ -9,7 +9,9 @@ const Experimental = () => {
   const svgRef = useRef<SVGSVGElement>(null);
   return (
     <div className="container mx-auto h-[30000px]">
-      <h1 className="text-foreground text-xl">Hello from Experimental page</h1>
+      <h1 className="text-foreground text-xl">
+        Hello from Experimental page Updated 2.0
+      </h1>
       <TestDrawerOpen />
       <div
         ref={svgWrapRef}
