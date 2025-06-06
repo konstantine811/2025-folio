@@ -70,7 +70,7 @@ const useChartTooltip = () => {
   const TooltipElement = (
     <div
       ref={ref}
-      className="absolute z-50 max-w-sm p-2 top-0 text-sm bg-background border border-foreground/20 foreground rounded shadow-lg shadow-background will-change-transform pointer-events-none opacity-0 items-center flex-col gap-2"
+      className="relative md:absolute z-50 max-w-sm p-2 top-0 text-sm bg-background border border-foreground/20 foreground rounded shadow-lg shadow-background will-change-transform pointer-events-none opacity-0 items-center flex-col gap-2"
     />
   );
 
