@@ -25,8 +25,8 @@ const ChartPieCategory = ({
     if (!ref.current) return;
 
     const radius = Math.min(width, height) / 2;
-    const outerRadius = radius - 3;
-    const innerRadius = radius * 0.2;
+    const outerRadius = radius;
+    const innerRadius = radius * 0.1;
 
     const entries = Object.entries(data).map(([id, value]) => ({
       name: id,
@@ -65,14 +65,13 @@ const ChartPieCategory = ({
       .enter()
       .append("path")
       .attr("d", arc)
-      .attr("class", "fill-transparet stroke-foreground/30 stroke");
+      .attr("class", "fill-card stroke-foreground/30 stroke");
 
     // Рахуємо arcDone, як частку часу
     g.selectAll("path.done")
       .data(timeArcs)
       .enter()
       .append("path")
-      .attr("class", "done")
       .attr("d", (d, i) => {
         const entry = entries[i];
         const progress = entry.doneTime / entry.time;
@@ -94,8 +93,8 @@ const ChartPieCategory = ({
     // Optional: labels
     const labelArc = d3
       .arc<d3.PieArcDatum<PieEntity>>()
-      .innerRadius((outerRadius + innerRadius) / 2 + 60)
-      .outerRadius((outerRadius + innerRadius) / 2 + 60);
+      .innerRadius((outerRadius + innerRadius) / 1.15)
+      .outerRadius((outerRadius + innerRadius) / 1.15);
 
     g.selectAll("text")
       .data(timeArcs)
@@ -113,7 +112,7 @@ const ChartPieCategory = ({
       )
       .attr("alignment-baseline", "middle")
       .text((d) => t(d.data.name))
-      .attr("class", "text-[10px] fill-foreground/80");
+      .attr("class", "text-md fill-foreground/80");
   }, [data, width, height, t]);
 
   return <svg ref={ref} className="w-full h-auto" />;

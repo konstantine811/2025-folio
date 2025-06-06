@@ -13,44 +13,62 @@ export const getDailyTaskAnalyticsData = (
   const dailyEntity: TaskAnalyticsIdEntity = {};
   const categoryEntity: CategoryAnalyticsNameEntity = {};
 
-  tasks.forEach((category) => {
-    if (!categoryEntity[category.title]) {
-      categoryEntity[category.title] = {
-        time: 0,
-        countDone: 0,
-        countDoneTime: 0,
-        taskDone: [],
-        taskNoDone: [],
-      };
-    }
-    category.tasks.forEach((task) => {
-      const timeDo =
-        task.isDetermined || task.isPlanned ? task.timeDone : task.time;
+  tasks.forEach(({ title: categoryTitle, tasks: taskList }) => {
+    const categoryStats = categoryEntity[categoryTitle] ?? {
+      time: 0,
+      countDone: 0,
+      countDoneTime: 0,
+      taskDone: [],
+      taskNoDone: [],
+    };
+
+    taskList.forEach((task) => {
+      const {
+        id,
+        title,
+        isDone,
+        isDetermined,
+        isPlanned,
+        time,
+        timeDone,
+        priority,
+      } = task;
+
+      const timeDo = isDetermined || isPlanned || isDone ? timeDone : time;
       const timeCategory =
-        task.isDetermined || task.isPlanned
-          ? task.timeDone
-          : task.time > task.timeDone
-          ? task.time
-          : task.timeDone;
-      categoryEntity[category.title].countDoneTime +=
-        task.time > task.timeDone && task.isDone ? task.time : task.timeDone;
-      if (task.isDone) {
-        categoryEntity[category.title].countDone += 1;
-        categoryEntity[category.title].taskDone.push(task.title);
+        isDetermined || isPlanned
+          ? timeDone
+          : time > timeDone
+          ? time
+          : timeDone;
+
+      // Реальна тривалість для підрахунку виконаного часу
+      const realDoneTime = time > timeDone && isDone ? time : timeDone;
+
+      // Оновлення статистики категорії
+      categoryStats.time += timeCategory;
+      categoryStats.countDoneTime += realDoneTime;
+
+      if (isDone) {
+        categoryStats.countDone += 1;
+        categoryStats.taskDone.push(title);
       } else {
-        categoryEntity[category.title].taskNoDone.push(task.title);
+        categoryStats.taskNoDone.push(title);
       }
-      categoryEntity[category.title].time += timeCategory;
-      dailyEntity[task.id] = {
-        title: task.title,
+
+      // Оновлення статистики по задачі
+      dailyEntity[id] = {
+        title,
         time: timeDo,
-        timeDone:
-          task.time > task.timeDone && task.isDone ? task.time : task.timeDone,
-        category: category.title,
-        isDone: task.timeDone > 0 || task.isDone,
-        priority: task.priority,
+        timeDone,
+        category: categoryTitle,
+        isDone,
+        priority,
       };
     });
+
+    categoryEntity[categoryTitle] = categoryStats;
   });
+
   return { dailyEntity, categoryEntity };
 };

@@ -8,7 +8,7 @@ const ChartPieCateogoryWrap = ({
   data: CategoryAnalyticsNameEntity;
 }) => {
   return (
-    <div className="max-w-md mx-auto py-8 flex flex-col items-center gap-4">
+    <div className="max-w-md mx-auto pb-8 md:py-8 flex flex-col items-center gap-4">
       <ChartTitle title="chart.pie_category_daily_time" />
       <ChartPieCategory data={data} />
     </div>
