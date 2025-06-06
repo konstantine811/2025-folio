@@ -36,7 +36,8 @@ export const getDailyTaskAnalyticsData = (
           : task.timeDone;
       if (task.isDone) {
         categoryEntity[category.title].countDone += 1;
-        categoryEntity[category.title].countDoneTime += task.timeDone;
+        categoryEntity[category.title].countDoneTime +=
+          task.time > task.timeDone ? task.time : task.timeDone;
         categoryEntity[category.title].taskDone.push(task.title);
       } else {
         categoryEntity[category.title].taskNoDone.push(task.title);

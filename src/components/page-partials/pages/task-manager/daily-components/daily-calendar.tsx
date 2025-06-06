@@ -78,7 +78,6 @@ const DailyCalendar = () => {
     (date: Date | undefined) => {
       if (date) {
         const formatted = format(date, DateTemplate.dayMonthYear);
-        console.log("Navigating to:", formatted);
         navigate(
           `${RoutPath.TASK_MANAGER}/${RoutPath.TASK_MANAGER_DAILY.replace(
             ":id",
