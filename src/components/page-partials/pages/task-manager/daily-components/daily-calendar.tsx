@@ -31,6 +31,7 @@ const DailyCalendar = () => {
   const today = new Date();
 
   const handleUpdatePlannedTasks = useCallback((dates: Date[]) => {
+    console.log("handleUpdatePlannedTasks", dates);
     const today = new Date();
     today.setHours(0, 0, 0, 0); // обнуляємо час
 
@@ -76,6 +77,7 @@ const DailyCalendar = () => {
 
   const handleDate = useCallback(
     (date: Date | undefined) => {
+      console.log("date", date);
       if (date) {
         const formatted = format(date, DateTemplate.dayMonthYear);
         navigate(
