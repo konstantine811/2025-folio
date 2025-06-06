@@ -10,7 +10,7 @@ import {
 import { useTranslation } from "react-i18next";
 import SoundHoverElement from "../sound-hover-element";
 import { ArrowBigLeft } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const CustomDrawer = ({
@@ -24,6 +24,10 @@ const CustomDrawer = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [t] = useTranslation();
+  console.log("CustomDrawer rendered");
+  useEffect(() => {
+    console.log("CustomDrawer mounted");
+  }, []);
   return (
     <Drawer
       open={open}
