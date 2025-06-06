@@ -93,8 +93,8 @@ const ChartPieCategory = ({
     // Optional: labels
     const labelArc = d3
       .arc<d3.PieArcDatum<PieEntity>>()
-      .innerRadius((outerRadius + innerRadius) / 1.15)
-      .outerRadius((outerRadius + innerRadius) / 1.15);
+      .innerRadius((outerRadius + innerRadius) / 1.14)
+      .outerRadius((outerRadius + innerRadius) / 1.14);
 
     g.selectAll("text")
       .data(timeArcs)
@@ -112,7 +112,7 @@ const ChartPieCategory = ({
       )
       .attr("alignment-baseline", "middle")
       .text((d) => t(d.data.name))
-      .attr("class", "text-md fill-foreground/80");
+      .attr("class", "text-sm fill-foreground/80");
   }, [data, width, height, t]);
 
   return <svg ref={ref} className="w-full h-auto" />;
