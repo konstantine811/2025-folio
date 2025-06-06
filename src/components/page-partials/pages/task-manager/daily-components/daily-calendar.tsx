@@ -73,17 +73,26 @@ const DailyCalendar = () => {
       if (unsubscribe) unsubscribe();
     };
   }, [handleUpdatePlannedTasks]);
-  useEffect(() => {
-    if (date) {
-      const formatted = format(date, DateTemplate.dayMonthYear);
-      navigate(
-        `${RoutPath.TASK_MANAGER}/${RoutPath.TASK_MANAGER_DAILY.replace(
-          ":id",
-          formatted
-        )}`
-      );
-    }
-  }, [date, navigate]);
+
+  const handleDate = useCallback(
+    (date: Date | undefined) => {
+      if (date) {
+        const formatted = format(date, DateTemplate.dayMonthYear);
+        console.log("Navigating to:", formatted);
+        navigate(
+          `${RoutPath.TASK_MANAGER}/${RoutPath.TASK_MANAGER_DAILY.replace(
+            ":id",
+            formatted
+          )}`
+        );
+        setTimeout(() => {
+          setDate(date);
+        });
+      }
+    },
+    [navigate]
+  );
+
   const { i18n } = useTranslation();
   const lang = i18n.language;
   return (
@@ -91,7 +100,7 @@ const DailyCalendar = () => {
       <Calendar
         mode="single"
         selected={date}
-        onSelect={setDate}
+        onSelect={(date) => handleDate(date)}
         className="rounded-md border shadow capitalize"
         locale={locales[lang] ?? enUS}
         modifiers={{

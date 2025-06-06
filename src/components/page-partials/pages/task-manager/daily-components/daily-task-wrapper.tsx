@@ -161,7 +161,6 @@ const DailyTaskWrapper = () => {
   const handleChangeTasks = useCallback(
     (tasks: Items) => {
       if (!isLoaded) return;
-      console.log("UPDATE DAILY TASKS", tasks);
       setTimeout(() => {
         setDailyTasks(tasks);
         setAnotherNormalizedTasks(

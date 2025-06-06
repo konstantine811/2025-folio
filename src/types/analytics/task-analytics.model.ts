@@ -56,6 +56,7 @@ export type CategoryAnalyticsNameEntity = {
 export interface TaskAnalyticsData {
   title: string;
   time: number;
+  timeDone: number;
   category: string;
   isDone: boolean;
   priority: Priority;

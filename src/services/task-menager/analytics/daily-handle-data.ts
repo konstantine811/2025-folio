@@ -29,20 +29,26 @@ export const getDailyTaskAnalyticsData = (
           ? task.timeDone
           : task.time;
       const timeCategory =
-        task.isDetermined || task.isPlanned ? task.timeDone : task.time;
+        task.isDetermined || task.isPlanned
+          ? task.timeDone
+          : task.time > task.timeDone
+          ? task.time
+          : task.timeDone;
       if (task.isDone) {
         categoryEntity[category.title].countDone += 1;
         categoryEntity[category.title].countDoneTime += task.timeDone;
         categoryEntity[category.title].taskDone.push(task.title);
       } else {
         categoryEntity[category.title].taskNoDone.push(task.title);
+        categoryEntity[category.title].countDoneTime += task.timeDone;
       }
       categoryEntity[category.title].time += timeCategory;
       dailyEntity[task.id] = {
         title: task.title,
         time: timeDo,
+        timeDone: task.timeDone,
         category: category.title,
-        isDone: task.isDone,
+        isDone: task.timeDone > 0 || task.isDone,
         priority: task.priority,
       };
     });

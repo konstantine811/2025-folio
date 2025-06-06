@@ -63,7 +63,11 @@ const ChartTimeStackTasks = ({
         .duration(200)
         .attr("fill", ThemePalette[themeName]["foreground"]);
 
-      showTooltip({ event, title: d.title, time: d.time });
+      showTooltip({
+        event,
+        title: d.title,
+        time: d.isDone ? d.timeDone : d.time,
+      });
     },
     [showTooltip, hideTooltip, onHideTooltip, themeName]
   );
@@ -95,7 +99,7 @@ const ChartTimeStackTasks = ({
       });
 
     const totalTime = d3.sum(tasks, (d) => d.time);
-    const doneTime = d3.sum(tasks, (d) => (d.isDone ? d.time : 0));
+    const doneTime = d3.sum(tasks, (d) => (d.isDone ? d.timeDone : 0));
     const pendingTime = totalTime - doneTime;
 
     const svg = d3.select(ref.current);
