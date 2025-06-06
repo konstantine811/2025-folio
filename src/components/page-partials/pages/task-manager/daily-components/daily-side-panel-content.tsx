@@ -11,7 +11,12 @@ const DailySidePanelContent = () => {
   // const { screenWidth } = useIsAdoptive();
   const [t] = useTranslation();
   return (
-    <div className="flex flex-col gap-4">
+    <div
+      className="flex flex-col gap-4"
+      onClick={() => {
+        console.log("DailySidePanelContent clicked");
+      }}
+    >
       <DailyCalendar />
       {plannedTasks && plannedTasks.length > 0 && (
         <div>
