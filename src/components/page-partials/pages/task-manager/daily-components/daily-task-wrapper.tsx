@@ -20,7 +20,7 @@ import {
   mergeItemsDeep,
   mergeItemsWithPlannedTasks,
 } from "@/services/task-menager/merge-tasks";
-import Preloader from "@/components/page-partials/preloader/preloader";
+// import Preloader from "@/components/page-partials/preloader/preloader";
 // import { TaskManagerProvider } from "@/components/dnd/context/task-manager-context";
 import { useParams } from "react-router";
 import { parseDate } from "@/utils/date.util";
@@ -189,7 +189,7 @@ const DailyTaskWrapper = () => {
     <>
       {!isFuture ? (
         <>
-          {!isLoaded && <Preloader />}
+          {/* {!isLoaded && <Preloader />} */}
           {isLoaded && (
             <>
               <div className="h-[200vh] text-foreground text-2xl">Hello</div>
