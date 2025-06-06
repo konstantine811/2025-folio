@@ -68,12 +68,14 @@ export const router: AppRoute[] = [
     Component: HomePage,
     isNav: true,
     id: "home",
+    isDev: true, // Set to true for development purposes
   },
   {
     path: RoutPath.EXPERIMENTAL,
     Component: ExperimentalPage,
     isNav: true,
     id: "experimental",
+    isDev: true, // Set to true for development purposes
   },
   {
     path: RoutPath.BLOG,

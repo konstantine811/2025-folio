@@ -12,6 +12,8 @@ import useSetTheme from "./hooks/useSetTheme";
 import useLogin from "./services/firebase/useLogin";
 import { isTouchDevice } from "./utils/touch-inspect";
 import { useResizeListener } from "./hooks/useResizeListener";
+import { isLocalhost } from "./utils/env-inspect";
+
 function App() {
   subscribeToHoverSound();
   useLogin(); // ✅
@@ -21,12 +23,16 @@ function App() {
   useEffect(() => {
     setIsTouch(isTouchDevice);
   }, []);
+
   const renderRoutes = (routes: typeof router) =>
-    routes.map(({ path, Component, children, id }) => (
-      <Route key={id} path={path} element={<Component />}>
-        {children && renderRoutes(children)} {/* 🔁 рекурсія */}
-      </Route>
-    ));
+    routes.map(({ path, Component, children, id, isDev }) => {
+      if (isDev && !isLocalhost) return null; // ❌ Пропускаємо dev-роути у проді
+      return (
+        <Route key={id} path={path} element={<Component />}>
+          {children && renderRoutes(children)} {/* 🔁 рекурсія */}
+        </Route>
+      );
+    });
   return (
     <>
       {!isTouch && (

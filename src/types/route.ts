@@ -8,4 +8,5 @@ export type AppRoute = {
   id: string;
   children?: AppRoute[];
   icon?: ReactElement | string;
+  isDev?: boolean;
 };

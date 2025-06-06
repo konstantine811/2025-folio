@@ -15,6 +15,7 @@ import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
 import { useTranslation } from "react-i18next";
 import useRoutingPath from "@/hooks/useRoutingPath";
+import { isLocalhost } from "@/utils/env-inspect";
 
 const RevealNavMenu = memo(() => {
   const { isOpen, setOpen } = useNavMenuStore((state) => state);
@@ -80,7 +81,11 @@ const RevealNavMenu = memo(() => {
                   variants={containerVariants}
                 >
                   {router
-                    .filter((route) => route.isNav)
+                    .filter(
+                      (route) =>
+                        route.isNav &&
+                        (!route.isDev || (route.isDev && isLocalhost))
+                    )
                     .map((route, i) => (
                       <a
                         key={i}
