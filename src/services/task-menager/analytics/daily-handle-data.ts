@@ -25,29 +25,27 @@ export const getDailyTaskAnalyticsData = (
     }
     category.tasks.forEach((task) => {
       const timeDo =
-        task.isDetermined || task.isPlanned || task.isDone
-          ? task.timeDone
-          : task.time;
+        task.isDetermined || task.isPlanned ? task.timeDone : task.time;
       const timeCategory =
         task.isDetermined || task.isPlanned
           ? task.timeDone
           : task.time > task.timeDone
           ? task.time
           : task.timeDone;
+      categoryEntity[category.title].countDoneTime +=
+        task.time > task.timeDone && task.isDone ? task.time : task.timeDone;
       if (task.isDone) {
         categoryEntity[category.title].countDone += 1;
-        categoryEntity[category.title].countDoneTime +=
-          task.time > task.timeDone ? task.time : task.timeDone;
         categoryEntity[category.title].taskDone.push(task.title);
       } else {
         categoryEntity[category.title].taskNoDone.push(task.title);
-        categoryEntity[category.title].countDoneTime += task.timeDone;
       }
       categoryEntity[category.title].time += timeCategory;
       dailyEntity[task.id] = {
         title: task.title,
         time: timeDo,
-        timeDone: task.timeDone,
+        timeDone:
+          task.time > task.timeDone && task.isDone ? task.time : task.timeDone,
         category: category.title,
         isDone: task.timeDone > 0 || task.isDone,
         priority: task.priority,
