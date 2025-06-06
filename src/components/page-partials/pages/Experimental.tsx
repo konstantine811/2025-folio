@@ -10,7 +10,7 @@ const Experimental = () => {
   return (
     <div className="container mx-auto h-[30000px]">
       <h1 className="text-foreground text-xl">
-        Hello from Experimental page Updated 4.0
+        Hello from Experimental page Updated 5.0
       </h1>
       <TestDrawerOpen />
       <div

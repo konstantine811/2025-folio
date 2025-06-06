@@ -7,12 +7,12 @@ import {
 import {
   DayNumber,
   Items,
-  // ItemTask,
+  ItemTask,
   ItemTaskCategory,
   NormalizedTask,
 } from "@/types/drag-and-drop.model";
-// import { MultipleContainers } from "@/components/dnd/multiple-container";
-// import { rectSortingStrategy } from "@dnd-kit/sortable";
+import { MultipleContainers } from "@/components/dnd/multiple-container";
+import { rectSortingStrategy } from "@dnd-kit/sortable";
 import DailyAddTemplateButton from "./daily-add-button";
 import {
   addNewTask,
@@ -20,8 +20,8 @@ import {
   mergeItemsDeep,
   mergeItemsWithPlannedTasks,
 } from "@/services/task-menager/merge-tasks";
-// import Preloader from "@/components/page-partials/preloader/preloader";
-// import { TaskManagerProvider } from "@/components/dnd/context/task-manager-context";
+import Preloader from "@/components/page-partials/preloader/preloader";
+import { TaskManagerProvider } from "@/components/dnd/context/task-manager-context";
 import { useParams } from "react-router";
 import { parseDate } from "@/utils/date.util";
 import AddFutureTask from "../future-task-components/add-future-task";
@@ -48,8 +48,8 @@ const DailyTaskWrapper = () => {
   const [templatedTasks, setTemplatedTasks] = useState<Items>([]);
   const {
     plannedTasks,
-    // updatePlannedTask,
-    // deletePlannedTask,
+    updatePlannedTask,
+    deletePlannedTask,
     addPlannedTask,
     setDailyTasks: setProviderDailyTask,
   } = useDailyTaskContext();
@@ -88,12 +88,12 @@ const DailyTaskWrapper = () => {
     setProviderDailyTask(dailyTasks);
   }, [dailyTasks, setProviderDailyTask]);
 
-  // const onUpdatePlannedTask = useCallback(
-  //   (task: ItemTask) => {
-  //     updatePlannedTask(task);
-  //   },
-  //   [updatePlannedTask]
-  // );
+  const onUpdatePlannedTask = useCallback(
+    (task: ItemTask) => {
+      updatePlannedTask(task);
+    },
+    [updatePlannedTask]
+  );
 
   const mergeNewPlannedTasks = useCallback(
     (newTasks: ItemTaskCategory[]) => {
@@ -189,11 +189,9 @@ const DailyTaskWrapper = () => {
     <>
       {!isFuture ? (
         <>
-          {/* {!isLoaded && <Preloader />} */}
+          {!isLoaded && <Preloader />}
           {isLoaded && (
-            <>
-              <div className="h-[200vh] text-foreground text-2xl">Hello</div>
-              {/* <TaskManagerProvider>
+            <TaskManagerProvider>
               <MultipleContainers
                 strategy={rectSortingStrategy}
                 vertical
@@ -204,8 +202,7 @@ const DailyTaskWrapper = () => {
                 onEditPlannedTask={onUpdatePlannedTask}
                 onDeletePlannedTask={deletePlannedTask}
               />
-            </TaskManagerProvider> */}
-            </>
+            </TaskManagerProvider>
           )}
           <div className="flex flex-col gap-2 w-full">
             {isLoaded && (
