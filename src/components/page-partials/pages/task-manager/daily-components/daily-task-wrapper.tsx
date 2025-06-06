@@ -54,6 +54,7 @@ const DailyTaskWrapper = () => {
     setDailyTasks: setProviderDailyTask,
   } = useDailyTaskContext();
   useEffect(() => {
+    console.log("DailyTaskWrapper useEffect", date);
     // 💡 Очищення попередніх даних при зміні дати
     setIsLoaded(false);
     setDailyTasks([]);
@@ -161,6 +162,7 @@ const DailyTaskWrapper = () => {
   const handleChangeTasks = useCallback(
     (tasks: Items) => {
       if (!isLoaded) return;
+      console.log("handle update", tasks);
       setTimeout(() => {
         setDailyTasks(tasks);
         setAnotherNormalizedTasks(

@@ -178,7 +178,9 @@ const ChartTimeStackTasks = ({
       .attr(direction === "horizontal" ? "y" : "x", 0)
       .attr(
         direction === "horizontal" ? "width" : "height",
-        direction === "horizontal" ? scale(pendingTime) : scale(doneTime)
+        direction === "horizontal"
+          ? Math.abs(scale(pendingTime))
+          : Math.abs(scale(doneTime))
       )
       .attr(direction === "horizontal" ? "height" : "width", barSize)
       .attr("fill", "url(#stackGradient)")
