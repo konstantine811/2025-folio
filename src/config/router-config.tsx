@@ -75,7 +75,7 @@ export const router: AppRoute[] = [
     Component: ExperimentalPage,
     isNav: true,
     id: "experimental",
-    isDev: true, // Set to true for development purposes
+    isDev: false, // Set to true for development purposes
   },
   {
     path: RoutPath.BLOG,

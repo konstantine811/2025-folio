@@ -4,7 +4,6 @@ import {
   loadTemplateTasks,
   // saveTemplateTasks,
 } from "@/services/firebase/taskManagerData";
-import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { Items } from "@/types/drag-and-drop.model";
 // import { rectSortingStrategy } from "@dnd-kit/sortable";
 import { useEffect, useState } from "react";
@@ -22,7 +21,6 @@ const TemplateTask = () => {
   const [, setDailyTasks] = useState<Items>([]);
   const [templatedTask, setTemplatedTask] = useState<Items>([]); // 🔄 Додано для зберігання шаблонних завдань
   const [isLoaded, setIsLoaded] = useState(false);
-  const hS = useHeaderSizeStore((s) => s.size);
   const [t] = useTranslation();
   useEffect(() => {
     setIsLoaded(true);
@@ -43,14 +41,13 @@ const TemplateTask = () => {
       });
   }, []);
   return (
-    <div className="flex w-full" style={{ minHeight: `calc(100vh - ${hS}px)` }}>
+    <div className="flex w-full">
       {/* Ліва колонка */}
       {/* <div className="flex-1" /> */}
 
       {/* Центральна колонка */}
       <main
         className={`w-full max-w-2xl px-4 flex flex-col justify-center ${outletContext.className}`}
-        style={{ minHeight: `calc(100vh - ${hS}px)` }}
       >
         {!isLoaded ? (
           <div className="max-w-2xl w-full m-auto h-[300vh]">
