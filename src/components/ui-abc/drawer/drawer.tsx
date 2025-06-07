@@ -95,7 +95,7 @@ export const DrawerContent = ({
   const { open, setOpen, direction } = useContext(DrawerContext);
   const controls = useDragControls();
   const x = useMotionValue(100);
-  const opacity = useTransform(x, [-30, 0, 30], [0, 1, 0]);
+  const opacity = useTransform(x, [-70, 0, 70], [0, 1, 0]);
   const getInitial = () => {
     switch (direction) {
       case "right":
@@ -131,7 +131,7 @@ export const DrawerContent = ({
           }}
           dragControls={controls}
           onDragEnd={() => {
-            if (x.get() > 40) {
+            if (x.get() > 70) {
               setOpen(false);
             }
           }}
@@ -149,7 +149,7 @@ export const DrawerContent = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{
-              duration: 0.2,
+              duration: 0.3,
               ease: "easeInOut",
             }}
             className="max-w-md w-full relative bg-card flex justify-center h-full ml-18"
