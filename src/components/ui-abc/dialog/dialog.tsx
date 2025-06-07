@@ -44,7 +44,7 @@ const DialogTask = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: -30 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className="absolute left-0 top-0 z-[10000] h-full flex justify-center items-center bg-background/80 backdrop-blur-xs w-full"
+          className="fixed left-0 top-0 z-[10000] h-full flex justify-center items-center bg-background/80 backdrop-blur-xs w-full"
           onClick={() => setOpen(false)}
         >
           <motion.div

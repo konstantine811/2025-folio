@@ -58,6 +58,19 @@ export default function NumberInput({
           </Button>
         </SoundHoverElement>
       </WrapperHoverElement>
+      <Input
+        type="text"
+        value={value}
+        onChange={(e) => {
+          const onlyNumbers = e.target.value.replace(/\D/g, ""); // прибирає всі нечислові символи
+          const newValue = parseInt(onlyNumbers, 10);
+          if (!isNaN(newValue)) {
+            onChange(Math.min(Math.max(newValue, min), max));
+          }
+        }}
+        inputMode="numeric" // показує цифрову клавіатуру на мобілках
+        className="w-12 text-center font-bold text-lg border-none focus:outline-none"
+      />
       <WrapperHoverElement>
         <SoundHoverElement
           hoverTypeElement={SoundTypeElement.SELECT}
@@ -76,19 +89,6 @@ export default function NumberInput({
           </Button>
         </SoundHoverElement>
       </WrapperHoverElement>
-      <Input
-        type="text"
-        value={value}
-        onChange={(e) => {
-          const onlyNumbers = e.target.value.replace(/\D/g, ""); // прибирає всі нечислові символи
-          const newValue = parseInt(onlyNumbers, 10);
-          if (!isNaN(newValue)) {
-            onChange(Math.min(Math.max(newValue, min), max));
-          }
-        }}
-        inputMode="numeric" // показує цифрову клавіатуру на мобілках
-        className="w-12 text-center font-bold text-lg border-none focus:outline-none"
-      />
     </div>
   );
 }
