@@ -5,7 +5,7 @@ import {
   useMotionValue,
   useTransform,
 } from "framer-motion";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,18 @@ export const Drawer = ({
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
   const setOpen = isControlled ? onOpenChange! : setInternalOpen;
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden"; // 🛑 блокує scroll
+    } else {
+      document.body.style.overflow = ""; // ✅ повертає назад
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
 
   return (
     <DrawerContext.Provider value={{ direction, open, setOpen }}>
@@ -83,7 +95,7 @@ export const DrawerContent = ({
   const { open, setOpen, direction } = useContext(DrawerContext);
   const controls = useDragControls();
   const x = useMotionValue(100);
-  const opacity = useTransform(x, [-100, 0, 100], [0, 1, 0]);
+  const opacity = useTransform(x, [-40, 0, 40], [0, 1, 0]);
   const getInitial = () => {
     switch (direction) {
       case "right":
@@ -116,7 +128,7 @@ export const DrawerContent = ({
           dragControls={controls}
           dragListener={false}
           onDragEnd={() => {
-            if (x.get() > 100) {
+            if (x.get() > 40) {
               setOpen(false);
             }
           }}

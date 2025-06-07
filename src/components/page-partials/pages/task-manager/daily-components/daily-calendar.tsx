@@ -108,7 +108,7 @@ const DailyCalendar = () => {
           table: "w-full h-full border-collapse space-y-1",
           head_row: "",
           row: "w-full mt-2",
-          day: "w-full flex justify-center items-center py-2 rounded-sm h-8",
+          day: "w-full h-full flex justify-center items-center py-2 rounded-sm",
         }}
         locale={locales[lang] ?? enUS}
         modifiers={{
