@@ -35,19 +35,10 @@ export const getDailyTaskAnalyticsData = (
       } = task;
 
       const timeDo = isDetermined || isPlanned || isDone ? timeDone : time;
-      const timeCategory =
-        isDetermined || isPlanned
-          ? timeDone
-          : time > timeDone
-          ? time
-          : timeDone;
-
-      // Реальна тривалість для підрахунку виконаного часу
-      const realDoneTime = time > timeDone && isDone ? time : timeDone;
 
       // Оновлення статистики категорії
-      categoryStats.time += timeCategory;
-      categoryStats.countDoneTime += realDoneTime;
+      categoryStats.time += timeDo;
+      categoryStats.countDoneTime += timeDone;
 
       if (isDone) {
         categoryStats.countDone += 1;

@@ -101,7 +101,7 @@ export const DrawerContent = ({
       {open && (
         <>
           <motion.div
-            className="fixed inset-0 z-40 bg-black/50"
+            className="fixed inset-0 z-40 bg-background/50"
             onClick={() => setOpen(false)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -143,15 +143,17 @@ export const DrawerContent = ({
               }
             }}
           >
-            <div className="fixed h-full top-0 bottom-0 z-10 flex items-center">
-              <button
-                onPointerDown={(e) => {
-                  controls.start(e);
-                }}
-                className="h-14 w-1.5 cursor-grap touch-none rounded-full ml-2 bg-muted-foreground"
-              ></button>
+            <div className="flex">
+              <div className="h-full top-0 bottom-0 z-10 flex items-center">
+                <button
+                  onPointerDown={(e) => {
+                    controls.start(e);
+                  }}
+                  className="h-full w-6 cursor-grap touch-none bg-transparent"
+                ></button>
+              </div>
+              <div className="pr-4">{children}</div>
             </div>
-            <div className="relative z-0 ">{children}</div>
           </motion.div>
         </>
       )}
@@ -168,9 +170,9 @@ export const DrawerHeader = ({
 }) => {
   const { setOpen } = useContext(DrawerContext);
   return (
-    <div className={cn("p-4 flex gap-2 justify-between", className)}>
+    <div className={cn("py-4 flex gap-2 justify-between", className)}>
       <div>{children}</div>
-      <div className="relative left-5">
+      <div className="relative">
         <Button
           variant="outline"
           onClick={() => {
