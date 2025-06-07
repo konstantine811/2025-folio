@@ -1,4 +1,10 @@
-import { AnimatePresence, motion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useDragControls,
+  useMotionValue,
+  useTransform,
+} from "framer-motion";
 import { createContext, useContext, useState } from "react";
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
@@ -51,7 +57,7 @@ export const DrawerClose = ({ children }: { children: React.ReactNode }) => {
 };
 
 const drawerContentVariants = cva(
-  "fixed z-[10000] flex h-auto bg-background/10 backdrop-blur-[2.3px] w-full h-full justify-end",
+  "fixed z-[10000] flex h-auto  w-full h-full justify-end",
   {
     variants: {
       direction: {
@@ -75,6 +81,9 @@ export const DrawerContent = ({
   className?: string;
 }) => {
   const { open, setOpen, direction } = useContext(DrawerContext);
+  const controls = useDragControls();
+  const x = useMotionValue(100);
+  const opacity = useTransform(x, [-100, 0, 100], [0, 1, 0]);
   const getInitial = () => {
     switch (direction) {
       case "right":
@@ -93,16 +102,30 @@ export const DrawerContent = ({
       {open && (
         <motion.div
           className={cn(drawerContentVariants({ direction }), className)}
-          onClick={(e) => e.stopPropagation()}
-          initial={getInitial()}
           animate={{ x: 0, y: 0 }}
           exit={getInitial()}
           transition={MOTION_FRAME_TRANSITION.spring3}
+          style={{ x }}
+          drag="x"
+          onClick={(e) => e.stopPropagation()}
+          dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+          dragElastic={{
+            left: 0.5,
+            right: 0.5,
+          }}
+          dragControls={controls}
+          dragListener={false}
+          onDragEnd={() => {
+            if (x.get() > 100) {
+              setOpen(false);
+            }
+          }}
         >
-          <div
-            className="fixed w-full h-full"
+          <motion.div
+            className="fixed w-full h-full bg-background/10 backdrop-blur-xs"
             onClick={() => setOpen(false)}
-          ></div>
+            style={{ opacity: isNaN(opacity.get()) ? 1 : opacity }}
+          ></motion.div>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -111,8 +134,16 @@ export const DrawerContent = ({
               duration: 0.2,
               ease: "easeInOut",
             }}
-            className="px-4 max-w-md w-full relative bg-background flex justify-center h-full"
+            className="pr-4 max-w-md w-full relative bg-background flex justify-center h-full ml-18"
           >
+            <button
+              className="w-6 h-full !bg-transparent relative touch-none cursor-grab"
+              onPointerDown={(e) => {
+                controls.start(e);
+              }}
+            >
+              <div className="fixed ml-1 w-1 h-14 rounded-md bg-foreground/60"></div>
+            </button>
             {children}
           </motion.div>
         </motion.div>
