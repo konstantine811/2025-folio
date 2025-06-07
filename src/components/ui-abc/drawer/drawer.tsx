@@ -127,12 +127,11 @@ export const DrawerContent = ({
           dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
           dragElastic={{
             left: 0,
-            right: 3,
+            right: 0.8,
           }}
           dragControls={controls}
           onDragEnd={() => {
-            console.log(x.get());
-            if (x.get() > 30) {
+            if (x.get() > 40) {
               setOpen(false);
             }
           }}
