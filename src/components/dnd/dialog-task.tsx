@@ -130,7 +130,7 @@ const DialogTask = ({
 
   return (
     <Dialog isOpen={isOpen} setOpen={setOpen}>
-      <ScrollArea className="w-full touch-auto overscroll-contain">
+      <ScrollArea className="w-full h-full touch-auto overscroll-contain">
         <div className="flex flex-col gap-2 md:gap-4">
           <div className="relative">
             <div className="flex flex-col gap-2">

@@ -51,7 +51,7 @@ export const DrawerClose = ({ children }: { children: React.ReactNode }) => {
 };
 
 const drawerContentVariants = cva(
-  "fixed z-[10000] flex h-auto flex-col bg-background/60 backdrop-blur-xs  w-full",
+  "fixed z-[10000] flex h-auto bg-background/10 backdrop-blur-[2.3px] w-full h-full justify-end",
   {
     variants: {
       direction: {
@@ -91,26 +91,31 @@ export const DrawerContent = ({
   return (
     <AnimatePresence>
       {open && (
-        <>
-          <motion.div
-            className="fixed inset-0 z-40 bg-background/50"
+        <motion.div
+          className={cn(drawerContentVariants({ direction }), className)}
+          onClick={(e) => e.stopPropagation()}
+          initial={getInitial()}
+          animate={{ x: 0, y: 0 }}
+          exit={getInitial()}
+          transition={MOTION_FRAME_TRANSITION.spring3}
+        >
+          <div
+            className="fixed w-full h-full"
             onClick={() => setOpen(false)}
+          ></div>
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-          />
-
-          <motion.div
-            className={cn(drawerContentVariants({ direction }), className)}
-            onClick={(e) => e.stopPropagation()}
-            initial={getInitial()}
-            animate={{ x: 0, y: 0 }}
-            exit={getInitial()}
-            transition={MOTION_FRAME_TRANSITION.spring3}
+            transition={{
+              duration: 0.2,
+              ease: "easeInOut",
+            }}
+            className="px-4 max-w-md w-full relative bg-background flex justify-center h-full"
           >
-            <div className="px-4 w-auto">{children}</div>
+            {children}
           </motion.div>
-        </>
+        </motion.div>
       )}
     </AnimatePresence>
   );
@@ -127,7 +132,7 @@ export const DrawerHeader = ({
   return (
     <div className={cn("py-4 flex gap-2 justify-between", className)}>
       <div>{children}</div>
-      <div className="fixed right-3 z-50">
+      <div className="fixed top-3 right-3 z-50">
         <Button
           variant="outline"
           onClick={() => {
