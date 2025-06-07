@@ -4,6 +4,7 @@ import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { MOTION_FRAME_TRANSITION } from "@/config/animations";
 
 export type DrawerDirection = "right" | "top" | "bottom" | "left";
 const DrawerContext = createContext<{
@@ -105,6 +106,7 @@ export const DrawerContent = ({
             initial={getInitial()}
             animate={{ x: 0, y: 0 }}
             exit={getInitial()}
+            transition={MOTION_FRAME_TRANSITION.spring3}
           >
             <div className="px-4">{children}</div>
           </motion.div>
@@ -131,7 +133,7 @@ export const DrawerHeader = ({
           onClick={() => {
             setOpen(false);
           }}
-          className="rounded-full h-10 w-10 border-foreground/30"
+          className="rounded-full h-10 w-10 border-foreground/30 bg-background"
         >
           <X />
         </Button>
