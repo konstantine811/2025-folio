@@ -10,7 +10,7 @@ const ChartPieCateogoryWrap = ({
   return (
     <>
       {Object.keys(data).length > 0 && (
-        <div className="pb-8 md:py-8 flex flex-col items-center gap-4">
+        <div className="pb-8 md:py-8 flex flex-col items-center gap-4 max-w-md mx-auto">
           <ChartTitle title="chart.pie_category_daily_time" />
           <ChartPieCategory data={data} />
         </div>

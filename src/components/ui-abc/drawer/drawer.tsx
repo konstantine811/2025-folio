@@ -99,13 +99,13 @@ export const DrawerContent = ({
   const getInitial = () => {
     switch (direction) {
       case "right":
-        return { x: "100%" };
+        return { x: 100 };
       case "left":
-        return { x: "-100%" };
+        return { x: 100 };
       case "top":
-        return { y: "-100%" };
+        return { y: -100 };
       case "bottom":
-        return { y: "100%" };
+        return { y: 100 };
     }
   };
 
@@ -136,7 +136,7 @@ export const DrawerContent = ({
           <motion.div
             className="fixed w-full h-full bg-background/10 backdrop-blur-xs touch-none"
             onClick={() => setOpen(false)}
-            style={{ opacity: isNaN(opacity.get()) ? 1 : opacity }}
+            style={{ opacity }}
             onPointerDown={(e) => {
               controls.start(e);
             }}
@@ -149,15 +149,15 @@ export const DrawerContent = ({
               duration: 0.2,
               ease: "easeInOut",
             }}
-            className="pr-6 max-w-md w-full relative bg-background flex justify-center h-full ml-18"
+            className="pr-6 max-w-md w-full relative bg-card flex justify-center h-full ml-18"
           >
             <button
-              className="w-6 h-full !bg-transparent relative touch-none cursor-grab"
+              className="w-8 h-full ml-1 !bg-transparent relative z-50 touch-none cursor-grab"
               onPointerDown={(e) => {
                 controls.start(e);
               }}
             >
-              <div className="fixed ml-1 w-1 h-14 rounded-md bg-foreground/60"></div>
+              <div className="fixed ml-1 w-1 h-14 rounded-md bg-muted-foreground"></div>
             </button>
             {children}
           </motion.div>
