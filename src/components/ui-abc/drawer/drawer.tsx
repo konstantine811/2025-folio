@@ -146,10 +146,10 @@ export const DrawerContent = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{
-              duration: 0.2,
+              duration: 0.5,
               ease: "easeInOut",
             }}
-            className="pr-6 max-w-md w-full relative bg-card flex justify-center h-full ml-18"
+            className="pr-7 max-w-md w-full relative bg-card flex justify-center h-full ml-18"
           >
             <button
               className="w-8 h-full ml-1 !bg-transparent relative z-50 touch-none cursor-grab"
@@ -178,7 +178,7 @@ export const DrawerHeader = ({
   return (
     <div className={cn("py-4 flex gap-2 justify-between", className)}>
       <div>{children}</div>
-      <div className="fixed top-3 right-6 z-50">
+      <div className="fixed top-3 right-9 z-50">
         <Button
           variant="outline"
           onClick={() => {

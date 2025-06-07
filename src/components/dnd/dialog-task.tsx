@@ -160,7 +160,7 @@ const DialogTask = ({
               </SoundHoverElement>
             </WrapperHoverElement>
           </div>
-          <div className="grid gap-2 md:gap-4 md:py-4">
+          <div className="grid gap-6 md:py-4">
             <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 md:gap-4 sm:gap-4">
               <LabelTextArea
                 id="task-title"

@@ -12,7 +12,7 @@ export const ThemePalette: IThemePalette = {
     secondary: "#e6e6e6",
     "secondary-foreground": "#666666",
     muted: "#0a0a0a",
-    "muted-foreground": "#262626",
+    "muted-foreground": "#666666",
     accent: "#4a80e8",
     "accent-foreground": "#d4d4d4",
     destructive: "#ff3333",
