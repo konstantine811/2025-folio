@@ -49,8 +49,8 @@ export const SideMenu: React.FC<{
           const isDraggingRight = info.offset.x > 170;
           // setIsActive(isDraggingRight);
           // console.log("Is dragging right:", isDraggingRight);
-          const multiplier = isDraggingRight ? 2 / 3 : 1 / 4;
-          const threshold = width * multiplier;
+          // const multiplier = isDraggingRight ? 2 / 3 : 1 / 4;
+          // const threshold = width * multiplier;
 
           setIsActive(isDraggingRight);
           controls.start(isDraggingRight ? "active" : "inactive");
