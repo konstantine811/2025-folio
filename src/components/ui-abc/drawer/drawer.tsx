@@ -127,13 +127,13 @@ export const DrawerHeader = ({
   return (
     <div className={cn("py-4 flex gap-2 justify-between", className)}>
       <div>{children}</div>
-      <div className="fixed right-3">
+      <div className="fixed right-3 z-50">
         <Button
           variant="outline"
           onClick={() => {
             setOpen(false);
           }}
-          className="rounded-full h-10 w-10 border-foreground/30 bg-background"
+          className="rounded-full h-10 w-10 border-foreground/10 bg-background/50 backdrop-blur-md"
         >
           <X />
         </Button>
