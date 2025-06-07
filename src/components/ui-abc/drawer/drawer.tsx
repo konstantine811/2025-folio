@@ -113,7 +113,11 @@ export const DrawerContent = ({
     <AnimatePresence>
       {open && (
         <motion.div
-          className={cn(drawerContentVariants({ direction }), className)}
+          className={cn(
+            drawerContentVariants({ direction }),
+            className,
+            "touch-none"
+          )}
           animate={{ x: 0, y: 0 }}
           exit={getInitial()}
           transition={MOTION_FRAME_TRANSITION.spring3}
@@ -128,7 +132,7 @@ export const DrawerContent = ({
           dragControls={controls}
           onDragEnd={() => {
             console.log(x.get());
-            if (x.get() > 20) {
+            if (x.get() > 30) {
               setOpen(false);
             }
           }}
@@ -146,10 +150,10 @@ export const DrawerContent = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{
-              duration: 0.5,
+              duration: 0.2,
               ease: "easeInOut",
             }}
-            className="pr-9 max-w-md w-full relative bg-card flex justify-center h-full ml-18"
+            className="max-w-md w-full relative bg-card flex justify-center h-full ml-18"
           >
             <button
               className="w-8 h-full ml-1 !bg-transparent relative z-50 touch-none cursor-grab"
