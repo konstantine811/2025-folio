@@ -69,7 +69,7 @@ export const DrawerClose = ({ children }: { children: React.ReactNode }) => {
 };
 
 const drawerContentVariants = cva(
-  "fixed z-[10000] flex h-auto  w-full h-full justify-end",
+  "fixed z-[1000] flex h-auto  w-full h-full justify-end",
   {
     variants: {
       direction: {
@@ -122,7 +122,7 @@ export const DrawerContent = ({
           onClick={(e) => e.stopPropagation()}
           dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
           dragElastic={{
-            left: 0.9,
+            left: 0,
             right: 0.9,
           }}
           dragControls={controls}
@@ -134,9 +134,12 @@ export const DrawerContent = ({
           }}
         >
           <motion.div
-            className="fixed w-full h-full bg-background/10 backdrop-blur-xs"
+            className="fixed w-full h-full bg-background/10 backdrop-blur-xs touch-none"
             onClick={() => setOpen(false)}
             style={{ opacity: isNaN(opacity.get()) ? 1 : opacity }}
+            onPointerDown={(e) => {
+              controls.start(e);
+            }}
           ></motion.div>
           <motion.div
             initial={{ opacity: 0 }}
