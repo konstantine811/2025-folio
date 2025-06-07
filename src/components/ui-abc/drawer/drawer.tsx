@@ -1,9 +1,4 @@
-import {
-  AnimatePresence,
-  motion,
-  useDragControls,
-  useMotionValue,
-} from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { createContext, useContext, useState } from "react";
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
