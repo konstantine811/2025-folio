@@ -8,32 +8,68 @@ import {
   Drawer,
   DrawerContent,
   DrawerDescription,
+  DrawerDirection,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "./drawer";
+import { cn } from "@/utils/classname";
 
 const CustomDrawer = ({
   title,
   description,
   children,
+  direction = "right",
 }: {
   title: string;
   description: string;
   children: React.ReactNode;
+  direction?: DrawerDirection;
 }) => {
   const [open, setOpen] = useState(false);
   const [t] = useTranslation();
 
+  const buttonTriggerDirectionClass = (direction: DrawerDirection) => {
+    switch (direction) {
+      case "right":
+        return "right-0 rounded-r-none";
+      case "top":
+        return "top-[100px] rounded-t-none";
+      case "bottom":
+        return "bottom-[150px] rounded-b-none";
+      case "left":
+        return "left-0 rounded-l-none";
+    }
+  };
+
+  const buttonDirectioinIcon = (direction: DrawerDirection) => {
+    switch (direction) {
+      case "right":
+        return <ArrowBigLeft className="rotate-0" />;
+      case "top":
+        return <ArrowBigLeft className="rotate-90" />;
+      case "bottom":
+        return <ArrowBigLeft className="rotate-270" />;
+      case "left":
+        return <ArrowBigLeft className="rotate-180" />;
+      default:
+        return <ArrowBigLeft />;
+    }
+  };
+
   return (
-    <Drawer open={open} onOpenChange={setOpen} direction="right">
+    <Drawer open={open} onOpenChange={setOpen} direction={direction}>
       <DrawerTrigger>
         <Button
           asChild
-          className="bg-card hover:bg-card/10 rounded-r-none fixed right-0 z-30 text-foreground"
+          className={cn(
+            `bg-card hover:bg-card/10 rounded-r-none fixed z-50 text-foreground ${buttonTriggerDirectionClass(
+              direction
+            )}`
+          )}
         >
           <SoundHoverElement animValue={-3.3} hoverAnimType="translate-x">
-            <ArrowBigLeft />
+            {buttonDirectioinIcon(direction)}
           </SoundHoverElement>
         </Button>
       </DrawerTrigger>

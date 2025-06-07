@@ -1,10 +1,17 @@
-import { AnimatePresence, motion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useDragControls,
+  useMotionValue,
+} from "framer-motion";
 import { createContext, useContext, useState } from "react";
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { MOTION_FRAME_TRANSITION } from "@/config/animations";
 
+export type DrawerDirection = "right" | "top" | "bottom" | "left";
 const DrawerContext = createContext<{
   direction: "right" | "top" | "bottom" | "left";
   open: boolean;
@@ -21,7 +28,7 @@ export const Drawer = ({
   open: controlledOpen,
   onOpenChange,
 }: {
-  direction?: "right" | "top" | "bottom" | "left";
+  direction?: DrawerDirection;
   children: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -73,7 +80,9 @@ export const DrawerContent = ({
   className?: string;
 }) => {
   const { open, setOpen, direction } = useContext(DrawerContext);
-
+  const controls = useDragControls();
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
   const getInitial = () => {
     switch (direction) {
       case "right":
@@ -101,12 +110,48 @@ export const DrawerContent = ({
 
           <motion.div
             className={cn(drawerContentVariants({ direction }), className)}
+            onClick={(e) => e.stopPropagation()}
             initial={getInitial()}
             animate={{ x: 0, y: 0 }}
             exit={getInitial()}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            transition={MOTION_FRAME_TRANSITION.spring3}
+            dragControls={controls}
+            dragListener={false}
+            drag="x"
+            style={{ x, y }}
+            dragConstraints={{
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+            }}
+            dragElastic={{
+              left: direction === "left" ? 0.5 : 0,
+              right: direction === "right" ? 0.5 : 0,
+              top: direction === "top" ? 0.5 : 0,
+              bottom: direction === "bottom" ? 0.5 : 0,
+            }}
+            onDragEnd={() => {
+              if (direction === "right" && x.get() >= 100) {
+                setOpen(false);
+              } else if (direction === "left" && x.get() <= -100) {
+                setOpen(false);
+              } else if (direction === "top" && y.get() >= 100) {
+                setOpen(false);
+              } else if (direction === "bottom" && y.get() <= -100) {
+                setOpen(false);
+              }
+            }}
           >
-            {children}
+            <div className="fixed h-full top-0 bottom-0 z-10 flex items-center">
+              <button
+                onPointerDown={(e) => {
+                  controls.start(e);
+                }}
+                className="h-14 w-1.5 cursor-grap touch-none rounded-full ml-2 bg-muted-foreground"
+              ></button>
+            </div>
+            <div className="relative z-0 ">{children}</div>
           </motion.div>
         </>
       )}
