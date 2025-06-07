@@ -132,7 +132,7 @@ export const DrawerHeader = ({
   return (
     <div className={cn("py-4 flex gap-2 justify-between", className)}>
       <div>{children}</div>
-      <div className="fixed top-3 right-3 z-50">
+      <div className="fixed top-3 right-6 z-50">
         <Button
           variant="outline"
           onClick={() => {
