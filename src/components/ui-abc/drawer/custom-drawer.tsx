@@ -14,6 +14,7 @@ import {
   DrawerTrigger,
 } from "./drawer";
 import { cn } from "@/utils/classname";
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 
 const CustomDrawer = ({
   title,
@@ -28,7 +29,7 @@ const CustomDrawer = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [t] = useTranslation();
-
+  const hs = useHeaderSizeStore((s) => s.size);
   const buttonTriggerDirectionClass = (direction: DrawerDirection) => {
     switch (direction) {
       case "right":
@@ -63,10 +64,11 @@ const CustomDrawer = ({
         <Button
           asChild
           className={cn(
-            `bg-card hover:bg-card/10 rounded-r-none fixed z-50 text-foreground ${buttonTriggerDirectionClass(
+            `bg-card/80 hover:bg-card/10 rounded-r-none absolute z-50 text-foreground h-12 ${buttonTriggerDirectionClass(
               direction
             )}`
           )}
+          style={{ top: `${hs + 10}px` }}
         >
           <SoundHoverElement animValue={-3.3} hoverAnimType="translate-x">
             {buttonDirectioinIcon(direction)}

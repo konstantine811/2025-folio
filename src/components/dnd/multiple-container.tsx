@@ -309,7 +309,7 @@ export function MultipleContainers({
       {!templated && (
         <div
           style={{ top: sH }}
-          className="sticky flex justify-center items-center z-10  py-5 bg-background/50 backdrop-blur-xs"
+          className="sticky flex justify-center items-center z-30  py-5 bg-background/50 backdrop-blur-xs"
         >
           <TaskTimer />
         </div>
