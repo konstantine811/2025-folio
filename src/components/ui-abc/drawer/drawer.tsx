@@ -9,7 +9,6 @@ import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { MOTION_FRAME_TRANSITION } from "@/config/animations";
 
 export type DrawerDirection = "right" | "top" | "bottom" | "left";
 const DrawerContext = createContext<{
@@ -80,9 +79,6 @@ export const DrawerContent = ({
   className?: string;
 }) => {
   const { open, setOpen, direction } = useContext(DrawerContext);
-  const controls = useDragControls();
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
   const getInitial = () => {
     switch (direction) {
       case "right":
@@ -114,46 +110,8 @@ export const DrawerContent = ({
             initial={getInitial()}
             animate={{ x: 0, y: 0 }}
             exit={getInitial()}
-            transition={MOTION_FRAME_TRANSITION.spring3}
-            dragControls={controls}
-            dragListener={false}
-            drag="x"
-            style={{ x, y }}
-            dragConstraints={{
-              left: 0,
-              right: 0,
-              top: 0,
-              bottom: 0,
-            }}
-            dragElastic={{
-              left: direction === "left" ? 0.5 : 0,
-              right: direction === "right" ? 0.5 : 0,
-              top: direction === "top" ? 0.5 : 0,
-              bottom: direction === "bottom" ? 0.5 : 0,
-            }}
-            onDragEnd={() => {
-              if (direction === "right" && x.get() >= 100) {
-                setOpen(false);
-              } else if (direction === "left" && x.get() <= -100) {
-                setOpen(false);
-              } else if (direction === "top" && y.get() >= 100) {
-                setOpen(false);
-              } else if (direction === "bottom" && y.get() <= -100) {
-                setOpen(false);
-              }
-            }}
           >
-            <div className="flex">
-              <div className="h-full top-0 bottom-0 z-10 flex items-center">
-                <button
-                  onPointerDown={(e) => {
-                    controls.start(e);
-                  }}
-                  className="h-full w-6 cursor-grap touch-none bg-transparent"
-                ></button>
-              </div>
-              <div className="pr-4">{children}</div>
-            </div>
+            <div className="px-4">{children}</div>
           </motion.div>
         </>
       )}
@@ -172,7 +130,7 @@ export const DrawerHeader = ({
   return (
     <div className={cn("py-4 flex gap-2 justify-between", className)}>
       <div>{children}</div>
-      <div className="relative">
+      <div className="fixed right-3">
         <Button
           variant="outline"
           onClick={() => {

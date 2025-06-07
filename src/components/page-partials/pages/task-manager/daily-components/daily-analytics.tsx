@@ -19,7 +19,6 @@ const DailyAnalytics = () => {
       getDailyTaskAnalyticsData(dailyTasks);
     setDailyEntity(dailyEntity);
     setCategoryEntity(categoryEntity);
-    console.log("Daily Entity:", categoryEntity);
   }, [dailyTasks]);
   return (
     <>
