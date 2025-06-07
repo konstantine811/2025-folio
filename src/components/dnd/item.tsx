@@ -4,10 +4,6 @@ import type {
   UniqueIdentifier,
 } from "@dnd-kit/core";
 import type { Transform } from "@dnd-kit/utilities";
-import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
-import { SoundTypeElement } from "@/types/sound";
-import { Button } from "@/components/ui/button";
-import { GripVertical } from "lucide-react";
 import { ItemTask } from "@/types/drag-and-drop.model";
 import { TaskItem } from "./task-item";
 
@@ -72,7 +68,6 @@ export const Item = React.memo(
         task,
         onToggle,
         templated,
-        ...props
       },
       ref
     ) => {
@@ -111,6 +106,8 @@ export const Item = React.memo(
             task={task}
             onToggle={onToggle}
             onEditTask={onEditTask}
+            listeners={listeners}
+            handle={handle}
             style={{
               transform: transform
                 ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
@@ -118,27 +115,7 @@ export const Item = React.memo(
               transition: transition ?? undefined, // ← fix тут
               ...style,
             }}
-          >
-            {
-              <>
-                <SoundHoverElement
-                  animValue={0.9}
-                  hoverTypeElement={SoundTypeElement.SHIFT}
-                >
-                  <Button
-                    data-cypress="draggable-item"
-                    {...(!handle ? listeners : undefined)}
-                    {...props}
-                    variant="ghost"
-                    size="icon"
-                    className="cursor-move hover:bg-background hover:text-foreground"
-                  >
-                    <GripVertical />
-                  </Button>
-                </SoundHoverElement>
-              </>
-            }
-          </TaskItem>
+          ></TaskItem>
         </li>
       );
     }

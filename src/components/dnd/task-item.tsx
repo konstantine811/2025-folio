@@ -4,14 +4,14 @@ import {
   getPriorityBorderClass,
   getPriorityClassByPrefix,
 } from "./utils/dnd.utils";
-import { UniqueIdentifier } from "@dnd-kit/core";
+import { DraggableSyntheticListeners, UniqueIdentifier } from "@dnd-kit/core";
 import { checkInSound, checkOutSound } from "@/config/sounds";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import TaskPlay from "./task-play";
 import WrapperHoverElement from "../ui-abc/wrapper-hover-element";
 import { Button } from "../ui/button";
-import { Settings2 } from "lucide-react";
+import { GripVertical, Settings2 } from "lucide-react";
 import { useState } from "react";
 
 import TaskLocalTimeStatic from "./task-local-time-static";
@@ -27,6 +27,8 @@ export function TaskItem({
   onEditTask,
   templated,
   style, // ✅ додали
+  listeners,
+  handle,
 }: {
   index?: number | string;
   task: ItemTask;
@@ -37,6 +39,8 @@ export function TaskItem({
   dragging?: boolean;
   templated: boolean;
   style?: React.CSSProperties; // ✅ додали
+  listeners?: DraggableSyntheticListeners;
+  handle?: boolean;
 }) {
   const [isPlay, setIsPlay] = useState(false);
   const [t] = useTranslation();
@@ -92,7 +96,17 @@ export function TaskItem({
             />
           </SoundHoverElement>
         )}
-
+        <>
+          <Button
+            data-cypress="draggable-item"
+            {...(!handle ? listeners : undefined)}
+            variant="ghost"
+            size="icon"
+            className="cursor-move hover:bg-background hover:text-foreground flex md:hidden"
+          >
+            <GripVertical />
+          </Button>
+        </>
         <span
           className={`w-6 text-xs ${
             task.isDone
@@ -192,7 +206,23 @@ export function TaskItem({
               )}
             </>
           )}
-
+          <>
+            <SoundHoverElement
+              animValue={0.9}
+              hoverTypeElement={SoundTypeElement.SHIFT}
+              className="hidden md:block"
+            >
+              <Button
+                data-cypress="draggable-item"
+                {...(!handle ? listeners : undefined)}
+                variant="ghost"
+                size="icon"
+                className="cursor-move hover:bg-background hover:text-foreground"
+              >
+                <GripVertical />
+              </Button>
+            </SoundHoverElement>
+          </>
           {children}
         </div>
       </div>

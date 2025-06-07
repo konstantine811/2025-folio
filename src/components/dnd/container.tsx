@@ -58,6 +58,14 @@ export const Container = forwardRef<HTMLDivElement, Props>(
         {label ? (
           <div className="flex items-center w-full gap-1 relative z-20">
             <div className="flex w-full gap-2 items-center justify-between">
+              <Button
+                {...handleProps}
+                variant="ghost"
+                size="icon"
+                className="cursor-move hover:bg-background hover:text-foreground flex justify-center items-center md:hidden bg-card/80"
+              >
+                <GripVertical />
+              </Button>
               {isEdit ? (
                 <InputCombobox
                   options={options}
@@ -107,6 +115,7 @@ export const Container = forwardRef<HTMLDivElement, Props>(
                 <SoundHoverElement
                   animValue={0.9}
                   hoverTypeElement={SoundTypeElement.SHIFT}
+                  className="hidden md:block"
                 >
                   <Button
                     {...handleProps}
