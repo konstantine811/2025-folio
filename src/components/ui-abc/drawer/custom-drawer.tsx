@@ -77,7 +77,7 @@ const CustomDrawer = ({
       </DrawerTrigger>
       <DrawerContent className="border-foreground/10 overflow-y-scroll max-h-screen">
         <ScrollArea className="w-full touch-auto overscroll-contain">
-          <div className="mx-auto max-w-md w-full">
+          <div className="mx-auto w-full">
             <DrawerHeader>
               <DrawerTitle>{t(title)}</DrawerTitle>
               <DrawerDescription>{t(description)}</DrawerDescription>

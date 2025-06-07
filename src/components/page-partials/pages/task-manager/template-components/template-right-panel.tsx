@@ -16,10 +16,7 @@ const TemplateRightPanel = ({ templateTasks }: { templateTasks: Items }) => {
   return (
     <>
       {getSumTime(templateTasks) > 0 && (
-        <div
-          className="min-w-xs w-full pt-8 sticky top-0"
-          style={{ top: `${hS}px` }}
-        >
+        <div className="w-auto pt-8 sticky top-0" style={{ top: `${hS}px` }}>
           <div className="flex justify-center mb-2">
             <ChartToogleItem onToggleItems={setSelectedItem} />
           </div>

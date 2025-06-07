@@ -42,7 +42,7 @@ const ChartCheckboxSort = ({
           className="cursor-grab"
         >
           <div
-            className={`flex items-center gap-1 px-2 py-1 rounded-md border transition select-none ${
+            className={`flex items-center gap-1 px-2 py-1 rounded-md border transition select-none flex-wrap ${
               selected.includes(key)
                 ? "bg-accent/30 text-accent-foreground border-accent/10"
                 : "bg-muted border-muted-foreground/30"

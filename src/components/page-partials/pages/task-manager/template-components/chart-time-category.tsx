@@ -35,7 +35,7 @@ const ChartTimeCategory = ({
             <ChartTitle title={title} />
             <SelectPeriodTime onChange={setPeriod} />
           </div>
-          <div className="max-w-md mx-auto">
+          <div className="">
             <ChartPieItem data={analyticsData} type={type} />
           </div>
         </>
