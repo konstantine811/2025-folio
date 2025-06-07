@@ -145,7 +145,7 @@ const DailyTask = () => {
 
         {/* Центральна колонка */}
         <main
-          className={`w-full max-w-2xl px-4 flex flex-col justify-center ${outletContext.className}`}
+          className={`w-full flex-1 px-4 flex flex-col justify-center ${outletContext.className}`}
           style={{ minHeight: `calc(100vh - ${hS}px)` }}
         >
           <h2 className="text-center text-foreground/50 text-sm mb-4 mt-2">
@@ -156,7 +156,7 @@ const DailyTask = () => {
         </main>
 
         {/* Права колонка */}
-        <div className="max-w-1 lg:max-w-lg flex justify-center flex-1 pt-8">
+        <div className="max-w-1 lg:max-w-full flex-1 pt-8">
           {mdSize ? (
             <CustomDrawer
               title={"task_manager.calendar.header.title"}
