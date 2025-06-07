@@ -146,7 +146,7 @@ export const DrawerContent = ({
               duration: 0.2,
               ease: "easeInOut",
             }}
-            className="pr-4 max-w-md w-full relative bg-background flex justify-center h-full ml-18"
+            className="pr-6 max-w-md w-full relative bg-background flex justify-center h-full ml-18"
           >
             <button
               className="w-6 h-full !bg-transparent relative touch-none cursor-grab"
