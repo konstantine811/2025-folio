@@ -15,6 +15,7 @@ import {
 } from "./drawer";
 import { cn } from "@/utils/classname";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
+import SideMenu from "./drawer-2";
 
 const CustomDrawer = ({
   title,
@@ -59,34 +60,37 @@ const CustomDrawer = ({
   };
 
   return (
-    <Drawer open={open} onOpenChange={setOpen} direction={direction}>
-      <DrawerTrigger>
-        <Button
-          asChild
-          className={cn(
-            `bg-card hover:bg-card/50 rounded-r-none fixed z-50 text-foreground h-12 ${buttonTriggerDirectionClass(
-              direction
-            )}`
-          )}
-          style={{ top: `${hs + 10}px` }}
-        >
-          <SoundHoverElement animValue={-3.3} hoverAnimType="translate-x">
-            {buttonDirectioinIcon(direction)}
-          </SoundHoverElement>
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent className="border-foreground/10 overflow-y-scroll max-h-screen">
-        <ScrollArea className="w-full touch-auto overscroll-contain">
-          <div className="mx-auto w-full">
-            <DrawerHeader>
-              <DrawerTitle>{t(title)}</DrawerTitle>
-              <DrawerDescription>{t(description)}</DrawerDescription>
-            </DrawerHeader>
-            {children}
-          </div>
-        </ScrollArea>
-      </DrawerContent>
-    </Drawer>
+    <>
+      {/* <Drawer open={open} onOpenChange={setOpen} direction={direction}>
+        <DrawerTrigger>
+          <Button
+            asChild
+            className={cn(
+              `bg-card hover:bg-card/50 rounded-r-none fixed z-50 text-foreground h-12 ${buttonTriggerDirectionClass(
+                direction
+              )}`
+            )}
+            style={{ top: `${hs + 10}px` }}
+          >
+            <SoundHoverElement animValue={-3.3} hoverAnimType="translate-x">
+              {buttonDirectioinIcon(direction)}
+            </SoundHoverElement>
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent className="border-foreground/10 overflow-y-scroll max-h-screen">
+          <ScrollArea className="w-full touch-auto overscroll-contain">
+            <div className="mx-auto w-full">
+              <DrawerHeader>
+                <DrawerTitle>{t(title)}</DrawerTitle>
+                <DrawerDescription>{t(description)}</DrawerDescription>
+              </DrawerHeader>
+              {children}
+            </div>
+          </ScrollArea>
+        </DrawerContent>
+      </Drawer> */}
+      <SideMenu>{children}</SideMenu>
+    </>
   );
 };
 

@@ -126,7 +126,9 @@ export const DrawerContent = ({
             right: 0.9,
           }}
           dragControls={controls}
-          dragListener={false}
+          onPointerDown={(e) => {
+            controls.start(e);
+          }}
           onDragEnd={() => {
             if (x.get() > 30) {
               setOpen(false);
@@ -149,7 +151,7 @@ export const DrawerContent = ({
               duration: 0.5,
               ease: "easeInOut",
             }}
-            className="pr-7 max-w-md w-full relative bg-card flex justify-center h-full ml-18"
+            className="pr-9 max-w-md w-full relative bg-card flex justify-center h-full ml-18"
           >
             <button
               className="w-8 h-full ml-1 !bg-transparent relative z-50 touch-none cursor-grab"
