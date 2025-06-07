@@ -64,7 +64,7 @@ const CustomDrawer = ({
         <Button
           asChild
           className={cn(
-            `bg-card/80 hover:bg-card/10 rounded-r-none absolute z-50 text-foreground h-12 ${buttonTriggerDirectionClass(
+            `bg-card/80 hover:bg-card/10 rounded-r-none fixed z-50 text-foreground h-12 ${buttonTriggerDirectionClass(
               direction
             )}`
           )}

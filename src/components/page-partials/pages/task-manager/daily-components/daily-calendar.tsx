@@ -95,12 +95,21 @@ const DailyCalendar = () => {
   const { i18n } = useTranslation();
   const lang = i18n.language;
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center w-full">
       <Calendar
         mode="single"
         selected={date}
         onSelect={(date) => handleDate(date)}
-        className="rounded-md border shadow capitalize"
+        className="h-full w-full flex"
+        classNames={{
+          months:
+            "flex w-full flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1",
+          month: "space-y-4 w-full flex flex-col",
+          table: "w-full h-full border-collapse space-y-1",
+          head_row: "",
+          row: "w-full mt-2",
+          day: "w-full flex justify-center items-center py-2 rounded-sm",
+        }}
         locale={locales[lang] ?? enUS}
         modifiers={{
           active: activeDates,
@@ -112,7 +121,7 @@ const DailyCalendar = () => {
           today: "bg-background shadow-md shadow-accent border border-accent",
           active: "bg-foreground/20 text-foreground",
           hasTasks:
-            "after:block after:absolute after:-bottom-2 after:w-1 after:h-1 after:bg-foreground after:rounded-full", // 👈 стилізуємо це окремо
+            "after:block after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-foreground after:rounded-full", // 👈 стилізуємо це окремо
         }}
       />
     </div>

@@ -86,7 +86,7 @@ const ChartPieItem = ({
   // Всередині компонента
   useEffect(() => {
     if (!ref.current) return;
-    const offset = 40;
+    const offset = 0;
     const names = Object.keys(data);
     const values = Object.values(data);
     const dataset = names.map((name, i) => ({ name, value: values[i] }));

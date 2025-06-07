@@ -51,7 +51,7 @@ export const DrawerClose = ({ children }: { children: React.ReactNode }) => {
 };
 
 const drawerContentVariants = cva(
-  "fixed z-[10000] flex h-auto flex-col bg-background shadow-lg",
+  "fixed z-[10000] flex h-auto flex-col bg-background/60 backdrop-blur-xs  w-full",
   {
     variants: {
       direction: {
@@ -108,7 +108,7 @@ export const DrawerContent = ({
             exit={getInitial()}
             transition={MOTION_FRAME_TRANSITION.spring3}
           >
-            <div className="px-4">{children}</div>
+            <div className="px-4 w-auto">{children}</div>
           </motion.div>
         </>
       )}

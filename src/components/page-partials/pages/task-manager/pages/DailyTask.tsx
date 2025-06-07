@@ -22,7 +22,7 @@ import DailyAnalytics from "../daily-components/daily-analytics";
 import { BreakPoints } from "@/config/adaptive.config";
 
 const DailyTask = () => {
-  const { isAdoptiveSize: mdSize, screenWidth } = useIsAdoptive();
+  const { isAdoptiveSize: mdSize, screenWidth } = useIsAdoptive(BreakPoints.lg);
   const hS = useHeaderSizeStore((s) => s.size);
   const [dailyTask, setDailyTask] = useState<Items>();
   const outletContext = useOutletContext<TaskManagerOutletContext>();
@@ -130,7 +130,7 @@ const DailyTask = () => {
       }}
     >
       <div
-        className="flex w-full"
+        className="flex w-full justify-center"
         style={{ minHeight: `calc(100vh - ${hS}px)` }}
       >
         {/* Ліва колонка */}
@@ -156,7 +156,7 @@ const DailyTask = () => {
         </main>
 
         {/* Права колонка */}
-        <div className="flex-1 pt-8">
+        <div className="max-w-1 lg:max-w-lg flex justify-center flex-1 pt-8">
           {mdSize ? (
             <CustomDrawer
               title={"task_manager.calendar.header.title"}
