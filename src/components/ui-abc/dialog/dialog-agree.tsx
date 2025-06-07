@@ -3,6 +3,7 @@ import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import WrapperHoverElement from "@/components/ui-abc/wrapper-hover-element";
 import { Button } from "@/components/ui/button";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
+import { ScrollArea } from "@radix-ui/react-scroll-area";
 
 const DialogAgree = ({
   isOpen,
@@ -22,8 +23,8 @@ const DialogAgree = ({
   setIsOpen: (isOpen: boolean) => void;
 }) => {
   return (
-    <DialogTask isOpen={isOpen} setOpen={setIsOpen} className="py-4">
-      <>
+    <DialogTask isOpen={isOpen} setOpen={setIsOpen}>
+      <ScrollArea className="w-full h-full touch-auto overscroll-contain">
         <div className="flex flex-col items-center gap-4 p-6">
           <h3 className="text-lg text-foreground/80">{title}</h3>
           <p className="text-md text-foreground/50">{description}</p>
@@ -62,7 +63,7 @@ const DialogAgree = ({
             </SoundHoverElement>
           </WrapperHoverElement>
         </div>
-      </>
+      </ScrollArea>
     </DialogTask>
   );
 };

@@ -49,6 +49,24 @@ export default function NumberInput({
             variant="ghost"
             size="sm"
             className={`text-lg hover:bg-card/80 hover:text-foreground ${
+              value >= max && "text-foreground/30"
+            }`}
+            onClick={increment}
+            disabled={value >= max}
+          >
+            +
+          </Button>
+        </SoundHoverElement>
+      </WrapperHoverElement>
+      <WrapperHoverElement>
+        <SoundHoverElement
+          hoverTypeElement={SoundTypeElement.SELECT}
+          hoverStyleElement={HoverStyleElement.quad}
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`text-lg hover:bg-card/80 hover:text-foreground ${
               value <= min && "text-foreground/30"
             }`}
             onClick={decrement}
@@ -71,24 +89,6 @@ export default function NumberInput({
         inputMode="numeric" // показує цифрову клавіатуру на мобілках
         className="w-12 text-center font-bold text-lg border-none focus:outline-none"
       />
-      <WrapperHoverElement>
-        <SoundHoverElement
-          hoverTypeElement={SoundTypeElement.SELECT}
-          hoverStyleElement={HoverStyleElement.quad}
-        >
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`text-lg hover:bg-card/80 hover:text-foreground ${
-              value >= max && "text-foreground/30"
-            }`}
-            onClick={increment}
-            disabled={value >= max}
-          >
-            +
-          </Button>
-        </SoundHoverElement>
-      </WrapperHoverElement>
     </div>
   );
 }

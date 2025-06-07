@@ -8,7 +8,7 @@ const DialogTask = ({
   isOpen,
   setOpen,
   children,
-  className = "px-4 pt-20 pb-24 md:p-6",
+  className = "p-4",
 }: {
   isOpen: boolean;
   setOpen: (open: boolean) => void;
@@ -44,13 +44,13 @@ const DialogTask = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: -30 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className="fixed inset-0 z-50 flex justify-center items-center overflow-y-auto bg-background/80 backdrop-blur-xs w-full"
+          className="absolute left-0 top-0 z-[10000] h-full flex justify-center items-center bg-background/80 backdrop-blur-xs w-full"
           onClick={() => setOpen(false)}
         >
           <motion.div
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              `bg-background/80 rounded-xl  shadow-lg w-full max-w-lg border border-foreground/20 backdrop-blur-xs overflow-y-auto ${className}`
+              `bg-background/80 overflow-auto h-full rounded-xl shadow-lg w-full max-w-lg border border-foreground/20 backdrop-blur-xs ${className}`
             )}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}

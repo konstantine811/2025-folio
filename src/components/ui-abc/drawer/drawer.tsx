@@ -2,6 +2,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { createContext, useContext, useState } from "react";
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
 const DrawerContext = createContext<{
   direction: "right" | "top" | "bottom" | "left";
@@ -118,7 +120,25 @@ export const DrawerHeader = ({
 }: {
   children: React.ReactNode;
   className?: string;
-}) => <div className={cn("p-4", className)}>{children}</div>;
+}) => {
+  const { setOpen } = useContext(DrawerContext);
+  return (
+    <div className={cn("p-4 flex gap-2 justify-between", className)}>
+      <div>{children}</div>
+      <div className="relative left-5">
+        <Button
+          variant="outline"
+          onClick={() => {
+            setOpen(false);
+          }}
+          className="rounded-full h-10 w-10 border-foreground/30"
+        >
+          <X />
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 export const DrawerFooter = ({
   children,
