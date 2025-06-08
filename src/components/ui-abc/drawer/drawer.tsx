@@ -112,59 +112,58 @@ export const DrawerContent = ({
   return (
     <AnimatePresence>
       {open && (
-        <motion.div
-          className={cn(
-            drawerContentVariants({ direction }),
-            className,
-            "touch-none"
-          )}
-          animate={{ x: 0, y: 0 }}
-          exit={getInitial()}
-          transition={MOTION_FRAME_TRANSITION.spring3}
-          style={{ x }}
-          drag="x"
-          onClick={(e) => e.stopPropagation()}
-          dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-          dragElastic={{
-            left: 0,
-            right: 1,
-          }}
-          dragControls={controls}
-          onDragEnd={() => {
-            if (x.get() > 100) {
-              setOpen(false);
-            }
-          }}
-        >
+        <>
           <motion.div
-            className="fixed w-full h-full bg-background/10 backdrop-blur-xs touch-none"
+            className="fixed w-full h-full bg-background/10 backdrop-blur-xs z-[1000] left-0 top-0"
             onClick={() => setOpen(false)}
             style={{ opacity }}
-            onPointerDown={(e) => {
-              controls.start(e);
-            }}
           ></motion.div>
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{
-              duration: 0.3,
-              ease: "easeInOut",
+            className={cn(
+              drawerContentVariants({ direction }),
+              className,
+              "touch-none"
+            )}
+            animate={{ x: 0, y: 0 }}
+            exit={getInitial()}
+            transition={MOTION_FRAME_TRANSITION.spring3}
+            style={{ x }}
+            drag="x"
+            onClick={(e) => e.stopPropagation()}
+            dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+            dragElastic={{
+              left: 0,
+              right: 2,
             }}
-            className="max-w-md w-full relative bg-card flex justify-center h-full ml-18"
+            dragControls={controls}
+            onDragEnd={() => {
+              if (x.get() > 100) {
+                setOpen(false);
+              }
+            }}
           >
-            <button
-              className="w-8 h-full ml-1 !bg-transparent relative z-50 touch-none cursor-grab"
-              onPointerDown={(e) => {
-                controls.start(e);
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                duration: 0.3,
+                ease: "easeInOut",
               }}
+              className="max-w-md w-full relative bg-card flex justify-center h-full ml-18"
             >
-              <div className="fixed ml-1 w-1 h-14 rounded-md bg-muted-foreground"></div>
-            </button>
-            {children}
+              <button
+                className="w-8 h-full ml-1 !bg-transparent relative z-50 touch-none cursor-grab"
+                onPointerDown={(e) => {
+                  controls.start(e);
+                }}
+              >
+                <div className="fixed ml-1 w-1 h-14 rounded-md bg-muted-foreground"></div>
+              </button>
+              {children}
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
@@ -181,7 +180,7 @@ export const DrawerHeader = ({
   return (
     <div className={cn("py-4 flex gap-2 justify-between", className)}>
       <div>{children}</div>
-      <div className="fixed top-3 right-9 z-50">
+      <div className="fixed top-3 right-3 z-50">
         <Button
           variant="outline"
           onClick={() => {

@@ -10,11 +10,11 @@ import {
   Drawer,
   DrawerContent,
   DrawerDescription,
+  DrawerDirection,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer";
-import { DrawerDirection } from "./drawer";
+} from "./drawer";
 
 const CustomDrawer = ({
   title,
