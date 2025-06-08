@@ -10,7 +10,6 @@ import {
   Drawer,
   DrawerContent,
   DrawerDescription,
-  DrawerDirection,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -21,59 +20,55 @@ const CustomDrawer = ({
   title,
   description,
   children,
-  direction = "right",
 }: {
   title: string;
   description: string;
   children: React.ReactNode;
-  direction?: DrawerDirection;
 }) => {
   const [open, setOpen] = useState(false);
   useScrollBehavior(open);
   const [t] = useTranslation();
   const hs = useHeaderSizeStore((s) => s.size);
-  const buttonTriggerDirectionClass = (direction: DrawerDirection) => {
-    switch (direction) {
-      case "right":
-        return "right-0 rounded-r-none";
-      case "top":
-        return "top-[100px] rounded-t-none";
-      case "bottom":
-        return "bottom-[150px] rounded-b-none";
-      case "left":
-        return "left-0 rounded-l-none";
-    }
-  };
+  // const buttonTriggerDirectionClass = (direction: DrawerDirection) => {
+  //   switch (direction) {
+  //     case "right":
+  //       return "right-0 rounded-r-none";
+  //     case "top":
+  //       return "top-[100px] rounded-t-none";
+  //     case "bottom":
+  //       return "bottom-[150px] rounded-b-none";
+  //     case "left":
+  //       return "left-0 rounded-l-none";
+  //   }
+  // };
 
-  const buttonDirectioinIcon = (direction: DrawerDirection) => {
-    switch (direction) {
-      case "right":
-        return <ArrowBigLeft className="rotate-0" />;
-      case "top":
-        return <ArrowBigLeft className="rotate-90" />;
-      case "bottom":
-        return <ArrowBigLeft className="rotate-270" />;
-      case "left":
-        return <ArrowBigLeft className="rotate-180" />;
-      default:
-        return <ArrowBigLeft />;
-    }
-  };
+  // const buttonDirectioinIcon = (direction: DrawerDirection) => {
+  //   switch (direction) {
+  //     case "right":
+  //       return <ArrowBigLeft className="rotate-0" />;
+  //     case "top":
+  //       return <ArrowBigLeft className="rotate-90" />;
+  //     case "bottom":
+  //       return <ArrowBigLeft className="rotate-270" />;
+  //     case "left":
+  //       return <ArrowBigLeft className="rotate-180" />;
+  //     default:
+  //       return <ArrowBigLeft />;
+  //   }
+  // };
 
   return (
-    <Drawer open={open} direction={direction} onOpenChange={setOpen}>
+    <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger>
         <Button
           asChild
           className={cn(
-            `bg-card hover:bg-card/50 rounded-r-none fixed z-50 text-foreground h-12 ${buttonTriggerDirectionClass(
-              direction
-            )}`
+            `bg-card hover:bg-card/50 rounded-r-none fixed z-50 text-foreground h-12 right-0`
           )}
           style={{ top: `${hs + 10}px` }}
         >
           <SoundHoverElement animValue={-3.3} hoverAnimType="translate-x">
-            {buttonDirectioinIcon(direction)}
+            <ArrowBigLeft />
           </SoundHoverElement>
         </Button>
       </DrawerTrigger>
