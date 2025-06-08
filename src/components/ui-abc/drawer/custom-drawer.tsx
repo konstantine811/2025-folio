@@ -4,17 +4,17 @@ import SoundHoverElement from "../sound-hover-element";
 import { ArrowBigLeft } from "lucide-react";
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/utils/classname";
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import {
   Drawer,
   DrawerContent,
   DrawerDescription,
-  DrawerDirection,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "./drawer";
-import { cn } from "@/utils/classname";
-import { useHeaderSizeStore } from "@/storage/headerSizeStore";
+} from "@/components/ui/drawer";
+import { DrawerDirection } from "./drawer";
 
 const CustomDrawer = ({
   title,
@@ -75,8 +75,8 @@ const CustomDrawer = ({
           </SoundHoverElement>
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="border-foreground/10 max-h-screen">
-        <ScrollArea className="w-full touch-auto overscroll-contain pr-5">
+      <DrawerContent className="border-foreground/10 max-h-screen z-[1000]">
+        <ScrollArea className="w-full touch-auto overscroll-contain pr-5 overflow-auto">
           <div className="mx-auto w-full">
             <DrawerHeader>
               <DrawerTitle>{t(title)}</DrawerTitle>
