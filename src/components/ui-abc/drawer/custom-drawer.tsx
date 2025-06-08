@@ -32,7 +32,6 @@ const CustomDrawer = ({
   useScrollBehavior(open);
   const [t] = useTranslation();
   const hs = useHeaderSizeStore((s) => s.size);
-  const bodyScrollTopRef = useRef<number>(0);
   const buttonTriggerDirectionClass = (direction: DrawerDirection) => {
     switch (direction) {
       case "right":
@@ -62,27 +61,7 @@ const CustomDrawer = ({
   };
 
   return (
-    <Drawer
-      open={open}
-      onOpenChange={(status) => {
-        setOpen(status);
-        if (!status) {
-          document.body.scrollBy({
-            top: bodyScrollTopRef.current,
-            left: 0,
-          });
-          setTimeout(() => {
-            document.body.scrollBy({
-              top: bodyScrollTopRef.current,
-              left: 0,
-            });
-          }, 523);
-        } else {
-          bodyScrollTopRef.current = document.body.scrollTop;
-        }
-      }}
-      direction={direction}
-    >
+    <Drawer open={open} direction={direction} onOpenChange={setOpen}>
       <DrawerTrigger>
         <Button
           asChild
