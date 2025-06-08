@@ -31,13 +31,7 @@ const CustomDrawer = ({
   const hs = useHeaderSizeStore((s) => s.size);
 
   return (
-    <Drawer
-      open={open}
-      onOpenChange={setOpen}
-      preventScrollRestoration={false}
-      disablePreventScroll
-      noBodyStyles
-    >
+    <Drawer open={open} onOpenChange={setOpen} preventScrollRestoration={false}>
       <DrawerTrigger>
         <Button
           asChild
