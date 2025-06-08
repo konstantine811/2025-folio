@@ -53,6 +53,13 @@ export type CategoryAnalyticsNameEntity = {
   [id: string]: CategoryAnalyticsData;
 };
 
+export interface DailyAnalyticsData {
+  countDoneTime: number;
+  countTime: number;
+  countDoneTask: number;
+  countAllTask: number;
+}
+
 export interface TaskAnalyticsData {
   title: string;
   time: number;
