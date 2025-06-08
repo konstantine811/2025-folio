@@ -29,36 +29,16 @@ const CustomDrawer = ({
   useScrollBehavior(open);
   const [t] = useTranslation();
   const hs = useHeaderSizeStore((s) => s.size);
-  // const buttonTriggerDirectionClass = (direction: DrawerDirection) => {
-  //   switch (direction) {
-  //     case "right":
-  //       return "right-0 rounded-r-none";
-  //     case "top":
-  //       return "top-[100px] rounded-t-none";
-  //     case "bottom":
-  //       return "bottom-[150px] rounded-b-none";
-  //     case "left":
-  //       return "left-0 rounded-l-none";
-  //   }
-  // };
-
-  // const buttonDirectioinIcon = (direction: DrawerDirection) => {
-  //   switch (direction) {
-  //     case "right":
-  //       return <ArrowBigLeft className="rotate-0" />;
-  //     case "top":
-  //       return <ArrowBigLeft className="rotate-90" />;
-  //     case "bottom":
-  //       return <ArrowBigLeft className="rotate-270" />;
-  //     case "left":
-  //       return <ArrowBigLeft className="rotate-180" />;
-  //     default:
-  //       return <ArrowBigLeft />;
-  //   }
-  // };
 
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
+    <Drawer
+      open={open}
+      onOpenChange={setOpen}
+      direction="right"
+      preventScrollRestoration={false}
+      disablePreventScroll
+      noBodyStyles
+    >
       <DrawerTrigger>
         <Button
           asChild
