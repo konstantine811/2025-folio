@@ -123,7 +123,7 @@ export const DrawerContent = ({
               className,
               "touch-none z-[10000]"
             )}
-            animate={{ x: 0, y: 0 }}
+            animate={{ x: 0 }}
             exit={getInitial()}
             transition={MOTION_FRAME_TRANSITION.spring3}
             style={{ x }}
@@ -133,6 +133,8 @@ export const DrawerContent = ({
             dragElastic={{
               left: 0,
               right: 2,
+              top: 0,
+              bottom: 0,
             }}
             dragControls={controls}
             onDragEnd={() => {
