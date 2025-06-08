@@ -77,7 +77,7 @@ const CustomDrawer = ({
           </SoundHoverElement>
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="border-foreground/10 max-h-screen z-[1000] ouser-select-none">
+      <DrawerContent className="border-foreground/10 max-h-screen z-[1000] outline-none">
         <ScrollArea className="w-full touch-auto overscroll-contain px-2 overflow-auto">
           <div className="mx-auto w-full">
             <DrawerHeader>
