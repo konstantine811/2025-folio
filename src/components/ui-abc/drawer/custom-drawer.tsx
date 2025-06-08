@@ -73,7 +73,7 @@ const CustomDrawer = ({
               left: 0,
               behavior: "smooth",
             });
-          }, 0);
+          }, 600);
         } else {
           bodyScrollTopRef.current = document.body.scrollTop;
         }
