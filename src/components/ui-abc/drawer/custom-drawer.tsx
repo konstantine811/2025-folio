@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import SoundHoverElement from "../sound-hover-element";
 import { ArrowBigLeft } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/utils/classname";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
@@ -32,6 +32,7 @@ const CustomDrawer = ({
   useScrollBehavior(open);
   const [t] = useTranslation();
   const hs = useHeaderSizeStore((s) => s.size);
+  const bodyScrollTopRef = useRef<number>(0);
   const buttonTriggerDirectionClass = (direction: DrawerDirection) => {
     switch (direction) {
       case "right":
@@ -61,7 +62,21 @@ const CustomDrawer = ({
   };
 
   return (
-    <Drawer open={open} onOpenChange={setOpen} direction={direction}>
+    <Drawer
+      open={open}
+      onOpenChange={(status) => {
+        setOpen(status);
+        if (!status) {
+          setTimeout(() => {
+            document.body.scrollTop = bodyScrollTopRef.current;
+          }, 600);
+        } else {
+          bodyScrollTopRef.current = document.body.scrollTop;
+          console.log("bodyScrollTopRef.current", bodyScrollTopRef.current);
+        }
+      }}
+      direction={direction}
+    >
       <DrawerTrigger>
         <Button
           asChild
