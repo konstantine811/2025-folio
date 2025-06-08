@@ -32,36 +32,36 @@ const CustomDrawer = ({
 
   return (
     <Drawer open={open} onOpenChange={setOpen} preventScrollRestoration={false}>
-      <DrawerTrigger>
-        <Button
-          asChild
-          className={cn(
-            `bg-card hover:bg-card/50 rounded-r-none fixed z-50 text-foreground  right-0`
-          )}
-          style={{ top: `${hs + 10}px` }}
-        >
-          <SoundHoverElement
-            animValue={-3.3}
-            hoverAnimType="translate-x"
-            className="!pr-7"
-          >
-            {open ? (
-              <PanelTopOpen className="!w-8 !h-8" />
-            ) : (
-              <PanelTopClose className="!w-8 !h-8" />
+      <DrawerTrigger asChild>
+        <div>
+          <Button
+            className={cn(
+              `bg-card hover:bg-card/50 rounded-r-none !pr-8 !py-6 fixed z-50 text-foreground  right-0`
             )}
-          </SoundHoverElement>
-        </Button>
+            style={{ top: `${hs + 10}px` }}
+          >
+            <SoundHoverElement
+              animValue={-3.3}
+              hoverAnimType="translate-x"
+              className=""
+              as="div"
+            >
+              {open ? (
+                <PanelTopOpen className="!w-8 !h-8" />
+              ) : (
+                <PanelTopClose className="!w-8 !h-8" />
+              )}
+            </SoundHoverElement>
+          </Button>
+        </div>
       </DrawerTrigger>
       <DrawerContent className="border-foreground/10 z-[1000]  outline-none">
         <ScrollArea className="w-full touch-auto overscroll-contain px-2 max-h-[60vh] overflow-auto">
-          <div className="mx-auto w-full">
-            <DrawerHeader>
-              <DrawerTitle>{t(title)}</DrawerTitle>
-              <DrawerDescription>{t(description)}</DrawerDescription>
-            </DrawerHeader>
-            {children}
-          </div>
+          <DrawerHeader>
+            <DrawerTitle>{t(title)}</DrawerTitle>
+            <DrawerDescription>{t(description)}</DrawerDescription>
+          </DrawerHeader>
+          {children}
         </ScrollArea>
       </DrawerContent>
     </Drawer>
