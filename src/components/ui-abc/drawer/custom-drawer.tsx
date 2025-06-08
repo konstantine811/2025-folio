@@ -36,15 +36,19 @@ const CustomDrawer = ({
         <Button
           asChild
           className={cn(
-            `bg-card hover:bg-card/50 rounded-r-none fixed z-50 text-foreground right-0`
+            `bg-card hover:bg-card/50 rounded-r-none fixed z-50 text-foreground  right-0`
           )}
           style={{ top: `${hs + 10}px` }}
         >
-          <SoundHoverElement animValue={-3.3} hoverAnimType="translate-x">
+          <SoundHoverElement
+            animValue={-3.3}
+            hoverAnimType="translate-x"
+            className="!pr-7"
+          >
             {open ? (
-              <PanelTopOpen className="!w-6 !h-6" />
+              <PanelTopOpen className="!w-8 !h-8" />
             ) : (
-              <PanelTopClose className="!w-6 !h-6" />
+              <PanelTopClose className="!w-8 !h-8" />
             )}
           </SoundHoverElement>
         </Button>
