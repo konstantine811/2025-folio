@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import SoundHoverElement from "../sound-hover-element";
-import { ArrowBigUp } from "lucide-react";
+import { PanelTopClose, PanelTopOpen } from "lucide-react";
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/utils/classname";
@@ -36,12 +36,16 @@ const CustomDrawer = ({
         <Button
           asChild
           className={cn(
-            `bg-card hover:bg-card/50 rounded-r-none fixed z-50 text-foreground h-12 right-0`
+            `bg-card hover:bg-card/50 rounded-r-none fixed z-50 text-foreground right-0`
           )}
           style={{ top: `${hs + 10}px` }}
         >
           <SoundHoverElement animValue={-3.3} hoverAnimType="translate-x">
-            <ArrowBigUp />
+            {open ? (
+              <PanelTopOpen className="!w-6 !h-6" />
+            ) : (
+              <PanelTopClose className="!w-6 !h-6" />
+            )}
           </SoundHoverElement>
         </Button>
       </DrawerTrigger>
