@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import SoundHoverElement from "../sound-hover-element";
-import { ArrowBigLeft } from "lucide-react";
+import { ArrowBigUp } from "lucide-react";
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/utils/classname";
@@ -41,12 +41,12 @@ const CustomDrawer = ({
           style={{ top: `${hs + 10}px` }}
         >
           <SoundHoverElement animValue={-3.3} hoverAnimType="translate-x">
-            <ArrowBigLeft />
+            <ArrowBigUp />
           </SoundHoverElement>
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="border-foreground/10 z-[1000] outline-none">
-        <ScrollArea className="w-full touch-auto overscroll-contain px-2 overflow-auto">
+      <DrawerContent className="border-foreground/10 z-[1000]  outline-none">
+        <ScrollArea className="w-full touch-auto overscroll-contain px-2 max-h-[60vh] overflow-auto">
           <div className="mx-auto w-full">
             <DrawerHeader>
               <DrawerTitle>{t(title)}</DrawerTitle>
