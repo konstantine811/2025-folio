@@ -68,11 +68,14 @@ const CustomDrawer = ({
         setOpen(status);
         if (!status) {
           setTimeout(() => {
-            document.body.scrollTop = bodyScrollTopRef.current;
+            document.body.scrollBy({
+              top: bodyScrollTopRef.current,
+              left: 0,
+              behavior: "smooth",
+            });
           }, 600);
         } else {
           bodyScrollTopRef.current = document.body.scrollTop;
-          console.log("bodyScrollTopRef.current", bodyScrollTopRef.current);
         }
       }}
       direction={direction}
