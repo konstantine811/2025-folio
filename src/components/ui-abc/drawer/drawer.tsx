@@ -99,7 +99,7 @@ export const DrawerContent = ({
   const getInitial = () => {
     switch (direction) {
       case "right":
-        return { x: 150 };
+        return { x: 400 };
       case "left":
         return { x: 100 };
       case "top":
@@ -116,57 +116,56 @@ export const DrawerContent = ({
           <motion.div
             className="fixed inset w-full h-full bg-background/10 backdrop-blur-xs left-0 top-0 z-[1000]"
             style={{ opacity }}
+          ></motion.div>
+          <motion.div
+            className={cn(
+              drawerContentVariants({ direction }),
+              className,
+              "touch-none z-[10000]"
+            )}
+            animate={{ x: 0, y: 0 }}
+            exit={getInitial()}
+            transition={MOTION_FRAME_TRANSITION.spring3}
+            style={{ x }}
+            drag="x"
+            onClick={(e) => e.stopPropagation()}
+            dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+            dragElastic={{
+              left: 0,
+              right: 1.3,
+            }}
+            dragControls={controls}
+            onDragEnd={() => {
+              if (x.get() > 140) {
+                setOpen(false);
+              }
+            }}
           >
             <motion.div
-              className={cn(
-                drawerContentVariants({ direction }),
-                className,
-                "touch-none z-[10000]"
-              )}
-              animate={{ x: 0, y: 0 }}
-              exit={getInitial()}
-              transition={MOTION_FRAME_TRANSITION.spring3}
-              style={{ x }}
-              drag="x"
-              onClick={(e) => e.stopPropagation()}
-              dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-              dragElastic={{
-                left: 0,
-                right: 1.3,
+              className="fixed inset w-full h-full left-0 top-0"
+              onClick={() => {
+                setOpen(false);
               }}
-              dragControls={controls}
-              onDragEnd={() => {
-                if (x.get() > 140) {
-                  setOpen(false);
-                }
+            />
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                duration: 0.3,
+                ease: "easeInOut",
               }}
+              className="max-w-md w-full relative bg-card flex justify-center h-full ml-18"
             >
-              <motion.div
-                className="fixed inset w-full h-full left-0 top-0"
-                onClick={() => {
-                  setOpen(false);
+              <button
+                className="w-8 h-full ml-1 !bg-transparent relative z-50 touch-none cursor-grab"
+                onPointerDown={(e) => {
+                  controls.start(e);
                 }}
-              />
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{
-                  duration: 0.3,
-                  ease: "easeInOut",
-                }}
-                className="max-w-md w-full relative bg-card flex justify-center h-full ml-18"
               >
-                <button
-                  className="w-8 h-full ml-1 !bg-transparent relative z-50 touch-none cursor-grab"
-                  onPointerDown={(e) => {
-                    controls.start(e);
-                  }}
-                >
-                  <div className="fixed ml-1 w-1 h-14 rounded-md bg-muted-foreground"></div>
-                </button>
-                {children}
-              </motion.div>
+                <div className="fixed ml-1 w-1 h-14 rounded-md bg-muted-foreground"></div>
+              </button>
+              {children}
             </motion.div>
           </motion.div>
         </>
