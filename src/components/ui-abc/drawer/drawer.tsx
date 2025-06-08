@@ -132,7 +132,7 @@ export const DrawerContent = ({
             dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
             dragElastic={{
               left: 0,
-              right: 1.3,
+              right: 2,
             }}
             dragControls={controls}
             onDragEnd={() => {
