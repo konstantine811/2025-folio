@@ -67,13 +67,16 @@ const CustomDrawer = ({
       onOpenChange={(status) => {
         setOpen(status);
         if (!status) {
+          document.body.scrollBy({
+            top: bodyScrollTopRef.current,
+            left: 0,
+          });
           setTimeout(() => {
             document.body.scrollBy({
               top: bodyScrollTopRef.current,
               left: 0,
-              behavior: "smooth",
             });
-          }, 600);
+          }, 523);
         } else {
           bodyScrollTopRef.current = document.body.scrollTop;
         }
