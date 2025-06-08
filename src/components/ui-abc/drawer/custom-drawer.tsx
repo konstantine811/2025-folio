@@ -34,7 +34,6 @@ const CustomDrawer = ({
     <Drawer
       open={open}
       onOpenChange={setOpen}
-      direction="right"
       preventScrollRestoration={false}
       disablePreventScroll
       noBodyStyles
@@ -52,7 +51,7 @@ const CustomDrawer = ({
           </SoundHoverElement>
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="border-foreground/10 max-h-screen z-[1000] outline-none">
+      <DrawerContent className="border-foreground/10 z-[1000] outline-none">
         <ScrollArea className="w-full touch-auto overscroll-contain px-2 overflow-auto">
           <div className="mx-auto w-full">
             <DrawerHeader>
