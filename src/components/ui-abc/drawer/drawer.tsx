@@ -95,7 +95,7 @@ export const DrawerContent = ({
   const { open, setOpen, direction } = useContext(DrawerContext);
   const controls = useDragControls();
   const x = useMotionValue(100);
-  const opacity = useTransform(x, [-140, 0, 140], [0, 1, 0]);
+  const opacity = useTransform(x, [-100, 0, 100], [0, 1, 0]);
   const getInitial = () => {
     switch (direction) {
       case "right":
@@ -127,11 +127,11 @@ export const DrawerContent = ({
           dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
           dragElastic={{
             left: 0,
-            right: 0.2,
+            right: 0.4,
           }}
           dragControls={controls}
           onDragEnd={() => {
-            if (x.get() > 140) {
+            if (x.get() > 100) {
               setOpen(false);
             }
           }}
