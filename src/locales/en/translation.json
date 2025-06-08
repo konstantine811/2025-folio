@@ -90,6 +90,17 @@
         "description": "You can add all tasks from the template to your task list."
       }
     },
+    "analytics": {
+      "header": {
+        "title": "Task Analytics",
+        "description": "Here you can view statistics on assigned tasks."
+      },
+      "daily_table": {
+        "indicator": "Indicator",
+        "count": "Count",
+        "time": "Time"
+      }
+    },
     "day_names": {
       "1": "Mon",
       "2": "Tue",

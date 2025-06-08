@@ -25,11 +25,11 @@ const DailyAnalytics = () => {
     setDailyAnaltyics(dailyAnaltyics);
   }, [dailyTasks]);
   return (
-    <>
-      {dailyAnaltyics && <DailyAnalyticsTable data={dailyAnaltyics} />}
+    <div className="flex flex-col gap-4">
       <ChartTimeStackWrapper data={dailyEntity} />
+      {dailyAnaltyics && <DailyAnalyticsTable data={dailyAnaltyics} />}
       <ChartPieCateogoryWrap data={categoryEntity} />
-    </>
+    </div>
   );
 };
 

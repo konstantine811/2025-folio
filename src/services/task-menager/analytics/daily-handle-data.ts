@@ -43,8 +43,7 @@ export const getDailyTaskAnalyticsData = (
       } = task;
 
       const timeDo = isDetermined || isPlanned || isDone ? timeDone : time;
-      const countTimeDo = isDetermined || isPlanned ? timeDone : time;
-      dailyAnaltyics.countTime += countTimeDo;
+      dailyAnaltyics.countTime += timeDo;
       dailyAnaltyics.countAllTask += 1;
       dailyAnaltyics.countDoneTime += task.timeDone;
       dailyAnaltyics.countDoneTask += isDone ? 1 : 0;
