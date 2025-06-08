@@ -46,10 +46,6 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
 @theme static {
   --background: var(--background);
   --animate-gradient: gradientMove 3s linear infinite;

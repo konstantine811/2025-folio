@@ -15,6 +15,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import useScrollBehavior from "@/hooks/use-scroll-behavior";
 
 const CustomDrawer = ({
   title,
@@ -28,6 +29,7 @@ const CustomDrawer = ({
   direction?: DrawerDirection;
 }) => {
   const [open, setOpen] = useState(false);
+  useScrollBehavior(open);
   const [t] = useTranslation();
   const hs = useHeaderSizeStore((s) => s.size);
   const buttonTriggerDirectionClass = (direction: DrawerDirection) => {
@@ -75,8 +77,8 @@ const CustomDrawer = ({
           </SoundHoverElement>
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="border-foreground/10 max-h-screen z-[1000]">
-        <ScrollArea className="w-full touch-auto overscroll-contain pr-5 overflow-auto">
+      <DrawerContent className="border-foreground/10 max-h-screen z-[1000] ouser-select-none">
+        <ScrollArea className="w-full touch-auto overscroll-contain px-2 overflow-auto">
           <div className="mx-auto w-full">
             <DrawerHeader>
               <DrawerTitle>{t(title)}</DrawerTitle>

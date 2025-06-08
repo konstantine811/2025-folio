@@ -7,7 +7,7 @@ function useScrollBehavior(isOpen: boolean) {
     } else {
       setTimeout(() => {
         document.documentElement.style.scrollBehavior = "smooth";
-      }, 1000);
+      }, 10);
     }
   }, [isOpen]);
 }
