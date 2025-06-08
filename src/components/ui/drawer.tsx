@@ -5,9 +5,10 @@ import { Drawer as DrawerPrimitive } from "vaul";
 import { cva } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
+export type DrawerDirection = "right" | "top" | "bottom" | "left";
 
 const DrawerContext = React.createContext<{
-  direction?: "right" | "top" | "bottom" | "left";
+  direction?: DrawerDirection;
 }>({
   direction: "right",
 });

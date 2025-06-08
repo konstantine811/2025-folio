@@ -14,7 +14,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "./drawer";
+} from "@/components/ui/drawer";
 
 const CustomDrawer = ({
   title,
