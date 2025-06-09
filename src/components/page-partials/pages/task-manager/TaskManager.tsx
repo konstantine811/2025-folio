@@ -19,7 +19,7 @@ const TaskManager = () => {
   return (
     <>
       <Outlet context={outletConext} />
-      <div className="fixed bottom-2 left-1/2 max-w-full -translate-x-1/2 z-50">
+      <div className="fixed bottom-2 left-1/2 max-w-full -translate-x-1/2 z-10">
         <Dock className="items-end pb-3 bg-card/30 backdrop-blur-sm border border-foreground/10">
           {TASK_MANAGER_ROUTERS.map((item) => {
             let path: string = item.path;
@@ -30,6 +30,9 @@ const TaskManager = () => {
               activePath = item.path.replace("/:id", "");
               title = item.path.replace("/:id", ""); // → daily/23.05.2025
               path = item.path.replace(":id", today); // → daily/23.05.2025
+            } else if (item.path === RoutPath.TASK_ANALYTICS) {
+              activePath = item.path.replace("/:id", "");
+              title = item.path.replace("/:id", ""); // → daily/23.05.2025
             }
             return (
               <Link to={path} key={item.id}>

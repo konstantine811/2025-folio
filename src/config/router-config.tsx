@@ -1,6 +1,6 @@
 import AuthGuard from "@/components/auth/auth-guard";
 import { AppRoute } from "@/types/route";
-import { LayoutDashboard } from "lucide-react";
+import { ChartSpline, LayoutDashboard } from "lucide-react";
 import { lazy } from "react";
 import { Navigate } from "react-router";
 
@@ -27,6 +27,10 @@ const DailyTask = lazy(
   () => import("../components/page-partials/pages/task-manager/pages/DailyTask")
 );
 
+const TaskAnalytics = lazy(
+  () => import("../components/page-partials/pages/task-manager/pages/Analytics")
+);
+
 const LoginPage = lazy(() => import("../components/page-partials/pages/Login"));
 
 export enum RoutPath {
@@ -37,6 +41,7 @@ export enum RoutPath {
   TASK_MANAGER = "/task-manager",
   TASK_MANAGER_TEMPLATE = "template",
   TASK_MANAGER_DAILY = "daily/:id",
+  TASK_ANALYTICS = "analytics/:id",
   LOGIN = "/login",
 }
 
@@ -59,6 +64,13 @@ export const TASK_MANAGER_ROUTERS = [
     id: "task-manager-daily",
     isNav: false,
     icon: "🚶",
+  },
+  {
+    path: RoutPath.TASK_ANALYTICS,
+    Component: TaskAnalytics,
+    id: "task-manager-analytics",
+    isNav: false,
+    icon: <ChartSpline />,
   },
 ];
 

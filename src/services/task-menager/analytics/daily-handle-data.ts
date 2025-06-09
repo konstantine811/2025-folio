@@ -47,10 +47,11 @@ export const getDailyTaskAnalyticsData = (
       dailyAnaltyics.countAllTask += 1;
       dailyAnaltyics.countDoneTime += task.timeDone;
       dailyAnaltyics.countDoneTask += isDone ? 1 : 0;
-
+      const timeDoneCategory =
+        (isDetermined || isPlanned) && !isDone ? 0 : timeDone;
       // Оновлення статистики категорії
       categoryStats.time += timeDo;
-      categoryStats.countDoneTime += timeDone;
+      categoryStats.countDoneTime += timeDoneCategory;
 
       if (isDone) {
         categoryStats.countDone += 1;

@@ -44,20 +44,20 @@ const DialogTask = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: -30 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className="fixed left-0 top-0 z-[10000] h-full flex justify-center overflow-auto items-center bg-background/80 backdrop-blur-xs w-full"
+          className="fixed left-0 top-0 z-20 h-full flex justify-center overflow-auto items-center bg-background/80 backdrop-blur-xs w-full"
           onClick={() => setOpen(false)}
         >
           <motion.div
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              `overflow-auto h-full rounded-xl shadow-lg w-full max-w-lg border border-foreground/20 backdrop-blur-xs ${className}`
+              `overflow-auto h-full md:h-auto rounded-xl shadow-lg w-full max-w-lg border border-foreground/20 backdrop-blur-xs ${className}`
             )}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.25 }}
           >
-            <div className="h-full relative bg-background/80 ">{children}</div>
+            {children}
           </motion.div>
         </motion.div>
       )}

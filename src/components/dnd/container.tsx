@@ -56,7 +56,7 @@ export const Container = forwardRef<HTMLDivElement, Props>(
         className="relative"
       >
         {label ? (
-          <div className="flex items-center w-full gap-1 relative z-20">
+          <div className="flex items-center w-full gap-1 relative z-10">
             <div className="flex w-full gap-2 items-center justify-between">
               <Button
                 {...handleProps}
@@ -139,7 +139,7 @@ export const Container = forwardRef<HTMLDivElement, Props>(
                 onValueChange(value);
               }
             }}
-            className="fixed top-0 left-0 w-full h-full z-[10] bg-card/90"
+            className="fixed top-0 left-0 w-full h-full z-[1] bg-card/30"
           ></div>
         )}
       </Component>

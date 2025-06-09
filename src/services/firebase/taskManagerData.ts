@@ -11,6 +11,7 @@ import {
   collection,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   setDoc,
   Unsubscribe,
@@ -221,6 +222,36 @@ export const subscribeToPlannedTasksWithCounts = async (
   });
 
   return unsubscribe;
+};
+
+export const fetchAllDailyTasks = async () => {
+  const user = await waitForUserAuth();
+  if (!user) {
+    console.warn("❌ Cannot fetch tasks. User not authenticated.");
+    return [];
+  }
+
+  const uid = user.uid;
+
+  const daysRef = collection(
+    db,
+    FirebaseCollection.dailyTasks,
+    uid,
+    FirebaseCollectionProps[FirebaseCollection.dailyTasks].days
+  );
+
+  try {
+    const snapshot = await getDocs(daysRef);
+    const allTasks = snapshot.docs.map((doc) => ({
+      date: doc.id,
+      ...doc.data(),
+    }));
+
+    return allTasks;
+  } catch (error) {
+    console.error("🔥 Error fetching daily tasks:", error);
+    return [];
+  }
 };
 
 const waitForUserAuth = (): Promise<User | null> => {
