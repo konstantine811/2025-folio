@@ -47,6 +47,7 @@ import { useTaskManager } from "./context/use-task-manger-context";
 import { CATEGORY_OPTIONS } from "./config/category-options";
 import useCategoryHandle from "./hooks/useCategoryHandle";
 import DialogAgree from "../ui-abc/dialog/dialog-agree";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface Props {
   adjustScale?: boolean;
@@ -307,14 +308,20 @@ export function MultipleContainers({
           setIsDialogOpen(status);
         }}
       />
-      {!templated && playingTask && (
-        <div
-          style={{ top: sH }}
-          className="sticky flex justify-center items-center z-30  py-5 bg-background/50 backdrop-blur-xs"
-        >
-          <TaskTimer />
-        </div>
-      )}
+      <AnimatePresence>
+        {!templated && playingTask && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "60px" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            style={{ top: sH }}
+            className="sticky flex h-[60px] justify-center items-center z-30 bg-background/50 backdrop-blur-xs"
+          >
+            <TaskTimer />
+          </motion.div>
+        )}
+      </AnimatePresence>
       <DndContext
         sensors={sensors}
         collisionDetection={collisionDetectionStrategy}
