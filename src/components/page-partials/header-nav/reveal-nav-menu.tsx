@@ -69,11 +69,11 @@ const RevealNavMenu = memo(() => {
               exit={{ height: 0, opacity: 0 }}
               transition={MOTION_FRAME_TRANSITION.spring}
               layout="size"
-              className="absolute z-10 bottom-0 left-0 w-full bg-card  translate-y-full rounded-br-md shadow-md shadow-background"
+              className="absolute z-10 bottom-0 left-0 w-full bg-card  border border-foreground/10 translate-y-full rounded-br-md shadow-xs shadow-muted-foreground"
             >
               <motion.nav className="flex items-center justify-center ">
                 <WrapperHoverElement
-                  className="py-1 flex flex-col w-full px-2"
+                  className="flex flex-col w-full"
                   initial="hidden"
                   animate="visible"
                   exit="hidden"
@@ -101,7 +101,7 @@ const RevealNavMenu = memo(() => {
                         }}
                         className={`${
                           route.path === firstPathName &&
-                          "bg-background rounded-sm"
+                          "bg-background rounded-sm border-b border-t border-muted-foreground"
                         }`}
                       >
                         <SoundHoverElement
