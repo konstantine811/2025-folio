@@ -90,7 +90,6 @@ const DailyTaskWrapper = () => {
 
   const onUpdatePlannedTask = useCallback(
     (task: ItemTask) => {
-      console.log("onUpdatePlannedTask", task);
       updatePlannedTask(task);
     },
     [updatePlannedTask]
