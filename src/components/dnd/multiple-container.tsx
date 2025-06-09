@@ -102,6 +102,7 @@ export function MultipleContainers({
   const [containers, setContainers] = useState<UniqueIdentifier[]>(
     items.map((cat) => cat.id)
   );
+  const playingTask = useTaskManager((s) => s.playingTask);
   useEffect(() => {
     setItems(initialItems);
   }, [initialItems]);
@@ -306,7 +307,7 @@ export function MultipleContainers({
           setIsDialogOpen(status);
         }}
       />
-      {!templated && (
+      {!templated && playingTask && (
         <div
           style={{ top: sH }}
           className="sticky flex justify-center items-center z-30  py-5 bg-background/50 backdrop-blur-xs"
