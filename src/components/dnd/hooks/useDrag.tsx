@@ -131,7 +131,7 @@ const useDrag = ({
             ? {
                 ...cat,
                 tasks: cat.tasks.filter((t) => {
-                  if (t.id === active.id && t.isPlanned) {
+                  if (t.id === active.id && (t.isPlanned || t.isDetermined)) {
                     onDeletePlannedTask?.(t.id);
                   }
                   return t.id !== active.id;

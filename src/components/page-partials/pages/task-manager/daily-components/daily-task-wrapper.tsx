@@ -90,6 +90,7 @@ const DailyTaskWrapper = () => {
 
   const onUpdatePlannedTask = useCallback(
     (task: ItemTask) => {
+      console.log("onUpdatePlannedTask", task);
       updatePlannedTask(task);
     },
     [updatePlannedTask]
@@ -98,10 +99,7 @@ const DailyTaskWrapper = () => {
   const mergeNewPlannedTasks = useCallback(
     (newTasks: ItemTaskCategory[]) => {
       if (!addPlannedTask) return;
-
-      newTasks.forEach((incomingTask) => {
-        addPlannedTask(incomingTask);
-      });
+      addPlannedTask(newTasks);
     },
     [addPlannedTask]
   );
@@ -139,8 +137,8 @@ const DailyTaskWrapper = () => {
   const updatePlannedDeterminedTask = useCallback(
     (tasks: Items) => {
       if (!addPlannedTask) return;
-      findPlannedOrDeterminedTask(tasks).forEach((task) => {
-        const updatedTask: ItemTaskCategory = {
+      const plannedTasks = findPlannedOrDeterminedTask(tasks).map((task) => {
+        return {
           id: task.id,
           title: task.title,
           isDone: task.isDone,
@@ -151,9 +149,9 @@ const DailyTaskWrapper = () => {
           whenDo: task.whenDo || [],
           isDetermined: task.isDetermined || false,
           categoryName: task.categoryName,
-        };
-        addPlannedTask(updatedTask);
+        } as ItemTaskCategory;
       });
+      addPlannedTask(plannedTasks);
     },
     [addPlannedTask]
   );
@@ -198,9 +196,9 @@ const DailyTaskWrapper = () => {
                 trashable
                 templated={false}
                 items={dailyTasks}
+                onDeletePlannedTask={deletePlannedTask}
                 onChangeTasks={handleChangeTasks}
                 onEditPlannedTask={onUpdatePlannedTask}
-                onDeletePlannedTask={deletePlannedTask}
               />
             </TaskManagerProvider>
           )}

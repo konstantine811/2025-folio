@@ -74,7 +74,7 @@ const useCategoryHandle = ({
     });
 
     toDeleteTasks.forEach((task) => {
-      if (onDeletePlannedTask && task.isPlanned) {
+      if (onDeletePlannedTask && (task.isPlanned || task.isDetermined)) {
         onDeletePlannedTask(task.id);
       }
       if (playingTask && playingTask.id === task.id) {

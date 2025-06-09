@@ -6,7 +6,7 @@ export const DailyTaskContext = createContext<{
   plannedTasks: ItemTaskCategory[] | null;
   updatePlannedTask: (task: ItemTask) => void;
   deletePlannedTask: (taskId: UniqueIdentifier) => void; // 🆕
-  addPlannedTask?: (newTask: ItemTaskCategory) => void; // 🆕
+  addPlannedTask?: (newTask: ItemTaskCategory[]) => void; // 🆕
   dailyTasks: Items;
   setDailyTasks: (newDailyTasks: Items) => void;
 }>({

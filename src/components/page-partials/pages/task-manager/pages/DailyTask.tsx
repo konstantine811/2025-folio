@@ -64,21 +64,8 @@ const DailyTask = () => {
   );
 
   const addPlannedTask = useCallback(
-    (newTask: ItemTaskCategory) => {
+    (newTasks: ItemTaskCategory[]) => {
       if (!plannedTasks || !date) return;
-
-      const existingIndex = plannedTasks.findIndex((t) => t.id === newTask.id);
-      let newTasks: ItemTaskCategory[];
-
-      if (existingIndex !== -1) {
-        // 🔁 Оновити існуючу
-        newTasks = [...plannedTasks];
-        newTasks[existingIndex] = newTask;
-      } else {
-        // ➕ Додати нову
-        newTasks = [...plannedTasks, newTask];
-      }
-
       setPlannedTasks(newTasks);
       updatePlannedTasksOnServer(date, newTasks)
         .then(() => {
@@ -92,9 +79,7 @@ const DailyTask = () => {
   const deletePlannedTask = useCallback(
     (taskId: UniqueIdentifier) => {
       if (!plannedTasks || !date) return;
-
       const updated = plannedTasks.filter((task) => task.id !== taskId);
-
       setPlannedTasks(updated);
       updatePlannedTasksOnServer(date, updated)
         .then(() => {
