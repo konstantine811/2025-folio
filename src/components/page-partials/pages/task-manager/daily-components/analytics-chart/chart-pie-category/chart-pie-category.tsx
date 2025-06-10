@@ -7,6 +7,7 @@ interface ChartPieCategoryProps {
   data: CategoryAnalyticsNameEntity;
   width?: number;
   height?: number;
+  fillType?: "angle" | "radius"; // 👈 новий проп
 }
 
 interface PieEntity {
@@ -18,6 +19,7 @@ const ChartPieCategory = ({
   data,
   width = 400,
   height = 400,
+  fillType = "radius", // 👈 новий проп з дефолтним значенням
 }: ChartPieCategoryProps) => {
   const ref = useRef<SVGSVGElement | null>(null);
   const [t] = useTranslation();
@@ -45,7 +47,7 @@ const ChartPieCategory = ({
       .cornerRadius(6)
       .padAngle(0.02);
 
-    const arcOverlay = d3
+    const arcDoneAngle = d3
       .arc<d3.PieArcDatum<PieEntity>>()
       .innerRadius(innerRadius)
       .outerRadius(outerRadius)
@@ -67,28 +69,51 @@ const ChartPieCategory = ({
       .attr("d", arc)
       .attr("class", "fill-card stroke-foreground/30 stroke");
 
-    // Рахуємо arcDone, як частку часу
-    g.selectAll("path.done")
-      .data(timeArcs)
-      .enter()
-      .append("path")
-      .attr("d", (d, i) => {
-        const entry = entries[i];
-        const progress = entry.doneTime / entry.time;
-        const angleRange = d.endAngle - d.startAngle;
-        const newEndAngle = d.startAngle + angleRange * Math.min(progress, 1);
-        const arcProgress = {
-          ...d,
-          endAngle: newEndAngle,
-        };
-        return arcOverlay(arcProgress);
-      })
-      // .attr("fill-opacity", (_, i) => {
-      //   const entry = entries[i];
-      //   const progress = entry.doneTime / entry.time;
-      //   return Math.min(progress, 1) * 2.2; // Scale opacity based on progress
-      // })
-      .attr("class", "fill-accent stroke-0 stroke-accent/10");
+    if (fillType === "angle") {
+      // done як сектор
+      g.selectAll("path.done")
+        .data(timeArcs)
+        .enter()
+        .append("path")
+        .attr("d", (d, i) => {
+          const entry = entries[i];
+          const progress = entry.doneTime / entry.time;
+          const angleRange = d.endAngle - d.startAngle;
+          const newEndAngle = d.startAngle + angleRange * Math.min(progress, 1);
+          const arcProgress = {
+            ...d,
+            endAngle: newEndAngle,
+          };
+          return arcDoneAngle(arcProgress);
+        })
+        .attr("class", "fill-accent stroke-0 stroke-accent/10");
+    } else if (fillType === "radius") {
+      // done як товщина кільця
+      g.selectAll("path.done")
+        .data(timeArcs)
+        .enter()
+        .append("path")
+        .attr("d", (d, i) => {
+          const entry = entries[i];
+          const progress = Math.max(
+            0,
+            Math.min(entry.doneTime / entry.time, 1)
+          );
+          const currentOuter =
+            innerRadius + (outerRadius - innerRadius) * progress;
+
+          // arc із зовнішнім радіусом по прогресу
+          const dynamicArc = d3
+            .arc<d3.PieArcDatum<PieEntity>>()
+            .innerRadius(innerRadius)
+            .outerRadius(currentOuter)
+            .cornerRadius(6)
+            .padAngle(0.02);
+
+          return dynamicArc(d);
+        })
+        .attr("class", "fill-accent stroke-0 stroke-accent/10");
+    }
 
     // Optional: labels
     const labelArc = d3
@@ -113,7 +138,7 @@ const ChartPieCategory = ({
       .attr("alignment-baseline", "middle")
       .text((d) => t(d.data.name))
       .attr("class", "text-sm fill-foreground/80");
-  }, [data, width, height, t]);
+  }, [data, width, height, t, fillType]);
 
   return <svg ref={ref} className="w-full h-auto" />;
 };
