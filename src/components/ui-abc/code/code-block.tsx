@@ -1,11 +1,11 @@
 import { ThemeType } from "@/config/theme-colors.config";
 import { useThemeStore } from "@/storage/themeStore";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import type { Components } from "react-markdown";
 import { codeToHtml } from "shiki";
 import SoundHoverElement from "../sound-hover-element";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
+import { Check, Copy } from "lucide-react";
 
 export const CodeBlock: Components["code"] = ({
   className,
@@ -17,7 +17,6 @@ export const CodeBlock: Components["code"] = ({
   const selectedTheme = useThemeStore((state) => state.selectedTheme);
   const isBlock = className?.includes("language-");
   const lang = className?.replace("language-", "") || "tsx";
-  const [t] = useTranslation();
   const codeText = typeof children === "string" ? children.trim() : "";
 
   useEffect(() => {
@@ -38,12 +37,12 @@ export const CodeBlock: Components["code"] = ({
   const copyToClipboard = async () => {
     await navigator.clipboard.writeText(codeText);
     setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    setTimeout(() => setCopied(false), 3500);
   };
 
   if (isBlock && html) {
     return (
-      <div className="relative mt-7 mb-3 rounded-md text-sm font-mono bg-card/50 text-foreground border border-card">
+      <div className="relative mt-7 mb-3 rounded-md text-sm font-mono bg-card text-foreground border border-muted-foreground/20">
         <div className="absolute -top-4 left-0 bg-card/0 backdrop-blur-sm border border-foreground/40 rounded-md px-3 py-0.5 z-50">
           <h6 className="text-primary/90">{lang}:</h6>
         </div>
@@ -60,11 +59,12 @@ export const CodeBlock: Components["code"] = ({
           hoverTypeElement={SoundTypeElement.SELECT_2}
           hoverStyleElement={HoverStyleElement.none}
           onClick={copyToClipboard}
+          animValue={1}
           className={`${
-            copied ? "bg-primary text-background" : "bg-card text-foreground"
-          } absolute top-2 right-2  text-xs px-2 py-1 rounded hover:bg-primary hover:text-background transition`}
+            copied ? "bg-accent text-background" : "bg-card text-foreground"
+          } absolute top-2 right-2  text-xs p-1 rounded hover:bg-accent hover:text-background transition`}
         >
-          {copied ? t("copied") : t("copy")}
+          {copied ? <Check size={16} /> : <Copy size={16} />}
         </SoundHoverElement>
 
         {/* Код */}
