@@ -37,7 +37,7 @@ export const CodeBlock: Components["code"] = ({
   const copyToClipboard = async () => {
     await navigator.clipboard.writeText(codeText);
     setCopied(true);
-    setTimeout(() => setCopied(false), 3500);
+    setTimeout(() => setCopied(false), 1500);
   };
 
   if (isBlock && html) {
