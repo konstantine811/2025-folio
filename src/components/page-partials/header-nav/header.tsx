@@ -21,7 +21,7 @@ const Header = memo(() => {
   return (
     <header
       ref={headerRef}
-      className="sticky top-0 z-[1000] border-b backdrop-blur-md  bg-background"
+      className="sticky top-0 z-40 border-b backdrop-blur-md  bg-background"
     >
       <div className="grid grid-cols-1 md:grid-cols-3 items-center">
         <NavMenu />

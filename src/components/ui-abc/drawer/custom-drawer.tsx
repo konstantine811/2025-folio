@@ -36,7 +36,7 @@ const CustomDrawer = ({
         <div>
           <Button
             className={cn(
-              `bg-card hover:bg-card/50 rounded-r-none !pr-7 !py-6 fixed z-50 text-foreground  right-0`
+              `bg-card hover:bg-card/50 rounded-r-none !pr-7 !py-6 fixed z-30 text-foreground  right-0`
             )}
             style={{ top: `${hs + 10}px` }}
           >
