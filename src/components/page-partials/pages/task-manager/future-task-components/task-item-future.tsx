@@ -63,7 +63,7 @@ export function TaskItemFuture({
                   onClick={() => {
                     onEditTask();
                   }}
-                  className={`hover:bg-accent/50 hover:text-foreground text-muted-foreground/30`}
+                  className={`hover:bg-accent/50 hover:text-foreground text-foreground`}
                 >
                   <Settings2 className="w-4 h-4" />
                 </Button>
@@ -81,7 +81,7 @@ export function TaskItemFuture({
                   onClick={() => {
                     onDelete();
                   }}
-                  className={`hover:bg-accent/50 hover:text-foreground text-muted-foreground/30`}
+                  className={`hover:bg-accent/50 hover:text-foreground text-foreground`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
