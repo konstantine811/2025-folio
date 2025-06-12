@@ -13,6 +13,32 @@
   "personal_growth": "Personal Growth",
   "hobbies": "Hobbies",
   "leisure": "Leisure",
+  "pickDate": "Pick a date",
+  "months": [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ],
+  "ranges": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This Week",
+    "lastWeek": "Last Week",
+    "last7Days": "Last 7 Days",
+    "thisMonth": "This Month",
+    "lastMonth": "Last Month",
+    "thisYear": "This Year",
+    "lastYear": "Last Year"
+  },
   "pages": {
     "home": "Home",
     "blog": "Blog",
@@ -82,6 +108,17 @@
       "header": {
         "title": "Move Goal",
         "description": "Set your daily activity goal."
+      },
+      "date_range": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "thisWeek": "This Week",
+        "lastWeek": "Last Week",
+        "last7Days": "Last 7 Days",
+        "thisMonth": "This Month",
+        "lastMonth": "Last Month",
+        "thisYear": "This Year",
+        "lastYear": "Last Year"
       }
     },
     "add_all_tasks": {

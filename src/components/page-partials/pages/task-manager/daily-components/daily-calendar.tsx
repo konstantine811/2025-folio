@@ -1,8 +1,8 @@
 import { Calendar } from "@/components/ui/calendar";
-import { format, Locale } from "date-fns";
+import { format } from "date-fns";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { uk, enUS } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import { useNavigate, useParams } from "react-router";
 import { RoutPath } from "@/config/router-config";
 import { DateTemplate } from "@/config/data-config";
@@ -11,11 +11,7 @@ import { Items, ItemTaskCategory } from "@/types/drag-and-drop.model";
 import { FirebaseCollection } from "@/config/firebase.config";
 import { subscribeToNonEmptyTaskDates } from "@/services/firebase/taskManagerData";
 import { Unsubscribe } from "firebase/auth";
-
-const locales: Record<string, Locale> = {
-  en: enUS,
-  ua: uk,
-};
+import { locales } from "@/config/calendar.config";
 
 const DailyCalendar = () => {
   const { id: dateId } = useParams();

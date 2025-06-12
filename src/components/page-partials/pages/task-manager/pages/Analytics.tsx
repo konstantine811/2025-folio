@@ -1,7 +1,6 @@
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { useEffect } from "react";
 import { fetchAllDailyTasks } from "@/services/firebase/taskManagerData";
-import SelectPeriod from "../analytics-comonents/select-period";
 import CardDatePicker from "../analytics-comonents/card-date-picker";
 
 const Analytics = () => {
@@ -15,7 +14,6 @@ const Analytics = () => {
     <div className="w-full" style={{ minHeight: `calc(100vh - ${hS}px)` }}>
       {/* Центральна колонка */}
       <header className="flex flex-col items-center">
-        <SelectPeriod />
         <CardDatePicker />
       </header>
       <main
