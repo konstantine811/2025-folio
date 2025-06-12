@@ -35,20 +35,22 @@ import {
 import { useTranslation } from "react-i18next";
 import { locales } from "@/config/calendar.config";
 import { enUS } from "date-fns/locale";
+import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
+import { HoverStyleElement } from "@/types/sound";
 
 const multiSelectVariants = cva(
   "flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium text-foreground ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default: "bg-primary text-primary-foreground hover:bg-card",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+          "border border-input bg-background hover:bg-card hover:text-accent-foreground",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground text-background",
+        ghost: "hover:bg-card hover:text-accent-foreground text-background",
         link: "text-primary underline-offset-4 hover:underline text-background",
       },
     },
@@ -434,61 +436,74 @@ export const CalendarDatePicker = React.forwardRef<
         <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
           <PopoverTrigger asChild>
             <div>
-              <Button
-                id="date"
-                ref={ref}
-                {...props}
-                className={cn(
-                  "w-auto",
-                  multiSelectVariants({ variant, className })
-                )}
-                onClick={handleTogglePopover}
-                suppressHydrationWarning
+              <SoundHoverElement
+                hoverStyleElement={HoverStyleElement.circle}
+                animValue={1}
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date.from ? (
-                  date.to ? (
-                    <>
-                      <span /* …firstDay props… */>
-                        {formatPart(date.from, "dd")}
-                      </span>
-                      <span /* …firstMonth props… */>
-                        {formatPart(date.from, "LLL")}
-                      </span>
-                      <span /* …firstYear props… */>
-                        {formatPart(date.from, "y")}
-                      </span>
-                      {" – "}
-                      <span /* …secondDay props… */>
-                        {formatPart(date.to, "dd")}
-                      </span>
-                      <span /* …secondMonth props… */>
-                        {formatPart(date.to, "LLL")}
-                      </span>
-                      <span /* …secondYear props… */>
-                        {formatPart(date.to, "y")}
-                      </span>
-                    </>
+                <Button
+                  id="date"
+                  ref={ref}
+                  variant={"ghost"}
+                  {...props}
+                  className={cn(
+                    "w-auto",
+                    multiSelectVariants({ variant, className })
+                  )}
+                  onClick={handleTogglePopover}
+                  suppressHydrationWarning
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date.from ? (
+                    date.to ? (
+                      <>
+                        <span /* …firstDay props… */>
+                          {formatPart(date.from, "dd")}
+                        </span>
+                        <span /* …firstMonth props… */>
+                          {formatPart(date.from, "LLL")}
+                        </span>
+                        <span /* …firstYear props… */>
+                          {formatPart(date.from, "y")}
+                        </span>
+                        {" – "}
+                        <span /* …secondDay props… */>
+                          {formatPart(date.to, "dd")}
+                        </span>
+                        <span /* …secondMonth props… */>
+                          {formatPart(date.to, "LLL")}
+                        </span>
+                        <span /* …secondYear props… */>
+                          {formatPart(date.to, "y")}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span /* day span */>
+                          {formatPart(date.from, "dd")}
+                        </span>
+                        <span /* month span */>
+                          {formatPart(date.from, "LLL")}
+                        </span>
+                        <span /* year span */>
+                          {formatPart(date.from, "y")}
+                        </span>
+                      </>
+                    )
                   ) : (
-                    <>
-                      <span /* day span */>{formatPart(date.from, "dd")}</span>
-                      <span /* month span */>
-                        {formatPart(date.from, "LLL")}
-                      </span>
-                      <span /* year span */>{formatPart(date.from, "y")}</span>
-                    </>
-                  )
-                ) : (
-                  <>{t("pickDate")}</>
-                )}
-              </Button>
+                    <>{t("pickDate")}</>
+                  )}
+                </Button>
+              </SoundHoverElement>
             </div>
           </PopoverTrigger>
           {isPopoverOpen && (
             <PopoverContent
               className="w-auto"
-              align="center"
-              avoidCollisions={false}
+              side="bottom" // відкриваємо під тригером
+              align="end" // вирівнювання по правому краю
+              sideOffset={8} // відступ 8px від кнопки
+              avoidCollisions={true} // трекінг меж екрану
+              collisionPadding={12} // мінімальний відступ від країв вікна
               onInteractOutside={handleClose}
               onEscapeKeyDown={handleClose}
               style={{
@@ -505,9 +520,9 @@ export const CalendarDatePicker = React.forwardRef<
                         variant="ghost"
                         size="sm"
                         className={cn(
-                          "justify-start hover:bg-primary/90 hover:text-background",
+                          "justify-start hover:card hover:text-background",
                           selectedRange === label &&
-                            "bg-primary text-background hover:bg-primary/90 hover:text-background"
+                            "bg-primary text-background hover:card hover:text-background"
                         )}
                         onClick={() => {
                           selectDateRange(start, end, label);
@@ -534,7 +549,7 @@ export const CalendarDatePicker = React.forwardRef<
                           monthFrom ? months[monthFrom.getMonth()] : undefined
                         }
                       >
-                        <SelectTrigger className="hidden sm:flex w-[122px] focus:ring-0 focus:ring-offset-0 font-medium hover:bg-accent hover:text-accent-foreground">
+                        <SelectTrigger className="hidden sm:flex w-[122px] focus:ring-0 focus:ring-offset-0 font-medium hover:bg-card hover:text-accent-foreground">
                           <SelectValue placeholder="Month" />
                         </SelectTrigger>
                         <SelectContent>
