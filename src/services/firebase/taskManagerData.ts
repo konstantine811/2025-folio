@@ -4,17 +4,26 @@ import {
   FirebaseCollection,
   FirebaseCollectionProps,
 } from "@/config/firebase.config";
-import { Items, ItemTaskCategory } from "@/types/drag-and-drop.model";
+import {
+  DailyTaskRecord,
+  Items,
+  ItemTaskCategory,
+} from "@/types/drag-and-drop.model";
 import { parseDates } from "@/utils/date.util";
+import { formatISO } from "date-fns";
 import { onAuthStateChanged, User } from "firebase/auth";
 import {
   collection,
   doc,
+  DocumentData,
   getDoc,
   getDocs,
   onSnapshot,
+  query,
+  QueryDocumentSnapshot,
   setDoc,
   Unsubscribe,
+  where,
 } from "firebase/firestore";
 
 export const saveTemplateTasks = async (items: Items) => {
@@ -60,7 +69,8 @@ export const saveDailyTasks = async <T>(
     collection,
     uid,
     collection === FirebaseCollection.plannedTasks ||
-      collection === FirebaseCollection.dailyTasks
+      collection === FirebaseCollection.dailyTasks ||
+      collection === FirebaseCollection.dailyAnalytics
       ? FirebaseCollectionProps[collection].days
       : "",
     date
@@ -160,6 +170,10 @@ export const subscribeToNonEmptyTaskDates = async <
     return;
   }
 
+  console.log(
+    "📅 Subscribing to non-empty task dates for collection:",
+    collectionType
+  );
   const uid = user.uid;
   const daysCollectionRef = collection(
     db,
@@ -173,7 +187,6 @@ export const subscribeToNonEmptyTaskDates = async <
 
   const unsubscribe = onSnapshot(daysCollectionRef, (querySnapshot) => {
     const validDates: string[] = [];
-
     querySnapshot.forEach((docSnap) => {
       const data = docSnap.data();
       const items = data.items as T;
@@ -253,6 +266,57 @@ export const fetchAllDailyTasks = async () => {
     return [];
   }
 };
+
+/**
+ * Завантажує усі daily-tasks для поточного користувача
+ * в проміжку дат [from, to], включно.
+ *
+ * @param from – початок інтервалу (Date)
+ * @param to – кінець інтервалу (Date)
+ * @returns масив записів { date, items }
+ *
+ * @throws помилку, якщо користувач не аутентифікований
+ */
+export async function loadDailyTasksByRange(
+  from: Date,
+  to: Date
+): Promise<DailyTaskRecord[]> {
+  // 1. Чекаємо аутентифікації
+  const user = await waitForUserAuth();
+  if (!user) throw new Error("User not authenticated");
+
+  const uid = user.uid;
+  const fromId = formatISO(from, { representation: "date" }); // "YYYY-MM-DD"
+  const toId = formatISO(to, { representation: "date" }); // "YYYY-MM-DD"
+  console.log("from", fromId, "to", toId);
+  // 2. Збираємо референс до підколекції days
+  const daysRef = collection(
+    db,
+    FirebaseCollection.dailyTasks,
+    uid,
+    FirebaseCollectionProps[FirebaseCollection.dailyTasks].days
+  );
+
+  // 3. Створюємо запит за діапазоном імен документів (дата з ID)
+  const q = query(
+    daysRef,
+    where("__name__", ">=", fromId),
+    where("__name__", "<=", toId)
+  );
+
+  // 4. Виконуємо запит
+  const snapshot = await getDocs(q);
+
+  // 5. Формуємо результат
+  const results: DailyTaskRecord[] = snapshot.docs.map(
+    (docSnap: QueryDocumentSnapshot<DocumentData>) => ({
+      date: docSnap.id,
+      items: docSnap.data().items as Items,
+    })
+  );
+
+  return results;
+}
 
 const waitForUserAuth = (): Promise<User | null> => {
   return new Promise((resolve) => {

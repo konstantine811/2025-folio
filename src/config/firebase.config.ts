@@ -29,6 +29,7 @@ export enum FirebaseCollection {
   dailyTasks = "daily-tasks",
   templateTasks = "template-tasks",
   plannedTasks = "planned-tasks",
+  dailyAnalytics = "daily-analytics",
 }
 
 export const FirebaseCollectionProps = {
@@ -36,6 +37,9 @@ export const FirebaseCollectionProps = {
     days: "days",
   },
   [FirebaseCollection.plannedTasks]: {
+    days: "days",
+  },
+  [FirebaseCollection.dailyAnalytics]: {
     days: "days",
   },
 };

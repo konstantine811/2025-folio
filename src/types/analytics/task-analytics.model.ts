@@ -77,3 +77,9 @@ export interface CategoryAnalyticsData {
   taskNoDone: string[];
 }
 export type TaskAnalyticsBarOrientation = "vertical" | "horizontal";
+
+export interface DailyTaskAnalytics {
+  dailyEntity: TaskAnalyticsIdEntity;
+  categoryEntity: CategoryAnalyticsNameEntity;
+  dailyAnalytics: DailyAnalyticsData;
+}

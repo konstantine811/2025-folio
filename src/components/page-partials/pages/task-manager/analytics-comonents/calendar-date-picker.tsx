@@ -283,7 +283,7 @@ export const CalendarDatePicker = React.forwardRef<
       start: Date;
       end: Date;
     }> = [
-      { key: "today", start: today, end: today },
+      // { key: "today", start: today, end: today },
       { key: "yesterday", start: subDays(today, 1), end: subDays(today, 1) },
       {
         key: "thisWeek",

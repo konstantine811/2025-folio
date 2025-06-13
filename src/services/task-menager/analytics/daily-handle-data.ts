@@ -1,20 +1,15 @@
 import {
   CategoryAnalyticsNameEntity,
   DailyAnalyticsData,
+  DailyTaskAnalytics,
   TaskAnalyticsIdEntity,
 } from "@/types/analytics/task-analytics.model";
 import { Items } from "@/types/drag-and-drop.model";
 
-export const getDailyTaskAnalyticsData = (
-  tasks: Items
-): {
-  dailyEntity: TaskAnalyticsIdEntity;
-  categoryEntity: CategoryAnalyticsNameEntity;
-  dailyAnaltyics: DailyAnalyticsData;
-} => {
+export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
   const dailyEntity: TaskAnalyticsIdEntity = {};
   const categoryEntity: CategoryAnalyticsNameEntity = {};
-  const dailyAnaltyics: DailyAnalyticsData = {
+  const dailyAnalytics: DailyAnalyticsData = {
     countDoneTime: 0,
     countTime: 0,
     countDoneTask: 0,
@@ -43,10 +38,10 @@ export const getDailyTaskAnalyticsData = (
       } = task;
 
       const timeDo = isDetermined || isPlanned || isDone ? timeDone : time;
-      dailyAnaltyics.countTime += timeDo;
-      dailyAnaltyics.countAllTask += 1;
-      dailyAnaltyics.countDoneTime += task.timeDone;
-      dailyAnaltyics.countDoneTask += isDone ? 1 : 0;
+      dailyAnalytics.countTime += timeDo;
+      dailyAnalytics.countAllTask += 1;
+      dailyAnalytics.countDoneTime += task.timeDone;
+      dailyAnalytics.countDoneTask += isDone ? 1 : 0;
       const timeDoneCategory =
         (isDetermined || isPlanned) && !isDone ? 0 : timeDone;
       // Оновлення статистики категорії
@@ -74,5 +69,5 @@ export const getDailyTaskAnalyticsData = (
     categoryEntity[categoryTitle] = categoryStats;
   });
 
-  return { dailyEntity, categoryEntity, dailyAnaltyics };
+  return { dailyEntity, categoryEntity, dailyAnalytics };
 };

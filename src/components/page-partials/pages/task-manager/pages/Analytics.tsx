@@ -1,6 +1,6 @@
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { useEffect, useState } from "react";
-import { fetchAllDailyTasks } from "@/services/firebase/taskManagerData";
+import { loadDailyTasksByRange } from "@/services/firebase/taskManagerData";
 import { CalendarDatePicker } from "../analytics-comonents/calendar-date-picker";
 
 const Analytics = () => {
@@ -10,17 +10,19 @@ const Analytics = () => {
     to: new Date(),
   });
   useEffect(() => {
-    fetchAllDailyTasks().then((data) => {
-      console.log("Fetched all daily tasks:", data);
+    loadDailyTasksByRange(range.from, range.to).then((tasks) => {
+      console.log("tasks", tasks);
     });
-  }, []);
+  }, [range]);
   return (
     <div className="w-full" style={{ minHeight: `calc(100vh - ${hS}px)` }}>
-      <header className=" border-b border-muted-foreground py-2">
+      <header className=" border-b border-muted-foreground/30 py-2">
         <div className="container mx-auto flex items-center justify-end">
           <CalendarDatePicker
             date={range}
-            onDateSelect={(newRange) => setRange(newRange)}
+            onDateSelect={(newRange) => {
+              setRange(newRange);
+            }}
             variant="outline"
           />
         </div>

@@ -4,9 +4,18 @@ export function parseDates(dates: string[]) {
     .filter((d) => !isNaN(d.getTime())); // фільтруємо некоректні дати
 }
 
+/**
+ * Парсить один рядок-дату у Date.
+ * Підтримує:
+ *  - ISO: "YYYY-MM-DD"
+ *  - DOT: "DD.MM.YYYY"
+ *
+ * @param date — рядок дати
+ * @returns об’єкт Date (може бути invalid)
+ */
 export function parseDate(date: string): Date {
-  const [day, month, year] = date.split(".");
-  return new Date(Number(year), Number(month) - 1, Number(day));
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(year, month - 1, day);
 }
 
 export function isFutureDate(date: string) {

@@ -20,6 +20,7 @@ import CustomDrawer from "@/components/ui-abc/drawer/custom-drawer";
 import DailySidePanelContent from "../daily-components/daily-side-panel-content";
 import DailyAnalytics from "../daily-components/daily-analytics";
 import { BreakPoints } from "@/config/adaptive.config";
+import { DailyTaskAnalytics } from "@/types/analytics/task-analytics.model";
 
 const DailyTask = () => {
   const { isAdoptiveSize: mdSize, screenWidth } = useIsAdoptive(BreakPoints.lg);
@@ -31,6 +32,8 @@ const DailyTask = () => {
   const [plannedTasks, setPlannedTasks] = useState<ItemTaskCategory[] | null>(
     null
   );
+  const [dailyAnalyticsData, setDailyAnalyticsData] =
+    useState<DailyTaskAnalytics | null>(null);
   const [t] = useTranslation();
 
   useEffect(() => {
@@ -90,6 +93,29 @@ const DailyTask = () => {
     [plannedTasks, date]
   );
 
+  const setDailyTasks = useCallback((newDailyTasks: Items) => {
+    // 2. Оновлюємо список задач у локальному стані
+    setDailyTask(newDailyTasks);
+    // if (newDailyTasks.length) {
+    //   // 3. Обчислюємо нову аналітику
+    //   const analytics = getDailyTaskAnalyticsData(newDailyTasks);
+    //   // 4. Оновлюємо стан аналітики
+    //   setDailyAnalyticsData(analytics);
+    //   saveDailyTasks<DailyTaskAnalytics>(
+    //     analytics,
+    //     date || "",
+    //     FirebaseCollection.dailyAnalytics
+    //   );
+    // } else {
+    //   setDailyAnalyticsData(null);
+    //   saveDailyTasks<null>(
+    //     null,
+    //     date || "",
+    //     FirebaseCollection.dailyAnalytics
+    //   );
+    // }
+  }, []);
+
   useEffect(() => {
     if (!date) return;
     if (isFutureDate(date)) {
@@ -110,7 +136,9 @@ const DailyTask = () => {
         updatePlannedTask,
         deletePlannedTask,
         addPlannedTask,
-        setDailyTasks: setDailyTask,
+        setDailyTasks,
+        dailyAnalyticsData,
+        setDailyAnalyticsData,
         dailyTasks: dailyTask || [],
       }}
     >
@@ -147,9 +175,7 @@ const DailyTask = () => {
               title={"task_manager.calendar.header.title"}
               description={"task_manager.calendar.header.description"}
             >
-              <>
-                <DailySidePanelContent />
-              </>
+              <DailySidePanelContent />
             </CustomDrawer>
           ) : (
             <DailySidePanelWrapper />

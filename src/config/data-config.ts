@@ -1,3 +1,3 @@
 export enum DateTemplate {
-  dayMonthYear = "dd.MM.yyyy",
+  dayMonthYear = "yyyy-MM-dd",
 }

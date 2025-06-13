@@ -18,11 +18,11 @@ const DailyAnalytics = () => {
   const [dailyAnaltyics, setDailyAnaltyics] = useState<DailyAnalyticsData>();
 
   useEffect(() => {
-    const { dailyEntity, categoryEntity, dailyAnaltyics } =
+    const { dailyEntity, categoryEntity, dailyAnalytics } =
       getDailyTaskAnalyticsData(dailyTasks);
     setDailyEntity(dailyEntity);
     setCategoryEntity(categoryEntity);
-    setDailyAnaltyics(dailyAnaltyics);
+    setDailyAnaltyics(dailyAnalytics);
   }, [dailyTasks]);
   return (
     <div className="flex flex-col gap-4">

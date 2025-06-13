@@ -1,11 +1,10 @@
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { formatISO } from "date-fns";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { enUS } from "date-fns/locale";
 import { useNavigate, useParams } from "react-router";
 import { RoutPath } from "@/config/router-config";
-import { DateTemplate } from "@/config/data-config";
 import { parseDate } from "@/utils/date.util";
 import { Items, ItemTaskCategory } from "@/types/drag-and-drop.model";
 import { FirebaseCollection } from "@/config/firebase.config";
@@ -16,7 +15,7 @@ import { locales } from "@/config/calendar.config";
 const DailyCalendar = () => {
   const { id: dateId } = useParams();
   const parsedDate = parseDate(
-    dateId ?? format(new Date(), DateTemplate.dayMonthYear)
+    dateId ?? formatISO(new Date(), { representation: "date" })
   );
 
   const [date, setDate] = useState<Date | undefined>(parsedDate);
@@ -73,7 +72,7 @@ const DailyCalendar = () => {
   const handleDate = useCallback(
     (date: Date | undefined) => {
       if (date) {
-        const formatted = format(date, DateTemplate.dayMonthYear);
+        const formatted = formatISO(date, { representation: "date" });
         navigate(
           `${RoutPath.TASK_MANAGER}/${RoutPath.TASK_MANAGER_DAILY.replace(
             ":id",

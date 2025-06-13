@@ -48,3 +48,8 @@ export interface GetItemStylesArgs {
 }
 
 export type GetItemStyles = (args: GetItemStylesArgs) => React.CSSProperties;
+
+export interface DailyTaskRecord {
+  date: string;
+  items: Items;
+}
