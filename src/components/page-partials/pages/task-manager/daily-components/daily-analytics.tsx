@@ -18,6 +18,12 @@ const DailyAnalytics = () => {
   const [dailyAnaltyics, setDailyAnaltyics] = useState<DailyAnalyticsData>();
 
   useEffect(() => {
+    if (!dailyTasks || dailyTasks.length === 0) {
+      setDailyEntity({});
+      setCategoryEntity({});
+      setDailyAnaltyics(undefined);
+      return;
+    }
     const { dailyEntity, categoryEntity, dailyAnalytics } =
       getDailyTaskAnalyticsData(dailyTasks);
     setDailyEntity(dailyEntity);

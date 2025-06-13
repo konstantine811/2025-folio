@@ -170,10 +170,6 @@ export const subscribeToNonEmptyTaskDates = async <
     return;
   }
 
-  console.log(
-    "📅 Subscribing to non-empty task dates for collection:",
-    collectionType
-  );
   const uid = user.uid;
   const daysCollectionRef = collection(
     db,
@@ -288,7 +284,6 @@ export async function loadDailyTasksByRange(
   const uid = user.uid;
   const fromId = formatISO(from, { representation: "date" }); // "YYYY-MM-DD"
   const toId = formatISO(to, { representation: "date" }); // "YYYY-MM-DD"
-  console.log("from", fromId, "to", toId);
   // 2. Збираємо референс до підколекції days
   const daysRef = collection(
     db,
