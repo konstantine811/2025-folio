@@ -38,12 +38,13 @@ export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
       } = task;
 
       const timeDo = isDetermined || isPlanned || isDone ? timeDone : time;
-      dailyAnalytics.countTime += timeDo;
-      dailyAnalytics.countAllTask += 1;
-      dailyAnalytics.countDoneTime += task.timeDone;
-      dailyAnalytics.countDoneTask += isDone ? 1 : 0;
       const timeDoneCategory =
         (isDetermined || isPlanned) && !isDone ? 0 : timeDone;
+      dailyAnalytics.countTime += timeDo;
+      dailyAnalytics.countAllTask += 1;
+      dailyAnalytics.countDoneTime += timeDoneCategory;
+      dailyAnalytics.countDoneTask += isDone ? 1 : 0;
+
       // Оновлення статистики категорії
       categoryStats.time += timeDo;
       categoryStats.countDoneTime += timeDoneCategory;

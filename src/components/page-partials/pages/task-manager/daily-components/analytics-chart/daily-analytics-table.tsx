@@ -18,10 +18,11 @@ const DailyAnalyticsTable = ({ data }: { data: DailyAnalyticsData }) => {
       const { minutes, hours } = paresSecondToTime(time);
       let timeStr = "";
       const numHours = Number(hours);
+      const numMinutes = Number(minutes);
       if (numHours !== 0) {
         timeStr = `${numHours}${t("chart.hour")}:`;
       }
-      timeStr += `${minutes}${t("chart.minute")}`;
+      timeStr += `${numMinutes}${t("chart.minute")}`;
       return timeStr;
     },
     [t]

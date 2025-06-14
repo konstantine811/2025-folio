@@ -83,3 +83,8 @@ export interface DailyTaskAnalytics {
   categoryEntity: CategoryAnalyticsNameEntity;
   dailyAnalytics: DailyAnalyticsData;
 }
+
+export interface DailyTaskAnalyticRecord {
+  data: DailyTaskAnalytics;
+  date: string;
+}
