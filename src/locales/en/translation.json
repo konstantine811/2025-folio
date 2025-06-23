@@ -2,6 +2,7 @@
   "welcome": "Welcome",
   "hello_user": "Hello, {{name}}!",
   "date_format": "D MMMM YYYY [at] HH:mm",
+  "not_data": "No data available",
   "copy": "Copy",
   "copied": "Copied",
   "health": "Health",
@@ -76,12 +77,23 @@
     "count_chart_title": "Total Duration of Tasks Each Day",
     "period_count_category_title": "Total Duration of Categories for Period",
     "period_count_task_title": "Total Duration of Tasks for Period",
+    "range_count_task_title": "Analytics of Time Spent on Tasks for Selected Period",
     "period": "Period",
     "category": "Categories",
     "task": "Tasks",
     "timeCount": "Duration",
     "task_day_count": "Tasks for Today",
-    "pie_category_daily_time": "Task Completion Status by Categories"
+    "pie_category_daily_time": "Task Completion Status by Categories",
+    "done_tasks": "Completed Tasks",
+    "undone_tasks": "Undone Tasks",
+    "line_chart_type": {
+      "title": "Line Chart Type",
+      "linear": "Linear",
+      "step": "Step",
+      "smooth": "Smooth",
+      "smooth_cardinal": "Smooth (Cardinal)",
+      "monotone": "Monotone"
+    }
   },
   "task_manager": {
     "add": "Add Task",

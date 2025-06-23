@@ -3,6 +3,7 @@
   "hello_user": "Привіт, {{name}}!",
   "date_format": "D MMMM YYYY [о] HH:mm",
   "combobox_placeholder": "Введи або обери...",
+  "not_data": "Дані відсутні",
   "copy": "Скопіювати",
   "copied": "Скопійовано",
   "health": "Здоров'я",
@@ -77,12 +78,23 @@
     "count_chart_title": "Сумарна тривалість задач кожного дня",
     "period_count_category_title": "Сумарна тривалість категорій за період",
     "period_count_task_title": "Сумарна тривалість задач за період",
+    "range_count_task_title": "Аналатіка витраченого часу на задачі за обраний період",
     "period": "Період",
     "category": "Категорії",
     "task": "Задачі",
     "timeCount": "Tривалість",
     "task_day_count": "Задачі за сьогодні",
-    "pie_category_daily_time": "Статус виконання задач за категоріями"
+    "pie_category_daily_time": "Статус виконання задач за категоріями",
+    "done_tasks": "Зроблені задачі",
+    "undone_tasks": "Незроблені задачі",
+    "line_chart_type": {
+      "title": "Тип лінії",
+      "linear": "Лінійна",
+      "step": "Крокова",
+      "smooth": "Плавна",
+      "smooth_cardinal": "Плавна (Cardinal)",
+      "monotone": "Монотонна"
+    }
   },
 
   "task_manager": {

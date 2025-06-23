@@ -1,0 +1,283 @@
+import {
+  RangeTaskAnalyticRecord,
+  ValueCurveOption,
+} from "@/types/analytics/task-analytics.model";
+import { useEffect, useMemo, useRef, useState } from "react";
+import * as d3 from "d3";
+import { useTranslation } from "react-i18next";
+import { useThemeStore } from "@/storage/themeStore";
+import { ThemePalette } from "@/config/theme-colors.config";
+import ChartTitle from "../chart/chart-title";
+import SelectTypeLineChart from "./select-type-line-chart";
+
+const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [t] = useTranslation();
+  const selectedTheme = useThemeStore((s) => s.selectedTheme);
+  const [curveType, setCurveType] = useState<ValueCurveOption>(
+    ValueCurveOption.curveCardinal
+  );
+
+  const margin = { top: 20, right: 10, bottom: 50, left: 30 };
+  const [dimensions, setDimensions] = useState({ width: 0, height: 400 });
+  const innerWidth = Math.max(0, dimensions.width - margin.left - margin.right);
+  const innerHeight = dimensions.height - margin.top - margin.bottom;
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      const { width } = entries[0].contentRect;
+      setDimensions({ width, height: 400 });
+    });
+
+    resizeObserver.observe(container);
+
+    return () => {
+      resizeObserver.unobserve(container);
+    };
+  }, []);
+
+  const parsedData = useMemo(
+    () =>
+      data.map((d) => ({
+        date: new Date(d.date),
+        timeDone: d.data.countTimeDone,
+        notTimeDone: d.data.countNotTimeDone,
+      })),
+    [data]
+  );
+
+  useEffect(() => {
+    const svg = d3.select(svgRef.current);
+    svg.selectAll("*").remove();
+    const d3Curve = d3[curveType as keyof typeof d3] as d3.CurveFactory;
+    const x = d3
+      .scaleTime()
+      .domain(d3.extent(parsedData, (d) => d.date) as [Date, Date])
+      .range([0, innerWidth]);
+
+    const y = d3
+      .scaleLinear()
+      .domain([
+        0,
+        (d3.max(parsedData, (d) => Math.max(d.timeDone, d.notTimeDone)) ?? 0) /
+          3600,
+      ])
+      .nice()
+      .range([innerHeight, 0]);
+
+    const lineGreen = d3
+      .line<{ date: Date; timeDone: number }>()
+      .x((d) => x(d.date))
+      .y((d) => y(d.timeDone / 3600))
+      .curve(d3Curve);
+
+    const lineRed = d3
+      .line<{ date: Date; notTimeDone: number }>()
+      .x((d) => x(d.date))
+      .y((d) => y(d.notTimeDone / 3600))
+      .curve(d3Curve);
+
+    const g = svg
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    g.append("g")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(
+        d3
+          .axisBottom(x)
+          .tickValues(
+            parsedData
+              .map((d) => d.date)
+              .filter((_, i, arr) => i % Math.ceil(arr.length / 6) === 0)
+          )
+          .tickFormat((d: Date | d3.NumberValue) =>
+            d3.timeFormat("%d-%m-%Y")(d as Date)
+          )
+      )
+      .selectAll("text")
+      .attr("transform", "rotate(-45)")
+      .style("text-anchor", "end");
+
+    g.append("g").call(
+      d3.axisLeft(y).tickFormat((d) => `${d}${t("chart.hour")}`)
+    );
+
+    g.append("path")
+      .datum(parsedData)
+      .attr("fill", "none")
+      .attr("stroke", ThemePalette[selectedTheme].accent)
+      .attr("stroke-dasharray", "10,5")
+      .attr("stroke-width", 2)
+      .attr("d", lineGreen);
+
+    g.append("path")
+      .datum(parsedData)
+      .attr("fill", "none")
+      .attr("stroke", ThemePalette[selectedTheme].destructive)
+      .attr("stroke-width", 2)
+      .attr("d", lineRed);
+
+    // dots
+    g.selectAll(".dot-green")
+      .data(parsedData)
+      .enter()
+      .append("circle")
+      .attr("class", "dot-green")
+      .attr("cx", (d) => x(d.date))
+      .attr("cy", (d) => y(d.timeDone / 3600))
+      .attr("r", 2)
+      .attr("fill", ThemePalette[selectedTheme].accent)
+      .attr("stroke", "white")
+      .attr("stroke-width", 1);
+
+    g.selectAll(".dot-red")
+      .data(parsedData)
+      .enter()
+      .append("circle")
+      .attr("class", "dot-red")
+      .attr("cx", (d) => x(d.date))
+      .attr("cy", (d) => y(d.notTimeDone / 3600))
+      .attr("r", 2)
+      .attr("fill", ThemePalette[selectedTheme].destructive)
+      .attr("stroke", "white")
+      .attr("stroke-width", 1);
+
+    // === Legend ===
+    const legend = svg
+      .append("g")
+      .attr("transform", `translate(${margin.left + 20},${margin.top})`);
+
+    legend
+      .append("line")
+      .attr("x1", 0)
+      .attr("y1", 0)
+      .attr("x2", 20)
+      .attr("y2", 0)
+      .attr("stroke", ThemePalette[selectedTheme].accent)
+      .attr("stroke-width", 2);
+
+    legend
+      .append("text")
+      .attr("x", 30)
+      .attr("y", 5)
+      .attr("fill", ThemePalette[selectedTheme].foreground)
+      .text(t("chart.done_tasks")); // наприклад: "Зроблені"
+
+    legend
+      .append("line")
+      .attr("x1", 0)
+      .attr("y1", 20)
+      .attr("x2", 20)
+      .attr("y2", 20)
+      .attr("stroke", ThemePalette[selectedTheme].destructive)
+      .attr("stroke-width", 2);
+
+    legend
+      .append("text")
+      .attr("x", 30)
+      .attr("y", 25)
+      .attr("fill", ThemePalette[selectedTheme].foreground)
+      .text(t("chart.undone_tasks")); // наприклад: "Незроблені"
+
+    // === Hover interactivity ===
+    const focus = g.append("g").style("display", "none");
+
+    focus
+      .append("line")
+      .attr("class", "hover-line")
+      .attr("stroke", ThemePalette[selectedTheme]["muted-foreground"])
+      .attr("stroke-width", 1)
+      .attr("y1", 0)
+      .attr("y2", innerHeight);
+
+    svg
+      .append("rect")
+      .attr("transform", `translate(${margin.left},${margin.top})`)
+      .attr("width", innerWidth)
+      .attr("height", innerHeight)
+      .style("fill", "none")
+      .style("pointer-events", "all")
+      .on("mouseover", () => focus.style("display", null))
+      .on("mouseout", () => {
+        focus.style("display", "none");
+        if (tooltipRef.current) tooltipRef.current.style.display = "none";
+      })
+      .on("mousemove", function (event) {
+        const [mouseX] = d3.pointer(event, this);
+        const mouseDate = x.invert(mouseX);
+        const bisect = d3.bisector((d: (typeof parsedData)[0]) => d.date).left;
+        const idx = bisect(parsedData, mouseDate, 1);
+        const d0 = parsedData[idx - 1];
+        const d1 = parsedData[idx];
+
+        const d = !d1
+          ? d0
+          : mouseDate.getTime() - d0.date.getTime() >
+            d1.date.getTime() - mouseDate.getTime()
+          ? d1
+          : d0;
+
+        const xPos = x(d.date);
+
+        // Move the line inside the SVG
+        focus.select("line").attr("transform", `translate(${xPos},0)`);
+
+        const tooltip = tooltipRef.current;
+        if (tooltip) {
+          tooltip.style.display = "block";
+          tooltip.innerHTML = `
+            <div><strong>${d3.timeFormat("%d-%m-%Y")(d.date)}</strong></div>
+            <div>✅ ${Math.round(d.timeDone / 3600)} ${t("chart.hour")}</div>
+            <div>❌ ${Math.round(d.notTimeDone / 3600)} ${t("chart.hour")}</div>
+          `;
+
+          const svgRect = svgRef.current?.getBoundingClientRect();
+          if (!svgRect) return;
+          const left = svgRect.left + margin.left + xPos;
+          const top = svgRect.top + margin.top;
+          const tooltipWidth = tooltip.offsetWidth;
+
+          const showRight = left + tooltipWidth + 20 < window.innerWidth;
+          tooltip.style.position = "fixed";
+          tooltip.style.top = `${top}px`;
+          tooltip.style.left = showRight
+            ? `${left + 10}px`
+            : `${left - tooltipWidth - 10}px`;
+        }
+      });
+  }, [
+    parsedData,
+    innerWidth,
+    innerHeight,
+    margin.left,
+    margin.top,
+    t,
+    selectedTheme,
+    curveType,
+  ]);
+
+  return (
+    <>
+      <div ref={containerRef} style={{ width: "100%" }}>
+        <div className="flex gap-2 justify-center items-center">
+          <ChartTitle title="chart.range_count_task_title" />
+          <SelectTypeLineChart value={curveType} onChange={setCurveType} />
+        </div>
+        <svg ref={svgRef} width={dimensions.width} height={dimensions.height} />
+        <div
+          ref={tooltipRef}
+          className="fixed hidden bg-card border border-muted-foreground/50 rounded-md p-2 pointer-events-none shadow z-50 text-sm transition-all"
+        />
+      </div>
+    </>
+  );
+};
+
+export default LineChartTask;

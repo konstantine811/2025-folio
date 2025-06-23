@@ -634,6 +634,15 @@ export const CalendarDatePicker = React.forwardRef<
                       numberOfMonths={numberOfMonths}
                       showOutsideDays={false}
                       className={className}
+                      modifiersClassNames={{
+                        selected:
+                          "!bg-accent !text-foreground border border-background",
+                        today:
+                          "bg-background shadow-md shadow-accent border border-accent",
+                        active: "bg-foreground/20 text-foreground",
+                        hasTasks:
+                          "after:block after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-foreground after:rounded-full", // 👈 стилізуємо це окремо
+                      }}
                     />
                   </div>
                 </div>

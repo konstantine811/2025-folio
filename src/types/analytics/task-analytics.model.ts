@@ -84,7 +84,31 @@ export interface DailyTaskAnalytics {
   dailyAnalytics: DailyAnalyticsData;
 }
 
-export interface DailyTaskAnalyticRecord {
-  data: DailyTaskAnalytics;
+export interface AnalyticsData {
+  rangeTasks: RangeTaskAnalyticRecord[];
+  categoryEntity: CategoryAnalyticsNameEntity;
+}
+
+export interface RangeTaskAnalyticRecord {
+  data: RangeTaskAnalytics;
   date: string;
+}
+
+export interface RangeTaskAnalytics {
+  countTimeDone: number;
+  countNotTimeDone: number;
+}
+
+export interface CurveOptions {
+  value: ValueCurveOption;
+  label: string;
+  icon: string;
+}
+
+export enum ValueCurveOption {
+  curveLinear = "curveLinear",
+  curveStepAfter = "curveStepAfter",
+  curveBasis = "curveBasis",
+  curveCardinal = "curveCardinal",
+  curveMonotoneX = "curveMonotoneX",
 }

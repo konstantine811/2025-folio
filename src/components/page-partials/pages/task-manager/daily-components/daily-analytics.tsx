@@ -7,7 +7,7 @@ import {
   TaskAnalyticsIdEntity,
 } from "@/types/analytics/task-analytics.model";
 import { getDailyTaskAnalyticsData } from "@/services/task-menager/analytics/daily-handle-data";
-import ChartPieCateogoryWrap from "./analytics-chart/chart-pie-category/chart-pie-category-wrap";
+import ChartPieCategoryWrap from "./analytics-chart/chart-pie-category/chart-pie-category-wrap";
 import DailyAnalyticsTable from "./analytics-chart/daily-analytics-table";
 
 const DailyAnalytics = () => {
@@ -34,7 +34,7 @@ const DailyAnalytics = () => {
     <div className="flex flex-col gap-4">
       <ChartTimeStackWrapper data={dailyEntity} />
       {dailyAnaltyics && <DailyAnalyticsTable data={dailyAnaltyics} />}
-      <ChartPieCateogoryWrap data={categoryEntity} />
+      <ChartPieCategoryWrap className="pb-8 md:py-8" data={categoryEntity} />
     </div>
   );
 };
