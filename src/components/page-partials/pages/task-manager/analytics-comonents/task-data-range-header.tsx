@@ -5,6 +5,7 @@ import { RangeTaskAnalyticRecord } from "@/types/analytics/task-analytics.model"
 import { useTranslation } from "react-i18next";
 import { LanguageType } from "@/i18n";
 import { getDateFnsLocaleCode } from "@/utils/lang";
+import { DateTemplate } from "@/config/data-config";
 
 const localeMap: Record<string, Locale> = {
   en: enUS,
@@ -35,11 +36,11 @@ const TaskDateRangeHeader = ({
     <h2 className="text-xl  text-muted-foreground text-center mb-4">
       {t("task_manager.analytics.header_range.title")}{" "}
       <span className="text-primary">
-        {format(minDate, "d MMMM yyyy", {
+        {format(minDate, DateTemplate.dayMonthYearShort, {
           locale,
         })}{" "}
         –{" "}
-        {format(maxDate, "d MMMM yyyy", {
+        {format(maxDate, DateTemplate.dayMonthYearShort, {
           locale,
         })}
       </span>
