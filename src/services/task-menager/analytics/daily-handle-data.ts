@@ -87,7 +87,6 @@ export const getRangeDailyTaskAnalytics = (
     const data = getRangeAnalyticsData(items, categoryEntity, taskEntity);
     return { date, data };
   });
-  console.log("Range analytics data:", taskEntity);
   return {
     rangeTasks: data,
     categoryEntity,

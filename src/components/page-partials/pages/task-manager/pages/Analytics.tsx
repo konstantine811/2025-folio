@@ -39,7 +39,6 @@ const Analytics = () => {
     worker.postMessage(rangeTasks);
     worker.onmessage = (e) => {
       const analyticsData = e.data as AnalyticsData;
-      console.log("Analytics data received:", analyticsData);
       if (analyticsData.categoryEntity) {
         const categoryTime: ItemTimeMap = {};
         Object.entries(analyticsData.categoryEntity).forEach(([key, value]) => {
