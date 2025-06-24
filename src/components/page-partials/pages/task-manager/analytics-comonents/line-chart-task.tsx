@@ -18,29 +18,15 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
   const [curveType, setCurveType] = useState<ValueCurveOption>(
     ValueCurveOption.curveCardinal
   );
-
-  const margin = { top: 20, right: 10, bottom: 50, left: 30 };
+  const yAxisRef = useRef<SVGSVGElement>(null);
+  const margin = { top: 20, right: 10, bottom: 50, left: 50 };
   const [dimensions, setDimensions] = useState({ width: 0, height: 400 });
   const innerWidth = Math.max(0, dimensions.width - margin.left - margin.right);
   const innerHeight = dimensions.height - margin.top - margin.bottom;
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      const { width } = entries[0].contentRect;
-      setDimensions({ width, height: 400 });
-    });
-
-    resizeObserver.observe(container);
-
-    return () => {
-      resizeObserver.unobserve(container);
-    };
-  }, []);
+  const [chartWidth, setChartWidth] = useState(1000);
 
   const parsedData = useMemo(
     () =>
@@ -53,13 +39,37 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
   );
 
   useEffect(() => {
-    const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove();
-    const d3Curve = d3[curveType as keyof typeof d3] as d3.CurveFactory;
-    const x = d3
-      .scaleTime()
-      .domain(d3.extent(parsedData, (d) => d.date) as [Date, Date])
-      .range([0, innerWidth]);
+    const handleScroll = () => {
+      if (tooltipRef.current) {
+        tooltipRef.current.style.display = "none";
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    if (!yAxisRef.current) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      const { width } = entries[0].contentRect;
+      const desiredWidth = Math.max(width, parsedData.length * 50); // 50px на точку
+      setChartWidth(desiredWidth);
+      setDimensions({ width: desiredWidth, height: 400 });
+    });
+
+    resizeObserver.observe(container);
+    return () => resizeObserver.disconnect();
+  }, [parsedData.length]);
+
+  useEffect(() => {
+    if (!yAxisRef.current) return;
 
     const y = d3
       .scaleLinear()
@@ -70,6 +80,38 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
       ])
       .nice()
       .range([innerHeight, 0]);
+
+    const yAxisSvg = d3.select(yAxisRef.current);
+    yAxisSvg.selectAll("*").remove();
+
+    yAxisSvg
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`)
+      .call(d3.axisLeft(y).tickFormat((d) => `${d}${t("chart.hour")}`));
+  }, [parsedData, innerHeight, margin.left, margin.top, t]);
+
+  useEffect(() => {
+    const svg = d3.select(svgRef.current);
+    svg.selectAll("*").remove();
+    const d3Curve = d3[curveType as keyof typeof d3] as d3.CurveFactory;
+    const x = d3
+      .scaleTime()
+      .domain(d3.extent(parsedData, (d) => d.date) as [Date, Date])
+      .range([0, chartWidth - margin.left - margin.right]);
+
+    const y = d3
+      .scaleLinear()
+      .domain([
+        0,
+        (d3.max(parsedData, (d) => Math.max(d.timeDone, d.notTimeDone)) ?? 0) /
+          3600,
+      ])
+      .nice()
+      .range([innerHeight, 0]);
+
+    const g = svg
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
 
     const lineGreen = d3
       .line<{ date: Date; timeDone: number }>()
@@ -82,10 +124,6 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
       .x((d) => x(d.date))
       .y((d) => y(d.notTimeDone / 3600))
       .curve(d3Curve);
-
-    const g = svg
-      .append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
 
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
@@ -104,10 +142,6 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
       .selectAll("text")
       .attr("transform", "rotate(-45)")
       .style("text-anchor", "end");
-
-    g.append("g").call(
-      d3.axisLeft(y).tickFormat((d) => `${d}${t("chart.hour")}`)
-    );
 
     g.append("path")
       .datum(parsedData)
@@ -193,7 +227,7 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
       .append("line")
       .attr("class", "hover-line")
       .attr("stroke", ThemePalette[selectedTheme]["muted-foreground"])
-      .attr("stroke-width", 1)
+      .attr("stroke-width", 3)
       .attr("y1", 0)
       .attr("y2", innerHeight);
 
@@ -254,27 +288,58 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
       });
   }, [
     parsedData,
-    innerWidth,
     innerHeight,
     margin.left,
     margin.top,
+    margin.right,
+    innerWidth,
     t,
     selectedTheme,
     curveType,
+    chartWidth,
   ]);
 
   return (
     <>
       <div ref={containerRef} style={{ width: "100%" }}>
-        <div className="flex gap-2 justify-center items-center">
+        <div className="flex flex-wrap gap-2 justify-center items-center">
           <ChartTitle title="chart.range_count_task_title" />
           <SelectTypeLineChart value={curveType} onChange={setCurveType} />
         </div>
-        <svg ref={svgRef} width={dimensions.width} height={dimensions.height} />
         <div
-          ref={tooltipRef}
-          className="fixed hidden bg-card border border-muted-foreground/50 rounded-md p-2 pointer-events-none shadow z-50 text-sm transition-all"
-        />
+          ref={containerRef}
+          style={{ display: "flex", width: "100%", overflowX: "hidden" }}
+        >
+          {/* Вісь Y */}
+          <svg
+            width={margin.left}
+            height={dimensions.height}
+            ref={yAxisRef}
+            className="pointer-events-none absolute"
+          />
+
+          {/* Прокручуваний графік */}
+          <div
+            style={{
+              overflowX: "auto",
+              width: "100%",
+            }}
+          >
+            <div style={{ width: chartWidth - margin.left }}>
+              <svg
+                ref={svgRef}
+                width={chartWidth - margin.left}
+                height={dimensions.height}
+              />
+            </div>
+          </div>
+
+          {/* Tooltip */}
+          <div
+            ref={tooltipRef}
+            className="fixed hidden bg-card border border-muted-foreground/50 rounded-md p-2 pointer-events-none shadow z-50 text-sm transition-all"
+          />
+        </div>
       </div>
     </>
   );
