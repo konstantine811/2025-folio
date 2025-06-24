@@ -19,7 +19,7 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
     ValueCurveOption.curveCardinal
   );
   const yAxisRef = useRef<SVGSVGElement>(null);
-  const margin = { top: 20, right: 10, bottom: 50, left: 50 };
+  const margin = { top: 20, right: 80, bottom: 50, left: 50 };
   const [dimensions, setDimensions] = useState({ width: 0, height: 400 });
   const innerWidth = Math.max(0, dimensions.width - margin.left - margin.right);
   const innerHeight = dimensions.height - margin.top - margin.bottom;
@@ -313,9 +313,9 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
           {/* Вісь Y */}
           <svg
             width={margin.left}
-            height={dimensions.height}
+            height={dimensions.height - margin.bottom + 3}
             ref={yAxisRef}
-            className="pointer-events-none absolute"
+            className="pointer-events-none absolute bg-background/50 backdrop-blur-sm"
           />
 
           {/* Прокручуваний графік */}
