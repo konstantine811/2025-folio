@@ -53,6 +53,17 @@ export type CategoryAnalyticsNameEntity = {
   [id: string]: CategoryAnalyticsData;
 };
 
+export type RangeTaskAnalyticsNameEntity = {
+  [key: string]: RangeTaskAnalyticsData;
+};
+
+export interface RangeTaskAnalyticsData {
+  countIsDone: number;
+  countIsNotDone: number;
+  countTime: number;
+  countDoneTime: number;
+}
+
 export interface DailyAnalyticsData {
   countDoneTime: number;
   countTime: number;
@@ -87,6 +98,7 @@ export interface DailyTaskAnalytics {
 export interface AnalyticsData {
   rangeTasks: RangeTaskAnalyticRecord[];
   categoryEntity: CategoryAnalyticsNameEntity;
+  rangeTaskEntity: RangeTaskAnalyticsNameEntity;
 }
 
 export interface RangeTaskAnalyticRecord {

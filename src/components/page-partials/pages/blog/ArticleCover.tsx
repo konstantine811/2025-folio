@@ -5,7 +5,8 @@ import "dayjs/locale/uk";
 import "dayjs/locale/en";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
-import { LanguageType } from "@/i18n";
+
+import { getDateFnsLocaleCode } from "@/utils/lang";
 
 dayjs.locale("uk");
 
@@ -13,7 +14,7 @@ const ArticleCover = ({ article }: { article: PostContent }) => {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   useEffect(() => {
-    dayjs.locale(lang === LanguageType.UA ? "uk" : lang);
+    dayjs.locale(getDateFnsLocaleCode(lang));
   }, [lang]);
   return (
     <div

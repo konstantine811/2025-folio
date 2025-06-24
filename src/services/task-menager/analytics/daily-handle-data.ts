@@ -4,6 +4,7 @@ import {
   DailyAnalyticsData,
   DailyTaskAnalytics,
   RangeTaskAnalytics,
+  RangeTaskAnalyticsNameEntity,
   TaskAnalyticsIdEntity,
 } from "@/types/analytics/task-analytics.model";
 import { DailyTaskRecord, Items } from "@/types/drag-and-drop.model";
@@ -79,21 +80,25 @@ export const getRangeDailyTaskAnalytics = (
   rangeTasks: DailyTaskRecord[]
 ): AnalyticsData => {
   const categoryEntity: CategoryAnalyticsNameEntity = {};
+  const taskEntity: RangeTaskAnalyticsNameEntity = {};
+
   const data = rangeTasks.map((item) => {
     const { date, items } = item;
-    const data = getRangeAnalyticsData(items, categoryEntity);
+    const data = getRangeAnalyticsData(items, categoryEntity, taskEntity);
     return { date, data };
   });
-
+  console.log("Range analytics data:", taskEntity);
   return {
     rangeTasks: data,
     categoryEntity,
+    rangeTaskEntity: taskEntity,
   };
 };
 
 export const getRangeAnalyticsData = (
   tasks: Items,
-  categoryEntity: CategoryAnalyticsNameEntity
+  categoryEntity: CategoryAnalyticsNameEntity,
+  taskEntity: RangeTaskAnalyticsNameEntity
 ): RangeTaskAnalytics => {
   let countTimeDone = 0;
   let countNotTimeDone = 0;
@@ -108,24 +113,41 @@ export const getRangeAnalyticsData = (
         taskNoDone: [],
       };
     }
+
     taskList.forEach((task) => {
       const { title, isDone, isDetermined, isPlanned, time, timeDone } = task;
 
+      if (!taskEntity[title]) {
+        taskEntity[title] = {
+          countIsDone: 0,
+          countIsNotDone: 0,
+          countTime: 0,
+          countDoneTime: 0,
+        };
+      }
       if (isDetermined || isPlanned) {
         categoryEntity[categoryTitle].time += timeDone;
+        taskEntity[title].countTime += timeDone;
         if (isDone) {
+          taskEntity[title].countIsDone += 1;
+          taskEntity[title].countDoneTime += timeDone;
           countTimeDone += timeDone;
           categoryEntity[categoryTitle].countDoneTime += timeDone;
         } else {
+          taskEntity[title].countIsNotDone += 1;
           countNotTimeDone += timeDone;
           categoryEntity[categoryTitle].taskNoDone.push(title);
         }
       } else {
         categoryEntity[categoryTitle].time += time;
+        taskEntity[title].countTime += time;
         if (isDone) {
+          taskEntity[title].countIsDone += 1;
+          taskEntity[title].countDoneTime += timeDone;
           countTimeDone += timeDone;
           categoryEntity[categoryTitle].countDoneTime += timeDone;
         } else {
+          taskEntity[title].countIsNotDone += 1;
           countNotTimeDone += time;
         }
       }

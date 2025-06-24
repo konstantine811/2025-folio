@@ -258,7 +258,7 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
           ? d1
           : d0;
 
-        const xPos = x(d.date);
+        const xPos = x(d?.date);
 
         // Move the line inside the SVG
         focus.select("line").attr("transform", `translate(${xPos},0)`);

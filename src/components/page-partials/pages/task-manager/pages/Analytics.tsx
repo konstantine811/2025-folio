@@ -15,6 +15,8 @@ import { useTranslation } from "react-i18next";
 import ChartPieCategoryWrap from "../daily-components/analytics-chart/chart-pie-category/chart-pie-category-wrap";
 import ChartTitle from "../chart/chart-title";
 import ChartPieItem from "../template-components/chart-pie-item";
+import RangeAnalyticsTable from "../analytics-comonents/range-analytics-table";
+import TaskDateRangeHeader from "../analytics-comonents/task-data-range-header";
 
 const Analytics = () => {
   const hS = useHeaderSizeStore((s) => s.size);
@@ -70,13 +72,17 @@ const Analytics = () => {
         {/* <h2 className="text-center text-foreground/50 text-sm mb-4 mt-2">
             {`${t("task_manager.daily_task_title")} : ${dateVal || ""}`}
           </h2> */}
-        <div className="container mx-auto flex flex-col items-center gap-4 pt-10 pb-20">
+        <div className="container mx-auto pt-10 pb-20">
           {analyticsData ? (
             <>
+              <TaskDateRangeHeader tasks={analyticsData.rangeTasks} />
               <LineChartTask data={analyticsData.rangeTasks} />
-              <div className="flex flex-wrap gap-4 justify-around items-start">
-                <ChartPieCategoryWrap data={analyticsData.categoryEntity} />
-                <div>
+              <div className="flex flex-wrap gap-4 justify-around items-start pt-10">
+                <ChartPieCategoryWrap
+                  className="grow"
+                  data={analyticsData.categoryEntity}
+                />
+                <div className="grow max-w-md mx-auto">
                   <div className="flex flex-wrap justify-center items-center gap-2">
                     <ChartTitle title="chart.period_count_category_title" />
                   </div>
@@ -89,6 +95,7 @@ const Analytics = () => {
                   </div>
                 </div>
               </div>
+              <RangeAnalyticsTable data={analyticsData.rangeTaskEntity} />
             </>
           ) : (
             t("not_data")
