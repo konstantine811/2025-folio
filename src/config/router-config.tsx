@@ -40,6 +40,12 @@ const BirdyBeats = lazy(
       "../components/page-partials/pages/experimental/bidry-beats/bidry-beats"
     )
 );
+const ThreePhysicsEngine = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/physics-engine/init"
+    )
+);
 
 const LoginPage = lazy(() => import("../components/page-partials/pages/Login"));
 
@@ -55,6 +61,7 @@ export enum RoutPath {
   LOGIN = "/login",
   EXPERIMENTAL_TEST = "test",
   EXPERIMENTAL_BIRDY_BEATS = "birdy-beats",
+  EXPERIMENTAL_THREE_PHYSICS_ENGINE = "three-physics-engine",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -99,6 +106,12 @@ export const EXPERIMENTAL_ROUTERS = [
     id: "experimental-birdy-beats",
     icon: "🐦",
   },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_PHYSICS_ENGINE,
+    Component: ThreePhysicsEngine,
+    id: "experimental-three-physics-engine",
+    icon: "🌌",
+  },
 ];
 
 export const router: AppRoute[] = [
@@ -114,7 +127,7 @@ export const router: AppRoute[] = [
     Component: ExperimentalPage,
     isNav: true,
     id: "experimental",
-    isDev: true, // Set to true for development purposes
+    isDev: false, // Set to true for development purposes
     children: [
       ...EXPERIMENTAL_ROUTERS,
       {
