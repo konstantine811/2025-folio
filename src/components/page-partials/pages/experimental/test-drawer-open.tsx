@@ -1,30 +1,34 @@
 import CustomDrawer from "@/components/ui-abc/drawer/custom-drawer";
-import { Items } from "@/types/drag-and-drop.model";
-import { useEffect, useState } from "react";
-import TemplateRightPanel from "../task-manager/template-components/template-right-panel";
-import { loadTemplateTasks } from "@/services/firebase/taskManagerData";
+import { Dock, DockIcon, DockItem, DockLabel } from "@/components/ui/dock";
+import { EXPERIMENTAL_ROUTERS } from "@/config/router-config";
+import useRoutingPath from "@/hooks/useRoutingPath";
+import { Link } from "react-router";
 
 const TestDrawerOpen = () => {
-  const [templatedTask, setTemplatedTask] = useState<Items>([]); // 🔄 Додано для зберігання шаблонних завдань
-  useEffect(() => {
-    loadTemplateTasks()
-      .then((tasks) => {
-        if (tasks) {
-          setTemplatedTask(tasks); // 🔄 Зберігаємо шаблонні завдання
-        } else {
-          setTemplatedTask([]); // 🔄 Явно вказати порожній масив для шаблонних завдань
-        }
-      })
-      .catch((error) => {
-        console.error("Error loading tasks:", error);
-      });
-  }, []);
+  const nestedPath = useRoutingPath("nested");
   return (
     <CustomDrawer
-      title="task_manager.analytics.header.title"
-      description="task_manager.analytics.header.description"
+      title={"Тестові проєкти"}
+      description={"Тут будуть тестові проєкти"}
     >
-      <TemplateRightPanel templateTasks={templatedTask} />
+      <Dock className="items-end pb-3 bg-card/30 backdrop-blur-sm border border-foreground/10">
+        {EXPERIMENTAL_ROUTERS.map((item) => {
+          return (
+            <Link to={item.path} key={item.id}>
+              <DockItem
+                className={`${
+                  nestedPath === item.path
+                    ? "bg-accent text-background"
+                    : "bg-card/50 text-accent"
+                } transition duration-200 aspect-square rounded-full border border-foreground/10 cursor-pointer`}
+              >
+                <DockLabel>{item.id}</DockLabel>
+                <DockIcon className="text-xl ">{item.icon}</DockIcon>
+              </DockItem>
+            </Link>
+          );
+        })}
+      </Dock>
     </CustomDrawer>
   );
 };

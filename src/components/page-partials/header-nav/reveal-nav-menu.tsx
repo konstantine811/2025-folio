@@ -5,7 +5,7 @@ import { router } from "@config/router-config";
 import { HoverStyleElement, SoundTypeElement } from "@custom-types/sound";
 import { useClickStore } from "@storage/clickStore";
 import { useNavMenuStore } from "@storage/navMenuStore";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, Variants } from "motion/react";
 import { memo } from "react";
 import LanguagePicker from "../page-setting/lange-picker/language-picker";
 import ColorPicker from "../page-setting/color-picker/color-picker";
@@ -34,7 +34,7 @@ const RevealNavMenu = memo(() => {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: -15 },
     visible: {
       opacity: 1,

@@ -31,6 +31,16 @@ const TaskAnalytics = lazy(
   () => import("../components/page-partials/pages/task-manager/pages/Analytics")
 );
 
+const Test = lazy(
+  () => import("../components/page-partials/pages/experimental/test")
+);
+const BirdyBeats = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/bidry-beats/bidry-beats"
+    )
+);
+
 const LoginPage = lazy(() => import("../components/page-partials/pages/Login"));
 
 export enum RoutPath {
@@ -43,6 +53,8 @@ export enum RoutPath {
   TASK_MANAGER_DAILY = "daily/:id",
   TASK_ANALYTICS = "analytics/:id",
   LOGIN = "/login",
+  EXPERIMENTAL_TEST = "test",
+  EXPERIMENTAL_BIRDY_BEATS = "birdy-beats",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -74,6 +86,21 @@ export const TASK_MANAGER_ROUTERS = [
   },
 ];
 
+export const EXPERIMENTAL_ROUTERS = [
+  {
+    path: RoutPath.EXPERIMENTAL_TEST,
+    Component: Test,
+    id: "experimental-test",
+    icon: "🚀",
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_BIRDY_BEATS,
+    Component: BirdyBeats,
+    id: "experimental-birdy-beats",
+    icon: "🐦",
+  },
+];
+
 export const router: AppRoute[] = [
   {
     path: RoutPath.HOME,
@@ -88,6 +115,15 @@ export const router: AppRoute[] = [
     isNav: true,
     id: "experimental",
     isDev: true, // Set to true for development purposes
+    children: [
+      ...EXPERIMENTAL_ROUTERS,
+      {
+        path: "",
+        Component: () => <Navigate to={RoutPath.EXPERIMENTAL_TEST} replace />,
+        id: "experimental-redirect",
+        isNav: false,
+      },
+    ],
   },
   {
     path: RoutPath.BLOG,

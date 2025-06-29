@@ -1,8 +1,10 @@
+import { Transition } from "framer-motion";
+
 export const EASING_ANIMATION = {
   easeOutExpo: [0.16, 1, 0.3, 1],
 };
 
-export const MOTION_FRAME_TRANSITION = {
+export const MOTION_FRAME_TRANSITION: Record<string, Transition> = {
   spring: {
     type: "spring",
     stiffness: 300,

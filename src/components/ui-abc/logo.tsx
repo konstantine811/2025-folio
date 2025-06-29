@@ -1,13 +1,13 @@
 import { ThemePalette } from "@config/theme-colors.config";
 import { useThemeStore } from "@storage/themeStore";
-import { motion } from "motion/react";
+import { motion, Variants } from "motion/react";
 import { forwardRef, useEffect, useState } from "react";
 
 const LogoAnimated = forwardRef<SVGSVGElement>((_, ref) => {
   const themeType = useThemeStore((state) => state.selectedTheme);
   const [colors, setColors] = useState(ThemePalette.dark);
   const strokeWidth = 3;
-  const pathVariants = {
+  const pathVariants: Variants = {
     initial: { pathLength: 0, scale: 1.01, opacity: 0 },
     animate: (i: number) => ({
       pathLength: 1,
