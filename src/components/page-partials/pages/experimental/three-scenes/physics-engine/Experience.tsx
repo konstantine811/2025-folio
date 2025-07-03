@@ -1,5 +1,6 @@
 import { Player } from "./player";
 import { Grid, OrbitControls } from "@react-three/drei";
+import { Playground } from "./Playground";
 
 const Experience = () => {
   return (
@@ -9,11 +10,7 @@ const Experience = () => {
       <OrbitControls />
       <ambientLight intensity={0.5} />
       <Player />
-
-      <mesh position-y={-0.251} receiveShadow>
-        <boxGeometry args={[20, 0.5, 20]} />
-        <meshStandardMaterial color="mediumpurple" />
-      </mesh>
+      <Playground />
       <Grid
         sectionSize={3}
         sectionColor={"white"}
