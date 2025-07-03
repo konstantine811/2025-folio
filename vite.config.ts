@@ -10,6 +10,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
+      workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
+      },
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "favicon.ico", "robots.txt"],
       manifest: {
