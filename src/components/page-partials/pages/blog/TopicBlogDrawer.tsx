@@ -19,25 +19,23 @@ const TopicBlogDrawer = () => {
       disablePreventScroll
       noBodyStyles
     >
-      <DrawerTrigger>
-        <div className="fixed left-0 z-50">
-          <Button
-            asChild
-            className="bg-card hover:bg-background rounded-l-none text-foreground"
+      <DrawerTrigger className="fixed left-0 z-50 mt-3">
+        <Button
+          asChild
+          className="bg-card hover:bg-background rounded-l-none text-foreground"
+        >
+          <SoundHoverElement
+            animValue={3.3}
+            hoverAnimType="translate-x"
+            hoverStyleElement={HoverStyleElement.quad}
           >
-            <SoundHoverElement
-              animValue={3.3}
-              hoverAnimType="translate-x"
-              hoverStyleElement={HoverStyleElement.quad}
-            >
-              <ArrowBigRight />
-            </SoundHoverElement>
-          </Button>
-        </div>
+            <ArrowBigRight />
+          </SoundHoverElement>
+        </Button>
       </DrawerTrigger>
       <DrawerContent className="border-foreground/10">
         <ScrollArea className="overflow-y-auto">
-          <TopicBlogDrawerContent />
+          <TopicBlogDrawerContent onClose={() => setIsOpen(false)} />
         </ScrollArea>
       </DrawerContent>
     </Drawer>

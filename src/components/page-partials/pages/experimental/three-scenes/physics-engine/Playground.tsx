@@ -4,8 +4,12 @@ Command: npx gltfjsx@6.2.3 public/models/playground.glb -o src/components/Playgr
 */
 
 import { useGLTF } from "@react-three/drei";
-import { RigidBody } from "@react-three/rapier";
-import { JSX } from "react";
+import {
+  CuboidCollider,
+  RapierRigidBody,
+  RigidBody,
+} from "@react-three/rapier";
+import { JSX, useEffect, useRef } from "react";
 import { SkinnedMesh } from "three";
 
 interface Props {
@@ -16,6 +20,13 @@ export function Playground({ props }: Props) {
   const { nodes, materials } = useGLTF(
     "/3d-models/physics-train-model/playground.glb"
   );
+  const swiper = useRef<RapierRigidBody>(null);
+
+  useEffect(() => {
+    if (swiper.current) {
+      swiper.current.setAngvel({ x: 0, y: 3, z: 0 }, true);
+    }
+  }, []);
   return (
     <group {...props} dispose={null}>
       <RigidBody type="fixed" name="ground" colliders="trimesh">
@@ -62,15 +73,23 @@ export function Playground({ props }: Props) {
             material={materials["Metal.050"]}
           />
         </group>
-        <mesh
-          receiveShadow
-          castShadow
-          name="gateLargeWide_teamBlue"
-          geometry={(nodes.gateLargeWide_teamBlue as SkinnedMesh).geometry}
-          material={materials["Blue.020"]}
+        <RigidBody
+          type="fixed"
+          name="gateIn"
+          sensor
+          colliders={false}
           position={[-20.325, -0.249, -28.42]}
-          rotation={[0, 1.571, 0]}
-        />
+        >
+          <mesh
+            receiveShadow
+            castShadow
+            name="gateLargeWide_teamBlue"
+            geometry={(nodes.gateLargeWide_teamBlue as SkinnedMesh).geometry}
+            material={materials["Blue.020"]}
+            rotation={[0, 1.571, 0]}
+          />
+          <CuboidCollider position={[-1, 0, 0]} args={[0.5, 2, 1.5]} />
+        </RigidBody>
         <mesh
           receiveShadow
           castShadow
@@ -104,7 +123,19 @@ export function Playground({ props }: Props) {
           material={materials["Stone.001"]}
           position={[-0.454, -0.031, 1.748]}
         />
-        <group name="swiperDouble_teamRed" position={[0.002, -0.106, -21.65]}>
+      </RigidBody>
+      <RigidBody
+        type="kinematicVelocity"
+        colliders="trimesh"
+        ref={swiper}
+        restitution={3}
+        name="swiper"
+      >
+        <group
+          name="swiperDouble_teamRed"
+          position={[0.002, -0.106, -21.65]}
+          rotation-y={Math.PI / 4}
+        >
           <mesh
             receiveShadow
             castShadow
@@ -134,6 +165,8 @@ export function Playground({ props }: Props) {
             material={materials["White.005"]}
           />
         </group>
+      </RigidBody>
+      <RigidBody type="fixed" name="ground" colliders="trimesh">
         <group name="tileHigh_forest" position={[-0.077, -1.023, -15.377]}>
           <mesh
             receiveShadow
