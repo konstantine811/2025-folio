@@ -54,6 +54,13 @@ const ThreeStaging = lazy(
     )
 );
 
+const ThreeViews = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/three-views/init"
+    )
+);
+
 const LoginPage = lazy(() => import("../components/page-partials/pages/Login"));
 
 export enum RoutPath {
@@ -70,6 +77,7 @@ export enum RoutPath {
   EXPERIMENTAL_BIRDY_BEATS = "birdy-beats",
   EXPERIMENTAL_THREE_PHYSICS_ENGINE = "three-physics-engine",
   EXPERIMENTAL_THREE_STAGING = "three-staging",
+  EXPERIMENTAL_THREE_VIEWS = "three-views",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -125,6 +133,12 @@ export const EXPERIMENTAL_ROUTERS = [
     Component: ThreeStaging,
     id: "experimental-three-staging",
     icon: "🎭",
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_VIEWS,
+    Component: ThreeViews,
+    id: "experimental-three-views",
+    icon: "👀",
   },
 ];
 
