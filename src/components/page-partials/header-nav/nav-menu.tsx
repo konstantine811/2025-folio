@@ -29,7 +29,7 @@ export default function NavMenu() {
             <HeaderBanner />
           </div>
         )}
-        <SoundHoverElement hoverAnimType="scale">
+        <SoundHoverElement hoverAnimType="scale" className="caret-transparent">
           <NavToggler />
         </SoundHoverElement>
       </div>

@@ -6,6 +6,7 @@ import {
 import TeslaModel3 from "./TeslaModel3";
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemePalette } from "@/config/theme-colors.config";
+import Lights from "./Lights";
 
 const Experience = () => {
   const theme = useThemeStore((s) => s.selectedTheme);
@@ -26,7 +27,13 @@ const Experience = () => {
           position: [0, 0, 0.6],
         }}
       />
-      <Environment files="/images/hdri/umhlanga_sunrise_4k.exr" />
+      {/* <Environment>
+        <Background />
+      </Environment> */}
+
+      <Environment frames={Infinity} resolution={512} blur={0.5}>
+        <Lights />
+      </Environment>
       {/* Ground */}
       <mesh position={[0, -0.76, 0]} rotation-x={-Math.PI / 2}>
         <planeGeometry args={[100, 100]} />
