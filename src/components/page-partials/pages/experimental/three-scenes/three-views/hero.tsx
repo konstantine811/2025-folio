@@ -3,7 +3,7 @@ const Hero = ({ offsetTop }: { offsetTop: number }) => {
     <section
       id="hero"
       style={{ minHeight: `calc(100vh - ${offsetTop}px)` }}
-      className="bg-background h-full flex items-center justify-center"
+      className="h-full flex items-center justify-center relative"
     >
       <div className="container mx-auto flex flex-col items-center gap-5 text-center">
         <h1 className="text-foreground text-6xl font-bold">

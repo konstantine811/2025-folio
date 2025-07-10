@@ -1,24 +1,49 @@
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import Hero from "./hero";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { cn } from "@/utils/classname";
+import { Canvas } from "@react-three/fiber";
+import Hero3D from "./hero3d";
+import { Preload } from "@react-three/drei";
 
 const Init = () => {
   const hS = useHeaderSizeStore((state) => state.size);
   const [innerHeaderSize, setInnerHeaderSize] = useState(0);
   const headerRef = useRef<HTMLDivElement>(null);
   const [currentService, setCurrentService] = useState<number>(0);
+  const [scrolled, setScrolled] = useState<boolean>(false);
 
   useEffect(() => {
     if (headerRef.current) {
       setInnerHeaderSize(headerRef.current.offsetHeight);
     }
+
+    const onScroll = () => {
+      setScrolled(window.scrollY > 22);
+    };
+    window.addEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
   return (
-    <main>
+    <main className="h-full">
+      <Canvas
+        style={{ minHeight: `calc(100vh - ${hS}px)` }}
+        className="!fixed top-0 left-0 w-full"
+        camera={{ position: [0, 0, 1.5], fov: 30 }}
+      >
+        <Suspense fallback={<Preload />}>
+          <Hero3D />
+        </Suspense>
+      </Canvas>
       <header
         ref={headerRef}
-        className="py-3 sticky bg-foreground/10 backdrop-blur-xs"
+        className={cn(
+          `sticky  backdrop-blur-xs transition-all bg-background z-10 shadow-foreground/10 ${
+            scrolled ? "shadow-md py-3" : "py-5"
+          }`
+        )}
         style={{ top: hS }}
       >
         <div className="container mx-auto flex gap-5 justify-center font-bold">
@@ -30,7 +55,10 @@ const Init = () => {
         </div>
       </header>
       <Hero offsetTop={innerHeaderSize + hS} />
-      <section id="services" className="container mx-auto py-20 flex flex-col ">
+      <section
+        id="services"
+        className="container mx-auto py-20 flex flex-col relative"
+      >
         <h2 className="text-4xl font-bold mb-10 text-center">My Services</h2>
         <div className="flex mt-2 gap-5">
           <div
@@ -95,7 +123,7 @@ const Init = () => {
           </div>
         </div>
       </section>
-      <section id="team" className="container mx-auto py-20">
+      <section id="team" className="container mx-auto py-20 relative">
         <div className="mb-10 text-center max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold mb-5">My Team</h2>
           <p className="text-muted-foreground text-xl">
@@ -150,7 +178,7 @@ const Init = () => {
 
       <section
         id="portfolio"
-        className="container mx-auto py-20 flex flex-col"
+        className="container mx-auto py-20 flex flex-col relative"
         style={{ minHeight: `calc(100vh - ${hS}px)` }}
       >
         <div className="mb-10 text-center max-w-4xl mx-auto">
@@ -164,7 +192,7 @@ const Init = () => {
         <div className="grow h-full bg-gradient-to-b from-foreground to-card"></div>
       </section>
 
-      <section id="contact" className="container mx-auto py-20">
+      <section id="contact" className="container mx-auto py-20 relative">
         <div className="mb-10 text-center max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold mb-5">Contact Me</h2>
           <p className="text-muted-foreground text-xl">

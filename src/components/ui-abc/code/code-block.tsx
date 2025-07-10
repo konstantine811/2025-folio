@@ -79,7 +79,7 @@ export const CodeBlock: Components["code"] = ({
   // Inline-код
   return (
     <code
-      className="bg-card text-foreground px-2 py-1 rounded text-sm font-mono"
+      className="bg-card text-foreground px-2 py-1 rounded shadow-md shadow-muted-foreground/30 text-sm font-mono border border-foreground/30"
       {...props}
     >
       {children}
