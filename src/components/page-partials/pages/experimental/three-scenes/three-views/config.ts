@@ -1,7 +1,6 @@
 export enum ModelNames {
-  casual = "Casual",
   classRoom = "Classroom",
-  macBook = "MacBook",
+  macBook = "MacBook Pro",
   oculus = "Oculus Controller",
   phone = "Phone",
   vr = "VR Headset",
@@ -11,3 +10,11 @@ export enum ModelNames {
   flower_4 = "Flower_4",
   flower_5 = "Flower_5",
 }
+
+export enum ModelTeamMember {
+  casual = "Casual",
+  suit = "Suit",
+  formal = "Formal",
+}
+
+export const initPath = "/3d-models/views-model";

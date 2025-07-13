@@ -4,7 +4,12 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { cn } from "@/utils/classname";
 import { Canvas } from "@react-three/fiber";
 import Hero3D from "./hero3d";
-import { Preload } from "@react-three/drei";
+import { Environment, OrbitControls, Preload, View } from "@react-three/drei";
+import Service3D from "./service3D";
+import TeamMember from "./team-member";
+import { ModelTeamMember } from "./config";
+import { degToRad } from "three/src/math/MathUtils.js";
+import Portfolio3D from "./portfolio3D";
 
 const Init = () => {
   const hS = useHeaderSizeStore((state) => state.size);
@@ -12,7 +17,13 @@ const Init = () => {
   const headerRef = useRef<HTMLDivElement>(null);
   const [currentService, setCurrentService] = useState<number>(0);
   const [scrolled, setScrolled] = useState<boolean>(false);
-
+  const container = useRef<HTMLDivElement>(null!);
+  const heroContainer = useRef<HTMLElement>(null!);
+  const servicesContainer = useRef<HTMLDivElement>(null!);
+  const johnDoeContainer = useRef<HTMLDivElement>(null!);
+  const janeSmithContainer = useRef<HTMLDivElement>(null!);
+  const lindaDoeContainer = useRef<HTMLDivElement>(null!);
+  const portfolioContainer = useRef<HTMLDivElement>(null!);
   useEffect(() => {
     if (headerRef.current) {
       setInnerHeaderSize(headerRef.current.offsetHeight);
@@ -27,14 +38,54 @@ const Init = () => {
     };
   }, []);
   return (
-    <main className="h-full">
+    <main className="h-full" ref={container}>
       <Canvas
+        eventSource={container}
         style={{ minHeight: `calc(100vh - ${hS}px)` }}
         className="!fixed top-0 left-0 w-full"
         camera={{ position: [0, 0, 1.5], fov: 30 }}
       >
+        <OrbitControls />
         <Suspense fallback={<Preload />}>
-          <Hero3D />
+          <View track={heroContainer}>
+            <Hero3D />
+          </View>
+          <View track={servicesContainer}>
+            <Service3D currentService={currentService} />
+          </View>
+          <View track={johnDoeContainer}>
+            <TeamMember
+              modelName={ModelTeamMember.suit}
+              props={{
+                position: [0, -1.5, 0],
+                rotation: [0, -degToRad(20), 0],
+              }}
+            ></TeamMember>
+            <Environment preset="sunset" />
+          </View>
+          <View track={janeSmithContainer}>
+            <TeamMember
+              modelName={ModelTeamMember.formal}
+              props={{
+                position: [0, -1.5, 0],
+                rotation: [0, degToRad(20), 0],
+              }}
+            ></TeamMember>
+            <Environment preset="sunset" />
+          </View>
+          <View track={lindaDoeContainer}>
+            <TeamMember
+              modelName={ModelTeamMember.casual}
+              props={{
+                position: [0, -1.5, 0],
+                rotation: [0, degToRad(20), 0],
+              }}
+            ></TeamMember>
+            <Environment preset="sunset" />
+          </View>
+          <View track={portfolioContainer}>
+            <Portfolio3D />
+          </View>
         </Suspense>
       </Canvas>
       <header
@@ -54,7 +105,7 @@ const Init = () => {
           <a href="#contact">Contact</a>
         </div>
       </header>
-      <Hero offsetTop={innerHeaderSize + hS} />
+      <Hero offsetTop={innerHeaderSize + hS} ref={heroContainer} />
       <section
         id="services"
         className="container mx-auto py-20 flex flex-col relative"
@@ -62,8 +113,9 @@ const Init = () => {
         <h2 className="text-4xl font-bold mb-10 text-center">My Services</h2>
         <div className="flex mt-2 gap-5">
           <div
-            className="grow flex-1/2 bg-foreground h-full"
+            className="grow flex-1/2 h-full"
             style={{ minHeight: `calc(100vh - ${hS + 200}px)` }}
+            ref={servicesContainer}
           ></div>
           <div className="flex flex-1/2 flex-col gap-2">
             <div
@@ -123,7 +175,7 @@ const Init = () => {
           </div>
         </div>
       </section>
-      <section id="team" className="container mx-auto py-20 relative">
+      <section id="team" className="container mx-auto py-20">
         <div className="mb-10 text-center max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold mb-5">My Team</h2>
           <p className="text-muted-foreground text-xl">
@@ -144,11 +196,17 @@ const Init = () => {
               drives the team to deliver high-quality products.
             </p>
           </div>
-          <div className="h-[50vh] bg-gradient-to-b from-accent to-destructive w-1/2"></div>
+          <div
+            ref={johnDoeContainer}
+            className="h-[50vh] w-1/2 bg-gradient-to-b from-accent to-destructive"
+          ></div>
         </div>
 
         <div className="flex gap-5 items-center">
-          <div className="h-[50vh] bg-gradient-to-b from-destructive to-foreground w-1/2"></div>
+          <div
+            ref={janeSmithContainer}
+            className="h-[50vh] w-1/2 bg-gradient-to-b from-destructive to-foreground"
+          ></div>
           <div className="w-1/2 max-w-md mx-auto">
             <p className="text-xl font-bold">Jane Smith</p>
             <p className="text-muted-foreground">Lead Developer</p>
@@ -172,13 +230,16 @@ const Init = () => {
               functional but also aesthetically pleasing.
             </p>
           </div>
-          <div className="h-[50vh] bg-gradient-to-b from-foreground to-accent w-1/2"></div>
+          <div
+            ref={lindaDoeContainer}
+            className="h-[50vh] w-1/2 bg-gradient-to-b from-foreground to-accent"
+          ></div>
         </div>
       </section>
 
       <section
         id="portfolio"
-        className="container mx-auto py-20 flex flex-col relative"
+        className="container mx-auto py-20 flex flex-col"
         style={{ minHeight: `calc(100vh - ${hS}px)` }}
       >
         <div className="mb-10 text-center max-w-4xl mx-auto">
@@ -189,10 +250,13 @@ const Init = () => {
             skills in React, Three.js, and other modern web technologies.
           </p>
         </div>
-        <div className="grow h-full bg-gradient-to-b from-foreground to-card"></div>
+        <div
+          ref={portfolioContainer}
+          className="grow h-full bg-gradient-to-b from-foreground to-card"
+        ></div>
       </section>
 
-      <section id="contact" className="container mx-auto py-20 relative">
+      <section id="contact" className="container mx-auto py-20">
         <div className="mb-10 text-center max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold mb-5">Contact Me</h2>
           <p className="text-muted-foreground text-xl">
