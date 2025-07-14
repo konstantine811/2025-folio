@@ -47,6 +47,7 @@
     "howler": "^2.2.4",
     "html-to-image": "^1.11.13",
     "i18next": "^25.0.1",
+    "leva": "^0.10.0",
     "lucide-react": "^0.487.0",
     "mapbox-gl": "^3.11.0",
     "motion": "^12.15.0",

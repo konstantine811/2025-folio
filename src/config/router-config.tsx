@@ -61,6 +61,13 @@ const ThreeViews = lazy(
     )
 );
 
+const ThreeCameraControls = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/camera-controls/init"
+    )
+);
+
 const LoginPage = lazy(() => import("../components/page-partials/pages/Login"));
 
 export enum RoutPath {
@@ -78,6 +85,7 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_PHYSICS_ENGINE = "three-physics-engine",
   EXPERIMENTAL_THREE_STAGING = "three-staging",
   EXPERIMENTAL_THREE_VIEWS = "three-views",
+  EXPERIMENTAL_THREE_CAMERA_CONTROLS = "three-camera-controls",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -139,6 +147,12 @@ export const EXPERIMENTAL_ROUTERS = [
     Component: ThreeViews,
     id: "experimental-three-views",
     icon: "👀",
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_CAMERA_CONTROLS,
+    Component: ThreeCameraControls,
+    id: "experimental-three-camera-controls",
+    icon: "🎥",
   },
 ];
 

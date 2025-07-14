@@ -60,15 +60,20 @@ export default function NumberInput({
       </WrapperHoverElement>
       <Input
         type="text"
-        value={value}
+        value={value === 0 ? "" : value} // показуємо "" коли 0
         onChange={(e) => {
-          const onlyNumbers = e.target.value.replace(/\D/g, ""); // прибирає всі нечислові символи
-          const newValue = parseInt(onlyNumbers, 10);
-          if (!isNaN(newValue)) {
-            onChange(Math.min(Math.max(newValue, min), max));
+          const inputValue = e.target.value;
+          if (inputValue === "") {
+            onChange(0); // передаємо 0, якщо стерли все
+          } else {
+            const onlyNumbers = inputValue.replace(/\D/g, ""); // залишаємо лише цифри
+            const newValue = parseInt(onlyNumbers, 10);
+            if (!isNaN(newValue)) {
+              onChange(Math.min(Math.max(newValue, min), max));
+            }
           }
         }}
-        inputMode="numeric" // показує цифрову клавіатуру на мобілках
+        inputMode="numeric"
         className="w-12 text-center font-bold text-lg border-none focus:outline-none"
       />
       <WrapperHoverElement>
