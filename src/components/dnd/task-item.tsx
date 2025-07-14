@@ -66,11 +66,7 @@ export function TaskItem({
           </div>
         </div>
       )}
-      <div
-        className="flex items-center justify-between gap-2 bg-card 
-             border border-foreground/10 rounded-xl px-4 py-1 text-foreground 
-             group transition-all hover:border-foreground/10 hover:bg-card/10 duration-300"
-      >
+      <div className="flex items-center justify-between gap-2 bg-card border border-foreground/10 rounded-xl p-4 text-foreground group transition-all hover:border-foreground/10 hover:bg-card/10 duration-300">
         {!templated && (
           <SoundHoverElement
             className="h-5 w-5"
