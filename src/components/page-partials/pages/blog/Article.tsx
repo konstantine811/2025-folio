@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { LanguageType } from "@/i18n";
 import { RoutPath } from "@/config/router-config";
 import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
+import { cn } from "@/utils/classname";
 
 const Article = () => {
   const scrollRef = useRef<HTMLDivElement>(null!);
@@ -133,7 +134,13 @@ const Article = () => {
             <ArticleCover article={article} />
             <div className="grid grid-cols-10 gap-4 px-5 sm:px-10">
               {/* Ліва частина — стаття */}
-              <div className="col-span-10 lg:col-span-8 xl:col-start-2 xl:col-span-6 text-foreground">
+              <div
+                className={cn(
+                  `col-span-10 ${
+                    headings.length > 0 ? "lg:col-span-8" : "lg:col-span-10"
+                  }  xl:col-start-3 xl:col-span-6 text-foreground`
+                )}
+              >
                 <ParseMarkdown
                   content={article.content}
                   onFormatted={setContentReady}
@@ -141,16 +148,11 @@ const Article = () => {
               </div>
 
               {/* Права частина — закріплений CONTENT */}
-              {contentReady && (
+              {contentReady && headings.length > 0 && (
                 <div className="hidden lg:block col-span-2 relative">
-                  {headings.length > 0 && (
-                    <div className="sticky" style={{ top: `${hSize}px` }}>
-                      <ArticleHeading
-                        title={article.title}
-                        headings={headings}
-                      />
-                    </div>
-                  )}
+                  <div className="sticky" style={{ top: `${hSize}px` }}>
+                    <ArticleHeading title={article.title} headings={headings} />
+                  </div>
                 </div>
               )}
             </div>
