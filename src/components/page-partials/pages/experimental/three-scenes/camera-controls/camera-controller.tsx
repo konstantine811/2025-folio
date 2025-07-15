@@ -17,10 +17,22 @@ const CameraController = ({ section }: { section: number }) => {
     [number, number, number, number, number, number]
   > = useMemo(
     () => ({
-      intro: [0, 0, 3, 0, 0, 0],
-      titanium: [0, 0, 3, 0, 0, 0],
-      camera: [0, 0, 3, 0, 0, 0],
-      "action-button": [0, 0, 3, 0, 0, 0],
+      intro: [
+        -0.8408130777453015, -0.5579311237409535, -1.2494838493879465,
+        0.09186000885066517, -0.013170057989714374, -0.15707536590700685,
+      ],
+      titanium: [
+        -0.33845493114618996, -0.38300322828293054, 0.23117101681493882,
+        0.0907781098318133, 0.14091696753514726, -0.09426415209367653,
+      ],
+      camera: [
+        -0.2816817625748494, -0.017347003209647244, 0.3065631638865963,
+        -0.036054404825409433, 0.2469066391985735, 0.01959945436374355,
+      ],
+      "action-button": [
+        -0.88612937193474, -0.4964915367233699, 0.003459464080557469,
+        -0.015160554557400105, 0.16977404132378549, 0.0015889919991764756,
+      ],
     }),
     []
   );
@@ -39,9 +51,8 @@ const CameraController = ({ section }: { section: number }) => {
       await controls.rotate(degToRad(45), degToRad(25), true);
 
       setIntroFinished(true);
-      playTransition();
     }
-  }, [controls, playTransition]);
+  }, [controls]);
 
   useEffect(() => {
     intro();
@@ -53,6 +64,18 @@ const CameraController = ({ section }: { section: number }) => {
     }
     playTransition();
   }, [playTransition, introFinished]);
+
+  //   useControls("Helper", {
+  //     getLookAt: button(() => {
+  //       if (controls) {
+  //         const positionVec = new Vector3();
+  //         const targetVec = new Vector3();
+  //         controls.getPosition(positionVec);
+  //         controls.getTarget(targetVec);
+  //         console.log([...positionVec, ...targetVec]);
+  //       }
+  //     }),
+  //   });
 
   //   useControls("dolly", {
   //     in: button(() => {
