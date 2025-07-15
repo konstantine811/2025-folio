@@ -105,6 +105,11 @@ const CameraController = ({ section }: { section: number }) => {
   //         console.log([...positionVec, ...targetVec]);
   //       }
   //     }),
+  //     toJson: button(() => {
+  //       if (controls) {
+  //         console.log(controls.toJSON());
+  //       }
+  //     }),
   //   });
 
   //   useControls("dolly", {

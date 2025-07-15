@@ -7,7 +7,11 @@ const Experience = ({ section }: { section: number }) => {
 
   return (
     <>
-      <CameraControls makeDefault />
+      <CameraControls
+        makeDefault
+        mouseButtons={{ left: 0, right: 0, middle: 0, wheel: 0 }}
+        touches={{ one: 0, two: 0, three: 0 }}
+      />
       {controls && <CameraController section={section} />}
       <Gltf
         position={[0, 0, 0]}

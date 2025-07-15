@@ -4,7 +4,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { cn } from "@/utils/classname";
 import { Canvas } from "@react-three/fiber";
 import Hero3D from "./hero3d";
-import { Environment, OrbitControls, Preload, View } from "@react-three/drei";
+import { Environment, Preload, View } from "@react-three/drei";
 import Service3D from "./service3D";
 import TeamMember from "./team-member";
 import { ModelTeamMember } from "./config";
@@ -45,7 +45,6 @@ const Init = () => {
         className="!fixed top-0 left-0 w-full"
         camera={{ position: [0, 0, 1.5], fov: 30 }}
       >
-        <OrbitControls />
         <Suspense fallback={<Preload />}>
           <View track={heroContainer}>
             <Hero3D />
