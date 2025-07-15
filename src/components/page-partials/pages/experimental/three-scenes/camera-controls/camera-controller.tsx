@@ -12,6 +12,7 @@ const CameraController = ({ section }: { section: number }) => {
   const sphere = useRef<Mesh>(null);
   const [introFinished, setIntroFinished] = useState(false);
   type SectionKey = (typeof sections)[number];
+  const SMALL_SCREEN_THRESHOLD = 900;
   const cameraPosition: Record<
     string,
     [number, number, number, number, number, number]
@@ -37,12 +38,41 @@ const CameraController = ({ section }: { section: number }) => {
     []
   );
 
+  const cameraPositionSmallScreen: Record<
+    string,
+    [number, number, number, number, number, number]
+  > = useMemo(
+    () => ({
+      intro: [
+        0.002795130059348545, -1.693376768600526, -1.4822074299185213,
+        -0.001428821463540626, 0.07667045240180789, 0.02673756366323502,
+      ],
+      titanium: [
+        -0.28281656325123505, -0.6454814943240393, 0.1753107005865352,
+        -0.03922954115167713, -0.09507212332370656, -0.05127510782733192,
+      ],
+      camera: [
+        -0.31909084746101646, -0.25505003995074715, 0.6646788535696884,
+        -0.07123702938574586, 0.23449640396985513, -0.0070772011186346715,
+      ],
+      "action-button": [
+        -0.6259770949105332, -0.2529443173252278, -0.004747347677011271,
+        -0.02485857424975495, 0.1912378489798071, -0.013710853350645076,
+      ],
+    }),
+    []
+  );
+
   const playTransition = useCallback(() => {
     const key = sections[section] as SectionKey;
     if (controls) {
-      controls.setLookAt(...cameraPosition[key], true);
+      if (window.innerWidth > SMALL_SCREEN_THRESHOLD) {
+        controls.setLookAt(...cameraPosition[key], true);
+      } else {
+        controls.setLookAt(...cameraPositionSmallScreen[key], true);
+      }
     }
-  }, [cameraPosition, section, controls]);
+  }, [cameraPosition, section, controls, cameraPositionSmallScreen]);
 
   const intro = useCallback(async () => {
     if (controls) {
