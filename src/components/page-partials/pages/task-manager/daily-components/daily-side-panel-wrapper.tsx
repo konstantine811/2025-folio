@@ -8,7 +8,7 @@ const DailySidePanelWrapper = () => {
   const hS = useHeaderSizeStore((s) => s.size);
   return (
     <div
-      className="mx-auto w-full max-w-sm right-0 px-4 sticky"
+      className="mx-auto w-full right-0 px-4 sticky"
       style={{ top: `${hS}px` }}
     >
       <header className="grid gap-1.5 p-4 text-center sm:text-left">
