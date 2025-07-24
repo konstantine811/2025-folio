@@ -59,7 +59,6 @@ const Experience = () => {
         // Open mouth of the avatar
         scene.traverse((node) => {
           if (node instanceof Mesh && node.morphTargetInfluences) {
-            console.log(node.morphTargetDictionary);
             node.morphTargetInfluences[0] = 1;
             node.morphTargetInfluences[1] = 1;
           }

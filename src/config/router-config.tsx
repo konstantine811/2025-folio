@@ -75,6 +75,20 @@ const ThreeRenderTarget = lazy(
     )
 );
 
+const ThreePostProcessing = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/post-processing/init"
+    )
+);
+
+const ThreeTheatreJs = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/theatre-js/init"
+    )
+);
+
 const LoginPage = lazy(() => import("../components/page-partials/pages/Login"));
 
 export enum RoutPath {
@@ -94,6 +108,8 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_VIEWS = "three-views",
   EXPERIMENTAL_THREE_CAMERA_CONTROLS = "three-camera-controls",
   EXPERIMENTAL_THREE_RENDER_TARGET = "three-render-target",
+  EXPERIMENTAL_THREE_POST_PROCESSING = "three-post-processing",
+  EXPERIMENTAL_THREE_THEATRE_JS = "three-theatre-js",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -167,6 +183,18 @@ export const EXPERIMENTAL_ROUTERS = [
     Component: ThreeRenderTarget,
     id: "experimental-three-render-target",
     icon: "🎯",
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_POST_PROCESSING,
+    Component: ThreePostProcessing,
+    id: "experimental-three-post-processing",
+    icon: "🖼️",
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_THEATRE_JS,
+    Component: ThreeTheatreJs,
+    id: "experimental-three-theatre-js",
+    icon: "🎭",
   },
 ];
 
