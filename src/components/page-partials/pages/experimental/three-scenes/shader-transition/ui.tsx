@@ -1,0 +1,407 @@
+import { useGLTF } from "@react-three/drei";
+import { motion } from "framer-motion";
+import { useAtom } from "jotai";
+import { useEffect, useRef } from "react";
+import {
+  CAKE_TRANSITION_DURATION,
+  cakeAtom,
+  cakes,
+  isMobileAtom,
+  screenAtom,
+  TRANSITION_DELAY,
+  TRANSITION_DURATION,
+  transitionAtom,
+} from "./config/ui.config";
+
+cakes.forEach((cake) => {
+  useGLTF.preload(`/3d-models/shader-transition-model/${cake.model}.glb`);
+});
+
+export const UI = () => {
+  const [screen, setScreen] = useAtom(screenAtom);
+  const [cake, setCake] = useAtom(cakeAtom);
+  const [, setIsMobile] = useAtom(isMobileAtom);
+  const [transition, setTransition] = useAtom(transitionAtom);
+  const timeout = useRef<NodeJS.Timeout | null>(null);
+
+  const transitionToScreen = (newScreen: string) => {
+    setTransition(true);
+    clearTimeout(timeout.current!);
+    timeout.current = setTimeout(() => {
+      setScreen(newScreen);
+      setTransition(false);
+    }, TRANSITION_DURATION * 1000 + TRANSITION_DELAY * 1000);
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, [setIsMobile]);
+
+  useEffect(() => {
+    setCake(0);
+  }, [screen, setCake]);
+  return (
+    <main className="select-none text-white text-xl pointer-events-none">
+      <motion.h1
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20
+     text-white text-center font-display text-7xl md:text-8xl"
+        variants={{
+          visible: {
+            opacity: 1,
+            transition: {
+              duration: TRANSITION_DURATION / 2,
+              delay: TRANSITION_DURATION - 0.3,
+            },
+          },
+          hidden: {
+            opacity: 0,
+            transition: {
+              duration: TRANSITION_DURATION / 2,
+            },
+          },
+        }}
+        initial={{
+          opacity: 1,
+        }}
+        animate={transition ? "visible" : "hidden"}
+      >
+        Constantine <span className="text-indigo-800">Abramov</span>
+      </motion.h1>
+      {/* HOME */}
+      <motion.section
+        animate={!transition && screen === "home" ? "visible" : "hidden"}
+        className={`z-10 fixed bottom-4 md:bottom-auto 
+        md:top-1/2 md:-translate-y-1/2 md:left-1/2 
+        text-left p-4
+        ${screen === "home" ? "pointer-events-auto" : "pointer-events-none"}`}
+      >
+        <motion.h2
+          variants={{
+            visible: {
+              opacity: 1,
+              y: 0,
+              transition: {
+                delay: TRANSITION_DURATION,
+                duration: 1.5,
+              },
+            },
+            hidden: {
+              opacity: 0,
+              y: 50,
+              transition: {
+                delay: 0.6,
+                duration: 1.5,
+              },
+            },
+          }}
+          initial={{
+            opacity: 0,
+            y: 50,
+          }}
+          className="text-6xl font-display text-white"
+        >
+          Welcome
+        </motion.h2>
+        <motion.p
+          variants={{
+            visible: {
+              opacity: 1,
+              y: 0,
+              transition: {
+                delay: TRANSITION_DURATION + 0.3,
+                duration: 1.5,
+              },
+            },
+            hidden: {
+              opacity: 0,
+              y: 50,
+              transition: {
+                delay: 0.3,
+                duration: 1.5,
+              },
+            },
+          }}
+          initial={{
+            opacity: 0,
+            y: 50,
+          }}
+          className="text-white/80"
+        >
+          We serve the <span className="text-indigo-300">cutest desserts</span>{" "}
+          in town!
+        </motion.p>
+        <motion.button
+          onClick={() => transitionToScreen("menu")}
+          className="text-sm bg-transparent hover:bg-white font-semibold
+           text-white hover:text-black border-2
+            border-white  transition-colors duration-500 px-4 py-2 mt-4 rounded-lg uppercase"
+          variants={{
+            visible: {
+              opacity: 1,
+              y: 0,
+              transition: {
+                delay: TRANSITION_DURATION + 0.6,
+                duration: 1.5,
+              },
+            },
+            hidden: {
+              opacity: 0,
+              y: 50,
+              transition: {
+                duration: 1.5,
+              },
+            },
+          }}
+          initial={{
+            opacity: 0,
+            y: 50,
+          }}
+        >
+          La Carte
+        </motion.button>
+      </motion.section>
+
+      {/* MENU */}
+      <motion.section
+        animate={!transition && screen === "menu" ? "visible" : "hidden"}
+        className={`${
+          screen === "menu" ? "pointer-events-auto" : "pointer-events-none"
+        }`}
+      >
+        {cakes.map((item, idx) => (
+          <motion.div
+            key={idx}
+            className="fixed top-[15%] w-full md:w-auto md:left-1/2 md:-translate-x-1/2 text-center  p-4 z-10"
+            animate={
+              !transition && cake === idx && screen === "menu"
+                ? "visible"
+                : "hidden"
+            }
+          >
+            <motion.h3
+              variants={{
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: {
+                    delay: CAKE_TRANSITION_DURATION,
+                    duration: 1.5,
+                  },
+                },
+                hidden: {
+                  opacity: 0,
+                  y: 50,
+                  transition: {
+                    duration: 1,
+                    delay: 0.3,
+                  },
+                },
+              }}
+              initial={{
+                opacity: 0,
+                y: 50,
+              }}
+              className="text-5xl md:text-7xl font-semibold text-indigo-300"
+            >
+              {item.name}
+            </motion.h3>
+            <motion.p
+              className="text-white/80"
+              variants={{
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: {
+                    delay: CAKE_TRANSITION_DURATION + 0.3,
+                    duration: 1,
+                  },
+                },
+                hidden: {
+                  opacity: 0,
+                  y: 50,
+                  transition: {
+                    duration: 1.5,
+                  },
+                },
+              }}
+              initial={{
+                opacity: 0,
+                y: 50,
+              }}
+            >
+              {item.description}
+            </motion.p>
+          </motion.div>
+        ))}
+        <div className="z-10 fixed bottom-4 left-0 w-full md:w-auto md:left-1/2 md:-translate-x-1/2 text-center  p-4">
+          <motion.h2
+            variants={{
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: {
+                  delay: TRANSITION_DURATION - 0.6,
+                  duration: 1.5,
+                },
+              },
+              hidden: {
+                opacity: 0,
+                y: 50,
+                transition: {
+                  duration: 1.5,
+                },
+              },
+            }}
+            initial={{
+              opacity: 0,
+              y: 50,
+            }}
+            className="text-6xl font-display"
+          >
+            La Carte
+          </motion.h2>
+          <motion.p
+            variants={{
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: {
+                  delay: TRANSITION_DURATION - 0.3,
+                  duration: 1.5,
+                },
+              },
+              hidden: {
+                opacity: 0,
+                y: 50,
+                transition: {
+                  duration: 1.5,
+                },
+              },
+            }}
+            initial={{
+              opacity: 0,
+              y: 50,
+            }}
+            className="text-white/80"
+          >
+            Discover our selection of desserts!
+          </motion.p>
+          <motion.button
+            variants={{
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: {
+                  delay: TRANSITION_DURATION,
+                  duration: 1.5,
+                },
+              },
+              hidden: {
+                opacity: 0,
+                y: 50,
+                transition: {
+                  duration: 1.5,
+                },
+              },
+            }}
+            initial={{
+              opacity: 0,
+              y: 50,
+            }}
+            onClick={() => transitionToScreen("home")}
+            className="bg-transparent hover:bg-white font-medium text-white hover:text-black border-2 border-white  transition-colors duration-500 px-4 py-2 mt-4 rounded-lg"
+          >
+            Back
+          </motion.button>
+        </div>
+        <motion.button
+          variants={{
+            visible: {
+              opacity: 1,
+              x: 0,
+              transition: {
+                delay: TRANSITION_DURATION - 0.6,
+                duration: 1.5,
+              },
+            },
+            hidden: {
+              opacity: 0,
+              x: -50,
+              transition: {
+                duration: 1.5,
+              },
+            },
+          }}
+          initial={{
+            opacity: 0,
+            x: -50,
+          }}
+          className="fixed left-4 md:left-1/4 top-1/2 -translate-y-1/2 z-10"
+          onClick={() =>
+            setCake((cake) => (cake - 1 + cakes.length) % cakes.length)
+          }
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-12 h-12 stroke-white/70 hover:stroke-white transition-colors duration-500"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+            />
+          </svg>
+        </motion.button>
+        <motion.button
+          className="fixed right-4 md:right-1/4 top-1/2 -translate-y-1/2 z-10"
+          variants={{
+            visible: {
+              opacity: 1,
+              x: 0,
+              transition: {
+                delay: TRANSITION_DURATION - 0.6,
+                duration: 1.5,
+              },
+            },
+            hidden: {
+              opacity: 0,
+              x: 50,
+              transition: {
+                duration: 1.5,
+              },
+            },
+          }}
+          initial={{
+            opacity: 0,
+            x: 50,
+          }}
+          onClick={() => setCake((cake) => (cake + 1) % cakes.length)}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-12 h-12 stroke-white/70 hover:stroke-white transition-colors duration-500"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m12.75 15 3-3m0 0-3-3m3 3h-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+            />
+          </svg>
+        </motion.button>
+      </motion.section>
+    </main>
+  );
+};

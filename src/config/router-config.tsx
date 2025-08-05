@@ -89,6 +89,55 @@ const ThreeTheatreJs = lazy(
     )
 );
 
+const ThreeOptimization = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/optimization/init"
+    )
+);
+
+const ThreeShaderIntro = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/shader-intro/init"
+    )
+);
+
+const ThreeShaderShapingFunctions = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/shader-shaping-functions/init"
+    )
+);
+
+const ThreeShaderImageSlider = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/shader-image-slider/init"
+    )
+);
+
+const ThreeWaterShader = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/shader-water/init"
+    )
+);
+
+const ThreeTransitionShader = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/shader-transition/init"
+    )
+);
+
+const ThreeVFXParticles = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/vfx-particles/init"
+    )
+);
+
 const LoginPage = lazy(() => import("../components/page-partials/pages/Login"));
 
 export enum RoutPath {
@@ -110,6 +159,13 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_RENDER_TARGET = "three-render-target",
   EXPERIMENTAL_THREE_POST_PROCESSING = "three-post-processing",
   EXPERIMENTAL_THREE_THEATRE_JS = "three-theatre-js",
+  EXPERIMENTAL_THREE_OPTIMIZATION = "three-optimization",
+  EXPERIMENTAL_THREE_SHADER_INTRO = "three-shader-intro",
+  EXPERIMENTAL_THREE_SHADER_SHAPING_FUNCTIONS = "three-shader-shaping-functions",
+  EXPERIMENTAL_THREE_SHADER_IMAGE_SLIDER = "three-shader-image-slider",
+  EXPERIMENTAL_THREE_SHADER_WATER = "three-shader-water",
+  EXPERIMENTAL_THREE_SHADER_TRANSITION = "three-shader-transition",
+  EXPERIMENTAL_VFX_PARTICLES = "three-vfx-particles",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -195,6 +251,48 @@ export const EXPERIMENTAL_ROUTERS = [
     Component: ThreeTheatreJs,
     id: "experimental-three-theatre-js",
     icon: "🎭",
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_OPTIMIZATION,
+    Component: ThreeOptimization,
+    id: "experimental-three-optimization",
+    icon: "⚙️",
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_SHADER_INTRO,
+    Component: ThreeShaderIntro,
+    id: "experimental-three-shader-intro",
+    icon: "🎨",
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_SHADER_SHAPING_FUNCTIONS,
+    Component: ThreeShaderShapingFunctions,
+    id: "experimental-three-shader-shaping-functions",
+    icon: "🖌️",
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_SHADER_IMAGE_SLIDER,
+    Component: ThreeShaderImageSlider,
+    id: "experimental-three-shader-image-slider",
+    icon: "🖼️",
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_SHADER_WATER,
+    Component: ThreeWaterShader,
+    id: "experimental-three-shader-water",
+    icon: "💧",
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_SHADER_TRANSITION,
+    Component: ThreeTransitionShader,
+    id: "experimental-three-shader-transition",
+    icon: "🔄",
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_VFX_PARTICLES,
+    Component: ThreeVFXParticles,
+    id: "experimental-three-vfx-particles",
+    icon: "✨",
   },
 ];
 

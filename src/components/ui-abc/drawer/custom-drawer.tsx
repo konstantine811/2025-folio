@@ -41,8 +41,8 @@ const CustomDrawer = ({
             style={{ top: `${hs + 10}px` }}
           >
             <SoundHoverElement
-              animValue={-3.3}
-              hoverAnimType="translate-x"
+              animValue={0.9}
+              hoverAnimType="scale"
               className=""
               as="div"
             >
