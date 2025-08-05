@@ -11,7 +11,7 @@ const TestDrawerOpen = () => {
       title={"Тестові проєкти"}
       description={"Тут будуть тестові проєкти"}
     >
-      <Dock className="items-end pb-3 bg-card/30 backdrop-blur-sm border border-foreground/10">
+      <Dock className="items-center h-full justify-center pb-3 bg-card/30 backdrop-blur-sm border border-foreground/10 flex flex-wrap">
         {EXPERIMENTAL_ROUTERS.map((item) => {
           return (
             <Link to={item.path} key={item.id}>

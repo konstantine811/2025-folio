@@ -15,17 +15,14 @@ import {
   createContext,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
 import { cn } from "@/lib/utils";
 import { isTouchDevice } from "@/utils/touch-inspect";
 
-const DOCK_HEIGHT = 128;
 const DEFAULT_MAGNIFICATION = 80;
 const DEFAULT_DISTANCE = 150;
-const DEFAULT_PANEL_HEIGHT = 64;
 
 export type DockProps = {
   children: React.ReactNode;
@@ -90,64 +87,48 @@ function Dock({
   spring = { mass: 0.1, stiffness: 150, damping: 12 },
   magnification = DEFAULT_MAGNIFICATION,
   distance = DEFAULT_DISTANCE,
-  panelHeight = DEFAULT_PANEL_HEIGHT,
 }: DockProps) {
   const mouseX = useMotionValue(Infinity);
   const isHovered = useMotionValue(0);
 
-  const maxHeight = useMemo(() => {
-    return Math.max(DOCK_HEIGHT, magnification + magnification / 2 + 4);
-  }, [magnification]);
-
-  const heightRow = useTransform(isHovered, [0, 1], [panelHeight, maxHeight]);
-  const height = useSpring(heightRow, spring);
-
   return (
     <motion.div
-      style={{
-        height: height,
-        scrollbarWidth: "none",
+      onMouseMove={
+        !isTouchDevice
+          ? (e) => {
+              isHovered.set(1);
+              mouseX.set(e.pageX);
+            }
+          : undefined
+      }
+      onTouchMove={
+        isTouchDevice
+          ? (e) => {
+              const touch = e.touches[0];
+              isHovered.set(1);
+              mouseX.set(touch.pageX);
+            }
+          : undefined
+      }
+      onMouseLeave={() => {
+        isHovered.set(0);
+        mouseX.set(Infinity);
       }}
-      className="mx-2 flex max-w-full items-end overflow-x-auto"
+      onTouchEnd={() => {
+        isHovered.set(0);
+        mouseX.set(Infinity);
+      }}
+      className={cn(
+        `flex w-full gap-2 px-4 rounded-2xl items-end bg-gray-50 dark:bg-neutral-900
+     overflow-hidden whitespace-nowrap scroll-snap-x mandatory touch-pan-x`,
+        className
+      )}
+      role="toolbar"
+      aria-label="Application dock"
     >
-      <motion.div
-        onMouseMove={
-          !isTouchDevice
-            ? (e) => {
-                isHovered.set(1);
-                mouseX.set(e.pageX);
-              }
-            : undefined
-        }
-        onTouchMove={
-          isTouchDevice
-            ? (e) => {
-                const touch = e.touches[0];
-                isHovered.set(1);
-                mouseX.set(touch.pageX);
-              }
-            : undefined
-        }
-        onMouseLeave={() => {
-          isHovered.set(0);
-          mouseX.set(Infinity);
-        }}
-        onTouchEnd={() => {
-          isHovered.set(0);
-          mouseX.set(Infinity);
-        }}
-        className={cn(
-          "mx-auto flex w-fit gap-4 rounded-2xl bg-gray-50 px-4 dark:bg-neutral-900",
-          className
-        )}
-        style={{ height: panelHeight }}
-        role="toolbar"
-        aria-label="Application dock"
-      >
-        <DockProvider value={{ mouseX, spring, distance, magnification }}>
-          {children}
-        </DockProvider>
-      </motion.div>
+      <DockProvider value={{ mouseX, spring, distance, magnification }}>
+        {children}
+      </DockProvider>
     </motion.div>
   );
 }
@@ -166,31 +147,40 @@ function DockItem({ children, className }: DockItemProps) {
 
   const widthTransform = useTransform(
     mouseDistance,
-    [-distance, 0, distance],
-    [40, magnification, 40]
+    [-distance / 2, 0, distance / 2],
+    [40, isTouchDevice ? 40 : magnification, 40]
   );
 
   const width = useSpring(widthTransform, spring);
 
+  const scale = useTransform(
+    mouseDistance,
+    [-distance / 2, 0, distance / 2],
+    [0.8, magnification / 40, 1] // 40 — базовий розмір
+  );
+
+  const animatedScale = useSpring(scale, spring);
+
   return (
     <motion.div
       ref={ref}
-      style={{ width }}
       onHoverStart={() => isHovered.set(1)}
       onHoverEnd={() => isHovered.set(0)}
       onFocus={() => isHovered.set(1)}
       onBlur={() => isHovered.set(0)}
       className={cn(
-        "relative inline-flex items-center justify-center",
+        "relative inline-flex items-center justify-center scroll-snap-align-center w-10 h-10", // фіксована ширина
         className
       )}
       tabIndex={0}
       role="button"
       aria-haspopup="true"
     >
-      {Children.map(children, (child) =>
-        cloneElement(child as DockChild, { width, isHovered })
-      )}
+      <motion.div style={{ scale: animatedScale }}>
+        {Children.map(children, (child) =>
+          cloneElement(child as DockChild, { width, isHovered })
+        )}
+      </motion.div>
     </motion.div>
   );
 }
