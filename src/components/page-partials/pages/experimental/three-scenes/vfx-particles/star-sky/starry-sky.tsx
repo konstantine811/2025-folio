@@ -3,22 +3,37 @@ import { useMemo } from "react";
 import { randFloat, randFloatSpread } from "three/src/math/MathUtils.js";
 import ParticleStarInstance from "./particle-star-instance";
 import { AdditiveBlending } from "three";
-const StarrySky = ({ nbParticles = 1000 }: { nbParticles?: number }) => {
+const StarrySky = ({
+  nbParticles = 1000,
+  randomPositionXFirst = 5,
+  randomPositionXSecond = 15,
+  randomPositionY = 20,
+}: {
+  nbParticles?: number;
+  randomPositionXFirst?: number;
+  randomPositionXSecond?: number;
+  randomPositionY?: number;
+}) => {
   const texture = useTexture(
-    "/images/textures/kenney_particle-pack/png_transparent/star_06.png"
+    "/images/textures/kenney_particle-pack/png_transparent/star_02.png"
   );
   const particles = useMemo(() => {
     return Array.from({ length: nbParticles }, () => ({
-      position: [randFloat(5, 15), randFloatSpread(20), 0] as [
-        number,
-        number,
-        number
-      ],
+      position: [
+        randFloat(randomPositionXFirst, randomPositionXSecond),
+        randFloatSpread(randomPositionY),
+        0,
+      ] as [number, number, number],
       rotation: [0, randFloat(0, Math.PI * 2), 0] as [number, number, number],
       size: randFloat(0.01, 0.15),
       lifetime: randFloat(1, 30),
     }));
-  }, [nbParticles]);
+  }, [
+    nbParticles,
+    randomPositionXFirst,
+    randomPositionXSecond,
+    randomPositionY,
+  ]);
   return (
     <Instances range={nbParticles} limit={nbParticles} frustumCulled={false}>
       <planeGeometry args={[1, 1]} />

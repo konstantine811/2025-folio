@@ -1,10 +1,15 @@
 import { Link, Outlet } from "react-router";
-import { Dock, DockIcon, DockItem, DockLabel } from "@/components/ui/dock";
 import { RoutPath, TASK_MANAGER_ROUTERS } from "@/config/router-config";
 import { useTranslation } from "react-i18next";
 import useRoutingPath from "@/hooks/useRoutingPath";
 import { format } from "date-fns";
 import { DateTemplate } from "@/config/data-config";
+import {
+  Dock,
+  DockIcon,
+  DockItem,
+  DockLabel,
+} from "@/components/ui/shadcn-io/dock";
 
 export interface TaskManagerOutletContext {
   className: string;

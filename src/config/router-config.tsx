@@ -138,6 +138,13 @@ const ThreeVFXParticles = lazy(
     )
 );
 
+const ThreeVFXTrail = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/vfx-trail/init"
+    )
+);
+
 const LoginPage = lazy(() => import("../components/page-partials/pages/Login"));
 
 export enum RoutPath {
@@ -166,6 +173,7 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_SHADER_WATER = "three-shader-water",
   EXPERIMENTAL_THREE_SHADER_TRANSITION = "three-shader-transition",
   EXPERIMENTAL_VFX_PARTICLES = "three-vfx-particles",
+  EXPERIMENTAL_VFX_TRAIL = "three-vfx-trail",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -293,6 +301,12 @@ export const EXPERIMENTAL_ROUTERS = [
     Component: ThreeVFXParticles,
     id: "experimental-three-vfx-particles",
     icon: "✨",
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_VFX_TRAIL,
+    Component: ThreeVFXTrail,
+    id: "experimental-three-vfx-trail",
+    icon: "🌠",
   },
 ];
 
