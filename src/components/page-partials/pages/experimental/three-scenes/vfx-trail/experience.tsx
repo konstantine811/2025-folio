@@ -16,6 +16,8 @@ import {
   SelectiveBloom,
 } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
+import Cursor from "./cursor";
+import Comets from "./comets/comets";
 // import GodRays from "./god-rays";
 
 const Experience = () => {
@@ -53,7 +55,9 @@ const Experience = () => {
         randomPositionXSecond={30}
         randomPositionY={50}
       />
+      <Cursor />
       <Scroll>
+        <Comets />
         <Float
           position-x={2}
           position-z={5}

@@ -145,6 +145,13 @@ const ThreeVFXTrail = lazy(
     )
 );
 
+const ThreeCubicWorldsGame = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/init"
+    )
+);
+
 const LoginPage = lazy(() => import("../components/page-partials/pages/Login"));
 
 export enum RoutPath {
@@ -174,6 +181,7 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_SHADER_TRANSITION = "three-shader-transition",
   EXPERIMENTAL_VFX_PARTICLES = "three-vfx-particles",
   EXPERIMENTAL_VFX_TRAIL = "three-vfx-trail",
+  EXPERIMENTAL_CUBIC_WORLDS_GAME = "three-cubic-worlds-game",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -307,6 +315,12 @@ export const EXPERIMENTAL_ROUTERS = [
     Component: ThreeVFXTrail,
     id: "experimental-three-vfx-trail",
     icon: "🌠",
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_CUBIC_WORLDS_GAME,
+    Component: ThreeCubicWorldsGame,
+    id: "experimental-three-cubic-worlds-game",
+    icon: "🕹️",
   },
 ];
 

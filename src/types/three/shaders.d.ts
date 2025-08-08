@@ -15,6 +15,14 @@ declare module "@react-three/fiber" {
       typeof DreiShaderMaterial,
       typeof DreiShaderMaterial
     >;
+    trailMaterial: Object3DNode<
+      typeof DreiShaderMaterial,
+      typeof DreiShaderMaterial
+    >;
+    meshLineMaterial: Object3DNode<
+      typeof DreiShaderMaterial,
+      typeof DreiShaderMaterial
+    >;
     // Додайте інші шейдерні матеріали, якщо потрібно
   }
 }
