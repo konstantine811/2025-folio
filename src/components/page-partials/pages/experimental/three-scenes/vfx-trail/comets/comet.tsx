@@ -1,8 +1,15 @@
 import { Trail, useScroll } from "@react-three/drei";
-import { extend, useFrame } from "@react-three/fiber";
+import { extend, useFrame, useThree } from "@react-three/fiber";
 import { MeshLineMaterial, MeshLineGeometry } from "meshline";
 import { useMemo, useRef } from "react";
-import { AdditiveBlending, Color, Mesh, Vector3 } from "three";
+import {
+  AdditiveBlending,
+  Color,
+  Group,
+  MathUtils,
+  Mesh,
+  Vector3,
+} from "three";
 
 extend({ MeshLineMaterial, MeshLineGeometry });
 
@@ -27,16 +34,20 @@ const Comet = ({
   radius: number;
 }) => {
   const meshRef = useRef<Mesh>(null);
+  const containerRef = useRef<Group>(null);
   const emissiveColor = useMemo(() => {
     const newColor = new Color(color);
     newColor.multiplyScalar(5);
     return newColor;
   }, [color]);
   const data = useScroll();
+  const viewport = useThree((state) => state.viewport);
   useFrame(({ clock }, delta) => {
     if (!meshRef.current) return;
     const coinMode = data.visible(1 / 4, 1 / 4);
+    let containerTarget = 0;
     if (coinMode) {
+      containerTarget = -viewport.height;
       tmpVector.x = Math.cos(clock.elapsedTime * coinSpeed) * radius;
       tmpVector.y = Math.sin(clock.elapsedTime * coinSpeed) * radius;
       tmpVector.z = 0;
@@ -48,9 +59,16 @@ const Comet = ({
     }
 
     meshRef.current.position.lerp(tmpVector, delta * LERP_SPEED);
+    if (containerRef.current) {
+      containerRef.current.position.y = MathUtils.lerp(
+        containerRef.current.position.y,
+        containerTarget,
+        LERP_SPEED * delta
+      );
+    }
   });
   return (
-    <group position={startPosition}>
+    <group ref={containerRef}>
       <Trail
         target={undefined}
         width={size} // Width of the trail
