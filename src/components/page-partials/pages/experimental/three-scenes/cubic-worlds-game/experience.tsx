@@ -6,6 +6,8 @@ const Experience = () => {
     <>
       <OrbitControls />
       <PrimitiveModel modelName="box.glb" />
+      <ambientLight intensity={0.3} />
+      <directionalLight position={[5, 8, 3]} intensity={1} castShadow />
       <Environment preset="sunset" />
     </>
   );

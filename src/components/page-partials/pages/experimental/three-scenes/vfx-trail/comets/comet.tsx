@@ -24,6 +24,8 @@ const Comet = ({
   orbitSpeed,
   coinSpeed,
   radius,
+  planetOrbitSpeed,
+  rotation,
 }: {
   length: number;
   size: number;
@@ -32,6 +34,8 @@ const Comet = ({
   orbitSpeed: number;
   coinSpeed: number;
   radius: number;
+  planetOrbitSpeed: number;
+  rotation: [number, number, number];
 }) => {
   const meshRef = useRef<Mesh>(null);
   const containerRef = useRef<Group>(null);
@@ -46,11 +50,26 @@ const Comet = ({
     if (!meshRef.current) return;
     const coinMode = data.visible(1 / 4, 1 / 4);
     let containerTarget = 0;
-    if (coinMode) {
+    const planetOrbitMode = data.visible(2 / 4, 1 / 4);
+    const cardMode = data.visible(3 / 4, 1 / 4);
+    const distance = meshRef.current.position.distanceTo(tmpVector);
+    const lerpFactor = Math.min(1, Math.max(0.0005, 10 / distance));
+    const smoothDelta = Math.min(0.1, delta);
+    if (planetOrbitMode) {
+      containerTarget = -viewport.height * 2;
+      tmpVector.x = Math.cos(clock.elapsedTime * planetOrbitSpeed) * radius;
+      tmpVector.y = Math.sin(clock.elapsedTime * planetOrbitSpeed) * radius;
+      tmpVector.z = 0;
+    } else if (coinMode) {
       containerTarget = -viewport.height;
       tmpVector.x = Math.cos(clock.elapsedTime * coinSpeed) * radius;
       tmpVector.y = Math.sin(clock.elapsedTime * coinSpeed) * radius;
       tmpVector.z = 0;
+    } else if (cardMode) {
+      containerTarget = -viewport.height * 3;
+      tmpVector.x = Math.sin(clock.elapsedTime * orbitSpeed) * viewport.width;
+      tmpVector.y = Math.cos(clock.elapsedTime * orbitSpeed * 8) * 2;
+      tmpVector.z = -2 + Math.cos(clock.elapsedTime * orbitSpeed) * 1;
     } else {
       // default orbit
       tmpVector.x = startPosition[0];
@@ -58,12 +77,25 @@ const Comet = ({
       tmpVector.z = -5 + Math.cos(clock.elapsedTime * orbitSpeed) * 80;
     }
 
-    meshRef.current.position.lerp(tmpVector, delta * LERP_SPEED);
+    meshRef.current.position.lerp(
+      tmpVector,
+      lerpFactor * smoothDelta * LERP_SPEED
+    );
     if (containerRef.current) {
       containerRef.current.position.y = MathUtils.lerp(
         containerRef.current.position.y,
         containerTarget,
-        LERP_SPEED * delta
+        LERP_SPEED * smoothDelta
+      );
+      containerRef.current.rotation.x = MathUtils.lerp(
+        containerRef.current.rotation.x,
+        planetOrbitMode ? rotation[0] : 0,
+        smoothDelta
+      );
+      containerRef.current.rotation.y = MathUtils.lerp(
+        containerRef.current.rotation.y,
+        planetOrbitMode ? rotation[1] : 0,
+        smoothDelta
       );
     }
   });

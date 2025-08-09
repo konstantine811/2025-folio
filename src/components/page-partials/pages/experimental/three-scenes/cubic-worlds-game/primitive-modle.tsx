@@ -11,6 +11,7 @@ const PrimitiveModel = ({ modelName, ...props }: Props) => {
   useEffect(() => {
     useGLTF.preload(path);
   }, [path]);
+
   return (
     <group {...props}>
       <primitive object={scene} />

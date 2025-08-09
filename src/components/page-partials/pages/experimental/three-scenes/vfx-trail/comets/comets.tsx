@@ -12,8 +12,7 @@ const Comets = ({ nbTrails = 42 }: { nbTrails?: number }) => {
       const size = randFloat(1, 3);
       return {
         size,
-        orbitSpeed: (2 / size) * (randInt(0, 1) || -1),
-        length: randInt(2, 4),
+
         color: [
           "#fc7de7",
           "#b485ee",
@@ -26,9 +25,17 @@ const Comets = ({ nbTrails = 42 }: { nbTrails?: number }) => {
           "#ec824d",
           "#eff0b1",
         ][randInt(0, 9)],
+        orbitSpeed: (2 / size) * (randInt(0, 1) || -1),
+        length: randInt(2, 4),
         startPosition: [randFloatSpread(20), 0, 0] as [number, number, number],
         coinSpeed: (15 / size) * (randInt(0, 1) || -1),
         radius: randFloat(4, 6),
+        planetOrbitSpeed: (4 / size) * (randInt(0, 1) || -1),
+        rotation: [randFloatSpread(Math.PI), randFloatSpread(Math.PI), 0] as [
+          number,
+          number,
+          number
+        ],
       };
     });
   }, [nbTrails]);
@@ -45,6 +52,8 @@ const Comets = ({ nbTrails = 42 }: { nbTrails?: number }) => {
             orbitSpeed={props.orbitSpeed}
             coinSpeed={props.coinSpeed}
             radius={props.radius}
+            planetOrbitSpeed={props.planetOrbitSpeed}
+            rotation={props.rotation}
           />
         );
       })}

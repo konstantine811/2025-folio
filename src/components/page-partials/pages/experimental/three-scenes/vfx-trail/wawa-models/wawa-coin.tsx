@@ -1,5 +1,6 @@
 import {
   MeshTransmissionMaterial,
+  useDetectGPU,
   useGLTF,
   useScroll,
 } from "@react-three/drei";
@@ -19,6 +20,7 @@ type Props = JSX.IntrinsicElements["group"] & {
 
 const WawaCoin = ({ transmissionSettings, ...props }: Props) => {
   const { nodes, materials } = useGLTF("/3d-models/wawa-models/WawaCoin.glb");
+  const { tier, isMobile } = useDetectGPU();
   const data = useScroll();
   const ref = useRef<Group>(null);
   useFrame((_, delta) => {
@@ -35,10 +37,12 @@ const WawaCoin = ({ transmissionSettings, ...props }: Props) => {
         geometry={(nodes.Circle as SkinnedMesh).geometry}
         material={materials.glass}
       >
-        <MeshTransmissionMaterial
-          {...transmissionSettings}
-          toneMapped={false}
-        />
+        {tier !== 0 && !isMobile && (
+          <MeshTransmissionMaterial
+            {...transmissionSettings}
+            toneMapped={false}
+          />
+        )}
       </mesh>
       <mesh
         castShadow

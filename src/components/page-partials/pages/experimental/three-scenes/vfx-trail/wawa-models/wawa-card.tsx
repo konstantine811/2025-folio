@@ -1,4 +1,8 @@
-import { MeshTransmissionMaterial, useGLTF } from "@react-three/drei";
+import {
+  MeshTransmissionMaterial,
+  useDetectGPU,
+  useGLTF,
+} from "@react-three/drei";
 import { JSX } from "react";
 import { SkinnedMesh } from "three";
 
@@ -14,6 +18,7 @@ type Props = JSX.IntrinsicElements["group"] & {
 
 const WawaCard = ({ transmissionSettings, ...props }: Props) => {
   const { nodes, materials } = useGLTF("/3d-models/wawa-models/WawaCard.glb");
+  const { tier, isMobile } = useDetectGPU();
 
   return (
     <group {...props} dispose={null}>
@@ -24,10 +29,12 @@ const WawaCard = ({ transmissionSettings, ...props }: Props) => {
         material={materials.glass}
         rotation={[0, -1.571, 0]}
       >
-        <MeshTransmissionMaterial
-          {...transmissionSettings}
-          toneMapped={false}
-        />
+        {tier !== 0 && !isMobile && (
+          <MeshTransmissionMaterial
+            {...transmissionSettings}
+            toneMapped={false}
+          />
+        )}
         <mesh
           castShadow
           receiveShadow

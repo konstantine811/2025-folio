@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AdditiveBlending, Mesh } from "three";
 import { degToRad } from "three/src/math/MathUtils.js";
 import Lights from "./lights";
 import StarrySky from "../vfx-particles/star-sky/starry-sky";
-import { Environment, Float, Gltf, Scroll, Stats } from "@react-three/drei";
+import {
+  Environment,
+  Float,
+  Gltf,
+  Scroll,
+  Stats,
+  useDetectGPU,
+} from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import WawaCoin from "./wawa-models/wawa-coin";
 import { useControls } from "leva";
@@ -23,7 +30,7 @@ import Comets from "./comets/comets";
 const Experience = () => {
   const [sun, setSun] = useState<Mesh | null>(null);
   const viewport = useThree((state) => state.viewport);
-
+  const { tier, isMobile } = useDetectGPU();
   const transmissionSettings = useControls("Transmission Settings", {
     // https://codesandbox.io/p/sandbox/ju368j?file=%2Fsrc%2FApp.js%3A75%2C8
     backside: false,
@@ -45,7 +52,10 @@ const Experience = () => {
     attenuationColor: "#ffffff",
     color: "#ffffff",
   });
-
+  useEffect(() => {
+    console.log("tier", tier);
+    console.log("isMobile", isMobile);
+  }, [tier, isMobile]);
   return (
     <>
       {sun && <Lights sun={sun} />}
@@ -55,9 +65,9 @@ const Experience = () => {
         randomPositionXSecond={30}
         randomPositionY={50}
       />
-      <Cursor />
+      {tier !== 0 && !isMobile && <Cursor />}
       <Scroll>
-        <Comets />
+        <Comets nbTrails={tier === 0 || isMobile ? 20 : 42} />
         <Float
           position-x={2}
           position-z={5}
@@ -79,7 +89,7 @@ const Experience = () => {
           floatIntensity={3}
           rotationIntensity={1}
           speed={2}
-          position-y={-viewport.height * 2}
+          position-y={-viewport.height * 3}
         >
           <group scale={1} position-z={5} position-y={1}>
             <WawaCard
