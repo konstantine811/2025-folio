@@ -23,6 +23,10 @@ declare module "@react-three/fiber" {
       typeof DreiShaderMaterial,
       typeof DreiShaderMaterial
     >;
+    particlesMaterial: Object3DNode<
+      typeof ParticlesMaterial,
+      typeof ParticlesMaterial
+    >;
     // Додайте інші шейдерні матеріали, якщо потрібно
   }
 }

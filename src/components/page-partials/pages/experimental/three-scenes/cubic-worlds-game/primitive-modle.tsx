@@ -1,5 +1,6 @@
 import { useGLTF } from "@react-three/drei";
-import { JSX, useEffect } from "react";
+import { JSX, useEffect, useMemo } from "react";
+import { Mesh, Object3D } from "three";
 
 type Props = JSX.IntrinsicElements["group"] & {
   modelName: string;
@@ -11,10 +12,21 @@ const PrimitiveModel = ({ modelName, ...props }: Props) => {
   useEffect(() => {
     useGLTF.preload(path);
   }, [path]);
+  const cloned = useMemo(() => scene.clone(true), [scene]);
+  useEffect(() => {
+    if (cloned) {
+      cloned.traverse((obj: Object3D) => {
+        if (obj instanceof Mesh) {
+          obj.castShadow = true;
+          obj.receiveShadow = true;
+        }
+      });
+    }
+  }, [cloned]);
 
   return (
     <group {...props}>
-      <primitive object={scene} />
+      <primitive object={cloned} />
     </group>
   );
 };

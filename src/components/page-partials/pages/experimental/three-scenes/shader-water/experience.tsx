@@ -8,11 +8,15 @@ import {
 import { JSX } from "react";
 import { degToRad } from "three/src/math/MathUtils.js";
 import Water from "./water";
+import { useControls } from "leva";
 // import { Water } from "./water-2/water";
 
 type Props = JSX.IntrinsicElements["group"] & {};
 
 const Experience = ({ ...props }: Props) => {
+  const { position } = useControls("Duck transform", {
+    position: [0, 0, 0],
+  });
   return (
     <group {...props}>
       <CameraControls
@@ -59,7 +63,11 @@ const Experience = ({ ...props }: Props) => {
         <meshStandardMaterial color="white" roughness={0.7} />
       </Text>
       <Float floatIntensity={2} rotationIntensity={2} position-y={-1}>
-        <Gltf src={"/3d-models/water-model/duck.glb"} scale={2.5} />
+        <Gltf
+          src={"/3d-models/water-model/duck.glb"}
+          scale={2.5}
+          position={position}
+        />
       </Float>
       <Water rotation-x={-Math.PI / 2} position-y={-0.1} />
     </group>

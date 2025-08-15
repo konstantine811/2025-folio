@@ -3,15 +3,13 @@ import ThreeLoader from "../common/three-loader";
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import Experience from "./experience";
-import InitKeyboardController from "./physic-world/controllers/init-keyboard";
 
 const Init = () => {
   return (
     <MainWrapperOffset>
-      <InitKeyboardController />
       <ThreeLoader />
-      <Canvas shadows camera={{ position: [5, 3, 5], fov: 70 }}>
-        <color attach="background" args={["#698FF3"]} />
+      <Canvas shadows camera={{ position: [0, 0, 8], fov: 50 }}>
+        <color attach={"background"} args={["#121512"]} />
         <Suspense fallback={null}>
           <Experience />
         </Suspense>
