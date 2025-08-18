@@ -4,6 +4,7 @@ import PrimitiveModel from "../primitive-modle";
 import { randFloatSpread } from "three/src/math/MathUtils.js";
 import { CameraControls } from "@react-three/drei";
 import AiController from "./controllers/controller-ai";
+// import CharacterController from "./controllers/character-controller";
 
 const InitPhysicWorld = () => {
   return (
@@ -11,7 +12,7 @@ const InitPhysicWorld = () => {
       <CameraControls makeDefault />
       <Physics debug>
         <Ground />
-        {Array.from({ length: 500 }, (_, i) => {
+        {Array.from({ length: 50 }, (_, i) => {
           return (
             <RigidBody
               key={i}
@@ -27,7 +28,7 @@ const InitPhysicWorld = () => {
             </RigidBody>
           );
         })}
-        {Array.from({ length: 500 }, (_, i) => {
+        {Array.from({ length: 50 }, (_, i) => {
           return (
             <RigidBody
               key={i}
