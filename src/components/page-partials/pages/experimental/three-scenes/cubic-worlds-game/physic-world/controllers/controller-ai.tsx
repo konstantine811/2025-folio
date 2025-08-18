@@ -37,10 +37,10 @@ export default function CharacterKCC() {
 
   // вертикальна швидкість + параметри
   const vy = useRef(0);
-  const GRAVITY = -20;
-  const JUMP_VELOCITY = 10;
-  const SPEED_WALK = 7;
-  const SPEED_RUN = 10;
+  const GRAVITY = -10;
+  const JUMP_VELOCITY = 7;
+  const SPEED_WALK = 5;
+  const SPEED_RUN = 7;
 
   // напрям руху відносно камери
   const moveDir = useRef(new Vector3());

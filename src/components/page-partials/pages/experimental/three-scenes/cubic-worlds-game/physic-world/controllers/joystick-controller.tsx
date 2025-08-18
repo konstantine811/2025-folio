@@ -93,6 +93,7 @@ const JoystickController = () => {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        draggable={false}
       >
         <div className="relative w-full h-full rounded-full border border-black/30 bg-white/10 select-none">
           <div
@@ -107,6 +108,7 @@ const JoystickController = () => {
 
       <div className="fixed bottom-6 right-6 z-[10000] touch-none select-none">
         <button
+          draggable={false}
           className="w-[60px] h-[60px] rounded-full bg-blue-600 text-white text-sm font-semibold shadow-md active:scale-95 transition-transform"
           onTouchStart={() => setJump(true)}
           onTouchEnd={() => setJump(false)}
