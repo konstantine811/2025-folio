@@ -1,4 +1,4 @@
-import { CameraControls, Environment, useHelper } from "@react-three/drei";
+import { Environment, useHelper } from "@react-three/drei";
 
 import InitPhysicWorld from "./physic-world/init";
 import { useRef } from "react";
@@ -11,7 +11,7 @@ const Experience = () => {
   return (
     <>
       <InitPhysicWorld />
-      <CameraControls makeDefault />
+
       <ambientLight intensity={1} />
       <directionalLight
         position={[1, 10, 1]}

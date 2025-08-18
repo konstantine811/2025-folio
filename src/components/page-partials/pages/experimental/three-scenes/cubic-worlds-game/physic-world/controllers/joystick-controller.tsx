@@ -89,14 +89,14 @@ const JoystickController = () => {
     <>
       <div
         ref={areaRef}
-        className="fixed bottom-6 left-6 w-[100px] h-[100px] z-[10000] touch-none"
+        className="fixed bottom-6 left-6 w-[100px] h-[100px] z-[10000] touch-none select-none"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="relative w-full h-full rounded-full border border-black/30 bg-white/10">
+        <div className="relative w-full h-full rounded-full border border-black/30 bg-white/10 select-none">
           <div
-            className="absolute w-[50px] h-[50px] top-1/2 left-1/2 rounded-full bg-black/60"
+            className="absolute w-[50px] h-[50px] top-1/2 left-1/2 rounded-full bg-black/60 select-none"
             // не змішуємо transform з класами — усе в одному стилі:
             style={{
               transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))`,
@@ -105,7 +105,7 @@ const JoystickController = () => {
         </div>
       </div>
 
-      <div className="fixed bottom-6 right-6 z-[10000] touch-none">
+      <div className="fixed bottom-6 right-6 z-[10000] touch-none select-none">
         <button
           className="w-[60px] h-[60px] rounded-full bg-blue-600 text-white text-sm font-semibold shadow-md active:scale-95 transition-transform"
           onTouchStart={() => setJump(true)}

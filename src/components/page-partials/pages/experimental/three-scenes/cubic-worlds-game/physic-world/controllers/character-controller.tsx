@@ -31,11 +31,11 @@ const CharacterController = () => {
   const bobbingTimeRef = useRef(0);
   const lastCharacterRotation = useRef(0);
   const [colliderArgs, setColliderArgs] = useState<[number, number]>([
-    0.7, 0.3,
+    0.7, 0.1,
   ]);
   const { JUMP_FORCE, RUN_SPEED, WALK_SPEED, isShakingCamera } = useControls({
     JUMP_FORCE: { value: 3.7, min: 1, max: 20, step: 0.1 },
-    WALK_SPEED: { value: 2.9, min: 0.1, max: 4, step: 0.1 },
+    WALK_SPEED: { value: 3.4, min: 0.1, max: 4, step: 0.1 },
     RUN_SPEED: { value: 6.4, min: 0.2, max: 12, step: 0.2 },
     GRAVITY_SCALE: { value: 0.7, min: 0, max: 10, step: 0.1 },
     isShakingCamera: { value: false },

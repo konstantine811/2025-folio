@@ -34,3 +34,12 @@ export type AnimationSet = {
 export enum SceneObjectName {
   characterLight = "characterLight",
 }
+
+export const animationSet = {
+  idle: "Idle",
+  walk: "Walk",
+  run: "Run",
+  jump: "FallingIdle",
+  jumpIdle: "FallingIdle",
+  jumpLand: "FallingIdle",
+};
