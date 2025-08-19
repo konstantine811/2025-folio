@@ -10,7 +10,7 @@ const InitPhysicWorld = () => {
   return (
     <>
       <CameraControls makeDefault />
-      <Physics debug>
+      <Physics>
         <Ground />
         {Array.from({ length: 50 }, (_, i) => {
           return (
@@ -56,6 +56,23 @@ const InitPhysicWorld = () => {
               scale={[4, 4, 4]}
               // linearDamping={1.1}
               mass={10}
+              // mass={100}
+            >
+              <PrimitiveModel modelName="box.glb" />
+            </RigidBody>
+          );
+        })}
+        {Array.from({ length: 50 }, (_, i) => {
+          return (
+            <RigidBody
+              key={i}
+              type="dynamic"
+              position={[randFloatSpread(40) + 30, 5, randFloatSpread(40) + 30]}
+              rotation={[Math.PI / 4, 0, 0]}
+              userData={{ isGround: true }}
+              scale={[10, 10, 10]}
+              // linearDamping={1.1}
+              mass={100}
               // mass={100}
             >
               <PrimitiveModel modelName="box.glb" />

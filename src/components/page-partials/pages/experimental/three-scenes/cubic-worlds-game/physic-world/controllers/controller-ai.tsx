@@ -35,28 +35,62 @@ export default function CharacterKCC() {
 
   const controllerRef = useRef<KinematicCharacterController | null>(null);
 
-  // вертикальна швидкість + параметри
-  const vy = useRef(0);
-  const GRAVITY = -10;
-  const JUMP_VELOCITY = 7;
-  const SPEED_WALK = 5;
-  const SPEED_RUN = 11;
+  // --- параметри руху
+  const GRAVITY = -20;
+  const JUMP_VELOCITY = 10;
+  const SPEED_WALK = 6;
+  const SPEED_RUN = 12;
 
-  // напрям руху відносно камери
+  // анти-флікер параметри
+  const COYOTE_TIME = 0.12;
+  const MIN_AIR_TIME_FOR_FALL_ANIM = 0.14;
+  const SNAP_BLEND_SPEED = 10;
+  const MAX_SNAP_DOWN_SPEED = 8;
+  const SNAP_ONLY_IF_VY_BELOW = 1;
+
+  // 🧭 поворот (повільніше, fps-незалежно)
+  const TURN_SPEED_GROUNDED = 6.0; // менше = повільніше
+  const TURN_SPEED_AIR = 2.0; // ще повільніше у повітрі
+
+  // 🌬️ інерція по XZ (floaty у повітрі)
+  const GROUND_ACCEL = 30.0; // наскільки швидко підганяємо швидкість під ціль на землі
+  const AIR_ACCEL = 1.8; // слабке керування у повітрі
+  const AIR_DRAG = 0.15; // низький опір у повітрі
+
+  // 🔺 капсула: на землі — вища/вужча, у повітрі — нижча/ширша
+  const GROUND_CAPSULE: [number, number] = [0.62, 0.3]; // [halfHeight, radius]
+  const AIR_CAPSULE: [number, number] = [0.4, 0.5];
+  const MODEL_OFFSET = -0.93;
+  const [colliderArgs, setColliderArgs] =
+    useState<[number, number]>(GROUND_CAPSULE);
+
+  // стан
+  const vy = useRef(0);
+  const lastGroundedAt = useRef(-1e9);
+  const airTime = useRef(0);
+  const isJumpingRef = useRef(false);
+
+  // edge-trigger + lockout
+  const wasJumpHeld = useRef(false);
+  const jumpRearmAt = useRef(0);
+  const prevGroundedRef = useRef(false);
+
+  // напрям і швидкість по XZ
   const moveDir = useRef(new Vector3());
   const camFwd = useRef(new Vector3());
   const camRight = useRef(new Vector3());
+  const velXZ = useRef(new Vector3());
 
-  // повороти «як у твоєму коді»
-  const lastRotationTarget = useRef(0); // Math.atan2(vx, vz)
+  // повороти
+  const lastRotationTarget = useRef(0);
 
   useEffect(() => {
-    const kcc = world.createCharacterController(0.01);
+    const kcc = world.createCharacterController(0.02);
     kcc.setUp({ x: 0, y: 1, z: 0 });
     kcc.setMaxSlopeClimbAngle((50 * Math.PI) / 180);
     kcc.setMinSlopeSlideAngle((60 * Math.PI) / 180);
-    kcc.enableAutostep(0.45, 0.2, true);
-    kcc.enableSnapToGround(0.5);
+    kcc.enableAutostep(0.25, 0.15, true);
+    kcc.enableSnapToGround(0.6);
     kcc.setApplyImpulsesToDynamicBodies(true);
     controllerRef.current = kcc;
 
@@ -70,41 +104,77 @@ export default function CharacterKCC() {
   useFrame((state, dt) => {
     if (!rb.current || !col.current || !controllerRef.current) return;
 
+    const now = state.clock.getElapsedTime();
+
     // 1) напрямок відносно камери
     camFwd.current.copy(state.camera.getWorldDirection(new Vector3()));
     camFwd.current.y = 0;
     camFwd.current.normalize();
     camRight.current.crossVectors(camFwd.current, state.camera.up).normalize();
 
-    // 2) інпути -> вектор руху
+    // 2) інпути -> напрямок
     moveDir.current.set(0, 0, 0);
     if (forward) moveDir.current.add(camFwd.current);
     if (backward) moveDir.current.sub(camFwd.current);
     if (leftward) moveDir.current.sub(camRight.current);
     if (rightward) moveDir.current.add(camRight.current);
 
-    const isMoving = moveDir.current.lengthSq() > 0;
-    if (isMoving) {
-      moveDir.current.normalize().multiplyScalar(run ? SPEED_RUN : SPEED_WALK);
-    }
+    const inputActive = moveDir.current.lengthSq() > 0;
+    if (inputActive) moveDir.current.normalize();
+    const targetSpeed = inputActive ? (run ? SPEED_RUN : SPEED_WALK) : 0;
 
-    // 3) гравітація/стрибок
-    const groundedBefore = controllerRef.current.computedGrounded?.() ?? false;
-    if (jump && groundedBefore) {
+    // 3) grounded із debouncing (coyote + airTime)
+    const groundedRaw = controllerRef.current.computedGrounded?.() ?? false;
+    if (groundedRaw) {
+      lastGroundedAt.current = now;
+      airTime.current = 0;
+    } else {
+      airTime.current += dt;
+    }
+    const consideredGrounded =
+      groundedRaw || now - lastGroundedAt.current < COYOTE_TIME;
+
+    // 4) гравітація/стрибок
+    const justPressedJump = jump && !wasJumpHeld.current;
+    const lockoutOk = now >= jumpRearmAt.current;
+    const canStartJump =
+      consideredGrounded && vy.current <= 0.05 && justPressedJump && lockoutOk;
+
+    if (canStartJump) {
       vy.current = JUMP_VELOCITY;
+      isJumpingRef.current = true;
+      // одразу зробити «повітряну» капсулу — нижчу та ширшу
+      setColliderArgs(AIR_CAPSULE);
     } else {
       vy.current += GRAVITY * dt;
       vy.current = Math.max(vy.current, -30);
     }
 
-    // 4) бажаний Δрух
+    // 5) горизонтальна швидкість з інерцією
+    const targetVel = new Vector3(
+      moveDir.current.x * targetSpeed,
+      0,
+      moveDir.current.z * targetSpeed
+    );
+
+    if (consideredGrounded) {
+      const a = 1 - Math.exp(-GROUND_ACCEL * dt);
+      velXZ.current.lerp(targetVel, a);
+    } else {
+      const a = 1 - Math.exp(-AIR_ACCEL * dt);
+      velXZ.current.lerp(targetVel, a);
+      const drag = Math.exp(-AIR_DRAG * dt);
+      velXZ.current.multiplyScalar(drag);
+    }
+
+    // 6) бажаний Δрух
     const desired = {
-      x: moveDir.current.x * dt,
+      x: velXZ.current.x * dt,
       y: vy.current * dt,
-      z: moveDir.current.z * dt,
+      z: velXZ.current.z * dt,
     };
 
-    // 5) рух через KCC (з ковзанням/сходами/снепом)
+    // 7) рух через KCC
     controllerRef.current.computeColliderMovement(
       col.current,
       desired,
@@ -114,49 +184,85 @@ export default function CharacterKCC() {
     );
 
     const corr = controllerRef.current.computedMovement();
+
+    // 7.1) плавний snap-to-ground
+    const desiredY = vy.current * dt;
+    const snapDown = corr.y - desiredY; // < 0 — контролер тягне вниз
+    const safeToSnap =
+      consideredGrounded && vy.current <= SNAP_ONLY_IF_VY_BELOW && snapDown < 0;
+
+    let applyY = corr.y;
+    if (safeToSnap) {
+      const alpha = 1 - Math.exp(-SNAP_BLEND_SPEED * dt);
+      const blendedY = desiredY + snapDown * alpha;
+      const minY = desiredY - MAX_SNAP_DOWN_SPEED * dt;
+      applyY = Math.max(blendedY, minY);
+    }
+
+    // 8) застосувати рух
     const t = rb.current.translation();
     rb.current.setNextKinematicTranslation({
       x: t.x + corr.x,
-      y: t.y + corr.y,
+      y: t.y + applyY,
       z: t.z + corr.z,
     });
 
+    // 9) оновити стани після руху
     const groundedNow = controllerRef.current.computedGrounded();
-    if (groundedNow && vy.current < 0) vy.current = 0;
 
-    // 6) ПОВОРОТ «як у тебе»:
-    //    - цільовий кут беремо з вектора швидкості у площині XZ
-    //    - оновлюємо lastRotationTarget тільки коли рухаємось
-    //    - lerp із різними коефіцієнтами на землі/в повітрі
-    if (isMoving) {
-      lastRotationTarget.current = Math.atan2(
-        moveDir.current.x,
-        moveDir.current.z
-      );
+    if (groundedNow && vy.current < 0) {
+      vy.current = 0;
+      isJumpingRef.current = false;
+      // повертаємо «земну» капсулу — вищу/вужчу
+      setColliderArgs(GROUND_CAPSULE);
+    }
+
+    // якщо щойно відлетіли від землі (скотились/зійшли зі сходинки) — теж перейти на повітряну капсулу
+    if (!groundedNow && prevGroundedRef.current) {
+      setColliderArgs(AIR_CAPSULE);
+    }
+
+    // 10) поворот моделі (повільніше на землі й особливо у повітрі)
+    const speedXZ = velXZ.current.lengthSq();
+    if (speedXZ > 1e-6) {
+      lastRotationTarget.current = Math.atan2(velXZ.current.x, velXZ.current.z);
     }
     if (modelRef.current) {
+      const turnRate = groundedNow ? TURN_SPEED_GROUNDED : TURN_SPEED_AIR;
+      const alphaTurn = 1 - Math.exp(-turnRate * dt);
       modelRef.current.rotation.y = lerpAngle(
         modelRef.current.rotation.y,
         lastRotationTarget.current,
-        groundedNow ? 0.77 : 0.3
+        alphaTurn
       );
     }
 
-    // 7) Анімації
+    // 11) Анімації
     let nextAnim = ActionName.Idle;
-    if (!groundedNow) {
+    const longFall =
+      airTime.current > MIN_AIR_TIME_FOR_FALL_ANIM && !consideredGrounded;
+    if (isJumpingRef.current || longFall) {
       nextAnim = ActionName.Jump;
-    } else if (isMoving) nextAnim = run ? ActionName.Run : ActionName.Walk;
+    } else if (inputActive) {
+      nextAnim = run ? ActionName.Run : ActionName.Walk;
+    } else {
+      nextAnim = ActionName.Idle;
+    }
+
     if (nextAnim !== lastAnimRef.current) {
       lastAnimRef.current = nextAnim;
       setAnimation(nextAnim);
     }
 
-    // 8) Камера (опційно)
+    // 12) камера (опційно)
     if (isCameraFlow && cameraControls) {
-      cameraControls.moveTo(t.x + corr.x, t.y + corr.y, t.z + corr.z, true);
+      cameraControls.moveTo(t.x + corr.x, t.y + applyY, t.z + corr.z, true);
       cameraControls.update(dt);
     }
+
+    // фінал
+    prevGroundedRef.current = groundedNow;
+    wasJumpHeld.current = jump;
   });
 
   return (
@@ -167,13 +273,16 @@ export default function CharacterKCC() {
       position={[0, 1.2, 0]}
       enabledRotations={[false, false, false]}
     >
-      {/* Колайдер, який рухає KCC */}
-      <CapsuleCollider ref={col} args={[0.7, 0.3]} />
-      {/* Модель персонажа */}
+      {/* важливо: key для перевмонтування при зміні розмірів */}
+      <CapsuleCollider
+        ref={col}
+        args={colliderArgs}
+        key={colliderArgs.join("-")}
+      />
       <group ref={modelRef}>
         <CharacterModel
           path={"/3d-models/characters/constantine_character.glb"}
-          position={[0, -0.99, 0]}
+          position={[0, MODEL_OFFSET, 0]}
           animation={animation}
         />
       </group>
