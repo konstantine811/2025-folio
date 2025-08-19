@@ -2,15 +2,16 @@ import { Physics, RigidBody } from "@react-three/rapier";
 import Ground from "./ground";
 import PrimitiveModel from "../primitive-modle";
 import { randFloatSpread } from "three/src/math/MathUtils.js";
-import { CameraControls } from "@react-three/drei";
-import AiController from "./controllers/controller-ai";
-// import CharacterController from "./controllers/character-controller";
+import CompolexController from "./controllers/complex-controller";
+import CharacterControllerAnimation from "./controllers/character-controller-animation";
+import { animationSet } from "./controllers/config/character.config";
+import CharacterControllerModel from "./controllers/character-controller-model";
 
 const InitPhysicWorld = () => {
   return (
     <>
-      <CameraControls makeDefault />
-      <Physics>
+      {/* <CameraControls makeDefault /> */}
+      <Physics debug timeStep="vary">
         <Ground />
         {Array.from({ length: 50 }, (_, i) => {
           return (
@@ -93,7 +94,24 @@ const InitPhysicWorld = () => {
           </Ecctrl>
         </KeyboardControls> */}
         {/* <CharacterController /> */}
-        <AiController />
+        {/* <AiController /> */}
+        <CompolexController
+          animated
+          capsuleHalfHeight={0.6}
+          springK={0}
+          followLight
+        >
+          <CharacterControllerAnimation
+            characterURL="/3d-models/characters/constantine_character.glb"
+            animationSet={animationSet}
+          >
+            <CharacterControllerModel
+              position={[0, -0.9, 0]}
+              path="/3d-models/characters/constantine_character.glb"
+            />
+          </CharacterControllerAnimation>
+        </CompolexController>
+        d
       </Physics>
     </>
   );

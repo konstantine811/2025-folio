@@ -42,4 +42,5 @@ export const animationSet = {
   jump: "FallingIdle",
   jumpIdle: "FallingIdle",
   jumpLand: "FallingIdle",
+  fall: "FallingIdle",
 };

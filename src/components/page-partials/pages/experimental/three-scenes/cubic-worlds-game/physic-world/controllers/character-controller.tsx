@@ -1,6 +1,6 @@
 import { useControls } from "leva";
 import { useEffect, useRef, useState } from "react";
-import { ActionName, SceneObjectName } from "./character.config";
+import { ActionName, SceneObjectName } from "./config/character.config";
 import {
   CapsuleCollider,
   RapierRigidBody,
@@ -11,7 +11,7 @@ import { CameraControls } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import CharacterModel from "./character-model";
 import { lerpAngle } from "@/utils/game.utils";
-import { useControlStore } from "./control-game-store";
+import { useControlStore } from "./stores/control-game-store";
 
 const CharacterController = () => {
   const rigidBody = useRef<RapierRigidBody>(null!);
@@ -61,7 +61,6 @@ const CharacterController = () => {
   useFrame(({ camera, clock }) => {
     const delta = clock.getDelta();
     if (!rigidBody.current) return;
-    // console.log("delta", delta);
     const curVel = rigidBody.current.linvel();
     const pos = rigidBody.current.translation();
 

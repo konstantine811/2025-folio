@@ -1,5 +1,5 @@
 import { useRef, useState, TouchEvent } from "react";
-import { useControlStore } from "./control-game-store";
+import { useControlStore } from "./stores/control-game-store";
 
 const DEADZONE = 8;
 const MAX_DRAG = 60;
@@ -89,16 +89,26 @@ const JoystickController = () => {
     <>
       <div
         ref={areaRef}
-        className="fixed bottom-6 left-6 w-[100px] h-[100px] z-[10000] touch-none select-none"
+        className="fixed bottom-6 left-6 w-[100px] h-[100px] z-[10000]
+             touch-none select-none
+             [-webkit-user-select:none] [-webkit-touch-callout:none]
+             [-webkit-tap-highlight-color:transparent]"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         draggable={false}
       >
-        <div className="relative w-full h-full rounded-full border border-black/30 bg-white/10 select-none">
+        <div
+          className="relative w-full h-full rounded-full border border-black/30 bg-white/10
+                  touch-none select-none
+                  [-webkit-user-select:none] [-webkit-touch-callout:none]
+                  [-webkit-tap-highlight-color:transparent]"
+        >
           <div
-            className="absolute w-[50px] h-[50px] top-1/2 left-1/2 rounded-full bg-black/60 select-none"
-            // не змішуємо transform з класами — усе в одному стилі:
+            className="absolute w-[50px] h-[50px] top-1/2 left-1/2 rounded-full bg-black/60
+                 touch-none select-none
+                 [-webkit-user-select:none] [-webkit-touch-callout:none]
+                 [-webkit-tap-highlight-color:transparent]"
             style={{
               transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))`,
             }}
@@ -106,10 +116,14 @@ const JoystickController = () => {
         </div>
       </div>
 
-      <div className="fixed bottom-6 right-6 z-[10000] touch-none select-none">
+      <div className="fixed bottom-6 right-6 z-[10000]">
         <button
           draggable={false}
-          className="w-[60px] h-[60px] rounded-full bg-blue-600 text-white text-sm font-semibold shadow-md active:scale-95 transition-transform"
+          className="w-[60px] h-[60px] rounded-full bg-blue-600 text-white text-sm font-semibold shadow-md
+               active:scale-95 transition-transform
+               touch-none select-none
+               [-webkit-user-select:none] [-webkit-touch-callout:none]
+               [-webkit-tap-highlight-color:transparent]"
           onTouchStart={() => setJump(true)}
           onTouchEnd={() => setJump(false)}
         >

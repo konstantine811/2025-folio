@@ -1,9 +1,9 @@
-import { Environment, useHelper } from "@react-three/drei";
+import { Environment, PerspectiveCamera, useHelper } from "@react-three/drei";
 
 import InitPhysicWorld from "./physic-world/init";
 import { useRef } from "react";
 import { DirectionalLight, DirectionalLightHelper } from "three";
-import { SceneObjectName } from "./physic-world/controllers/character.config";
+import { SceneObjectName } from "./physic-world/controllers/config/character.config";
 
 const Experience = () => {
   const dirLight = useRef<DirectionalLight>(null!);
@@ -14,17 +14,19 @@ const Experience = () => {
 
       <ambientLight intensity={1} />
       <directionalLight
-        position={[1, 10, 1]}
-        intensity={1}
         name={SceneObjectName.characterLight}
-        color={"#FFBF74"}
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-        shadow-camera-far={1000}
-        shadow-camera-near={0.1}
+        intensity={0.4}
         castShadow
-        ref={dirLight}
-      />
+        shadow-mapSize={[1024, 1024]}
+      >
+        <PerspectiveCamera
+          attach={"shadow-camera"}
+          near={55}
+          far={86}
+          fov={80}
+        />
+      </directionalLight>
+
       <Environment preset="sunset" />
     </>
   );

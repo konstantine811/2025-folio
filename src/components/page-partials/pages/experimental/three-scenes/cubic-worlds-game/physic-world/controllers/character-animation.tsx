@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import { Mesh } from "three";
 import { useAnimations, useGLTF } from "@react-three/drei";
-import { useGameStore } from "./game-store";
-import { AnimationSet } from "./character.config";
+import { useGameStore } from "./stores/game-store";
+import { AnimationSet } from "./config/character.config";
 
 const CharacterAnimationModel = ({
   path,

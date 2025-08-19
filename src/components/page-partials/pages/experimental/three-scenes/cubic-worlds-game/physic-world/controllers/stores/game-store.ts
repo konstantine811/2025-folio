@@ -1,7 +1,7 @@
 // stores/useGameStore.ts
 import { create } from "zustand";
 import * as THREE from "three";
-import { AnimationSet } from "./character.config";
+import { AnimationSet } from "../config/character.config";
 
 export interface GameState {
   moveToPoint: THREE.Vector3 | null;

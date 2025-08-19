@@ -13,9 +13,9 @@ import type {
   KinematicCharacterController,
 } from "@dimforge/rapier3d-compat";
 import { Vector3, Group } from "three";
-import { useControlStore } from "./control-game-store";
+import { useControlStore } from "./stores/control-game-store";
 import CharacterModel from "./character-model";
-import { ActionName } from "./character.config";
+import { ActionName } from "./config/character.config";
 import { lerpAngle } from "@/utils/game.utils";
 
 export default function CharacterKCC() {
@@ -38,18 +38,15 @@ export default function CharacterKCC() {
   // --- параметри руху
   const GRAVITY = -20;
   const JUMP_VELOCITY = 10;
-  const SPEED_WALK = 6;
-  const SPEED_RUN = 12;
+  const SPEED_WALK = 4;
+  const SPEED_RUN = 10;
 
   // анти-флікер параметри
   const COYOTE_TIME = 0.12;
   const MIN_AIR_TIME_FOR_FALL_ANIM = 0.14;
-  const SNAP_BLEND_SPEED = 10;
-  const MAX_SNAP_DOWN_SPEED = 8;
-  const SNAP_ONLY_IF_VY_BELOW = 1;
 
   // 🧭 поворот (повільніше, fps-незалежно)
-  const TURN_SPEED_GROUNDED = 6.0; // менше = повільніше
+  const TURN_SPEED_GROUNDED = 15.0; // менше = повільніше
   const TURN_SPEED_AIR = 2.0; // ще повільніше у повітрі
 
   // 🌬️ інерція по XZ (floaty у повітрі)
@@ -85,12 +82,12 @@ export default function CharacterKCC() {
   const lastRotationTarget = useRef(0);
 
   useEffect(() => {
-    const kcc = world.createCharacterController(0.02);
+    const kcc = world.createCharacterController(0.001);
     kcc.setUp({ x: 0, y: 1, z: 0 });
-    kcc.setMaxSlopeClimbAngle((50 * Math.PI) / 180);
-    kcc.setMinSlopeSlideAngle((60 * Math.PI) / 180);
-    kcc.enableAutostep(0.25, 0.15, true);
-    kcc.enableSnapToGround(0.6);
+    kcc.setMaxSlopeClimbAngle((45 * Math.PI) / 180);
+    kcc.setMinSlopeSlideAngle((30 * Math.PI) / 180);
+    kcc.enableAutostep(0.5, 0.2, true);
+    kcc.enableSnapToGround(1.5);
     kcc.setApplyImpulsesToDynamicBodies(true);
     controllerRef.current = kcc;
 
@@ -185,25 +182,11 @@ export default function CharacterKCC() {
 
     const corr = controllerRef.current.computedMovement();
 
-    // 7.1) плавний snap-to-ground
-    const desiredY = vy.current * dt;
-    const snapDown = corr.y - desiredY; // < 0 — контролер тягне вниз
-    const safeToSnap =
-      consideredGrounded && vy.current <= SNAP_ONLY_IF_VY_BELOW && snapDown < 0;
-
-    let applyY = corr.y;
-    if (safeToSnap) {
-      const alpha = 1 - Math.exp(-SNAP_BLEND_SPEED * dt);
-      const blendedY = desiredY + snapDown * alpha;
-      const minY = desiredY - MAX_SNAP_DOWN_SPEED * dt;
-      applyY = Math.max(blendedY, minY);
-    }
-
     // 8) застосувати рух
     const t = rb.current.translation();
     rb.current.setNextKinematicTranslation({
       x: t.x + corr.x,
-      y: t.y + applyY,
+      y: t.y + corr.y,
       z: t.z + corr.z,
     });
 
@@ -256,7 +239,7 @@ export default function CharacterKCC() {
 
     // 12) камера (опційно)
     if (isCameraFlow && cameraControls) {
-      cameraControls.moveTo(t.x + corr.x, t.y + applyY, t.z + corr.z, true);
+      cameraControls.moveTo(t.x + corr.x, t.y + corr.y, t.z + corr.z, true);
       cameraControls.update(dt);
     }
 

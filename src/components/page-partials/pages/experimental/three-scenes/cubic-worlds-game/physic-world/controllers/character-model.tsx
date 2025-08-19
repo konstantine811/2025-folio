@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { ActionName } from "./character.config";
+import { ActionName } from "./config/character.config";
 import { Mesh } from "three";
 import { useAnimations, useGLTF } from "@react-three/drei";
 
