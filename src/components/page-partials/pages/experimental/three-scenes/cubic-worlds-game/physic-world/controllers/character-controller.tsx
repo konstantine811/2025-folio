@@ -526,40 +526,6 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         getPivotMovingDirection(forward, backward, leftward, rightward, pivot)
       );
 
-      if (forward || backward || leftward || rightward) {
-        const moveCharacterProps: MoveCharacterProps = {
-          run,
-          slopeAngle,
-          movingObjectVelocity,
-          character: characterRef.current,
-          actualSlopeAngle,
-          slopeMaxAngle,
-          movingDirection,
-          characterModelIndicator,
-          movingObjectVelocityInCharacterDir,
-          currentVel,
-          wantToMoveVel,
-          rejectVel,
-          moveAccNeeded,
-          maxVelLimit,
-          sprintMult,
-          isOnMovingObject,
-          rejectVelMult,
-          accDeltaTime,
-          characterRotated,
-          modelEuler,
-          moveImpulse,
-          turnVelMultiplier,
-          canJump,
-          airDragMultiplier,
-          slopeUpExtraForce,
-          slopeDownExtraForce,
-          currentPos,
-          moveImpulsePointY,
-        };
-        moveCharacter(moveCharacterProps);
-      }
-
       // Rotate character Indicator
       modelQuat.setFromEuler(modelEuler);
       characterModelIndicator.quaternion.rotateTowards(
@@ -577,34 +543,6 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
           );
         }
       }
-
-      const { massRatio: massRatioN, isOnMovingObject: isOnMovingObjectN } =
-        rayHitMoveDetection(
-          rayHit,
-          canJump,
-          standingForcePoint,
-          rayOrigin,
-          massRatio,
-          characterRef.current,
-          isOnMovingObject,
-          distanceFromCharacterToObject,
-          currentPos,
-          movingObjectVelocity,
-          objectAngvelToLinvel,
-          velocityDiff,
-          currentVel,
-          movingObjectDragForce,
-          bodyContactForce,
-          moveImpulse,
-          delta,
-          forward,
-          backward,
-          leftward,
-          rightward,
-          isPointMoving
-        );
-      isOnMovingObject = isOnMovingObjectN;
-      massRatio = massRatioN;
 
       const { slopeRayHit: slopeRayHitN } = slopeDetection({
         slopeRayOrigin: slopeRayOriginRef.current,
@@ -646,6 +584,68 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         slopeMaxAngle,
         canJump
       );
+
+      if (forward || backward || leftward || rightward) {
+        const moveCharacterProps: MoveCharacterProps = {
+          run,
+          slopeAngle,
+          movingObjectVelocity,
+          character: characterRef.current,
+          actualSlopeAngle,
+          slopeMaxAngle,
+          movingDirection,
+          characterModelIndicator,
+          movingObjectVelocityInCharacterDir,
+          currentVel,
+          wantToMoveVel,
+          rejectVel,
+          moveAccNeeded,
+          maxVelLimit,
+          sprintMult,
+          isOnMovingObject,
+          rejectVelMult,
+          accDeltaTime,
+          characterRotated,
+          modelEuler,
+          moveImpulse,
+          turnVelMultiplier,
+          canJump,
+          airDragMultiplier,
+          slopeUpExtraForce,
+          slopeDownExtraForce,
+          currentPos,
+          moveImpulsePointY,
+        };
+        moveCharacter(moveCharacterProps);
+      }
+
+      const { massRatio: massRatioN, isOnMovingObject: isOnMovingObjectN } =
+        rayHitMoveDetection(
+          rayHit,
+          canJump,
+          standingForcePoint,
+          rayOrigin,
+          massRatio,
+          characterRef.current,
+          isOnMovingObject,
+          distanceFromCharacterToObject,
+          currentPos,
+          movingObjectVelocity,
+          objectAngvelToLinvel,
+          velocityDiff,
+          currentVel,
+          movingObjectDragForce,
+          bodyContactForce,
+          moveImpulse,
+          delta,
+          forward,
+          backward,
+          leftward,
+          rightward,
+          isPointMoving
+        );
+      isOnMovingObject = isOnMovingObjectN;
+      massRatio = massRatioN;
 
       // Jump impulse
       applyJumpImpulse(
