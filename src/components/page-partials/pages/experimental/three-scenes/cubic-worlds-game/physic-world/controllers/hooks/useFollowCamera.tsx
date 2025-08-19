@@ -1,5 +1,5 @@
 import { Mesh, Object3D, Object3DEventMap, Raycaster, Vector3 } from "three";
-import { camListenerTargetType } from "../complex-controller";
+import { camListenerTargetType } from "../character-controller";
 import { useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 

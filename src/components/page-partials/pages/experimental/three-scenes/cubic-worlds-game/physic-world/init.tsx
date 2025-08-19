@@ -2,7 +2,7 @@ import { Physics, RigidBody } from "@react-three/rapier";
 import Ground from "./ground";
 import PrimitiveModel from "../primitive-modle";
 import { randFloatSpread } from "three/src/math/MathUtils.js";
-import CompolexController from "./controllers/complex-controller";
+import CompolexController from "./controllers/character-controller";
 import CharacterControllerAnimation from "./controllers/character-controller-animation";
 import { animationSet } from "./controllers/config/character.config";
 import CharacterControllerModel from "./controllers/character-controller-model";
@@ -80,21 +80,6 @@ const InitPhysicWorld = () => {
             </RigidBody>
           );
         })}
-        {/* <KeyboardControls map={keyboardMap}>
-          <Ecctrl debug animated floatHeight={0} capsuleHalfHeight={0.6}>
-            <EcctrlAnimation
-              characterURL={characterURL} // Must have property
-              animationSet={animationSet} // Must have property
-            >
-              <CharacterModel
-                path="/3d-models/characters/constantine_character.glb"
-                position={[0, -0.9, 0]}
-              />
-            </EcctrlAnimation>
-          </Ecctrl>
-        </KeyboardControls> */}
-        {/* <CharacterController /> */}
-        {/* <AiController /> */}
         <CompolexController
           animated
           capsuleHalfHeight={0.6}

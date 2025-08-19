@@ -8,7 +8,7 @@ import {
 } from "@dimforge/rapier3d-compat";
 import { RapierRigidBody } from "@react-three/rapier";
 import { Mesh, Vector3 } from "three";
-import { userDataType } from "../complex-controller";
+import { userDataType } from "../character-controller";
 
 export interface SlopeDetectionProps {
   slopeRayOrigin: Mesh | null;
