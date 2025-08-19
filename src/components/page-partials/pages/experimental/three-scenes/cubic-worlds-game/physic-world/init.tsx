@@ -11,9 +11,9 @@ const InitPhysicWorld = () => {
   return (
     <>
       {/* <CameraControls makeDefault /> */}
-      <Physics timeStep="vary" debug>
+      <Physics timeStep="vary">
         <Ground />
-        {Array.from({ length: 50 }, (_, i) => {
+        {Array.from({ length: 250 }, (_, i) => {
           return (
             <RigidBody
               key={i}
@@ -46,24 +46,7 @@ const InitPhysicWorld = () => {
             </RigidBody>
           );
         })}
-        {Array.from({ length: 50 }, (_, i) => {
-          return (
-            <RigidBody
-              key={i}
-              type="dynamic"
-              position={[randFloatSpread(40) + 10, 5, randFloatSpread(40) + 10]}
-              rotation={[Math.PI / 4, 0, 0]}
-              userData={{ isGround: true }}
-              scale={[4, 4, 4]}
-              // linearDamping={1.1}
-              mass={10}
-              // mass={100}
-            >
-              <PrimitiveModel modelName="box.glb" />
-            </RigidBody>
-          );
-        })}
-        {Array.from({ length: 50 }, (_, i) => {
+        {Array.from({ length: 10 }, (_, i) => {
           return (
             <RigidBody
               key={i}
@@ -83,7 +66,6 @@ const InitPhysicWorld = () => {
         <CompolexController
           animated
           capsuleHalfHeight={0.6}
-          springK={0}
           followLight
           maxVelLimit={4}
         >
