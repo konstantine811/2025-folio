@@ -391,7 +391,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
 
     // can jump setup
     let canJump: boolean = false;
-    const isFalling: boolean = false;
+    let isFalling: boolean = false;
     const initialGravityScale: number = useMemo(
       () => props.gravityScale ?? 1,
       [props.gravityScale]
@@ -563,6 +563,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         slopeAngle,
         slopeRayOriginOffest,
       });
+
       slopeRayHit = slopeRayHitN;
 
       /**
@@ -694,7 +695,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         movingObjectDragForce
       );
 
-      detectFallingState(
+      isFalling = detectFallingState(
         isFalling,
         currentVel,
         canJump,

@@ -11,7 +11,7 @@ const InitPhysicWorld = () => {
   return (
     <>
       {/* <CameraControls makeDefault /> */}
-      <Physics timeStep="vary">
+      <Physics timeStep="vary" debug>
         <Ground />
         {Array.from({ length: 50 }, (_, i) => {
           return (

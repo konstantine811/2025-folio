@@ -41,6 +41,5 @@ export const animationSet = {
   run: "Run",
   jump: "FallingIdle",
   jumpIdle: "FallingIdle",
-  jumpLand: "FallingIdle",
   fall: "FallingIdle",
 };

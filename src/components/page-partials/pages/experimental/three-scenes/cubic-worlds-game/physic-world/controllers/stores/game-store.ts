@@ -72,18 +72,18 @@ export const useGameStore = create<GameStore>((set) => ({
 
   idle: () =>
     set((state) => {
-      if (canChangeAnimation(state, [state.animationSet.jumpIdle])) {
-        return { curAnimation: state.animationSet.jumpLand || null };
-      }
       if (
-        !canChangeAnimation(state, [
-          state.animationSet.action1,
-          state.animationSet.action2,
-          state.animationSet.action3,
-          state.animationSet.action4,
-        ])
+        state.curAnimation === state.animationSet.jumpIdle &&
+        state.animationSet.jumpLand
       ) {
-        return { curAnimation: state.animationSet.idle || null };
+        return { curAnimation: state.animationSet.jumpLand };
+      } else if (
+        state.curAnimation !== state.animationSet.action1 &&
+        state.curAnimation !== state.animationSet.action2 &&
+        state.curAnimation !== state.animationSet.action3 &&
+        state.curAnimation !== state.animationSet.action4
+      ) {
+        return { curAnimation: state.animationSet.idle };
       }
       return {};
     }),

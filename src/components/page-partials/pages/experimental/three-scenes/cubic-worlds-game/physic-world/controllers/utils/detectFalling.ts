@@ -36,4 +36,5 @@ export const detectFallingState = (
       }
     }
   }
+  return isFalling;
 };
