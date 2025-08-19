@@ -85,6 +85,7 @@ const InitPhysicWorld = () => {
           capsuleHalfHeight={0.6}
           springK={0}
           followLight
+          maxVelLimit={4}
         >
           <CharacterControllerAnimation
             characterURL="/3d-models/characters/constantine_character.glb"
