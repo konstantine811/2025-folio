@@ -79,7 +79,6 @@ const InitPhysicWorld = () => {
             />
           </CharacterControllerAnimation>
         </CompolexController>
-        d
       </Physics>
     </>
   );

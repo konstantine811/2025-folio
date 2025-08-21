@@ -20,6 +20,8 @@ interface Props {
   camListenerTarget?: camListenerTargetType;
 }
 
+let isMouseDown = false;
+
 const useFollowCamera = ({
   disableFollowCam = false,
   disableFollowCamPos = null,
@@ -39,7 +41,6 @@ const useFollowCamera = ({
   const { scene, camera, gl } = useThree();
   // const { rapier, world } = useRapier();
 
-  let isMouseDown = false;
   const previousTouch1 = useRef<Touch | null>(null);
   const previousTouch2 = useRef<Touch | null>(null);
 
@@ -93,7 +94,7 @@ const useFollowCamera = ({
       }
       return false;
     },
-    [isMouseDown, camMoveSpeed, camLowLimit, camUpLimit, followCam, pivot]
+    [camMoveSpeed, camLowLimit, camUpLimit, followCam, pivot]
   );
 
   // Mouse scroll event

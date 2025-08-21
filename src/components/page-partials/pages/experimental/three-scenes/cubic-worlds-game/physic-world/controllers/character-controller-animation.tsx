@@ -54,6 +54,12 @@ export default function CharacterControllerAnimation(
       curAnimation === props.animationSet.action3 ||
       curAnimation === props.animationSet.action4;
 
+    if (curAnimation === props.animationSet.jump) {
+      group.current?.position.setY(-0.3);
+    } else {
+      group.current?.position.setY(0);
+    }
+
     if (isPlayOnce) {
       action.reset().fadeIn(0.2).setLoop(LoopOnce, 0).play();
       action.clampWhenFinished = true;

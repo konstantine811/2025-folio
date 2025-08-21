@@ -14,7 +14,7 @@ const Experience = () => {
       <InitPhysicWorld />
       <InfiniteGrass
         radius={1}
-        tileSize={30}
+        tileSize={20}
         density={40} // 15 лез/м^2 ≈ 540 лез/тайл
         seed={20}
         // yAt={(x, z) => 0} // Сюди можна підставити висоту терену, якщо є.

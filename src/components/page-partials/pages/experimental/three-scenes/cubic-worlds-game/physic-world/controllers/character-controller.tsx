@@ -171,7 +171,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
       children,
       capsuleHalfHeight = 0.35,
       capsuleRadius = 0.3,
-      floatHeight = 0.3,
+      floatHeight = 0,
       characterInitDir = 0, // in rad
       followLight = false,
       disableFollowCam = false,
