@@ -1,13 +1,17 @@
-import { VFXSettings } from "@/types/three/vfx-particles.model";
+import { VFXEmitterSettings } from "@/types/three/vfx-particles.model";
 import { create } from "zustand";
 
-type emitter = (params: VFXSettings) => void;
+type emitter = (rate: number, callback: () => VFXEmitterSettings) => void;
 
 interface VFXState {
   emitters: Record<string, emitter>;
   registerEmitter: (name: string, emitter: emitter) => void;
   unRegisterEmitter: (name: string) => void;
-  emit: (name: string, params: VFXSettings) => void;
+  emit: (
+    name: string,
+    rate: number,
+    callback: () => VFXEmitterSettings
+  ) => void;
 }
 
 export const useVFXStore = create<VFXState>((set, get) => ({
@@ -28,12 +32,12 @@ export const useVFXStore = create<VFXState>((set, get) => ({
       return state;
     });
   },
-  emit: (name, ...params) => {
+  emit: (name, rate, callback) => {
     const emitter = get().emitters[name];
     if (!emitter) {
       console.error(`Emitter ${name} not found`);
       return;
     }
-    emitter(...params);
+    emitter(rate, callback);
   },
 }));

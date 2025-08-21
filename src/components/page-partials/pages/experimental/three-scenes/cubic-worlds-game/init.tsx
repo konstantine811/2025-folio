@@ -4,12 +4,14 @@ import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import Experience from "./experience";
 import InitKeyboardController from "./physic-world/controllers/init-keyboard";
+import { Stats } from "@react-three/drei";
 
 const Init = () => {
   return (
     <MainWrapperOffset>
       <InitKeyboardController />
       <ThreeLoader />
+      <Stats />
       <Canvas
         shadows
         camera={{ position: [5, 3, 5], fov: 70 }}

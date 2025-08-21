@@ -1,9 +1,14 @@
-import { VFXSettings } from "@/types/three/vfx-particles.model";
+import {
+  RenderMode,
+  VFXEmitterSettings,
+  VFXSettings,
+} from "@/types/three/vfx-particles.model";
 import { shaderMaterial } from "@react-three/drei";
 import { extend, useFrame } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AdditiveBlending,
+  BufferAttribute,
   Color,
   DynamicDrawUsage,
   Euler,
@@ -14,7 +19,6 @@ import {
   ShaderMaterial,
   Vector3,
 } from "three";
-import { randFloat, randFloatSpread } from "three/src/math/MathUtils.js";
 import { useVFXStore } from "./vfx-store";
 
 const tmpPosition = new Vector3();
@@ -24,9 +28,215 @@ const tmpScale = new Vector3(1, 1, 1);
 const tmpMatrix = new Matrix4();
 const tmpColor = new Color();
 
+const VFXParticles = ({
+  settings,
+  name,
+}: {
+  settings: Partial<VFXSettings>;
+  name: string;
+}) => {
+  const {
+    nbParticles = 1000,
+    intensity = 1,
+    renderMode = RenderMode.mesh,
+  } = settings;
+  const mesh = useRef<InstancedMesh>(null);
+  const defaultGeometry = useMemo(() => new PlaneGeometry(0.5, 0.5), []);
+  const registerEmitter = useVFXStore((state) => state.registerEmitter);
+  const unRegisterEmitter = useVFXStore((state) => state.unRegisterEmitter);
+  const [attributeArrays] = useState({
+    instanceColor: new Float32Array(nbParticles * 3),
+    instanceColorEnd: new Float32Array(nbParticles * 3),
+    instanceDirection: new Float32Array(nbParticles * 3),
+    instanceLifetime: new Float32Array(nbParticles * 2),
+    instanceSpeed: new Float32Array(nbParticles * 1),
+    instanceRotationSpeed: new Float32Array(nbParticles * 3),
+  });
+  const cursor = useRef(0);
+  const lastCursor = useRef(0);
+  const needsUpdate = useRef(false);
+
+  const onBeforeRender = () => {
+    if (!needsUpdate.current || !mesh.current) {
+      return;
+    }
+    const meshCur = mesh.current;
+    const meshCurGeometry = meshCur.geometry;
+    const attributes = [
+      meshCur.instanceMatrix,
+      meshCurGeometry.getAttribute("instanceColor") as BufferAttribute,
+      meshCurGeometry.getAttribute("instanceColorEnd") as BufferAttribute,
+      meshCurGeometry.getAttribute("instanceDirection") as BufferAttribute,
+      meshCurGeometry.getAttribute("instanceLifetime") as BufferAttribute,
+      meshCurGeometry.getAttribute("instanceSpeed") as BufferAttribute,
+      meshCurGeometry.getAttribute("instanceRotationSpeed") as BufferAttribute,
+    ];
+    attributes.forEach((attribute) => {
+      attribute.clearUpdateRanges();
+      if (lastCursor.current > cursor.current) {
+        attribute.addUpdateRange(0, cursor.current * attribute.itemSize);
+        attribute.addUpdateRange(
+          lastCursor.current * attribute.itemSize,
+          nbParticles * attribute.itemSize -
+            lastCursor.current * attribute.itemSize
+        );
+      } else {
+        attribute.addUpdateRange(
+          lastCursor.current * attribute.itemSize,
+          cursor.current * attribute.itemSize -
+            lastCursor.current * attribute.itemSize
+        );
+      }
+      attribute.needsUpdate = true;
+    });
+    lastCursor.current = cursor.current;
+    needsUpdate.current = false;
+  };
+  const emit = useCallback(
+    (count: number, setup: () => VFXEmitterSettings) => {
+      if (mesh.current) {
+        const instanceColor =
+          mesh.current.geometry.getAttribute("instanceColor");
+        const instanceColorEnd =
+          mesh.current.geometry.getAttribute("instanceColorEnd");
+        const instanceDirection =
+          mesh.current.geometry.getAttribute("instanceDirection");
+        const instanceLifetime =
+          mesh.current.geometry.getAttribute("instanceLifetime");
+        const instanceSpeed =
+          mesh.current.geometry.getAttribute("instanceSpeed");
+        const instanceRotationSpeed = mesh.current.geometry.getAttribute(
+          "instanceRotationSpeed"
+        );
+        for (let i = 0; i < count; i++) {
+          if (cursor.current >= nbParticles) {
+            cursor.current = 0;
+          }
+          const {
+            position,
+            scale,
+            rotation,
+            direction,
+            lifeTime,
+            speed,
+            rotationSpeed,
+            colorEnd,
+            colorStart,
+          } = setup();
+
+          tmpPosition.set(...position);
+          tmpRotationEuler.set(...rotation);
+          tmpRotation.setFromEuler(tmpRotationEuler);
+          tmpScale.set(...scale);
+          tmpMatrix.compose(tmpPosition, tmpRotation, tmpScale);
+          mesh.current.setMatrixAt(cursor.current, tmpMatrix);
+          tmpColor.set(colorStart);
+          instanceColor.setXYZ(
+            cursor.current,
+            tmpColor.r,
+            tmpColor.g,
+            tmpColor.b
+          );
+
+          tmpColor.set(colorEnd);
+          instanceColorEnd.setXYZ(
+            cursor.current,
+            tmpColor.r,
+            tmpColor.g,
+            tmpColor.b
+          );
+          instanceDirection.setXYZ(cursor.current, ...direction);
+          instanceLifetime.setXY(cursor.current, ...lifeTime);
+          instanceSpeed.setX(cursor.current, speed);
+          instanceRotationSpeed.setXYZ(cursor.current, ...rotationSpeed);
+          cursor.current++;
+          cursor.current = cursor.current % nbParticles;
+        }
+        needsUpdate.current = true;
+      }
+    },
+    [nbParticles]
+  );
+
+  useFrame(({ clock }) => {
+    if (mesh.current) {
+      const material = mesh.current.material as ShaderMaterial;
+      material.uniforms.uTime.value = clock.elapsedTime;
+      material.uniforms.uIntensity.value = intensity;
+    }
+  });
+
+  useEffect(() => {
+    //emit(nbParticles);
+    registerEmitter(name, emit);
+    return () => {
+      unRegisterEmitter(name);
+    };
+  }, [nbParticles, emit, name, registerEmitter, unRegisterEmitter]);
+
+  return (
+    <>
+      <instancedMesh
+        args={[defaultGeometry, undefined, nbParticles]}
+        ref={mesh}
+        onBeforeRender={onBeforeRender}
+      >
+        <particlesMaterial
+          blending={AdditiveBlending}
+          transparent
+          depthWrite={false}
+          defines={{
+            BILLBOARD_MODE: renderMode === RenderMode.billboard,
+            MESH_MODE: renderMode === RenderMode.mesh,
+          }}
+        />
+        <instancedBufferAttribute
+          attach={"geometry-attributes-instanceColor"}
+          args={[attributeArrays.instanceColor, 3]}
+          count={nbParticles}
+          usage={DynamicDrawUsage}
+        />
+        <instancedBufferAttribute
+          attach={"geometry-attributes-instanceColorEnd"}
+          args={[attributeArrays.instanceColorEnd, 3]}
+          count={nbParticles}
+          usage={DynamicDrawUsage}
+        />
+        <instancedBufferAttribute
+          attach={"geometry-attributes-instanceDirection"}
+          args={[attributeArrays.instanceDirection, 3]}
+          count={nbParticles}
+          usage={DynamicDrawUsage}
+        />
+        <instancedBufferAttribute
+          attach={"geometry-attributes-instanceLifetime"}
+          args={[attributeArrays.instanceLifetime, 2]}
+          count={nbParticles}
+          usage={DynamicDrawUsage}
+        />
+        <instancedBufferAttribute
+          attach={"geometry-attributes-instanceSpeed"}
+          args={[attributeArrays.instanceSpeed, 1]}
+          count={nbParticles}
+          usage={DynamicDrawUsage}
+        />
+        <instancedBufferAttribute
+          attach={"geometry-attributes-instanceRotationSpeed"}
+          args={[attributeArrays.instanceRotationSpeed, 3]}
+          count={nbParticles}
+          usage={DynamicDrawUsage}
+        />
+      </instancedMesh>
+    </>
+  );
+};
+
+export default VFXParticles;
+
 const ParticlesMaterial = shaderMaterial(
   {
     uTime: 0,
+    uIntensity: 1,
   },
   /*glsl*/ `
     uniform float uTime;
@@ -77,11 +287,23 @@ const ParticlesMaterial = shaderMaterial(
       );
     }
 
+    vec3 billboard(vec2 v, mat4 view) {
+      vec3 up = vec3(view[0][1], view[1][1], view[2][1]);
+      vec3 right = vec3(view[0][0], view[1][0], view[2][0]);
+      vec3 p = right * v.x + up * v.y;
+      return p;
+    }
+
     void main() {
         float startTime = instanceLifetime.x;
         float duration = instanceLifetime.y;
         float age = uTime - startTime;
         vProgress =  age / duration;
+
+        if(vProgress < 0.0 || vProgress > 1.0) {
+          gl_Position = vec4(vec3(9999.0), 1.0);
+          return;
+        }
 
         vec3 rotationSpeed = instanceRotationSpeed * age;
 
@@ -93,11 +315,28 @@ const ParticlesMaterial = shaderMaterial(
         vec3 normalizedDirection = length(instanceDirection) > 0.0 ? normalize(instanceDirection) : vec3(0.0);
         vec3 offset = normalizedDirection * age * instanceSpeed;
 
-        vec4 startPosition = modelMatrix * instanceMatrix * rotationMatrix * vec4(position, 1.0);
-        vec3 instancePosition = startPosition.xyz;
-        vec3 finalPosition = instancePosition + offset;
-        vec4 mvPosition = modelViewMatrix * vec4(finalPosition, 1.0);
-        
+       
+        vec4 mvPosition;
+
+        #ifdef MESH_MODE
+        // Mesh mode
+           vec4 startPosition = modelMatrix * instanceMatrix * rotationMatrix * vec4(position, 1.0);
+            
+           vec3 instancePosition = startPosition.xyz;
+           
+           vec3 finalPosition = instancePosition + offset;
+           mvPosition = modelViewMatrix * vec4(finalPosition, 1.0);
+        #endif
+
+        #ifdef BILLBOARD_MODE
+        // Billboard mode
+        vec4 localPos = vec4(position, 1.0);
+        localPos.xyz = billboard(position.xy, viewMatrix);
+
+        vec4 worldPos = modelMatrix * instanceMatrix * rotationMatrix * localPos;
+        worldPos.xyz += offset; // Apply offset in world space
+        mvPosition = modelViewMatrix * worldPos;
+        #endif
 
         gl_Position = projectionMatrix * mvPosition;
         vUv = uv;
@@ -110,203 +349,17 @@ const ParticlesMaterial = shaderMaterial(
         varying vec3 vColor;
         varying vec3 vColorEnd;
         varying float vProgress;
+        uniform float uIntensity;
 
         void main() {
           if(vProgress < 0.0 || vProgress > 1.0) {
             discard;
           }
           vec3 finalColor = mix(vColor, vColorEnd, vProgress);
+          finalColor *= uIntensity;
           gl_FragColor = vec4(finalColor, 1.0);
         }
     `
 );
 
 extend({ ParticlesMaterial });
-
-const VFXParticles = ({
-  settings,
-  name,
-}: {
-  settings: VFXSettings;
-  name: string;
-}) => {
-  const { nbParticles = 1000 } = settings;
-  const mesh = useRef<InstancedMesh>(null);
-  const defaultGeometry = useMemo(() => new PlaneGeometry(0.5, 0.5), []);
-  const registerEmitter = useVFXStore((state) => state.registerEmitter);
-  const unRegisterEmitter = useVFXStore((state) => state.unRegisterEmitter);
-  const [attributeArrays] = useState({
-    instanceColor: new Float32Array(nbParticles * 3),
-    instanceColorEnd: new Float32Array(nbParticles * 3),
-    instanceDirection: new Float32Array(nbParticles * 3),
-    instanceLifetime: new Float32Array(nbParticles * 2),
-    instanceSpeed: new Float32Array(nbParticles * 1),
-    instanceRotationSpeed: new Float32Array(nbParticles * 3),
-  });
-  const cursor = useRef(0);
-
-  const emit = useCallback(
-    ({ nbParticles: count }: VFXSettings) => {
-      if (mesh.current && count) {
-        const instanceColor =
-          mesh.current.geometry.getAttribute("instanceColor");
-        const instanceColorEnd =
-          mesh.current.geometry.getAttribute("instanceColorEnd");
-        const instanceDirection =
-          mesh.current.geometry.getAttribute("instanceDirection");
-        const instanceLifetime =
-          mesh.current.geometry.getAttribute("instanceLifetime");
-        const instanceSpeed =
-          mesh.current.geometry.getAttribute("instanceSpeed");
-        const instanceRotationSpeed = mesh.current.geometry.getAttribute(
-          "instanceRotationSpeed"
-        );
-        for (let i = 0; i < count; i++) {
-          if (cursor.current >= nbParticles) {
-            cursor.current = 0;
-          }
-          const position = [
-            randFloatSpread(0.1),
-            randFloatSpread(0.1),
-            randFloatSpread(0.1),
-          ] as [number, number, number];
-          const scale = [
-            randFloatSpread(1),
-            randFloatSpread(1),
-            randFloatSpread(1),
-          ] as [number, number, number];
-          const rotation = [
-            randFloatSpread(Math.PI),
-            randFloatSpread(Math.PI),
-            randFloatSpread(Math.PI),
-          ] as [number, number, number];
-          tmpColor.setRGB(1, 1, 1);
-          instanceColor.setXYZ(
-            cursor.current * 3,
-            tmpColor.r,
-            tmpColor.g,
-            tmpColor.b
-          );
-
-          tmpColor.setRGB(0, 0, 0);
-          instanceColorEnd.setXYZ(
-            cursor.current * 3,
-            tmpColor.r,
-            tmpColor.g,
-            tmpColor.b
-          );
-
-          const direction = [randFloatSpread(0.5), 1, randFloatSpread(0.5)] as [
-            number,
-            number,
-            number
-          ];
-          instanceDirection.setXYZ(cursor.current * 3, ...direction);
-
-          const lifetime = [randFloat(0, 5), randFloat(0.1, 5)] as [
-            number,
-            number
-          ];
-          instanceLifetime.setXY(cursor.current * 2, ...lifetime);
-
-          const speed = randFloat(1, 5);
-          instanceSpeed.setX(cursor.current * 1, speed);
-
-          const rotationSpeed = [
-            randFloatSpread(1),
-            randFloatSpread(1),
-            randFloatSpread(1),
-          ] as [number, number, number];
-          instanceRotationSpeed.setXYZ(cursor.current * 3, ...rotationSpeed);
-
-          tmpPosition.set(...position);
-          tmpRotationEuler.set(...rotation);
-          tmpRotation.setFromEuler(tmpRotationEuler);
-          tmpScale.set(...scale);
-          tmpMatrix.compose(tmpPosition, tmpRotation, tmpScale);
-          if (mesh.current) {
-            mesh.current.setMatrixAt(cursor.current, tmpMatrix);
-          }
-          cursor.current++;
-          cursor.current = cursor.current % nbParticles;
-        }
-        mesh.current.instanceMatrix.needsUpdate = true;
-        instanceColor.needsUpdate = true;
-        instanceColorEnd.needsUpdate = true;
-        instanceDirection.needsUpdate = true;
-        instanceLifetime.needsUpdate = true;
-        instanceSpeed.needsUpdate = true;
-        instanceRotationSpeed.needsUpdate = true;
-      }
-    },
-    [nbParticles]
-  );
-
-  useFrame(({ clock }) => {
-    if (mesh.current) {
-      const material = mesh.current.material as ShaderMaterial;
-      material.uniforms.uTime.value = clock.elapsedTime;
-    }
-  });
-
-  useEffect(() => {
-    //emit(nbParticles);
-    registerEmitter(name, emit);
-    return () => {
-      unRegisterEmitter(name);
-    };
-  }, [nbParticles, emit, name, registerEmitter, unRegisterEmitter]);
-
-  return (
-    <>
-      <instancedMesh
-        args={[defaultGeometry, undefined, nbParticles]}
-        ref={mesh}
-      >
-        <particlesMaterial
-          blending={AdditiveBlending}
-          transparent
-          depthWrite={false}
-        />
-        <instancedBufferAttribute
-          attach={"geometry-attributes-instanceColor"}
-          args={[attributeArrays.instanceColor, 3]}
-          count={nbParticles}
-          usage={DynamicDrawUsage}
-        />
-        <instancedBufferAttribute
-          attach={"geometry-attributes-instanceColorEnd"}
-          args={[attributeArrays.instanceColorEnd, 3]}
-          count={nbParticles}
-          usage={DynamicDrawUsage}
-        />
-        <instancedBufferAttribute
-          attach={"geometry-attributes-instanceDirection"}
-          args={[attributeArrays.instanceDirection, 3]}
-          count={nbParticles}
-          usage={DynamicDrawUsage}
-        />
-        <instancedBufferAttribute
-          attach={"geometry-attributes-instanceLifetime"}
-          args={[attributeArrays.instanceLifetime, 2]}
-          count={nbParticles}
-          usage={DynamicDrawUsage}
-        />
-        <instancedBufferAttribute
-          attach={"geometry-attributes-instanceSpeed"}
-          args={[attributeArrays.instanceSpeed, 1]}
-          count={nbParticles}
-          usage={DynamicDrawUsage}
-        />
-        <instancedBufferAttribute
-          attach={"geometry-attributes-instanceRotationSpeed"}
-          args={[attributeArrays.instanceRotationSpeed, 3]}
-          count={nbParticles}
-          usage={DynamicDrawUsage}
-        />
-      </instancedMesh>
-    </>
-  );
-};
-
-export default VFXParticles;
