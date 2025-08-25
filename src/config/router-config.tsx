@@ -159,6 +159,20 @@ const ThreeVFXEngine = lazy(
     )
 );
 
+const TwoCanvasFirstSimpleBall = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/2d-canvas/first-simple-ball/init"
+    )
+);
+
+const ThreeVFXFireworks = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/vfx-fireworks/init"
+    )
+);
+
 const LoginPage = lazy(() => import("../components/page-partials/pages/Login"));
 
 export enum RoutPath {
@@ -190,6 +204,8 @@ export enum RoutPath {
   EXPERIMENTAL_VFX_TRAIL = "three-vfx-trail",
   EXPERIMENTAL_CUBIC_WORLDS_GAME = "three-cubic-worlds-game",
   EXPERIMENTAL_VFX_ENGINE = "three-vfx-engine",
+  EXPERIMENTAL_2D_CANVAS_FIRST_SIMPLE_BALL = "two-canvas-first-simple-ball",
+  EXPERIMENTAL_THREE_VFX_FIREWORKS = "three-vfx-fireworks",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -335,6 +351,18 @@ export const EXPERIMENTAL_ROUTERS = [
     Component: ThreeVFXEngine,
     id: "experimental-three-vfx-engine",
     icon: "⚙️",
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_2D_CANVAS_FIRST_SIMPLE_BALL,
+    Component: TwoCanvasFirstSimpleBall,
+    id: "experimental-two-canvas-first-simple-ball",
+    icon: "🎨",
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_VFX_FIREWORKS,
+    Component: ThreeVFXFireworks,
+    id: "experimental-three-vfx-fireworks",
+    icon: "🎆",
   },
 ];
 

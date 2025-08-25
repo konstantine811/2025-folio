@@ -1,13 +1,23 @@
 import { SpawnMode, VFXSettings } from "@/types/three/vfx-particles.model";
-import { forwardRef, JSX, useImperativeHandle, useRef } from "react";
+import {
+  forwardRef,
+  JSX,
+  useCallback,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Euler, Object3D, Quaternion, Vector3 } from "three";
 import { useVFXStore } from "./vfx-store";
 import { useFrame } from "@react-three/fiber";
 import { randFloat, randInt } from "three/src/math/MathUtils.js";
+import VFXBuilderEmitter from "./vfx-builder";
 
 type Props = JSX.IntrinsicElements["object3D"] & {
   settings?: Partial<VFXSettings>;
   emitter: string;
+  debug?: boolean;
 };
 
 const worldPosition = new Vector3();
@@ -17,27 +27,30 @@ const worldRotation = new Euler();
 const worldScale = new Vector3();
 
 const VFXEmitter = forwardRef<Object3D, Props>(
-  ({ emitter, settings = {}, ...props }, forwardedRef) => {
-    const {
-      duration = 1,
-      nbParticles = 1000,
-      spawnMode = SpawnMode.time,
-      loop = false,
-      delay = 0,
-      colorStart = ["white", "skyblue"],
-      colorEnd = [],
-      particlesLifetime = [0.1, 1],
-      speed = [5, 20],
-      size = [0.1, 1],
-      startPositionMin = [-1, -1, -1],
-      startPositionMax = [1, 1, 1],
-      startRotationMin = [0, 0, 0],
-      startRotationMax = [0, 0, 0],
-      rotationSpeedMin = [0, 0, 0],
-      rotationSpeedMax = [0, 0, 0],
-      directionMin = [0, 0, 0],
-      directionMax = [0, 0, 0],
-    } = settings;
+  ({ emitter, settings = {}, debug = false, ...props }, forwardedRef) => {
+    const [
+      {
+        duration = 1,
+        nbParticles = 1000,
+        spawnMode = SpawnMode.time,
+        loop = false,
+        delay = 0,
+        colorStart = ["white", "skyblue"],
+        colorEnd = [],
+        particlesLifetime = [0.1, 1],
+        speed = [5, 20],
+        size = [0.1, 1],
+        startPositionMin = [-1, -1, -1],
+        startPositionMax = [1, 1, 1],
+        startRotationMin = [0, 0, 0],
+        startRotationMax = [0, 0, 0],
+        rotationSpeedMin = [0, 0, 0],
+        rotationSpeedMax = [0, 0, 0],
+        directionMin = [0, 0, 0],
+        directionMax = [0, 0, 0],
+      },
+      setSettings,
+    ] = useState<VFXSettings>(settings as VFXSettings);
     const emitted = useRef(0);
     const elapsedTime = useRef(0);
     const emit = useVFXStore((state) => state.emit);
@@ -113,8 +126,26 @@ const VFXEmitter = forwardRef<Object3D, Props>(
       elapsedTime.current += delta;
     });
 
+    const onRestart = useCallback(() => {
+      emitted.current = 0;
+      elapsedTime.current = 0;
+    }, []);
+
+    const settingsBuilder = useMemo(
+      () =>
+        debug ? (
+          <VFXBuilderEmitter
+            settings={settings as VFXSettings}
+            onChange={setSettings}
+            onRestart={onRestart}
+          />
+        ) : null,
+      [debug, onRestart, settings]
+    );
+
     return (
       <>
+        {settingsBuilder}
         <object3D {...props} ref={ref}></object3D>
       </>
     );

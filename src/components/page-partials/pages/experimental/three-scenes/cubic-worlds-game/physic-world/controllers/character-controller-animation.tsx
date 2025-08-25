@@ -9,6 +9,7 @@ import {
   LoopOnce,
 } from "three";
 import { AnimationSet } from "./config/character.config";
+import { useGameDataStore } from "./stores/game-data-store";
 
 export type CharacterControllerAnimationProps = {
   characterURL: string;
@@ -16,13 +17,14 @@ export type CharacterControllerAnimationProps = {
   children: React.ReactNode;
 };
 
-export default function CharacterControllerAnimation(
+const CharacterControllerAnimation = (
   props: CharacterControllerAnimationProps
-) {
+) => {
   // Change the character src to yours
   const group = useRef<Group | null>(null);
   const { animations } = useGLTF(props.characterURL);
-  const { actions } = useAnimations(animations, group);
+  const { actions, mixer } = useAnimations(animations, group);
+  const setCharacterAnim = useGameDataStore((state) => state.setCharacterAnim);
 
   /**
    * Character animations setup
@@ -32,6 +34,17 @@ export default function CharacterControllerAnimation(
   const initializeAnimationSet = useGameStore(
     (state) => state.initializeAnimationSet
   );
+
+  useEffect(() => {
+    if (group.current) {
+      setCharacterAnim({
+        group: group.current as Group,
+        mixer: mixer ?? null,
+        actions:
+          (actions as unknown as Record<string, AnimationAction>) ?? null,
+      });
+    }
+  }, [group, mixer, actions, setCharacterAnim]);
 
   useEffect(() => {
     // Initialize animation set
@@ -53,7 +66,6 @@ export default function CharacterControllerAnimation(
       curAnimation === props.animationSet.action2 ||
       curAnimation === props.animationSet.action3 ||
       curAnimation === props.animationSet.action4;
-
     if (curAnimation === props.animationSet.jump) {
       group.current?.position.setY(-0.3);
     } else {
@@ -94,4 +106,6 @@ export default function CharacterControllerAnimation(
       </group>
     </Suspense>
   );
-}
+};
+
+export default CharacterControllerAnimation;

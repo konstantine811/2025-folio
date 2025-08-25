@@ -1,4 +1,9 @@
-import { Environment, OrbitControls, Stats } from "@react-three/drei";
+import {
+  Environment,
+  OrbitControls,
+  Stats,
+  useTexture,
+} from "@react-three/drei";
 import VFXParticles from "./vfxs/vfx-particles";
 import VFXEmitter from "./vfxs/vfx-emitter";
 import { useRef } from "react";
@@ -10,6 +15,9 @@ import { RenderMode } from "@/types/three/vfx-particles.model";
 const Experience = () => {
   const emittedRed = useRef<Object3D>(null);
   const emittedBlue = useRef<Object3D>(null);
+  const alphaMap = useTexture(
+    "/images/textures/kenney_particle-pack/png_transparent/symbol_02.png"
+  );
 
   useFrame(({ clock }) => {
     const time = clock.getElapsedTime();
@@ -35,16 +43,21 @@ const Experience = () => {
         settings={{
           nbParticles: 10000,
           intensity: 1.5,
-          renderMode: RenderMode.billboard,
+          renderMode: RenderMode.mesh,
+          fadeSize: [0, 1],
+          fadeAlpha: [0.5, 0.5],
+          gravity: [0, -10, 0],
         }}
+        geometry={<capsuleGeometry args={[0.02, 0.2, 1, 8]} />}
       />
       <VFXEmitter
         ref={emittedRed}
         emitter="sparks"
+        debug
         settings={{
           nbParticles: 5000,
           colorStart: ["red", "white"],
-          size: [0.01, 0.1],
+          size: [0.1, 1],
           startPositionMin: [0, 0, 0],
           startPositionMax: [0, 0, 0],
           directionMin: [-0.5, 0, -0.5],
@@ -56,10 +69,11 @@ const Experience = () => {
       <VFXEmitter
         ref={emittedBlue}
         emitter="sparks"
+        debug
         settings={{
           nbParticles: 5000,
           colorStart: ["blue", "white"],
-          size: [0.01, 0.1],
+          size: [0.1, 1],
           startPositionMin: [0, 0, 0],
           startPositionMax: [0, 0, 0],
           directionMin: [-0.5, 0, -0.5],

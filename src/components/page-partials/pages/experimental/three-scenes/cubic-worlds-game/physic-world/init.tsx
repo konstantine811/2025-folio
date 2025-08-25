@@ -6,12 +6,23 @@ import CompolexController from "./controllers/character-controller";
 import CharacterControllerAnimation from "./controllers/character-controller-animation";
 import { animationSet } from "./controllers/config/character.config";
 import CharacterControllerModel from "./controllers/character-controller-model";
+import PickUpController from "./controllers/pick-up-controller";
+import { useEffect, useRef } from "react";
+import { Mesh } from "three";
+import { useGameDataStore } from "./controllers/stores/game-data-store";
 
 const InitPhysicWorld = () => {
+  const setCubeMesh = useGameDataStore((state) => state.setCubeMesh);
+  const cubeRef = useRef<Mesh>(null);
+  useEffect(() => {
+    if (cubeRef.current) {
+      setCubeMesh(cubeRef.current);
+    }
+  }, [cubeRef, setCubeMesh]);
   return (
     <>
       {/* <CameraControls makeDefault /> */}
-      <Physics timeStep="vary">
+      <Physics timeStep="vary" debug>
         <Ground />
         {Array.from({ length: 250 }, (_, i) => {
           return (
@@ -79,6 +90,14 @@ const InitPhysicWorld = () => {
             />
           </CharacterControllerAnimation>
         </CompolexController>
+
+        <mesh ref={cubeRef} position={[0.6, 0.95, 0.2]}>
+          <boxGeometry args={[0.12, 0.12, 0.12]} />
+          <meshStandardMaterial color="orange" />
+        </mesh>
+
+        {/* Контролер пікапу */}
+        <PickUpController />
       </Physics>
     </>
   );

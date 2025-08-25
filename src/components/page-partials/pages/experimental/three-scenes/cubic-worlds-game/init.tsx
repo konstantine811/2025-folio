@@ -12,7 +12,20 @@ const Init = () => {
       <InitKeyboardController />
       <ThreeLoader />
       <Stats />
-      <Canvas shadows camera={{ position: [5, 3, 5], fov: 70 }}>
+      <Canvas
+        shadows
+        camera={{ position: [5, 3, 5], fov: 70 }}
+        // onPointerDown={(e: React.PointerEvent<HTMLDivElement>) => {
+        //   const canvas = e.currentTarget as HTMLDivElement;
+        //   const domCanvas = canvas.querySelector(
+        //     "canvas"
+        //   ) as HTMLCanvasElement | null;
+
+        //   if (domCanvas && "requestPointerLock" in domCanvas) {
+        //     domCanvas.requestPointerLock();
+        //   }
+        // }}
+      >
         <color attach="background" args={["#698FF3"]} />
         <OrbitControls makeDefault />
         <Suspense fallback={null}>

@@ -32,6 +32,9 @@ export interface VFXSettings {
   directionMax: Triplet;
   intensity: number;
   renderMode: RenderMode;
+  fadeSize: Duplet;
+  fadeAlpha: Duplet;
+  gravity: Triplet;
 }
 
 export interface VFXEmitterSettings {
