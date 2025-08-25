@@ -1,9 +1,4 @@
-import {
-  Environment,
-  OrbitControls,
-  Stats,
-  useTexture,
-} from "@react-three/drei";
+import { Environment, OrbitControls, Stats } from "@react-three/drei";
 import VFXParticles from "./vfxs/vfx-particles";
 import VFXEmitter from "./vfxs/vfx-emitter";
 import { useRef } from "react";
@@ -15,9 +10,9 @@ import { RenderMode } from "@/types/three/vfx-particles.model";
 const Experience = () => {
   const emittedRed = useRef<Object3D>(null);
   const emittedBlue = useRef<Object3D>(null);
-  const alphaMap = useTexture(
-    "/images/textures/kenney_particle-pack/png_transparent/symbol_02.png"
-  );
+  // const alphaMap = useTexture(
+  //   "/images/textures/kenney_particle-pack/png_transparent/symbol_02.png"
+  // );
 
   useFrame(({ clock }) => {
     const time = clock.getElapsedTime();
