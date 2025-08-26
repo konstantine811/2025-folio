@@ -140,7 +140,7 @@ const VFXEmitter = forwardRef<Object3D, Props>(
             onRestart={onRestart}
           />
         ) : null,
-      [debug, onRestart, settings]
+      [debug]
     );
 
     return (

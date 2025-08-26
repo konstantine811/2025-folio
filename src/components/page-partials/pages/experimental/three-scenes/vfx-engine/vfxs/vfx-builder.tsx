@@ -15,7 +15,6 @@ type BuilderType = Partial<
 >;
 
 const VFXBuilderEmitter = ({ settings, onRestart, onChange }: Props) => {
-  const vfxSettingsClone = useRef<VFXSettings | null>(null);
   useControls("⚙️ Emitter Settings", {
     Restart: button(() => onRestart()),
     Export: button(() => {
@@ -167,6 +166,10 @@ const VFXBuilderEmitter = ({ settings, onRestart, onChange }: Props) => {
     }
   }
 
+  // Ugly hack to get the current settings in the export button
+  const vfxSettingsClone = useRef(builtSettings);
+  vfxSettingsClone.current = builtSettings;
+
   useEffect(() => {
     if (settings) {
       const builderSettings: BuilderType = {
@@ -189,7 +192,6 @@ const VFXBuilderEmitter = ({ settings, onRestart, onChange }: Props) => {
   }, [settings, set]);
 
   useEffect(() => {
-    vfxSettingsClone.current = builtSettings as VFXSettings;
     onChange(builtSettings as VFXSettings);
   }, [builtSettings, onChange]);
   return null;

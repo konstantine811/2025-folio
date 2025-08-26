@@ -1,7 +1,9 @@
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
+import useFireworks from "./hooks/useFireworks";
 
 export const UI = () => {
   const hs = useHeaderSizeStore((s) => s.size);
+  const addFirework = useFireworks((s) => s.addFirework);
   return (
     <section
       className="fixed inset-0 z-10 flex items-center justify-center"
@@ -30,13 +32,22 @@ export const UI = () => {
           Discover our amazing fireworks collection
         </p>
         <div className="flex gap-4">
-          <button className="bg-white rounded-full px-4 md:px-8 py-2 grayscale hover:filter-none hover:bg-white/20 hover:text-white transition-colors duration-400 cursor-pointer">
+          <button
+            className="bg-white rounded-full px-4 md:px-8 py-2 grayscale hover:filter-none hover:bg-white/20 hover:text-white transition-colors duration-400 cursor-pointer"
+            onClick={addFirework}
+          >
             🎆 Classic
           </button>
-          <button className="bg-white rounded-full px-4 md:px-8 py-2 grayscale hover:filter-none hover:bg-white/20 hover:text-white transition-colors duration-400 cursor-pointer">
+          <button
+            className="bg-white rounded-full px-4 md:px-8 py-2 grayscale hover:filter-none hover:bg-white/20 hover:text-white transition-colors duration-400 cursor-pointer"
+            onClick={addFirework}
+          >
             💖 Love
           </button>
-          <button className="bg-white rounded-full px-4 md:px-8 py-2 grayscale hover:filter-none hover:bg-white/20 hover:text-white transition-colors duration-400 cursor-pointer">
+          <button
+            className="bg-white rounded-full px-4 md:px-8 py-2 grayscale hover:filter-none hover:bg-white/20 hover:text-white transition-colors duration-400 cursor-pointer"
+            onClick={addFirework}
+          >
             🌊 Sea
           </button>
         </div>
