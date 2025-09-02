@@ -27,6 +27,10 @@ declare module "@react-three/fiber" {
       typeof ParticlesMaterial,
       typeof ParticlesMaterial
     >;
+    gradientShaderMaterial: Object3DNode<
+      typeof GradientShaderMaterial,
+      typeof GradientShaderMaterial
+    >;
     // Додайте інші шейдерні матеріали, якщо потрібно
   }
 }

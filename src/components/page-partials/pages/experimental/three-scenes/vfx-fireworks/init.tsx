@@ -5,6 +5,7 @@ import { Canvas } from "@react-three/fiber";
 import { Leva } from "leva";
 import { UI } from "./ui";
 import Experience from "./experience";
+import Preloader from "./preoloader";
 
 const Init = () => {
   return (
@@ -15,6 +16,7 @@ const Init = () => {
       <Canvas shadows camera={{ position: [12, 8, 26], fov: 30 }}>
         <color attach="background" args={["#110511"]} />
         <Suspense fallback={null}>
+          <Preloader />
           <Experience />
         </Suspense>
       </Canvas>

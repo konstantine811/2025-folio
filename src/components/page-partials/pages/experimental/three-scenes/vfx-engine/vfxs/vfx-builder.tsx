@@ -27,7 +27,7 @@ const VFXBuilderEmitter = ({ settings, onRestart, onChange }: Props) => {
   const [{ ...vfxSettings }, set] = useControls(() => ({
     "🪄 Emitter": folder({
       duration: 4,
-      delya: 0,
+      delay: 0,
       nbParticles: 2000,
       spawnMode: {
         options: [SpawnMode.burst, SpawnMode.time],
@@ -186,7 +186,6 @@ const VFXBuilderEmitter = ({ settings, onRestart, onChange }: Props) => {
             settings.colorEnd[i];
         }
       }
-
       set({ ...builderSettings } as { [key: string]: unknown });
     }
   }, [settings, set]);

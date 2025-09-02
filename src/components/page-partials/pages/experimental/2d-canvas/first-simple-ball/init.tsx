@@ -49,20 +49,35 @@ const FirstSimpleBall = () => {
     animationFrameId.current = requestAnimationFrame(onEachStep);
   }, [drawBall]);
 
+  const setCanvasSize = useCallback(
+    (canvasEl: HTMLCanvasElement) => {
+      canvasEl.width = window.innerWidth - 4;
+      canvasEl.height = window.innerHeight - hs - 4;
+    },
+    [hs]
+  );
+
+  const onResize = useCallback(() => {
+    if (canvasRef.current) {
+      setCanvasSize(canvasRef.current);
+    }
+  }, [setCanvasSize]);
+
   useEffect(() => {
     if (canvasRef.current) {
       const context = canvasRef.current.getContext("2d");
       ctxRef.current = context;
-      canvasRef.current.width = window.innerWidth - 20;
-      canvasRef.current.height = window.innerHeight - hs - 4;
+      setCanvasSize(canvasRef.current);
       animationFrameId.current = requestAnimationFrame(onEachStep);
+      window.addEventListener("resize", onResize);
     }
     return () => {
+      window.removeEventListener("resize", onResize);
       if (animationFrameId.current !== null) {
         cancelAnimationFrame(animationFrameId.current);
       }
     };
-  }, [onEachStep, hs]);
+  }, [onEachStep, hs, setCanvasSize, onResize]);
 
   return <canvas className={"border"} ref={canvasRef}></canvas>;
 };
