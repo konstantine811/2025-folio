@@ -120,7 +120,7 @@ function Dock({
       }}
       className={cn(
         `flex w-full gap-2 px-4 rounded-2xl items-end bg-gray-50 dark:bg-neutral-900
-     overflow-hidden whitespace-nowrap scroll-snap-x mandatory touch-pan-x`,
+      whitespace-nowrap scroll-snap-x mandatory touch-pan-x`,
         className
       )}
       role="toolbar"

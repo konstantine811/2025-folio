@@ -1,5 +1,15 @@
-import { AnimationAction, AnimationMixer, Group, Mesh } from "three";
+import {
+  AnimationAction,
+  AnimationMixer,
+  Group,
+  Object3D,
+  Object3DEventMap,
+} from "three";
 import { create } from "zustand";
+
+interface ModelNodes {
+  [name: string]: Object3D<Object3DEventMap>;
+}
 
 interface GameDataState {
   characterAnim: {
@@ -7,17 +17,17 @@ interface GameDataState {
     mixer: AnimationMixer;
     actions: Record<string, AnimationAction>;
   } | null;
-  cubeMesh: Mesh | null;
+  characterNodes: ModelNodes;
 }
 
 const initialState: GameDataState = {
   characterAnim: null,
-  cubeMesh: null,
+  characterNodes: {},
 };
 
 interface GameDataActions {
   setCharacterAnim: (anim: GameDataState["characterAnim"]) => void;
-  setCubeMesh: (mesh: GameDataState["cubeMesh"]) => void;
+  setCharacterNodes: (nodes: ModelNodes) => void;
 }
 
 type GameDataStore = GameDataState & GameDataActions;
@@ -25,5 +35,8 @@ type GameDataStore = GameDataState & GameDataActions;
 export const useGameDataStore = create<GameDataStore>()((set) => ({
   ...initialState,
   setCharacterAnim: (anim) => set({ characterAnim: anim }),
-  setCubeMesh: (mesh) => set({ cubeMesh: mesh }),
+  setCharacterNodes: (nodes) =>
+    set(() => ({
+      characterNodes: nodes,
+    })),
 }));

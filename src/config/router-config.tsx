@@ -187,6 +187,13 @@ const ThreeWizardGame = lazy(
     )
 );
 
+const ThreeWebGPU = lazy(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/webgpu/init"
+    )
+);
+
 const LoginPage = lazy(() => import("../components/page-partials/pages/Login"));
 
 export enum RoutPath {
@@ -222,6 +229,7 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_VFX_FIREWORKS = "three-vfx-fireworks",
   EXPERIMENTAL_2D_CANVAS_PHYSICS_TRAIN = "two-canvas-physics-train",
   EXPERIMENTAL_THREE_WIZARD_GAME = "three-wizard-game",
+  EXPERIMENTAL_THREE_WEB_GPU = "three-web-gpu",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -391,6 +399,12 @@ export const EXPERIMENTAL_ROUTERS = [
     Component: ThreeWizardGame,
     id: "experimental-three-wizard-game",
     icon: "🧙‍♂️",
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_WEB_GPU,
+    Component: ThreeWebGPU,
+    id: "experimental-three-web-gpu",
+    icon: "🌐",
   },
 ];
 

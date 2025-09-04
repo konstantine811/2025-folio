@@ -27,8 +27,9 @@ const Init = () => {
         // }}
       >
         <color attach="background" args={["#698FF3"]} />
-        <OrbitControls makeDefault />
+
         <Suspense fallback={null}>
+          <OrbitControls makeDefault />
           <Experience />
         </Suspense>
       </Canvas>

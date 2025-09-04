@@ -2,6 +2,7 @@ import { ActionName } from "./config/character.config";
 import { Mesh } from "three";
 import { useGLTF } from "@react-three/drei";
 import { useEffect } from "react";
+import { useGameDataStore } from "./stores/game-data-store";
 
 const CharacterControllerModel = ({
   path,
@@ -13,13 +14,15 @@ const CharacterControllerModel = ({
   scale?: number;
   animation?: ActionName;
 }) => {
-  const { scene } = useGLTF(path);
+  const { scene, nodes } = useGLTF(path);
+  const setCharacterNodes = useGameDataStore((s) => s.setCharacterNodes);
   scene.traverse((child) => {
     if (child instanceof Mesh) {
       child.castShadow = true;
     }
   });
 
+  setCharacterNodes(nodes);
   useEffect(() => {
     useGLTF.preload(path);
   }, [path]);

@@ -4,7 +4,7 @@ import InitPhysicWorld from "./physic-world/init";
 import { useRef } from "react";
 import { DirectionalLight, DirectionalLightHelper } from "three";
 import { SceneObjectName } from "./physic-world/controllers/config/character.config";
-import { InfiniteGrass } from "./grass/grass";
+import GrassWrapper from "./grass/grass-wrapper";
 
 const Experience = () => {
   const dirLight = useRef<DirectionalLight>(null!);
@@ -12,13 +12,7 @@ const Experience = () => {
   return (
     <>
       <InitPhysicWorld />
-      <InfiniteGrass
-        radius={1}
-        tileSize={20}
-        density={40} // 15 лез/м^2 ≈ 540 лез/тайл
-        seed={20}
-        // yAt={(x, z) => 0} // Сюди можна підставити висоту терену, якщо є.
-      />
+      <GrassWrapper />
       <ambientLight intensity={1} />
       <directionalLight
         name={SceneObjectName.characterLight}
