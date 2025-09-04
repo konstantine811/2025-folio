@@ -1,6 +1,5 @@
 // GrassPainter.tsx
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useThree } from "@react-three/fiber";
+import { JSX, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { GrassTile } from "./3d-grass";
 
@@ -46,10 +45,7 @@ export function GrassPainter({
   yAt,
   initialRadiusTiles = 2,
   fixedSeed = null,
-  materialProps,
 }: GrassPainterProps) {
-  const { camera } = useThree();
-
   // --- стан кисті/малюнка ---
   const [radius, setRadius] = useState(initialRadiusTiles);
   const [tiles, setTiles] = useState<Map<TileKey, TileRec>>(() => new Map());
@@ -165,15 +161,15 @@ export function GrassPainter({
     return new THREE.Mesh(g, m);
   }, [radius, tileSize, eraseMode]);
 
-  // зручні хелпери
-  const clearAll = () => setTiles(new Map());
-  const randomizeSeeds = () =>
-    setTiles((prev) => {
-      const next = new Map(prev);
-      const bump = (Math.random() * 1e9) | 0;
-      for (const v of next.values()) v.seed ^= bump;
-      return next;
-    });
+  // // зручні хелпери
+  // const clearAll = () => setTiles(new Map());
+  // const randomizeSeeds = () =>
+  //   setTiles((prev) => {
+  //     const next = new Map(prev);
+  //     const bump = (Math.random() * 1e9) | 0;
+  //     for (const v of next.values()) v.seed ^= bump;
+  //     return next;
+  //   });
 
   // ---- РЕНДЕР ----
   return (
