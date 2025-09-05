@@ -47,6 +47,7 @@ import { detectFallingState } from "./utils/detectFalling";
 import { useGameStore } from "./stores/game-store";
 import { pointToMove, PointToMoveProps } from "./utils/pointMove";
 import { SceneObjectName } from "./config/character.config";
+import { useGameDataStore } from "./stores/game-data-store";
 
 export type camListenerTargetType = "document" | "domElement";
 
@@ -252,6 +253,9 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
     const characterModelIndicator: Object3D = useMemo(() => new Object3D(), []);
     const { forward, backward, rightward, leftward, run, jump } =
       useControlStore();
+    const setCharacterRigidBody = useGameDataStore(
+      (state) => state.setCharacterRigidBody
+    );
     const {
       idle: idleAnimation,
       run: runAnimation,
@@ -468,6 +472,12 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         window.removeEventListener("visibilitychange", sleepCharacter);
       };
     }, [sleepCharacter, characterInitDir, modelEuler]);
+
+    useEffect(() => {
+      if (characterRef.current) {
+        setCharacterRigidBody(characterRef.current);
+      }
+    }, [setCharacterRigidBody]);
 
     useFrame(({ camera }, delta) => {
       if (delta > 1) delta %= 1;

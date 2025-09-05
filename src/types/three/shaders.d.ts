@@ -71,6 +71,10 @@ declare module "@react-three/fiber" {
       typeof MeshBasicNodeMaterial,
       typeof MeshBasicNodeMaterial
     >;
+    glibliGrassMaterial: Object3DNode<
+      typeof GlibliGrassMaterial,
+      typeof GlibliGrassMaterial
+    >;
     // Додайте інші шейдерні матеріали, якщо потрібно
   }
 }

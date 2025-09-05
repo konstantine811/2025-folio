@@ -1,12 +1,11 @@
-import { Physics, RigidBody } from "@react-three/rapier";
+import { Physics } from "@react-three/rapier";
 import Ground from "./ground";
-import PrimitiveModel from "../primitive-modle";
-import { randFloatSpread } from "three/src/math/MathUtils.js";
 import CompolexController from "./controllers/character-controller";
 import CharacterControllerAnimation from "./controllers/character-controller-animation";
 import { animationSet } from "./controllers/config/character.config";
 import CharacterControllerModel from "./controllers/character-controller-model";
 import AttachCharacterStaff from "./character/attach-character-staff";
+import Environment from "./env/env";
 // import PickUpController from "./controllers/pick-up-controller";
 
 const InitPhysicWorld = () => {
@@ -14,8 +13,9 @@ const InitPhysicWorld = () => {
     <>
       {/* <CameraControls makeDefault /> */}
       <Physics timeStep="vary" debug>
+        <Environment />
         <Ground />
-        {Array.from({ length: 250 }, (_, i) => {
+        {/* {Array.from({ length: 250 }, (_, i) => {
           return (
             <RigidBody
               key={i}
@@ -64,7 +64,7 @@ const InitPhysicWorld = () => {
               <PrimitiveModel modelName="box.glb" />
             </RigidBody>
           );
-        })}
+        })} */}
         <CompolexController
           animated
           capsuleHalfHeight={0.6}

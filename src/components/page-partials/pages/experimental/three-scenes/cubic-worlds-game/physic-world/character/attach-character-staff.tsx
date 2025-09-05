@@ -7,10 +7,11 @@ const AttachCharacterStaff = () => {
   console.log("nodes in attach", nodes);
   return (
     <>
-      {createPortal(
-        <Glasses position={[-0.001, 0.159, 0.103]} />,
-        nodes.mixamorigHead
-      )}
+      {nodes.mixamorigHead &&
+        createPortal(
+          <Glasses position={[-0.001, 0.159, 0.103]} />,
+          nodes.mixamorigHead
+        )}
     </>
   );
 };

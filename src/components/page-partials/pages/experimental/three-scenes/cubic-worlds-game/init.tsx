@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import Experience from "./experience";
 import InitKeyboardController from "./physic-world/controllers/init-keyboard";
 import { OrbitControls, Stats } from "@react-three/drei";
+import "./shaders/gradient-shader";
 
 const Init = () => {
   return (

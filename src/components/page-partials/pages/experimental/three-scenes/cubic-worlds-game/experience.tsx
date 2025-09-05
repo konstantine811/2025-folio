@@ -1,4 +1,4 @@
-import { Environment, PerspectiveCamera, useHelper } from "@react-three/drei";
+import { Environment, useHelper } from "@react-three/drei";
 
 import InitPhysicWorld from "./physic-world/init";
 import { useRef } from "react";
@@ -19,15 +19,7 @@ const Experience = () => {
         intensity={0.4}
         castShadow
         shadow-mapSize={[1024, 1024]}
-      >
-        <PerspectiveCamera
-          attach={"shadow-camera"}
-          near={55}
-          far={86}
-          fov={80}
-        />
-      </directionalLight>
-
+      ></directionalLight>
       <Environment preset="sunset" />
     </>
   );

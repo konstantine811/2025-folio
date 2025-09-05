@@ -1,12 +1,30 @@
-import { Vector2 } from "three";
+import "../shaders/grass-gradient-shader";
+import "../shaders/grass-gradient-shader-2";
+// import GlibliInfiniteGrass from "./glibli-infinite-grass";
+import { useGameDataStore } from "../physic-world/controllers/stores/game-data-store";
+// import { useTexture } from "@react-three/drei";
 import { InfiniteGrass } from "./3d-grass";
-import "./shaders/gradient-shader";
-import "./shaders/grass-gradient-shader";
-import "./shaders/grass-gradient-shader-2";
+import { Vector2 } from "three";
 
 const GrassWrapper = () => {
+  const groundRef = useGameDataStore((s) => s.groundMesh);
+  // const texture = useTexture("/images/textures/grassHeightMap.png");
+  // const noiseTexture = useTexture("/images/textures/noiseTexture.png");
+  // const grassTexture = useTexture("/images/textures/grassTexture.jpg");
+
+  console.log("groundRef", groundRef);
   return (
     <>
+      {/* {groundRef && (
+        <GlibliInfiniteGrass
+          landscapeMesh={groundRef}
+          textures={{
+            heightMap: grassTexture,
+            noise: noiseTexture,
+            diffuse: grassTexture,
+          }}
+        />
+      )} */}
       <InfiniteGrass
         radius={1}
         tileSize={10}
