@@ -1,26 +1,19 @@
 import { shaderMaterial } from "@react-three/drei";
 import { extend, useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import {
   BufferAttribute,
   BufferGeometry,
   DoubleSide,
-  InstancedMesh,
-  MathUtils,
   Mesh,
   ShaderMaterial,
   Side,
   Texture,
   Vector2,
   Vector3,
-  Vector3Tuple,
 } from "three";
-import { MeshSurfaceSampler } from "three/examples/jsm/Addons.js";
-import {
-  mapLinear,
-  randFloat,
-  randFloatSpread,
-} from "three/src/math/MathUtils.js";
+// import { MeshSurfaceSampler } from "three/examples/jsm/Addons.js";
+import { mapLinear, randFloat } from "three/src/math/MathUtils.js";
 import { useGameDataStore } from "../physic-world/controllers/stores/game-data-store";
 
 const GlibliGrassMaterial = shaderMaterial(
@@ -155,7 +148,6 @@ const GlibliInfiniteGrass = ({
   bladeHeight = 1.25,
   count = 2000,
   landscapeMesh,
-  materialSide,
   patchSize = 10,
   textures,
 }: Props) => {
@@ -171,10 +163,10 @@ const GlibliInfiniteGrass = ({
   }, [landscapeMesh]);
 
   // семплер по поверхні ландшафту
-  const sampler = useMemo(
-    () => new MeshSurfaceSampler(landscapeMesh).build(),
-    [landscapeMesh]
-  );
+  // const sampler = useMemo(
+  //   () => new MeshSurfaceSampler(landscapeMesh).build(),
+  //   [landscapeMesh]
+  // );
 
   // генеруємо велику геометрію: по 3 вершини на травинку
   const geometry = useMemo(() => {
