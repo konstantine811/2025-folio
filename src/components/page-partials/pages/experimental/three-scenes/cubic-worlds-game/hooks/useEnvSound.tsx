@@ -1,11 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+const getTrackPath = (name: string) => {
+  return `/sound/game-sfx/music/${name}.mp3`;
+};
+
 const tracks = [
   {
-    src: ["/sound/game-sfx/music/mean_streats_phoenix_tail.mp3"],
+    src: [getTrackPath("mean_streats_phoenix_tail")],
     title: "Track 1",
   },
-  { src: ["/sound/game-sfx/music/snowlight.mp3"], title: "Track 2" },
+  { src: [getTrackPath("snowlight")], title: "Track 2" },
+  { src: [getTrackPath("breathing_woods")], title: "Track 3" },
+  { src: [getTrackPath("listen_forest")], title: "Track 4" },
 ];
 
 interface Props {
@@ -27,6 +33,7 @@ const useEnvSound = ({
       return new Howl({
         src: tracks[i].src,
         preload: true,
+        html5: true,
         volume: vol,
         onend: () => {
           const next = shuffle
@@ -69,9 +76,6 @@ const useEnvSound = ({
     };
   }, [index, createHowl, crossfadeMs]);
 
-  useEffect(() => {
-    console.log("index", index);
-  }, [index]);
   useEffect(() => {
     // стартуємо атмосферу при монті (як у тебе)
 

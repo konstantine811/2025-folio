@@ -6,8 +6,9 @@ import {
   useRevoluteJoint,
 } from "@react-three/rapier";
 import { JSX, useEffect, useRef } from "react";
-import { SkinnedMesh } from "three";
+import { Group, SkinnedMesh } from "three";
 import { CollisionWorldType } from "../../../config/collision";
+import { useDrawMeshStore } from "../../store/useDrawMeshStore";
 
 type Props = JSX.IntrinsicElements["group"] & {};
 
@@ -17,7 +18,8 @@ export default function HouseModel({ ...props }: Props) {
   );
   const frameRef = useRef<RapierRigidBody>(null!); // нерухома рама
   const doorRef = useRef<RapierRigidBody>(null!); // динамічні двері
-
+  const groupRef = useRef<Group>(null);
+  const setTargetMesh = useDrawMeshStore((s) => s.setTargets);
   // Створюємо шарнір (hinge): anchors і axes у ЛОКАЛЬНИХ системах кожного тіла
   const joint = useRevoluteJoint(frameRef, doorRef, [
     [0, 0, 0],
@@ -30,14 +32,21 @@ export default function HouseModel({ ...props }: Props) {
       joint.current.setLimits(-Math.PI / 2, Math.PI / 2);
     }
   }, [joint]);
+  useEffect(() => {
+    if (groupRef.current) {
+      setTargetMesh(groupRef.current);
+    }
+  }, [setTargetMesh]);
+
   return (
-    <group {...props} dispose={null}>
+    <group {...props} dispose={null} ref={groupRef}>
       <RigidBody type="fixed" colliders="trimesh">
         <mesh
           geometry={(nodes.house_wall as SkinnedMesh).geometry}
           material={materials["cube_material.002"]}
         />
       </RigidBody>
+      w
       <RigidBody
         collisionGroups={interactionGroups(CollisionWorldType.doorFrame)}
         type="fixed"
@@ -66,7 +75,6 @@ export default function HouseModel({ ...props }: Props) {
         colliders={false}
         position={[2.1, 0, 0.33]}
       />
-
       <RigidBody
         collisionGroups={interactionGroups(CollisionWorldType.doorHouse, [
           CollisionWorldType.mainCharacter,

@@ -7,6 +7,7 @@ import CharacterControllerModel from "./character-controller/character-controlle
 import AttachCharacterStaff from "./character/attach-character-staff";
 import Environment from "./env/env";
 import { useControls } from "leva";
+import DrawMesh from "./draw-mesh/draw-mesh";
 // import PickUpController from "./controllers/pick-up-controller";
 
 const InitPhysicWorld = () => {
@@ -19,6 +20,7 @@ const InitPhysicWorld = () => {
       <Physics timeStep="vary" debug={isDebug}>
         <Environment />
         <Ground />
+        <DrawMesh />
         {/* {Array.from({ length: 250 }, (_, i) => {
           return (
             <RigidBody
