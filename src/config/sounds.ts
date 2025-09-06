@@ -175,10 +175,7 @@ export const jumpLandSound = new Howl({
 });
 
 export const atmospericSoundFirst = new Howl({
-  src: [
-    "/sound/game-sfx/music/mean_streats_phoenix_tail.mp3",
-    "/sound/game-sfx/music/snowlight.mp3",
-  ],
+  src: ["/sound/game-sfx/music/mean_streats_phoenix_tail.mp3"],
   volume: 0.5,
   loop: true,
 });
