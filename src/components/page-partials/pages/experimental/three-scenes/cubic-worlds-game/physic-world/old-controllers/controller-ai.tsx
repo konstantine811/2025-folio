@@ -13,9 +13,9 @@ import type {
   KinematicCharacterController,
 } from "@dimforge/rapier3d-compat";
 import { Vector3, Group } from "three";
-import { useControlStore } from "../controllers/stores/control-game-store";
+import { useControlStore } from "../character-controller/stores/control-game-store";
 import CharacterModel from "./character-model";
-import { ActionName } from "../controllers/config/character.config";
+import { ActionName } from "../character-controller/config/character.config";
 import { lerpAngle } from "@/utils/game.utils";
 
 export default function CharacterKCC() {

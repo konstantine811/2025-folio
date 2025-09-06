@@ -1,7 +1,7 @@
 import { RigidBody } from "@react-three/rapier";
 import { useEffect, useRef, useState } from "react";
 import { Mesh, PlaneGeometry, Vector3 } from "three";
-import { useGameDataStore } from "./controllers/stores/game-data-store";
+import { useGameDataStore } from "./character-controller/stores/game-data-store";
 import { ThreeEvent } from "@react-three/fiber";
 import { button, useControls } from "leva";
 import useTouchTexture from "@/hooks/three-world/useTouchTexture";
@@ -11,7 +11,7 @@ const Ground = () => {
   const { width, height } = { width: 100, height: 100 };
   const [isDrawing, setIsDrawing] = useState(false);
   const [cursorPos, setCurPos] = useState(new Vector3());
-  const textureMap = useTexture("/images/textures/grassHeightMap.png");
+  const textureMap = useTexture("/images/textures/grassTexture.jpg");
   const floorRef = useRef<Mesh<PlaneGeometry>>(null!);
   const setCharacterGroundMesh = useGameDataStore(
     (s) => s.setCharacterGroundMesh

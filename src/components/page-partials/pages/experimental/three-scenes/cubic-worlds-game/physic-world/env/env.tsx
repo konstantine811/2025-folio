@@ -3,7 +3,7 @@ import HouseModel from "./house";
 const Environment = () => {
   return (
     <>
-      <HouseModel />
+      <HouseModel position={[-20, 0, 40]} />
     </>
   );
 };

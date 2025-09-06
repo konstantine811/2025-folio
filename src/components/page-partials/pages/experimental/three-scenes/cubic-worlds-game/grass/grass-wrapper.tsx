@@ -1,7 +1,7 @@
 import "../shaders/grass-gradient-shader";
 import "../shaders/grass-gradient-shader-2";
 // import GlibliInfiniteGrass from "./glibli-infinite-grass";
-import { useGameDataStore } from "../physic-world/controllers/stores/game-data-store";
+import { useGameDataStore } from "../physic-world/character-controller/stores/game-data-store";
 // import { useTexture } from "@react-three/drei";
 import { InfiniteGrass } from "./3d-grass";
 import { Vector2 } from "three";

@@ -1,11 +1,13 @@
 import { useGLTF } from "@react-three/drei";
 import {
+  interactionGroups,
   RapierRigidBody,
   RigidBody,
   useRevoluteJoint,
 } from "@react-three/rapier";
-import { JSX, useRef } from "react";
+import { JSX, useEffect, useRef } from "react";
 import { SkinnedMesh } from "three";
+import { CollisionWorldType } from "../../../config/collision";
 
 type Props = JSX.IntrinsicElements["group"] & {};
 
@@ -17,20 +19,30 @@ export default function HouseModel({ ...props }: Props) {
   const doorRef = useRef<RapierRigidBody>(null!); // динамічні двері
 
   // Створюємо шарнір (hinge): anchors і axes у ЛОКАЛЬНИХ системах кожного тіла
-  useRevoluteJoint(frameRef, doorRef, [
+  const joint = useRevoluteJoint(frameRef, doorRef, [
     [0, 0, 0],
-    [2.13, 0, 0.26],
+    [2.13, 0, 0.34],
     [0, 1, 0],
   ]);
+
+  useEffect(() => {
+    if (joint.current) {
+      joint.current.setLimits(-Math.PI / 2, Math.PI / 2);
+    }
+  }, [joint]);
   return (
     <group {...props} dispose={null}>
       <RigidBody type="fixed" colliders="trimesh">
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.house_wall as SkinnedMesh).geometry}
           material={materials["cube_material.002"]}
         />
+      </RigidBody>
+      <RigidBody
+        collisionGroups={interactionGroups(CollisionWorldType.doorFrame)}
+        type="fixed"
+        colliders="trimesh"
+      >
         <mesh
           castShadow
           receiveShadow
@@ -39,15 +51,11 @@ export default function HouseModel({ ...props }: Props) {
         />
       </RigidBody>
       <mesh
-        castShadow
-        receiveShadow
         geometry={(nodes.roof as SkinnedMesh).geometry}
         material={materials["cube_material.002"]}
       />
-      <RigidBody type="fixed" colliders="cuboid">
+      <RigidBody type="fixed" colliders="trimesh">
         <mesh
-          castShadow
-          receiveShadow
           geometry={(nodes.fundament as SkinnedMesh).geometry}
           material={materials["cube_material.003"]}
         />
@@ -56,15 +64,18 @@ export default function HouseModel({ ...props }: Props) {
         ref={frameRef}
         type="fixed"
         colliders={false}
-        position={[2.1, 0, 0.35]}
-        // position={[0, 0, 0]}
+        position={[2.1, 0, 0.33]}
+      />
+
+      <RigidBody
+        collisionGroups={interactionGroups(CollisionWorldType.doorHouse, [
+          CollisionWorldType.mainCharacter,
+        ])}
+        ref={doorRef}
+        colliders="hull"
+        friction={2}
+        mass={5}
       >
-        <mesh>
-          <sphereGeometry args={[0.4, 32, 32]} />
-          <meshBasicMaterial color="red" wireframe />
-        </mesh>
-      </RigidBody>
-      <RigidBody ref={doorRef} colliders="hull">
         <mesh
           castShadow
           receiveShadow

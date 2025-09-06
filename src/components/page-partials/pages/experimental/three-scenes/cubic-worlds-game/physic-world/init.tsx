@@ -1,18 +1,22 @@
 import { Physics } from "@react-three/rapier";
 import Ground from "./ground";
-import CompolexController from "./controllers/character-controller";
-import CharacterControllerAnimation from "./controllers/character-controller-animation";
-import { animationSet } from "./controllers/config/character.config";
-import CharacterControllerModel from "./controllers/character-controller-model";
+import CompolexController from "./character-controller/character-controller";
+import CharacterControllerAnimation from "./character-controller/character-controller-animation";
+import { animationSet } from "./character-controller/config/character.config";
+import CharacterControllerModel from "./character-controller/character-controller-model";
 import AttachCharacterStaff from "./character/attach-character-staff";
 import Environment from "./env/env";
+import { useControls } from "leva";
 // import PickUpController from "./controllers/pick-up-controller";
 
 const InitPhysicWorld = () => {
+  const { isDebug } = useControls("Physics World", {
+    isDebug: true,
+  });
   return (
     <>
       {/* <CameraControls makeDefault /> */}
-      <Physics timeStep="vary" debug>
+      <Physics timeStep="vary" debug={isDebug}>
         <Environment />
         <Ground />
         {/* {Array.from({ length: 250 }, (_, i) => {

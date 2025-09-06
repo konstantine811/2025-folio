@@ -14,7 +14,7 @@ import {
 } from "three";
 // import { MeshSurfaceSampler } from "three/examples/jsm/Addons.js";
 import { mapLinear, randFloat } from "three/src/math/MathUtils.js";
-import { useGameDataStore } from "../physic-world/controllers/stores/game-data-store";
+import { useGameDataStore } from "../physic-world/character-controller/stores/game-data-store";
 
 const GlibliGrassMaterial = shaderMaterial(
   {

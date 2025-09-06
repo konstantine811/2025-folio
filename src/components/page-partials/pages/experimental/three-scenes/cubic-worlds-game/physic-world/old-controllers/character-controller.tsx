@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   ActionName,
   SceneObjectName,
-} from "../controllers/config/character.config";
+} from "../character-controller/config/character.config";
 import {
   CapsuleCollider,
   RapierRigidBody,
@@ -14,7 +14,7 @@ import { CameraControls } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import CharacterModel from "./character-model";
 import { lerpAngle } from "@/utils/game.utils";
-import { useControlStore } from "../controllers/stores/control-game-store";
+import { useControlStore } from "../character-controller/stores/control-game-store";
 
 const CharacterController = () => {
   const rigidBody = useRef<RapierRigidBody>(null!);

@@ -3,6 +3,10 @@ import { Howl } from "howler";
 function getEfxPath(name: string): string {
   return `/sound/ui-efx/${name}.mp3`;
 }
+
+function getGameEfxPath(name: string): string {
+  return `/sound/game-sfx/${name}.mp3`;
+}
 // sounds.ts
 export const buttonHoverSound = new Howl({
   src: [getEfxPath("button-active-3")],
@@ -143,4 +147,38 @@ export const checkInSound = new Howl({
 export const checkOutSound = new Howl({
   src: [getEfxPath("check-out")],
   volume: 0.2,
+});
+
+export const walkSound = new Howl({
+  src: [getGameEfxPath("walk")],
+  volume: 0.2,
+  loop: true,
+});
+
+export const jumpSound = new Howl({
+  src: [getGameEfxPath("jump")],
+  volume: 0.5,
+  loop: false,
+  sprite: {
+    first: [3000, 500],
+  },
+});
+
+export const jumpLandSound = new Howl({
+  src: [getGameEfxPath("jump_land")],
+  volume: 0.6,
+  loop: false,
+  rate: 1.2,
+  sprite: {
+    first: [1894, 500],
+  },
+});
+
+export const atmospericSoundFirst = new Howl({
+  src: [
+    "/sound/game-sfx/music/mean_streats_phoenix_tail.mp3",
+    "/sound/game-sfx/music/snowlight.mp3",
+  ],
+  volume: 0.5,
+  loop: true,
 });
