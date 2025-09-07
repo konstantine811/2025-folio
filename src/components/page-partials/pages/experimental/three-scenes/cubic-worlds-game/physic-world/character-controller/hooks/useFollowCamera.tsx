@@ -2,6 +2,7 @@ import { Mesh, Object3D, Object3DEventMap, Raycaster, Vector3 } from "three";
 import { camListenerTargetType } from "../character-controller";
 import { useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useDrawMeshStore } from "../../../store/useDrawMeshStore";
 
 interface Props {
   disableFollowCam: boolean;
@@ -39,6 +40,7 @@ const useFollowCamera = ({
   camListenerTarget = "domElement",
 }: Props) => {
   const { scene, camera, gl } = useThree();
+  const isDrawing = useDrawMeshStore((s) => s.isDrawing);
   // const { rapier, world } = useRapier();
 
   const previousTouch1 = useRef<Touch | null>(null);
@@ -228,6 +230,7 @@ const useFollowCamera = ({
    * Camera collision detection function
    */
   const cameraCollisionDetect = (delta: number) => {
+    if (isDrawing) return;
     // Update collision detect ray origin and pointing direction
     // Which is from pivot point to camera position
     cameraRayOrigin.copy(pivot.position);
@@ -269,6 +272,14 @@ const useFollowCamera = ({
     ); // delta * 2 for rapier ray setup
   };
 
+  const onMouseDown = useCallback(() => {
+    isMouseDown = true;
+  }, []);
+
+  const onMouseUp = useCallback(() => {
+    isMouseDown = false;
+  }, []);
+
   useEffect(() => {
     // Initialize camera facing direction
     pivot.rotation.y = camInitDir.y;
@@ -281,13 +292,29 @@ const useFollowCamera = ({
     pivot.add(followCam);
     scene.add(pivot);
 
-    if (camListenerTarget === "domElement") {
-      gl.domElement.addEventListener("mousedown", () => {
-        isMouseDown = true;
-      });
-      gl.domElement.addEventListener("mouseup", () => {
-        isMouseDown = false;
-      });
+    const onRemove = () => {
+      if (camListenerTarget === "domElement") {
+        gl.domElement.removeEventListener("mousedown", onMouseDown);
+        gl.domElement.removeEventListener("mouseup", onMouseUp);
+        gl.domElement.removeEventListener("mousemove", onDocumentMouseMove);
+        gl.domElement.removeEventListener("mousewheel", onDocumentMouseWheel);
+        // Touch event
+        gl.domElement.removeEventListener("touchend", onTouchEnd);
+        gl.domElement.removeEventListener("touchmove", onTouchMove);
+      } else if (camListenerTarget === "document") {
+        document.removeEventListener("mousedown", onMouseDown);
+        document.removeEventListener("mouseup", onMouseUp);
+        document.removeEventListener("mousemove", onDocumentMouseMove);
+        document.removeEventListener("mousewheel", onDocumentMouseWheel);
+        // Touch event
+        document.removeEventListener("touchend", onTouchEnd);
+        document.removeEventListener("touchmove", onTouchMove);
+      }
+    };
+
+    if (camListenerTarget === "domElement" && !isDrawing) {
+      gl.domElement.addEventListener("mousedown", onMouseDown);
+      gl.domElement.addEventListener("mouseup", onMouseUp);
       gl.domElement.addEventListener("mousemove", onDocumentMouseMove);
       gl.domElement.addEventListener("mousewheel", onDocumentMouseWheel);
       // Touch event
@@ -296,47 +323,21 @@ const useFollowCamera = ({
         passive: false,
       });
     } else if (camListenerTarget === "document") {
-      document.addEventListener("mousedown", () => {
-        isMouseDown = true;
-      });
-      document.addEventListener("mouseup", () => {
-        isMouseDown = false;
-      });
+      document.addEventListener("mousedown", onMouseDown);
+      document.addEventListener("mouseup", onMouseUp);
       document.addEventListener("mousemove", onDocumentMouseMove);
       document.addEventListener("mousewheel", onDocumentMouseWheel);
       // Touch event
       document.addEventListener("touchend", onTouchEnd);
       document.addEventListener("touchmove", onTouchMove, { passive: false });
+    } else {
+      onRemove();
     }
 
     return () => {
-      if (camListenerTarget === "domElement") {
-        gl.domElement.removeEventListener("mousedown", () => {
-          isMouseDown = true;
-        });
-        gl.domElement.removeEventListener("mouseup", () => {
-          isMouseDown = false;
-        });
-        gl.domElement.removeEventListener("mousemove", onDocumentMouseMove);
-        gl.domElement.removeEventListener("mousewheel", onDocumentMouseWheel);
-        // Touch event
-        gl.domElement.removeEventListener("touchend", onTouchEnd);
-        gl.domElement.removeEventListener("touchmove", onTouchMove);
-      } else if (camListenerTarget === "document") {
-        document.removeEventListener("mousedown", () => {
-          isMouseDown = true;
-        });
-        document.removeEventListener("mouseup", () => {
-          isMouseDown = false;
-        });
-        document.removeEventListener("mousemove", onDocumentMouseMove);
-        document.removeEventListener("mousewheel", onDocumentMouseWheel);
-        // Touch event
-        document.removeEventListener("touchend", onTouchEnd);
-        document.removeEventListener("touchmove", onTouchMove);
-      }
+      onRemove();
     };
-  }, []);
+  }, [isDrawing]);
 
   // If followCam is disabled set to disableFollowCamPos, target to disableFollowCamTarget
   useEffect(() => {

@@ -38,7 +38,7 @@ const GrassGradientMaterial = shaderMaterial(
     uniform float uWindAmp;
     uniform float uWindFreq;
     uniform vec2  uWindDir;
-
+    attribute float aPhase;
     // ===== varyings =====
     varying vec2 vUv;
     varying vec3 vWorldPos;
@@ -52,27 +52,17 @@ const GrassGradientMaterial = shaderMaterial(
       vec3 pos = position;
       vec3 nrm = normal;
 
-      // фаза для різних інстансів
-      float phase =
-      #ifdef USE_INSTANCING
-        (instanceMatrix[3].x + instanceMatrix[3].z) * 0.23;
-      #else
-        0.0;
-      #endif
-
-      // основна хвиля + легка варіація амплітуди
       float t = time * uWindFreq;
+
+      // фаза від інстанса:
+      float phase = aPhase * 6.2831853; // 2π
       float wave  = sin(t + phase);
-      float gust  = sin(t * 0.37 + phase * 1.7); // повільний модулятор амплітуди (дешево)
+      float gust  = sin(t * 0.37 + phase * 1.7);
 
-      // маска "працює лише верхня половина"
-      float maskHalf = smoothstep(0.5, 1.0, aTip);
-      float tipWeight = maskHalf * maskHalf; // сильніше до вершини
+      float tipWeight = smoothstep(0.5, 1.0, aTip);
+      tipWeight *= tipWeight;
 
-      // підсумкова амплітуда
       float amp = uWindAmp * aBend * (0.7 + 0.3 * gust);
-
-      // відхилення верхньої частини у напрямку вітру
       vec2 disp = normalize(uWindDir) * (wave * amp) * tipWeight;
       pos.xz += disp;
 

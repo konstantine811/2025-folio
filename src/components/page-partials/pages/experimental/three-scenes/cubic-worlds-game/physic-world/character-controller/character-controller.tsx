@@ -82,7 +82,6 @@ interface OwnProps {
   disableFollowCam?: boolean;
   disableFollowCamPos?: Vector3 | null;
   disableFollowCamTarget?: Vector3 | null;
-
   // camera
   camInitDis?: number;
   camMaxDis?: number;
@@ -180,6 +179,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
       disableFollowCam = false,
       disableFollowCamPos = null,
       disableFollowCamTarget = null,
+      disableControl = false,
       // Follow camera setups
       camInitDis = -5,
       camMaxDis = -7,
@@ -332,6 +332,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
     };
     const { pivot, followCam, cameraCollisionDetect } =
       useFollowCamera(cameraSetups);
+
     const pivotPosition: Vector3 = useMemo(() => new Vector3(), []);
     const pivotXAxis: Vector3 = useMemo(() => new Vector3(1, 0, 0), []);
     const pivotYAxis: Vector3 = useMemo(() => new Vector3(0, 1, 0), []);
@@ -484,9 +485,15 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
 
     useFrame(({ camera }, delta) => {
       if (delta > 1) delta %= 1;
-
       // Character current position/velocity
+
       if (!characterRef.current) return;
+      if (disableControl) {
+        characterRef.current.lockRotations(true, false);
+        return;
+      } else {
+        characterRef.current.lockRotations(false, true);
+      }
       currentPos.copy(characterRef.current.translation() as Vector3);
       currentVel.copy(characterRef.current.linvel() as Vector3);
       // Assign userDate properties
@@ -513,12 +520,9 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         .addScaledVector(pivotZAxis, camTargetPos.z);
       pivot.position.lerp(pivotPosition, 1 - Math.exp(-camFollowMult));
 
-      if (!disableFollowCam) {
-        followCam.getWorldPosition(followCamPosition);
-        camera.position.lerp(followCamPosition, 1 - Math.exp(-camLerpMult));
-        camera.lookAt(pivot.position);
-      }
-
+      followCam.getWorldPosition(followCamPosition);
+      camera.position.lerp(followCamPosition, 1 - Math.exp(-camLerpMult));
+      camera.lookAt(pivot.position);
       if (followLight && characterLight && characterModelRef.current) {
         characterLight.position.x = currentPos.x + followLightPos.x;
         characterLight.position.y = currentPos.y + followLightPos.y;
@@ -578,6 +582,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
       });
 
       slopeRayHit = slopeRayHitN;
+
       /**
        * Ray casting detect if on ground
        */
@@ -717,6 +722,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         initialGravityScale,
         fallingGravityScale
       );
+
       if (autoBalance && characterRef.current) {
         autoBalanceCharacter(
           characterRef.current,
@@ -746,7 +752,6 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
           autoBalanceDampingOnY
         );
       }
-
       if (isModePointToMove) {
         functionKeyDown = forward || backward || leftward || rightward || jump;
         const pointToMoveProps: PointToMoveProps = {
@@ -831,6 +836,9 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
     });
     return (
       <RigidBody
+        ccd
+        softCcdPrediction={0.4}
+        contactSkin={0.02}
         colliders={false}
         ref={characterRef}
         position={props.position || [0, 5, 0]}

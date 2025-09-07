@@ -27,7 +27,7 @@ const GrassWrapper = () => {
       )} */}
       <InfiniteGrass
         radius={1}
-        tileSize={10}
+        tileSize={30}
         density={30} // 15 лез/м^2 ≈ 540 лез/тайл
         seed={10}
         materialProps={{

@@ -8,12 +8,16 @@ import AttachCharacterStaff from "./character/attach-character-staff";
 import Environment from "./env/env";
 import { useControls } from "leva";
 import DrawMesh from "./draw-mesh/draw-mesh";
+import PlanePainter from "./draw-mesh/plain-painter";
+import { useDrawMeshStore } from "../store/useDrawMeshStore";
+import FlyCameraControl from "../cameraControls/fly-camera-control";
 // import PickUpController from "./controllers/pick-up-controller";
 
 const InitPhysicWorld = () => {
   const { isDebug } = useControls("Physics World", {
     isDebug: true,
   });
+  const isDrawing = useDrawMeshStore((s) => s.isDrawing);
   return (
     <>
       {/* <CameraControls makeDefault /> */}
@@ -21,6 +25,8 @@ const InitPhysicWorld = () => {
         <Environment />
         <Ground />
         <DrawMesh />
+        <PlanePainter />
+        <FlyCameraControl active={isDrawing} />
         {/* {Array.from({ length: 250 }, (_, i) => {
           return (
             <RigidBody
@@ -75,6 +81,7 @@ const InitPhysicWorld = () => {
           animated
           capsuleHalfHeight={0.6}
           followLight
+          disableControl={isDrawing}
           maxVelLimit={4}
         >
           <CharacterControllerAnimation

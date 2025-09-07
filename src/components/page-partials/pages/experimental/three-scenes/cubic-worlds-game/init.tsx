@@ -4,7 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import Experience from "./experience";
 import InitKeyboardController from "./physic-world/character-controller/init-keyboard";
-import { OrbitControls, Stats } from "@react-three/drei";
+import { Stats } from "@react-three/drei";
 import { Perf } from "r3f-perf";
 import "./shaders/gradient-shader";
 import { useDrawMeshStore } from "./store/useDrawMeshStore";
@@ -15,7 +15,7 @@ const Init = () => {
     <MainWrapperOffset>
       <InitKeyboardController />
       <Stats />
-      <ThreeLoader />
+      {/* <ThreeLoader /> */}
       <Canvas
         shadows
         camera={{ position: [5, 3, 5], fov: 70 }}
@@ -35,7 +35,6 @@ const Init = () => {
 
         {/* <Perf position="bottom-left" /> */}
         <Suspense fallback={null}>
-          <OrbitControls makeDefault />
           <Experience />
           <Perf position="bottom-left" showGraph deepAnalyze antialias />
         </Suspense>

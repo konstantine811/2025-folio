@@ -5,14 +5,14 @@ import { useGameDataStore } from "./character-controller/stores/game-data-store"
 // import { ThreeEvent } from "@react-three/fiber";
 // import { button, useControls } from "leva";
 // import useTouchTexture from "@/hooks/three-world/useTouchTexture";
-import { useTexture } from "@react-three/drei";
+// import { useTexture } from "@react-three/drei";
 import { useDrawMeshStore } from "../store/useDrawMeshStore";
 
 const Ground = () => {
   const { width, height } = { width: 100, height: 100 };
   // const [isDrawing, setIsDrawing] = useState(false);
   // const [cursorPos, setCurPos] = useState(new Vector3());
-  const textureMap = useTexture("/images/textures/grassTexture.jpg");
+  // const textureMap = useTexture("/images/textures/grassTexture.jpg");
   const setTargetMesh = useDrawMeshStore((s) => s.setTargets);
   const floorRef = useRef<Mesh<PlaneGeometry>>(null!);
   const setCharacterGroundMesh = useGameDataStore(
@@ -98,7 +98,7 @@ const Ground = () => {
             <planeGeometry args={[width, height, 1, 1]} />
             {/* ДЕМО-матеріал: накладаємо карту як map, щоб бачити мазки.
 У вашому проєкті, ймовірно, передаватимете texture як uniform у шейдер або як alphaMap. */}
-            <meshStandardMaterial map={textureMap} color="#777" />
+            <meshStandardMaterial color="#FFBF74" />
           </mesh>
         </RigidBody>
 
