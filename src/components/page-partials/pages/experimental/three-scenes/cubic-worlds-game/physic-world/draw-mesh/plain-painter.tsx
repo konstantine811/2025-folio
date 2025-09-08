@@ -5,8 +5,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   BufferGeometry,
   InstancedMesh,
+  Matrix4,
   MeshBasicMaterial,
   Object3D,
+  Plane,
   Quaternion,
   Raycaster,
   Vector3,
@@ -15,7 +17,16 @@ import { randFloat } from "three/src/math/MathUtils.js";
 import { useDrawMeshStore } from "../../store/useDrawMeshStore";
 import { Line } from "@react-three/drei";
 
-const EPS_NORMAL = 0.02; // невеличкий підйом над поверхнею (щоб не мерехтіло)
+const EPS_NORMAL = 0.0001; // невеличкий підйом над поверхнею (щоб не мерехтіло)
+
+function mulberry32(seed: number) {
+  return function () {
+    let t = (seed += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
 type Props = {
   /** Максимальна кількість інстансів у буфері */
@@ -38,26 +49,32 @@ export default function PlanePainter({
   // --- Leva: параметри "кисті"
   const {
     isDraw,
-    width, // ширина доріжки навколо шляху (м)
-    spacing, // крок семплів уздовж шляху (м)
     density, // щільність (інстансів на метр шляху)
-    sizeMin, // мін. масштаб (множник до baseSize)
-    sizeMax, // макс. масштаб
-    yawMinDeg, // мін. поворот навколо Y
-    yawMaxDeg, // макс. поворот навколо Y
-    jitter, // додатковий поперечний шум (м)
     previewCircle, // тип прев’ю (коло/площина)
+    offset,
+    projectToSurface,
+    seed,
+    radius,
+    randomness,
+    rotationDeg,
+    scale,
+    useNormalRotation,
+    width,
+    spacing,
   } = useControls("Plane Painter", {
     isDraw: false,
     previewCircle: true,
     width: { value: 0.6, min: 0.05, max: 5, step: 0.05 },
-    spacing: { value: 0.15, min: 0.02, max: 1.0, step: 0.01 },
-    density: { value: 6, min: 1, max: 50, step: 1 },
-    sizeMin: { value: 0.7, min: 0.1, max: 5, step: 0.05 },
-    sizeMax: { value: 1.3, min: 0.1, max: 5, step: 0.05 },
-    yawMinDeg: { value: -45, min: -180, max: 180, step: 1 },
-    yawMaxDeg: { value: 45, min: -180, max: 180, step: 1 },
-    jitter: { value: 0.1, min: 0, max: 1, step: 0.01 },
+    spacing: { value: 0.15, min: 0.02, max: 1, step: 0.01 },
+    density: { value: 1, min: 0.1, max: 100, step: 1 },
+    radius: { value: 1, min: 0.05, max: 5, step: 0.05 },
+    scale: { value: 0.3, min: 0.02, max: 5, step: 0.01 },
+    randomness: { value: 0.8, min: 0, max: 1, step: 0.01 },
+    useNormalRotation: false,
+    rotationDeg: { value: 29, min: -180, max: 180, step: 1 },
+    offset: { value: 0, min: -2, max: 2, step: 0.01 },
+    projectToSurface: true,
+    seed: { value: 0, min: 0, max: 9999, step: 1 },
   });
 
   // --- refs / стани
@@ -69,6 +86,21 @@ export default function PlanePainter({
   const countRef = useRef(0);
   const previewRef = useRef<Object3D>(null!);
   const [strokes, setStrokes] = useState<Vector3[][]>([]);
+  const [strokeNormals, setStrokeNormals] = useState<Vector3[]>([]);
+  const [pivotToBottom, setPivotToBottom] = useState(0);
+  const tmp = useMemo(
+    () => ({
+      q: new Quaternion(),
+      q2: new Quaternion(),
+      pos: new Vector3(),
+      n: new Vector3(0, 1, 0),
+      t: new Vector3(1, 0, 0),
+      b: new Vector3(0, 0, 1),
+      m: new Matrix4(),
+      plane: new Plane(),
+    }),
+    []
+  );
   useEffect(() => {
     setIsDraw(isDraw);
   }, [isDraw, setIsDraw]);
@@ -89,10 +121,11 @@ export default function PlanePainter({
         normal: worldNormal,
         object: i.object,
       };
+
       if (previewRef.current) {
         const target = hit.point
           .clone()
-          .add(hit.normal.clone().normalize().multiplyScalar(0.0001));
+          .add(hit.normal.clone().normalize().multiplyScalar(0.01));
         previewRef.current.position.lerp(target, 1 - Math.pow(0.0001, dt)); // плавно
         // розвертаємо коло під нормаль поверхні (за замовч. up=(0,1,0))
         const q = new Quaternion().setFromUnitVectors(
@@ -104,41 +137,16 @@ export default function PlanePainter({
     }
   });
 
-  // --- wheel -> змінюємо ширину кисті (зручно)
-  //   useEffect(() => {
-  //     const el = gl.domElement;
-  //     const onWheel = (e: WheelEvent) => {
-  //       if (!isDraw) return;
-  //       e.preventDefault();
-  //       // на жаль, Leva не змінюємо напряму; варіанти:
-  //       // 1) винести width у локальний useState + показувати його в Leva через monitor
-  //       // 2) залишити зміну ширини тільки через Leva
-  //       // тут залишимо тільки Leva-контрол для простоти
-  //     };
-  //     el.addEventListener("wheel", onWheel, { passive: false });
-  //     return () => el.removeEventListener("wheel", onWheel);
-  //   }, [gl, isDraw, width]);
-
-  //   --- mouse events
-
   const onMove = useCallback(() => {
     if (!isDown.current || !previewRef.current) return;
-
     setStrokes((prev) => {
-      if (prev.length === 0 || !previewRef.current) return prev; // безпечна перевірка
+      if (prev.length === 0) return prev;
       const p = previewRef.current.position.clone();
-
-      // не додавати точки надто близько
       const lastStroke = prev[prev.length - 1];
       const last = lastStroke[lastStroke.length - 1];
       if (last && last.distanceTo(p) < spacing) return prev;
-
-      // створюємо новий масив для останнього штриха (без мутації стану)
       const next = prev.slice();
-      const updatedLast = lastStroke ? [...lastStroke, p] : [p];
-      next[next.length - 1] = updatedLast;
-
-      lastPoint.current = p;
+      next[next.length - 1] = [...lastStroke, p];
       return next;
     });
   }, [spacing]);
@@ -147,12 +155,29 @@ export default function PlanePainter({
     const el = gl.domElement;
 
     const onDown = (e: MouseEvent) => {
-      if (!isDraw || e.button !== 0) return; // лише ЛКМ
+      if (!isDraw || e.button !== 0) return;
       isDown.current = true;
       lastPoint.current = null;
 
-      // старт нового штриха
       setStrokes((prev) => [...prev, []]);
+
+      // оновити ray по курсору
+      raycaster.setFromCamera(pointer, camera);
+      const list = Array.isArray(targets) ? targets : [targets];
+      const hit = raycaster.intersectObjects(list, true)[0];
+      const n = new Vector3(0, 1, 0);
+      if (hit) {
+        n.copy(hit.face!.normal)
+          .transformDirection(hit.object.matrixWorld)
+          .normalize();
+        // якщо нормаль «дивиться» у той самий бік, що і промінь — розвернути
+        if (n.dot(raycaster.ray.direction) > 0) n.multiplyScalar(-1);
+      } else if (previewRef.current) {
+        n.set(0, 0, 1)
+          .applyQuaternion(previewRef.current.quaternion)
+          .normalize();
+      }
+      setStrokeNormals((prev) => [...prev, n]);
     };
 
     const onUp = (e: MouseEvent) => {
@@ -176,96 +201,114 @@ export default function PlanePainter({
       el.removeEventListener("mouseup", onUp);
       el.removeEventListener("mousemove", onMove);
     };
-  }, [gl, isDraw, onMove]);
+  }, [gl, isDraw, onMove, camera, raycaster, pointer, targets]);
 
-  // --- основний цикл малювання
-  //   useFrame(() => {
-  //     if (!isDraw || !isDown.current || !meshRef.current) return;
+  useEffect(() => {
+    const g = meshRef.current?.geometry;
+    if (!g) return;
+    g.computeBoundingBox();
+    const bb = g.boundingBox!;
+    setPivotToBottom(-bb.min.y); // для box = halfHeight
+  }, []);
 
-  //     localRay.setFromCamera(pointer, camera);
-  //     const list = Array.isArray(targets) ? targets : [targets];
-  //     const hit = localRay.intersectObjects(list, true)?.[0];
-  //     if (!hit) return;
+  // --- Побудова інстансів при зміні штрихів/параметрів
+  useEffect(() => {
+    const inst = meshRef.current;
+    if (!inst) return;
+    const rng = mulberry32(seed);
 
-  //     const normal = hit.face
-  //       ? hit.face.normal.clone().transformDirection(hit.object.matrixWorld)
-  //       : new Vector3(0, 1, 0);
+    // проходимо всі точки всіх штрихів
+    // const EPS_NORMAL = 0.01;
 
-  //     const point = hit.point.clone().addScaledVector(normal, EPS_NORMAL);
+    let index = 0;
 
-  //     // семплимо шлях рівномірно
-  //     const lp = lastPoint.current;
-  //     if (!lp) {
-  //       lastPoint.current = point.clone();
-  //       return;
-  //     }
-  //     const seg = point.distanceTo(lp);
-  //     if (seg < spacing) return;
+    for (let s = 0; s < strokes.length && index < limit; s++) {
+      const stroke = strokes[s];
+      const n0 = strokeNormals[s];
+      if (!stroke?.length || !n0) continue;
 
-  //     // напрямок руху пензля (тангент)
-  //     const tangent = point.clone().sub(lp).normalize();
-  //     if (!isFinite(tangent.length())) tangent.set(1, 0, 0);
-  //     lastTangent.current.copy(tangent);
+      const n = n0.clone().normalize();
 
-  //     // "правий" вектор поперек шляху у площині поверхні
-  //     const right = new Vector3().crossVectors(normal, tangent).normalize();
-  //     if (right.lengthSq() < 1e-6) right.set(1, 0, 0);
+      // площина штриха (нормаль n + перша точка як опорна)
+      tmp.plane.setFromNormalAndCoplanarPoint(n, stroke[0]);
 
-  //     // скільки інстансів додати на цей крок
-  //     // розуміння: density ≈ інстансів на метр шляху
-  //     const instancesThisStep = Math.max(1, Math.round(density * seg));
+      for (let i = 0; i < stroke.length && index < limit; i++) {
+        const cur = stroke[i];
+        const prev = stroke[i - 1] ?? cur;
+        const next = stroke[i + 1] ?? cur;
 
-  //     // кутові межі (рад)
-  //     const yawMin = (yawMinDeg * Math.PI) / 180;
-  //     const yawMax = (yawMaxDeg * Math.PI) / 180;
+        // дотична в площині штриха
+        tmp.t.copy(next).sub(prev);
+        if (tmp.t.lengthSq() < 1e-12) {
+          tmp.t.set(1, 0, 0);
+          if (Math.abs(tmp.t.dot(n)) > 0.95) tmp.t.set(0, 0, 1);
+        }
+        tmp.t.addScaledVector(n, -tmp.t.dot(n)).normalize();
 
-  //     // розкидання інстансів навколо центральної лінії з поперечним джитером
-  //     for (let k = 0; k < instancesThisStep; k++) {
-  //       // t уздовж сегмента (0..1) для рівномірності
-  //       const t = (k + Math.random()) / instancesThisStep;
-  //       const centerOnSeg = new Vector3().lerpVectors(lp, point, t);
+        // бінормаль
+        tmp.b.crossVectors(n, tmp.t).normalize();
 
-  //       // поперечний зсув у діапазоні ширини кисті (±width/2)
-  //       const lateral =
-  //         (Math.random() - 0.5) * width + (Math.random() - 0.5) * jitter;
-  //       const pos = centerOnSeg.clone().addScaledVector(right, lateral);
+        for (let k = 0; k < density && index < limit; k++) {
+          // випадкове зміщення в диску
+          const u = rng();
+          const r = radius * Math.sqrt(u);
+          const theta = 2 * Math.PI * rng();
 
-  //       // масштаб від і до (множник на baseSize)
-  //       const s = randFloat(sizeMin, sizeMax) * baseSize;
+          // позиція у площині (b, t) + поздовжній offset
+          tmp.pos
+            .copy(cur)
+            .addScaledVector(tmp.b, Math.cos(theta) * r)
+            .addScaledVector(tmp.t, Math.sin(theta) * r + offset);
 
-  //       // орієнтація площини:
-  //       // базово — вертикальна площина (XY) повертаємо в вертикаль (обертаємо -90° по X),
-  //       // потім довільний оберт навколо Y у діапазоні
-  //       const q = new Quaternion();
-  //       const qPitch = new Quaternion().setFromAxisAngle(
-  //         new Vector3(1, 0, 0),
-  //         -Math.PI / 2
-  //       ); // робимо її вертикальною
-  //       const yaw = randFloat(yawMin, yawMax);
-  //       const qYaw = new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), yaw);
-  //       q.multiply(qYaw).multiply(qPitch);
+          // проєкція на площину — тримаємо рівно на поверхні
+          tmp.plane.projectPoint(tmp.pos, tmp.pos);
 
-  //       // виставляємо матрицю інстансу
-  //       dummy.position.copy(pos);
-  //       dummy.quaternion.copy(q);
-  //       dummy.scale.setScalar(s);
-  //       dummy.updateMatrix();
+          // ОРІЄНТАЦІЯ: тільки навколо нормалі
+          // 1) вирівняти локальний Y моделі по нормалі n
+          // 2) дозволити лише yaw навколо n (ручний + опційний випадковий)
+          tmp.q.identity();
+          // кут: фіксований + опціональний випадковий
+          const yaw =
+            (rotationDeg * Math.PI) / 180 +
+            (rng() - 0.5) * 2 * Math.PI * randomness;
+          tmp.q2.setFromAxisAngle(n, yaw);
+          tmp.q.multiply(tmp.q2);
 
-  //       const i = countRef.current;
-  //       if (i >= limit) continue; // буфер заповнений
+          // масштаб та підйом на половину висоти ВЗДОВЖ n
+          const sScale = scale * (1 + (rng() - 0.5) * 2 * randomness);
+          tmp.pos.addScaledVector(n, pivotToBottom * sScale + EPS_NORMAL);
 
-  //       meshRef.current.setMatrixAt(i, dummy.matrix);
-  //       countRef.current++;
-  //     }
+          // запис інстанса
+          dummy.position.copy(tmp.pos);
+          dummy.quaternion.copy(tmp.q);
+          dummy.scale.setScalar(Math.max(0.001, sScale));
+          dummy.updateMatrix();
+          inst.setMatrixAt(index++, dummy.matrix);
+        }
+      }
+    }
 
-  //     meshRef.current.count = countRef.current;
-  //     meshRef.current.instanceMatrix.needsUpdate = true;
-
-  //     // посуваємо «останню» точку вперед — малюємо частіше на довгих сегментах
-  //     const advance = spacing * Math.floor(seg / spacing);
-  //     const nextBase = lp.clone().addScaledVector(tangent, advance);
-  //     lastPoint.current = nextBase;
-  //   });
+    inst.count = index; // скільки реально інстансів намалювали
+    inst.instanceMatrix.needsUpdate = true;
+  }, [
+    strokes,
+    density,
+    dummy,
+    tmp,
+    radius,
+    scale,
+    randomness,
+    useNormalRotation,
+    rotationDeg,
+    offset,
+    seed,
+    limit,
+    targets,
+    raycaster,
+    projectToSurface,
+    strokeNormals,
+    pivotToBottom,
+  ]);
 
   return (
     <>
@@ -304,7 +347,20 @@ export default function PlanePainter({
           ) : null
         )}
       </group>
-
+      {/* Інстанси — сюди підстав свій меш (трава/камінці тощо) */}
+      <instancedMesh
+        ref={meshRef}
+        frustumCulled={false}
+        args={[
+          undefined as unknown as BufferGeometry,
+          undefined as unknown as MeshBasicMaterial,
+          limit,
+        ]}
+      >
+        {/* приклад геометрії — заміни на свою */}
+        <boxGeometry args={[baseSize, baseSize, baseSize]} />
+        <meshBasicMaterial color={"#8899ff"} />
+      </instancedMesh>
       {/* Інстансований меш площин */}
       {/* <instancedMesh
         ref={meshRef}
