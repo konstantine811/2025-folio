@@ -22,10 +22,10 @@ enum PainterColors {
   red = "red",
 }
 
-enum PainterKey {
-  erase = "c",
-  kill = "x",
-}
+const PAINTER_KEY = {
+  erase: "c",
+  kill: "x",
+};
 
 export default function PlanePainter({
   limit = 100_000,
@@ -155,20 +155,26 @@ export default function PlanePainter({
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (
-        e.key === PainterKey.erase ||
-        e.key === PainterKey.erase.toUpperCase()
+        e.key === PAINTER_KEY.erase ||
+        e.key === PAINTER_KEY.erase.toUpperCase()
       )
         isErasing.current = true;
-      if (e.key === PainterKey.kill || e.key === PainterKey.kill.toUpperCase())
+      if (
+        e.key === PAINTER_KEY.kill ||
+        e.key === PAINTER_KEY.kill.toUpperCase()
+      )
         isKillStroke.current = true;
     };
     const up = (e: KeyboardEvent) => {
       if (
-        e.key === PainterKey.erase ||
-        e.key === PainterKey.erase.toUpperCase()
+        e.key === PAINTER_KEY.erase ||
+        e.key === PAINTER_KEY.erase.toUpperCase()
       )
         isErasing.current = false;
-      if (e.key === PainterKey.kill || e.key === PainterKey.kill.toUpperCase())
+      if (
+        e.key === PAINTER_KEY.kill ||
+        e.key === PAINTER_KEY.kill.toUpperCase()
+      )
         isKillStroke.current = false;
     };
     window.addEventListener("keydown", down);
