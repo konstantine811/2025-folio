@@ -1,8 +1,8 @@
 // PlanePainter.tsx
 import { useThree, useFrame } from "@react-three/fiber";
 import { folder, useControls } from "leva";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Object3D, Quaternion, Vector3 } from "three";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Color, MeshBasicMaterial, Object3D, Quaternion, Vector3 } from "three";
 import { useDrawMeshStore } from "../../store/useDrawMeshStore";
 import { Line } from "@react-three/drei";
 import AddWinderInstanceModel from "./add-winder-instance-model";
@@ -17,6 +17,16 @@ type Props = {
   showPreview?: boolean;
 };
 
+enum PainterColors {
+  green = "green",
+  red = "red",
+}
+
+enum PainterKey {
+  erase = "c",
+  kill = "x",
+}
+
 export default function PlanePainter({
   limit = 100_000,
   showPreview = true,
@@ -24,7 +34,7 @@ export default function PlanePainter({
   const { camera, pointer, gl, raycaster } = useThree();
   const targets = useDrawMeshStore((s) => s.targets); // об’єкти для малювання
   const setIsEditMode = useDrawMeshStore((s) => s.setIsEditMode);
-
+  const painterColor = useMemo(() => new Color(PainterColors.green), []);
   // --- Leva: параметри "кисті"
   const {
     isDraw,
@@ -38,12 +48,17 @@ export default function PlanePainter({
     scale,
     width,
     spacing,
+
+    eraseRadius,
   } = useControls("Plane Painter", {
     drawingOptions: folder({
       isDraw: false,
       previewCircle: true,
       width: { value: 0.6, min: 0.05, max: 5, step: 0.05 },
       spacing: { value: 0.15, min: 0.02, max: 1, step: 0.01 },
+    }),
+    eraser: folder({
+      eraseRadius: { value: 0.6, min: 0.05, max: 5, step: 0.05 },
     }),
     scatterOprionts: folder({
       density: { value: 1, min: 0.1, max: 100, step: 1 },
@@ -62,10 +77,107 @@ export default function PlanePainter({
   const [strokes, setStrokes] = useState<Vector3[][]>([]);
   const [strokeNormals, setStrokeNormals] = useState<Vector3[]>([]);
 
+  const isErasing = useRef(false);
+  const isKillStroke = useRef(false);
+
+  const painterMaterial = useMemo(
+    () =>
+      new MeshBasicMaterial({
+        color: painterColor,
+        transparent: true,
+        opacity: 0.35,
+        depthWrite: false,
+      }),
+    [painterColor]
+  );
+
+  const eraseAt = useCallback(
+    (center: Vector3) => {
+      setStrokes((prev) => {
+        const newStrokes: Vector3[][] = [];
+        const newNormals: Vector3[] = [];
+        for (let s = 0; s < prev.length; s++) {
+          const pts = prev[s];
+          const n = strokeNormals[s];
+          if (!pts?.length) continue;
+
+          let seg: Vector3[] = [];
+          for (let i = 0; i < pts.length; i++) {
+            const keep = pts[i].distanceTo(center) > eraseRadius;
+            if (keep) seg.push(pts[i]);
+            else {
+              if (seg.length > 1) {
+                newStrokes.push(seg);
+                newNormals.push(n);
+              }
+              seg = [];
+            }
+          }
+          if (seg.length > 1) {
+            newStrokes.push(seg);
+            newNormals.push(n);
+          }
+        }
+        setStrokeNormals(newNormals);
+        return newStrokes;
+      });
+    },
+    [eraseRadius, strokeNormals]
+  );
+
+  const killStrokeAt = useCallback(
+    (center: Vector3) => {
+      setStrokes((prev) => {
+        const kept: Vector3[][] = [];
+        const keptNormals: Vector3[] = [];
+        for (let s = 0; s < prev.length; s++) {
+          const pts = prev[s];
+          let hit = false;
+          for (let i = 0; i < pts.length && !hit; i++) {
+            if (pts[i].distanceTo(center) <= eraseRadius) hit = true;
+          }
+          if (!hit) {
+            kept.push(pts);
+            keptNormals.push(strokeNormals[s]);
+          }
+        }
+        setStrokeNormals(keptNormals);
+        return kept;
+      });
+    },
+    [eraseRadius, strokeNormals]
+  );
+
   useEffect(() => {
     setIsEditMode(isDraw);
   }, [isDraw, setIsEditMode]);
 
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (
+        e.key === PainterKey.erase ||
+        e.key === PainterKey.erase.toUpperCase()
+      )
+        isErasing.current = true;
+      if (e.key === PainterKey.kill || e.key === PainterKey.kill.toUpperCase())
+        isKillStroke.current = true;
+    };
+    const up = (e: KeyboardEvent) => {
+      if (
+        e.key === PainterKey.erase ||
+        e.key === PainterKey.erase.toUpperCase()
+      )
+        isErasing.current = false;
+      if (e.key === PainterKey.kill || e.key === PainterKey.kill.toUpperCase())
+        isKillStroke.current = false;
+    };
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+    };
+  }, []);
   // --- Прев’ю курсора
   useFrame((_, dt) => {
     if (!isDraw) return;
@@ -99,11 +211,31 @@ export default function PlanePainter({
   });
 
   const onMove = useCallback(() => {
-    if (!isDown.current || !previewRef.current) return;
+    if (!previewRef.current) return;
+    const p = previewRef.current.position.clone();
+
+    if (isKillStroke.current) {
+      painterColor.set(PainterColors.red);
+      painterMaterial.color.set(painterColor);
+      killStrokeAt(p);
+      return;
+    }
+
+    if (isErasing.current) {
+      painterColor.set(PainterColors.red);
+      painterMaterial.color.set(painterColor);
+      eraseAt(p);
+      return;
+    }
+    // set default color
+    painterColor.set(PainterColors.green);
+    painterMaterial.color.set(painterColor);
+    // звичайне малювання (як у тебе)
+    if (!isDown.current) return;
     setStrokes((prev) => {
       if (prev.length === 0) return prev;
-      const p = previewRef.current?.position?.clone();
-      if (!p) return prev;
+
+      const p = previewRef.current!.position.clone();
       const lastStroke = prev[prev.length - 1];
       const last = lastStroke[lastStroke.length - 1];
       if (last && last.distanceTo(p) < spacing) return prev;
@@ -111,7 +243,7 @@ export default function PlanePainter({
       next[next.length - 1] = [...lastStroke, p];
       return next;
     });
-  }, [spacing]);
+  }, [spacing, eraseAt, painterMaterial, painterColor, killStrokeAt]);
 
   useEffect(() => {
     const el = gl.domElement;
@@ -174,24 +306,12 @@ export default function PlanePainter({
         <>
           <group ref={previewRef}>
             {previewCircle ? (
-              <mesh>
+              <mesh material={painterMaterial}>
                 <circleGeometry args={[width * 0.5, 32]} />
-                <meshBasicMaterial
-                  color="#ff0000"
-                  transparent
-                  opacity={0.35}
-                  depthWrite={false}
-                />
               </mesh>
             ) : (
-              <mesh>
+              <mesh material={painterMaterial}>
                 <planeGeometry args={[width, width]} />
-                <meshBasicMaterial
-                  color="#ff0000"
-                  transparent
-                  opacity={0.35}
-                  depthWrite={false}
-                />
               </mesh>
             )}
           </group>
