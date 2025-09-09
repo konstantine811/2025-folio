@@ -22,11 +22,6 @@ enum PainterColors {
   red = "red",
 }
 
-const PAINTER_KEY = {
-  erase: "c",
-  kill: "x",
-};
-
 export default function PlanePainter({
   limit = 100_000,
   showPreview = true,
@@ -154,28 +149,12 @@ export default function PlanePainter({
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (
-        e.key === PAINTER_KEY.erase ||
-        e.key === PAINTER_KEY.erase.toUpperCase()
-      )
-        isErasing.current = true;
-      if (
-        e.key === PAINTER_KEY.kill ||
-        e.key === PAINTER_KEY.kill.toUpperCase()
-      )
-        isKillStroke.current = true;
+      if (e.key === "c" || e.key === "C") isErasing.current = true;
+      if (e.key === "v" || e.key === "V") isKillStroke.current = true;
     };
     const up = (e: KeyboardEvent) => {
-      if (
-        e.key === PAINTER_KEY.erase ||
-        e.key === PAINTER_KEY.erase.toUpperCase()
-      )
-        isErasing.current = false;
-      if (
-        e.key === PAINTER_KEY.kill ||
-        e.key === PAINTER_KEY.kill.toUpperCase()
-      )
-        isKillStroke.current = false;
+      if (e.key === "c" || e.key === "C") isErasing.current = false;
+      if (e.key === "v" || e.key === "V") isKillStroke.current = false;
     };
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
@@ -321,16 +300,15 @@ export default function PlanePainter({
               </mesh>
             )}
           </group>
-          <group userData={{ camExcludeCollision: true }}>
-            {strokes.map((pts, i) =>
-              pts.length > 1 ? (
-                <Line key={i} points={pts} color="red" lineWidth={2} />
-              ) : null
-            )}
-          </group>
         </>
       )}
-
+      <group userData={{ camExcludeCollision: true }}>
+        {strokes.map((pts, i) =>
+          pts.length > 1 ? (
+            <Line key={i} points={pts} color="red" lineWidth={2} />
+          ) : null
+        )}
+      </group>
       <AddWinderInstanceModel
         modelUrl="/3d-models/cubic-worlds-model/grass.glb"
         strokes={strokes}
