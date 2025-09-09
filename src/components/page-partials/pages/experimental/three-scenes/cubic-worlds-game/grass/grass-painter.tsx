@@ -24,7 +24,7 @@ type GrassPainterProps = {
   /** кисть */
   initialRadiusTiles?: number; // радіус у тайлах
   fixedSeed?: number | null; // якщо null — seed рандомиться на кожен тайл
-  materialProps?: Partial<JSX.IntrinsicElements["grassGradientMaterial"]>;
+  materialProps?: Partial<JSX.IntrinsicElements["winderMaterial"]>;
 };
 
 function key(x: number, z: number): TileKey {

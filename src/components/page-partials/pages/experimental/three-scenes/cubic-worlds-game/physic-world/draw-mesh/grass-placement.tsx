@@ -23,7 +23,7 @@ type GrassFieldProps = {
   placements: GrassPlacement[]; // 1000 штук тут
   modelUrl: string;
   meshName?: string;
-  materialProps?: Partial<JSX.IntrinsicElements["grassGradientMaterial"]>;
+  materialProps?: Partial<JSX.IntrinsicElements["winderMaterial"]>;
 };
 
 export function GrassField({
@@ -86,7 +86,7 @@ export function GrassField({
 
   return (
     <instancedMesh ref={meshRef} args={[blade, undefined, COUNT]} receiveShadow>
-      <grassGradientMaterial
+      <winderMaterial
         ref={matRef}
         defines={{ USE_INSTANCING: "" }}
         // рендер

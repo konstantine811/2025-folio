@@ -39,7 +39,7 @@ export default function HouseModel({ ...props }: Props) {
   }, [setTargetMesh]);
 
   return (
-    <group {...props} dispose={null} ref={groupRef}>
+    <group {...props} dispose={null} ref={groupRef} renderOrder={1000}>
       <RigidBody type="fixed" colliders="trimesh">
         <mesh
           geometry={(nodes.house_wall as SkinnedMesh).geometry}

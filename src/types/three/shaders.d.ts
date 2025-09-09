@@ -35,29 +35,9 @@ declare module "@react-three/fiber" {
       typeof GradientMaterial,
       typeof GradientMaterial
     >;
-    grassGradientMaterial: ReactThreeFiber.Object3DNode<
-      ShaderMaterial & {
-        baseColor?: Color;
-        colorA?: Color;
-        colorB?: Color;
-        randomK?: number;
-        specularColor?: Color;
-        specularAmount?: number;
-        specularPower?: number;
-        bottomColor?: Color;
-        bottomHeight?: number;
-        bottomSoftness?: number;
-        edgeStrength?: number;
-        edgePower?: number;
-        emissionStrength?: number;
-        transparency?: number;
-        time?: number;
-        noiseScale?: number;
-        uWindAmp?: number;
-        uWindFreq?: number;
-        uWindDir?: Vector2;
-      },
-      typeof ShaderMaterial
+    winderMaterial: ReactThreeFiber.Object3DNode<
+      typeof WinderMaterial,
+      typeof WinderMaterial
     >;
     grassGradientMaterialSecond: Object3DNode<
       typeof GradientMaterial,

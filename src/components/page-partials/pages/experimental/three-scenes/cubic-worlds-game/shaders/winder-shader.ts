@@ -2,7 +2,7 @@ import { shaderMaterial } from "@react-three/drei";
 import { extend } from "@react-three/fiber";
 import { Vector2 } from "three";
 
-const GrassGradientMaterial = shaderMaterial(
+export const WinderMaterial = shaderMaterial(
   {
     // текстури
     albedoMap: null,
@@ -116,4 +116,4 @@ const GrassGradientMaterial = shaderMaterial(
     }
   `
 );
-extend({ GrassGradientMaterial });
+extend({ WinderMaterial });

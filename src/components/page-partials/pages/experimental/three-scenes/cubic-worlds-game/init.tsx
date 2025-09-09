@@ -10,7 +10,7 @@ import "./shaders/gradient-shader";
 import { useDrawMeshStore } from "./store/useDrawMeshStore";
 
 const Init = () => {
-  const isDraw = useDrawMeshStore((s) => s.isDrawing);
+  const isEditMode = useDrawMeshStore((s) => s.isEditMode);
   return (
     <MainWrapperOffset>
       <InitKeyboardController />
@@ -20,7 +20,7 @@ const Init = () => {
         shadows
         camera={{ position: [5, 3, 5], fov: 70 }}
         onPointerDown={(e: React.PointerEvent<HTMLDivElement>) => {
-          if (isDraw) return;
+          if (isEditMode) return;
           const canvas = e.currentTarget as HTMLDivElement;
           const domCanvas = canvas.querySelector(
             "canvas"

@@ -19,7 +19,7 @@ type GrassSingleProps = {
   rotation: Quaternion; // з DrawMesh (орієнтація під нормаль)
   modelUrl: string;
   meshName?: string;
-  materialProps?: Partial<JSX.IntrinsicElements["grassGradientMaterial"]>;
+  materialProps?: Partial<JSX.IntrinsicElements["winderMaterial"]>;
 };
 
 export function GrassSingle({
@@ -81,7 +81,7 @@ export function GrassSingle({
       receiveShadow
       frustumCulled={false}
     >
-      <grassGradientMaterial
+      <winderMaterial
         ref={grassMaterialRef}
         transparent
         depthWrite

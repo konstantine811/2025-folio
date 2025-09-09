@@ -17,7 +17,7 @@ const InitPhysicWorld = () => {
   const { isDebug } = useControls("Physics World", {
     isDebug: true,
   });
-  const isDrawing = useDrawMeshStore((s) => s.isDrawing);
+  const isEditMode = useDrawMeshStore((s) => s.isEditMode);
   return (
     <>
       {/* <CameraControls makeDefault /> */}
@@ -26,7 +26,7 @@ const InitPhysicWorld = () => {
         <Ground />
         <DrawMesh />
         <PlanePainter />
-        <FlyCameraControl active={isDrawing} />
+        <FlyCameraControl active={isEditMode} />
         {/* {Array.from({ length: 250 }, (_, i) => {
           return (
             <RigidBody
@@ -81,7 +81,7 @@ const InitPhysicWorld = () => {
           animated
           capsuleHalfHeight={0.6}
           followLight
-          disableControl={isDrawing}
+          disableControl={isEditMode}
           maxVelLimit={4}
         >
           <CharacterControllerAnimation

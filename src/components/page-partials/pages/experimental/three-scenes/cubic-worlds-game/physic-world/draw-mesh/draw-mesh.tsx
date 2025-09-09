@@ -8,7 +8,7 @@ import { useGLTF } from "@react-three/drei";
 import { GrassSingle } from "./grass-single";
 import { GrassField, GrassPlacement } from "./grass-placement";
 
-import "../../shaders/grass-gradient-shader.ts";
+import "../../shaders/winder-shader.ts";
 
 const MIN_D = 0.1; // мінімальний діаметр
 const MAX_D = 20; // максимальний діаметр
@@ -20,7 +20,7 @@ const DrawMesh = () => {
     isCircle: false,
   });
   const targets = useDrawMeshStore((s) => s.targets);
-  const setIsDraw = useDrawMeshStore((s) => s.setIsDrawing);
+  // const setIsDraw = useDrawMeshStore((s) => s.setIsDrawing);
   const { camera, raycaster, pointer, gl } = useThree();
   const [placementPosition, setPlacementPosition] = useState<GrassPlacement[]>(
     []
@@ -58,9 +58,9 @@ const DrawMesh = () => {
     return () => el.removeEventListener("wheel", onWheel);
   }, [gl, isDraw]);
 
-  useEffect(() => {
-    setIsDraw(isDraw);
-  }, [isDraw, setIsDraw]);
+  // useEffect(() => {
+  //   setIsDraw(isDraw);
+  // }, [isDraw, setIsDraw]);
 
   const listenMouseDowon = useCallback(() => {
     if (isDraw) {

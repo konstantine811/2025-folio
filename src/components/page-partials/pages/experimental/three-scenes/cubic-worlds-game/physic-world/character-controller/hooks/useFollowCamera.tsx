@@ -40,7 +40,7 @@ const useFollowCamera = ({
   camListenerTarget = "domElement",
 }: Props) => {
   const { scene, camera, gl } = useThree();
-  const isDrawing = useDrawMeshStore((s) => s.isDrawing);
+  const isEditMode = useDrawMeshStore((s) => s.isEditMode);
   // const { rapier, world } = useRapier();
 
   const previousTouch1 = useRef<Touch | null>(null);
@@ -230,7 +230,7 @@ const useFollowCamera = ({
    * Camera collision detection function
    */
   const cameraCollisionDetect = (delta: number) => {
-    if (isDrawing) return;
+    if (isEditMode) return;
     // Update collision detect ray origin and pointing direction
     // Which is from pivot point to camera position
     cameraRayOrigin.copy(pivot.position);
@@ -312,7 +312,7 @@ const useFollowCamera = ({
       }
     };
 
-    if (camListenerTarget === "domElement" && !isDrawing) {
+    if (camListenerTarget === "domElement" && !isEditMode) {
       gl.domElement.addEventListener("mousedown", onMouseDown);
       gl.domElement.addEventListener("mouseup", onMouseUp);
       gl.domElement.addEventListener("mousemove", onDocumentMouseMove);
@@ -337,7 +337,7 @@ const useFollowCamera = ({
     return () => {
       onRemove();
     };
-  }, [isDrawing]);
+  }, [isEditMode]);
 
   // If followCam is disabled set to disableFollowCamPos, target to disableFollowCamTarget
   useEffect(() => {

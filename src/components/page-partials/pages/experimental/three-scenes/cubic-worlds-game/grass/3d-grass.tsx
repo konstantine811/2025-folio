@@ -17,16 +17,14 @@ import {
   Vector3,
 } from "three";
 
-function GrassGradientMat(
-  props: JSX.IntrinsicElements["grassGradientMaterial"]
-) {
+function WinderGradientMat(props: JSX.IntrinsicElements["winderMaterial"]) {
   const ref = useRef<ShaderMaterial>(null!);
   useFrame((_, dt) => {
     if (!ref.current) return;
     ref.current.uniforms.time.value += dt;
   });
   return (
-    <grassGradientMaterial
+    <winderMaterial
       ref={ref}
       transparent
       depthWrite
@@ -149,7 +147,7 @@ type GrassTileProps = {
   modelUrl: string;
   meshName?: string;
   yAt?: (x: number, z: number) => number;
-  materialProps?: Partial<JSX.IntrinsicElements["grassGradientMaterial"]>;
+  materialProps?: Partial<JSX.IntrinsicElements["winderMaterial"]>;
 };
 
 export function GrassTile({
@@ -205,7 +203,7 @@ export function GrassTile({
 
   return (
     <instancedMesh ref={meshRef} args={[blade, undefined, count]} receiveShadow>
-      <GrassGradientMat
+      <WinderGradientMat
         // тільки те, що реально потрібно
         albedoMap={albedo ?? null}
         edgeMaskMap={null}
@@ -233,7 +231,7 @@ type InfiniteGrassProps = {
   modelUrl?: string;
   meshName?: string;
   yAt?: (x: number, z: number) => number;
-  materialProps?: Partial<JSX.IntrinsicElements["grassGradientMaterial"]>;
+  materialProps?: Partial<JSX.IntrinsicElements["winderMaterial"]>;
 };
 
 export function InfiniteGrass({
