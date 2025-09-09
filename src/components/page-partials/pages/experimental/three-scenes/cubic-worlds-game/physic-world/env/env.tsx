@@ -1,6 +1,6 @@
-import GrassWrapper from "../../grass/grass-wrapper";
+// import GrassWrapper from "../../grass/grass-wrapper";
 import useEnvSound from "../../hooks/useEnvSound";
-import Boxes from "./boxes/boxes";
+// import Boxes from "./boxes/boxes";
 import HouseModel from "./house";
 
 const Environment = () => {

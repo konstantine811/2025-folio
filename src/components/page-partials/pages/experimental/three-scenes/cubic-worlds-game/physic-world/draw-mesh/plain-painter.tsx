@@ -234,8 +234,8 @@ export default function PlanePainter({
     if (!isDown.current) return;
     setStrokes((prev) => {
       if (prev.length === 0) return prev;
-
-      const p = previewRef.current!.position.clone();
+      const p = previewRef.current?.position.clone();
+      if (!p) return prev;
       const lastStroke = prev[prev.length - 1];
       const last = lastStroke[lastStroke.length - 1];
       if (last && last.distanceTo(p) < spacing) return prev;
@@ -315,15 +315,16 @@ export default function PlanePainter({
               </mesh>
             )}
           </group>
+          <group userData={{ camExcludeCollision: true }}>
+            {strokes.map((pts, i) =>
+              pts.length > 1 ? (
+                <Line key={i} points={pts} color="red" lineWidth={2} />
+              ) : null
+            )}
+          </group>
         </>
       )}
-      <group userData={{ camExcludeCollision: true }}>
-        {strokes.map((pts, i) =>
-          pts.length > 1 ? (
-            <Line key={i} points={pts} color="red" lineWidth={2} />
-          ) : null
-        )}
-      </group>
+
       <AddWinderInstanceModel
         modelUrl="/3d-models/cubic-worlds-model/grass.glb"
         strokes={strokes}

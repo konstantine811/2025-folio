@@ -16,12 +16,12 @@ const Box = ({
 }) => {
   const ref = useRef<Mesh>(null!);
 
-  //   useFrame(() => {
-  //     ref.current.position.z -= speed;
-  //     if (ref.current.position.z < -50) {
-  //       ref.current.position.z = 10;
-  //     }
-  //   });
+  useFrame(() => {
+    ref.current.position.z -= speed;
+    if (ref.current.position.z < -50) {
+      ref.current.position.z = 10;
+    }
+  });
   return <Instance ref={ref} color={color} scale={scale} position={position} />;
 };
 
