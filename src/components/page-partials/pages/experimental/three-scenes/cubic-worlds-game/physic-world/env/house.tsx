@@ -8,18 +8,18 @@ import {
 import { JSX, useEffect, useRef } from "react";
 import { Group, SkinnedMesh } from "three";
 import { CollisionWorldType } from "../../../config/collision";
-import { useDrawMeshStore } from "../../store/useDrawMeshStore";
+import { useEditModeStore } from "../../store/useEditModeStore";
 
 type Props = JSX.IntrinsicElements["group"] & {};
 
-export default function HouseModel({ ...props }: Props) {
+const HouseModel = ({ ...props }: Props) => {
   const { nodes, materials } = useGLTF(
     "/3d-models/cubic-worlds-model/house.glb"
   );
   const frameRef = useRef<RapierRigidBody>(null!); // нерухома рама
   const doorRef = useRef<RapierRigidBody>(null!); // динамічні двері
   const groupRef = useRef<Group>(null);
-  const setTargetMesh = useDrawMeshStore((s) => s.setTargets);
+  const setTargetMesh = useEditModeStore((s) => s.setTargets);
   // Створюємо шарнір (hinge): anchors і axes у ЛОКАЛЬНИХ системах кожного тіла
   const joint = useRevoluteJoint(frameRef, doorRef, [
     [0, 0, 0],
@@ -39,14 +39,13 @@ export default function HouseModel({ ...props }: Props) {
   }, [setTargetMesh]);
 
   return (
-    <group {...props} dispose={null} ref={groupRef} renderOrder={1000}>
+    <group {...props} ref={groupRef}>
       <RigidBody type="fixed" colliders="trimesh">
         <mesh
           geometry={(nodes.house_wall as SkinnedMesh).geometry}
           material={materials["cube_material.002"]}
         />
       </RigidBody>
-      w
       <RigidBody
         collisionGroups={interactionGroups(CollisionWorldType.doorFrame)}
         type="fixed"
@@ -93,6 +92,7 @@ export default function HouseModel({ ...props }: Props) {
       </RigidBody>
     </group>
   );
-}
+};
 
 useGLTF.preload("/3d-models/cubic-worlds-model/house.glb");
+export default HouseModel;

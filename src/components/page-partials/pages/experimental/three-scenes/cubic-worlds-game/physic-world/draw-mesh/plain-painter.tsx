@@ -1,12 +1,18 @@
 // PlanePainter.tsx
 import { useThree, useFrame } from "@react-three/fiber";
-import { folder, useControls } from "leva";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Color, MeshBasicMaterial, Object3D, Quaternion, Vector3 } from "three";
-import { useDrawMeshStore } from "../../store/useDrawMeshStore";
+import {
+  Color,
+  Matrix4,
+  MeshBasicMaterial,
+  Object3D,
+  Quaternion,
+  Vector3,
+} from "three";
+import { useEditModeStore } from "../../store/useEditModeStore";
 import { Line } from "@react-three/drei";
-import AddWinderInstanceModel from "./add-winder-instance-model";
-import "../../shaders/winder-shader";
+import ModelInstanceChunks from "./winder-model/model-instance-chuncks";
+import { useEditPainterStore } from "../../store/useEditPainterStore";
 
 type Props = {
   /** Максимальна кількість інстансів у буфері */
@@ -15,6 +21,7 @@ type Props = {
   baseSize?: number;
   /** Показувати прев’ю-курсор (площина/коло) */
   showPreview?: boolean;
+  onChunksCreated: (chunks: Matrix4[][]) => void;
 };
 
 enum PainterColors {
@@ -22,49 +29,26 @@ enum PainterColors {
   red = "red",
 }
 
+const eraseRadius = 1;
+
 export default function PlanePainter({
   limit = 100_000,
   showPreview = true,
+  onChunksCreated,
 }: Props) {
   const { camera, pointer, gl, raycaster } = useThree();
-  const targets = useDrawMeshStore((s) => s.targets); // об’єкти для малювання
-  const setIsEditMode = useDrawMeshStore((s) => s.setIsEditMode);
+  const targets = useEditModeStore((s) => s.targets); // об’єкти для малювання
   const painterColor = useMemo(() => new Color(PainterColors.green), []);
-  // --- Leva: параметри "кисті"
   const {
-    isDraw,
-    density, // щільність (інстансів на метр шляху)
-    previewCircle, // тип прев’ю (коло/площина)
-    offset,
-    seed,
+    spacing,
+    density,
     radius,
+    scale,
     randomness,
     rotationDeg,
-    scale,
-    width,
-    spacing,
-
-    eraseRadius,
-  } = useControls("Plane Painter", {
-    drawingOptions: folder({
-      isDraw: false,
-      previewCircle: true,
-      width: { value: 0.6, min: 0.05, max: 5, step: 0.05 },
-      spacing: { value: 0.15, min: 0.02, max: 1, step: 0.01 },
-    }),
-    eraser: folder({
-      eraseRadius: { value: 0.6, min: 0.05, max: 5, step: 0.05 },
-    }),
-    scatterOprionts: folder({
-      density: { value: 1, min: 0.1, max: 100, step: 1 },
-      radius: { value: 1, min: 0.05, max: 5, step: 0.05 },
-      scale: { value: 0.3, min: 0.02, max: 5, step: 0.01 },
-      randomness: { value: 0.8, min: 0, max: 1, step: 0.01 },
-      rotationDeg: { value: 29, min: -180, max: 180, step: 1 },
-      offset: { value: 0, min: -2, max: 2, step: 0.01 },
-      seed: { value: 0, min: 0, max: 9999, step: 1 },
-    }),
-  });
+    offset,
+    seed,
+  } = useEditPainterStore();
 
   const lastPoint = useRef<Vector3 | null>(null);
   const isDown = useRef(false);
@@ -117,7 +101,7 @@ export default function PlanePainter({
         return newStrokes;
       });
     },
-    [eraseRadius, strokeNormals]
+    [strokeNormals]
   );
 
   const killStrokeAt = useCallback(
@@ -140,12 +124,8 @@ export default function PlanePainter({
         return kept;
       });
     },
-    [eraseRadius, strokeNormals]
+    [strokeNormals]
   );
-
-  useEffect(() => {
-    setIsEditMode(isDraw);
-  }, [isDraw, setIsEditMode]);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -165,7 +145,6 @@ export default function PlanePainter({
   }, []);
   // --- Прев’ю курсора
   useFrame((_, dt) => {
-    if (!isDraw) return;
     raycaster.setFromCamera(pointer, camera);
     const list = Array.isArray(targets) ? targets : [targets];
     const intersects = raycaster.intersectObjects(list, true);
@@ -234,7 +213,7 @@ export default function PlanePainter({
     const el = gl.domElement;
 
     const onDown = (e: MouseEvent) => {
-      if (!isDraw || e.button !== 0) return;
+      if (e.button !== 0) return;
       isDown.current = true;
       lastPoint.current = null;
 
@@ -265,51 +244,40 @@ export default function PlanePainter({
       lastPoint.current = null;
     };
 
-    if (isDraw) {
-      el.addEventListener("mousedown", onDown);
-      el.addEventListener("mouseup", onUp);
-      el.addEventListener("mousemove", onMove);
-    } else {
-      el.removeEventListener("mousedown", onDown);
-      el.removeEventListener("mouseup", onUp);
-      el.removeEventListener("mousemove", onMove);
-    }
+    el.addEventListener("mousedown", onDown);
+    el.addEventListener("mouseup", onUp);
+    el.addEventListener("mousemove", onMove);
 
     return () => {
       el.removeEventListener("mousedown", onDown);
       el.removeEventListener("mouseup", onUp);
       el.removeEventListener("mousemove", onMove);
     };
-  }, [gl, isDraw, onMove, camera, raycaster, pointer, targets]);
+  }, [gl, onMove, camera, raycaster, pointer, targets]);
 
   // --- Побудова інстансів при зміні штрихів/параметрів
 
   return (
     <>
       {/* Прев’ю пензля */}
-      {showPreview && isDraw && (
+      {showPreview && (
         <>
           <group ref={previewRef}>
-            {previewCircle ? (
-              <mesh material={painterMaterial}>
-                <circleGeometry args={[width * 0.5, 32]} />
-              </mesh>
-            ) : (
-              <mesh material={painterMaterial}>
-                <planeGeometry args={[width, width]} />
-              </mesh>
+            <mesh material={painterMaterial}>
+              <planeGeometry args={[1, 1]} />
+            </mesh>
+          </group>
+          <group userData={{ camExcludeCollision: true }}>
+            {strokes.map((pts, i) =>
+              pts.length > 1 ? (
+                <Line key={i} points={pts} color="red" lineWidth={2} />
+              ) : null
             )}
           </group>
         </>
       )}
-      <group userData={{ camExcludeCollision: true }}>
-        {strokes.map((pts, i) =>
-          pts.length > 1 ? (
-            <Line key={i} points={pts} color="red" lineWidth={2} />
-          ) : null
-        )}
-      </group>
-      <AddWinderInstanceModel
+
+      <ModelInstanceChunks
         modelUrl="/3d-models/cubic-worlds-model/grass.glb"
         strokes={strokes}
         strokeNormals={strokeNormals}
@@ -320,7 +288,9 @@ export default function PlanePainter({
         rotationDeg={rotationDeg}
         offset={offset}
         randomness={randomness}
+        isEditMode={false}
         scale={scale}
+        onChunksCreated={onChunksCreated}
       />
     </>
   );

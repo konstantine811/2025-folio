@@ -7,14 +7,17 @@ import InitKeyboardController from "./physic-world/character-controller/init-key
 import { Stats } from "@react-three/drei";
 import { Perf } from "r3f-perf";
 import "./shaders/gradient-shader";
-import { useDrawMeshStore } from "./store/useDrawMeshStore";
+import { useEditModeStore } from "./store/useEditModeStore";
+import UI from "./ui/ui";
+import EditMode from "./physic-world/edit-mode/edit-mode";
 
 const Init = () => {
-  const isEditMode = useDrawMeshStore((s) => s.isEditMode);
+  const isEditMode = useEditModeStore((s) => s.isEditMode);
   return (
     <MainWrapperOffset>
       <InitKeyboardController />
       <Stats />
+      <UI />
       {/* <ThreeLoader /> */}
       <Canvas
         shadows
@@ -36,6 +39,7 @@ const Init = () => {
         {/* <Perf position="bottom-left" /> */}
         <Suspense fallback={null}>
           <Experience />
+          {isEditMode && <EditMode />}
           <Perf position="bottom-left" showGraph deepAnalyze antialias />
         </Suspense>
       </Canvas>

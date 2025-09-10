@@ -2,7 +2,7 @@ import { Mesh, Object3D, Object3DEventMap, Raycaster, Vector3 } from "three";
 import { camListenerTargetType } from "../character-controller";
 import { useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { useDrawMeshStore } from "../../../store/useDrawMeshStore";
+import { useEditModeStore } from "../../../store/useEditModeStore";
 
 interface Props {
   disableFollowCam: boolean;
@@ -40,7 +40,7 @@ const useFollowCamera = ({
   camListenerTarget = "domElement",
 }: Props) => {
   const { scene, camera, gl } = useThree();
-  const isEditMode = useDrawMeshStore((s) => s.isEditMode);
+  const isEditMode = useEditModeStore((s) => s.isEditMode);
   // const { rapier, world } = useRapier();
 
   const previousTouch1 = useRef<Touch | null>(null);

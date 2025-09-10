@@ -6,14 +6,14 @@ import { useGameDataStore } from "./character-controller/stores/game-data-store"
 // import { button, useControls } from "leva";
 // import useTouchTexture from "@/hooks/three-world/useTouchTexture";
 // import { useTexture } from "@react-three/drei";
-import { useDrawMeshStore } from "../store/useDrawMeshStore";
+import { useEditModeStore } from "../store/useEditModeStore";
 
 const Ground = () => {
   const { width, height } = { width: 100, height: 100 };
   // const [isDrawing, setIsDrawing] = useState(false);
   // const [cursorPos, setCurPos] = useState(new Vector3());
   // const textureMap = useTexture("/images/textures/grassTexture.jpg");
-  const setTargetMesh = useDrawMeshStore((s) => s.setTargets);
+  const setTargetMesh = useEditModeStore((s) => s.setTargets);
   const floorRef = useRef<Mesh<PlaneGeometry>>(null!);
   const setCharacterGroundMesh = useGameDataStore(
     (s) => s.setCharacterGroundMesh

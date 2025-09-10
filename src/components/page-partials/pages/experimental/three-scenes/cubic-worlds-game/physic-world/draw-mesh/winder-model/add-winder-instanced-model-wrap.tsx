@@ -7,16 +7,23 @@ import {
   NormalBufferAttributes,
   ShaderMaterial,
 } from "three";
-import AddModel from "./add-model";
+import AddModel from "../add-model";
+import AddModelEdit from "../add-model-edit";
 
-type AddModelProps = {
+type Props = {
   meshName?: string;
   matrices: Matrix4[];
   material: ShaderMaterial;
   blade: BufferGeometry<NormalBufferAttributes>;
+  isEditMode: boolean;
 };
 
-const AddWinderModel = ({ matrices, material, blade }: AddModelProps) => {
+const AddWinderInstancedModelWrap = ({
+  matrices,
+  material,
+  blade,
+  isEditMode = false,
+}: Props) => {
   const COUNT = Math.max(matrices.length, 1);
 
   const aBend = useMemo(() => new Float32Array(COUNT), [COUNT]);
@@ -45,14 +52,26 @@ const AddWinderModel = ({ matrices, material, blade }: AddModelProps) => {
   );
 
   return (
-    <AddModel
-      material={material}
-      matrices={matrices}
-      blade={blade}
-      onMatrixUpdate={onMatrixUpdate}
-      onAddGeometryData={onAddGeometryData}
-    />
+    <>
+      {!isEditMode ? (
+        <AddModel
+          material={material}
+          matrices={matrices}
+          blade={blade}
+          onMatrixUpdate={onMatrixUpdate}
+          onAddGeometryData={onAddGeometryData}
+        />
+      ) : (
+        <AddModelEdit
+          material={material}
+          matrices={matrices}
+          blade={blade}
+          onMatrixUpdate={onMatrixUpdate}
+          onAddGeometryData={onAddGeometryData}
+        />
+      )}
+    </>
   );
 };
 
-export default AddWinderModel;
+export default AddWinderInstancedModelWrap;

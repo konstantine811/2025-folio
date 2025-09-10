@@ -2,7 +2,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useControls } from "leva";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Mesh, Quaternion, Vector2, Vector3 } from "three";
-import { useDrawMeshStore } from "../../store/useDrawMeshStore";
+import { useEditModeStore } from "../../store/useEditModeStore.tsx";
 import { clamp } from "three/src/math/MathUtils.js";
 import { useGLTF } from "@react-three/drei";
 import { GrassSingle } from "./grass-single";
@@ -19,8 +19,8 @@ const DrawMesh = () => {
     isDraw: false,
     isCircle: false,
   });
-  const targets = useDrawMeshStore((s) => s.targets);
-  // const setIsDraw = useDrawMeshStore((s) => s.setIsDrawing);
+  const targets = useEditModeStore((s) => s.targets);
+  // const setIsDraw = useEditModeStore((s) => s.setIsDrawing);
   const { camera, raycaster, pointer, gl } = useThree();
   const [placementPosition, setPlacementPosition] = useState<GrassPlacement[]>(
     []

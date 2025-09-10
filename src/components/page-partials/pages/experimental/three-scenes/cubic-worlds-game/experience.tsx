@@ -1,6 +1,6 @@
 import { Environment, useHelper } from "@react-three/drei";
 
-import InitPhysicWorld from "./physic-world/init";
+import InitPhysicWorld from "./physic-world/physics-world";
 import { useRef } from "react";
 import { DirectionalLight, DirectionalLightHelper } from "three";
 import { SceneObjectName } from "./physic-world/character-controller/config/character.config";

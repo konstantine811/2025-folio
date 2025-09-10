@@ -6,26 +6,22 @@ import { animationSet } from "./character-controller/config/character.config";
 import CharacterControllerModel from "./character-controller/character-controller-model";
 import AttachCharacterStaff from "./character/attach-character-staff";
 import Environment from "./env/env";
-import { useControls } from "leva";
-import DrawMesh from "./draw-mesh/draw-mesh";
-import PlanePainter from "./draw-mesh/plain-painter";
-import { useDrawMeshStore } from "../store/useDrawMeshStore";
+// import DrawMesh from "./draw-mesh/draw-mesh";
+import { useEditModeStore } from "../store/useEditModeStore";
 import FlyCameraControl from "../cameraControls/fly-camera-control";
 // import PickUpController from "./controllers/pick-up-controller";
 
 const InitPhysicWorld = () => {
-  const { isDebug } = useControls("Physics World", {
-    isDebug: true,
-  });
-  const isEditMode = useDrawMeshStore((s) => s.isEditMode);
+  const isDebug = useEditModeStore((s) => s.isPhysicsDebug);
+  const isEditMode = useEditModeStore((s) => s.isEditMode);
   return (
     <>
       {/* <CameraControls makeDefault /> */}
       <Physics timeStep="vary" debug={isDebug}>
         <Environment />
         <Ground />
-        <DrawMesh />
-        <PlanePainter />
+        {/* <DrawMesh /> */}
+
         <FlyCameraControl active={isEditMode} />
         {/* {Array.from({ length: 250 }, (_, i) => {
           return (
