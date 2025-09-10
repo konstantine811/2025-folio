@@ -8,8 +8,8 @@ import {
   Quaternion,
   Vector3,
 } from "three";
-import { mulberry32 } from "../../utils/mulberry";
-import { buildGridCells } from "../../utils/grid";
+import { mulberry32 } from "../../../utils/mulberry";
+import { buildGridCells } from "../../../utils/grid";
 import InstanceChunk from "./instance-chunk";
 
 const EPS_NORMAL = 0.0001;

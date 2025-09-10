@@ -9,8 +9,8 @@ import {
   Vector2,
   Vector3,
 } from "three";
-import { useGeometry } from "../../utils/getModelGeometry";
-import { useEmbeddedMaps } from "../../utils/textureAlbedoHandle";
+import { useGeometry } from "../../../utils/getModelGeometry";
+import { useEmbeddedMaps } from "../../../utils/textureAlbedoHandle";
 import { useFrame } from "@react-three/fiber";
 
 export type GrassPlacement = {

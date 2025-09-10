@@ -1,10 +1,8 @@
-import { Button } from "@/components/ui/button";
-import { useEditModeStore } from "../store/useEditModeStore";
-import { Pen } from "lucide-react";
+import { useEditModeStore } from "../../../store/useEditModeStore";
 import { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import NumberInputSlider from "@components/ui-abc/inputs/three-world/number-input-slider";
-import { useEditPainterStore } from "../store/useEditPainterStore";
+import { useEditPainterStore } from "../../../store/useEditPainterStore";
 
 const TabScatterDraw = () => {
   const { isDrawScatter, setIsDrawScatter, isEditMode } = useEditModeStore();
@@ -32,16 +30,7 @@ const TabScatterDraw = () => {
     }
   }, [isEditMode, setIsDrawScatter]);
   return (
-    <div className="flex flex-col gap-2 items-center px-3 h-full">
-      <Label className="justify-center text-background">Scatter Draw</Label>
-      <Button
-        variant="outline"
-        size="icon"
-        className={`size-10 ${isDrawScatter ? "bg-accent" : ""}`}
-        onClick={() => setIsDrawScatter(!isDrawScatter)}
-      >
-        <Pen />
-      </Button>
+    <>
       {isDrawScatter ? (
         <div className="w-full mt-3 min-w-60">
           <div className="pb-3 flex flex-col gap-1">
@@ -128,7 +117,7 @@ const TabScatterDraw = () => {
           </div>
         </div>
       ) : null}
-    </div>
+    </>
   );
 };
 

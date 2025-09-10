@@ -2,13 +2,13 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useControls } from "leva";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Mesh, Quaternion, Vector2, Vector3 } from "three";
-import { useEditModeStore } from "../../store/useEditModeStore.tsx";
+import { useEditModeStore } from "../../../store/useEditModeStore.tsx";
 import { clamp } from "three/src/math/MathUtils.js";
 import { useGLTF } from "@react-three/drei";
-import { GrassSingle } from "./grass-single";
-import { GrassField, GrassPlacement } from "./grass-placement";
+import { GrassSingle } from "./grass-single.tsx";
+import { GrassField, GrassPlacement } from "./grass-placement.tsx";
 
-import "../../shaders/winder-shader.ts";
+import "../../../shaders/winder-shader.ts";
 
 const MIN_D = 0.1; // мінімальний діаметр
 const MAX_D = 20; // максимальний діаметр

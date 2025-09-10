@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
-import { useEditModeStore } from "../../../store/useEditModeStore";
+import { useEditModeStore } from "../../../../store/useEditModeStore";
 import { Matrix4 } from "three";
-import { saveChunksPackedJSON } from "../../../utils/save-chunks";
+import { saveChunksPackedJSON } from "../../../../utils/save-chunks";
 import PlanePainter from "../plain-painter";
 
 const PainterSaver = () => {

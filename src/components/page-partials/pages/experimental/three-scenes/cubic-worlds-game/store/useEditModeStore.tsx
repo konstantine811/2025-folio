@@ -6,6 +6,7 @@ interface EditModeState {
   isEditMode: boolean;
   isPhysicsDebug: boolean;
   isDrawScatter: boolean;
+  isTransformEdit: boolean;
 }
 
 const initialState: EditModeState = {
@@ -13,6 +14,7 @@ const initialState: EditModeState = {
   isEditMode: false,
   isPhysicsDebug: true,
   isDrawScatter: false,
+  isTransformEdit: false,
 };
 
 interface EditModeActions {
@@ -20,6 +22,7 @@ interface EditModeActions {
   setIsEditMode: (isEditMode: boolean) => void;
   setIsPhysicsDebug: (isPhysicsDebug: boolean) => void;
   setIsDrawScatter: (isDrawScatter: boolean) => void;
+  setIsTransformEdit: (isTransformEdit: boolean) => void;
 }
 
 type EditModeStore = EditModeState & EditModeActions;
@@ -31,4 +34,5 @@ export const useEditModeStore = create<EditModeStore>()((set) => ({
   setIsEditMode: (isEditMode: boolean) => set({ isEditMode }),
   setIsPhysicsDebug: (isPhysicsDebug: boolean) => set({ isPhysicsDebug }),
   setIsDrawScatter: (isDrawScatter: boolean) => set({ isDrawScatter }),
+  setIsTransformEdit: (isTransformEdit: boolean) => set({ isTransformEdit }),
 }));

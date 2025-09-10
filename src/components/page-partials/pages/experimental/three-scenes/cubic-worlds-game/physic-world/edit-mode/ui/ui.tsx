@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { Pause, Play } from "lucide-react";
-import { useEditModeStore } from "../store/useEditModeStore";
+import { useEditModeStore } from "../../../store/useEditModeStore";
 import RightSidePanel from "./right-side-panel";
 import { AnimatePresence, motion } from "framer-motion";
 import { Checkbox } from "@/components/ui/checkbox";

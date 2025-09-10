@@ -9,10 +9,10 @@ import {
   Quaternion,
   Vector3,
 } from "three";
-import { useEditModeStore } from "../../store/useEditModeStore";
+import { useEditModeStore } from "../../../store/useEditModeStore";
 import { Line } from "@react-three/drei";
 import ModelInstanceChunks from "./winder-model/model-instance-chuncks";
-import { useEditPainterStore } from "../../store/useEditPainterStore";
+import { useEditPainterStore } from "../../../store/useEditPainterStore";
 
 type Props = {
   /** Максимальна кількість інстансів у буфері */
@@ -124,55 +124,8 @@ export default function PlanePainter({
         return kept;
       });
     },
-    [strokeNormals]
+    [strokeNormals, setStrokeNormals, setStrokes]
   );
-
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "c" || e.key === "C") isErasing.current = true;
-      if (e.key === "v" || e.key === "V") isKillStroke.current = true;
-    };
-    const up = (e: KeyboardEvent) => {
-      if (e.key === "c" || e.key === "C") isErasing.current = false;
-      if (e.key === "v" || e.key === "V") isKillStroke.current = false;
-    };
-    window.addEventListener("keydown", down);
-    window.addEventListener("keyup", up);
-    return () => {
-      window.removeEventListener("keydown", down);
-      window.removeEventListener("keyup", up);
-    };
-  }, []);
-  // --- Прев’ю курсора
-  useFrame((_, dt) => {
-    raycaster.setFromCamera(pointer, camera);
-    const list = Array.isArray(targets) ? targets : [targets];
-    const intersects = raycaster.intersectObjects(list, true);
-    const i = intersects[0];
-    if (i) {
-      const worldNormal = i.face
-        ? i.face.normal.clone().transformDirection(i.object.matrixWorld)
-        : new Vector3(0, 1, 0);
-      const hit = {
-        point: i.point.clone(),
-        normal: worldNormal,
-        object: i.object,
-      };
-
-      if (previewRef.current) {
-        const target = hit.point
-          .clone()
-          .add(hit.normal.clone().normalize().multiplyScalar(0.01));
-        previewRef.current.position.lerp(target, 1 - Math.pow(0.0001, dt)); // плавно
-        // розвертаємо коло під нормаль поверхні (за замовч. up=(0,1,0))
-        const q = new Quaternion().setFromUnitVectors(
-          new Vector3(0, 0, 1),
-          hit.normal.clone().normalize()
-        );
-        previewRef.current.quaternion.slerp(q, 1 - Math.pow(0.0001, dt));
-      }
-    }
-  });
 
   const onMove = useCallback(() => {
     if (!previewRef.current) return;
@@ -255,16 +208,64 @@ export default function PlanePainter({
     };
   }, [gl, onMove, camera, raycaster, pointer, targets]);
 
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "c" || e.key === "C") isErasing.current = true;
+      if (e.key === "v" || e.key === "V") isKillStroke.current = true;
+    };
+    const up = (e: KeyboardEvent) => {
+      if (e.key === "c" || e.key === "C") isErasing.current = false;
+      if (e.key === "v" || e.key === "V") isKillStroke.current = false;
+    };
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+    };
+  }, []);
+
   // --- Побудова інстансів при зміні штрихів/параметрів
+
+  // --- Прев’ю курсора
+  useFrame((_, dt) => {
+    raycaster.setFromCamera(pointer, camera);
+    const list = Array.isArray(targets) ? targets : [targets];
+    const intersects = raycaster.intersectObjects(list, true);
+    const i = intersects[0];
+    if (i) {
+      const worldNormal = i.face
+        ? i.face.normal.clone().transformDirection(i.object.matrixWorld)
+        : new Vector3(0, 1, 0);
+      const hit = {
+        point: i.point.clone(),
+        normal: worldNormal,
+        object: i.object,
+      };
+
+      if (previewRef.current) {
+        const target = hit.point
+          .clone()
+          .add(hit.normal.clone().normalize().multiplyScalar(0.01));
+        previewRef.current.position.lerp(target, 1 - Math.pow(0.0001, dt)); // плавно
+        // розвертаємо коло під нормаль поверхні (за замовч. up=(0,1,0))
+        const q = new Quaternion().setFromUnitVectors(
+          new Vector3(0, 0, 1),
+          hit.normal.clone().normalize()
+        );
+        previewRef.current.quaternion.slerp(q, 1 - Math.pow(0.0001, dt));
+      }
+    }
+  });
 
   return (
     <>
       {/* Прев’ю пензля */}
       {showPreview && (
         <>
-          <group ref={previewRef}>
+          <group ref={previewRef} rotation={[-Math.PI / 2, 0, 0]}>
             <mesh material={painterMaterial}>
-              <planeGeometry args={[1, 1]} />
+              <circleGeometry args={[radius, 32]} />
             </mesh>
           </group>
           <group userData={{ camExcludeCollision: true }}>

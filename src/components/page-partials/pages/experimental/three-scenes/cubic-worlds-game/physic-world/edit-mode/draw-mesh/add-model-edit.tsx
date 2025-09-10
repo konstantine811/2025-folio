@@ -8,7 +8,7 @@ import {
 } from "three";
 import { TransformControls as TransformControlsImpl } from "three-stdlib";
 import { ThreeEvent } from "@react-three/fiber";
-import TransformInstanceMatrix from "../transform-mesh/transform-instance-matrix";
+import TransformInstanceMatrix from "../../transform-mesh/transform-instance-matrix";
 import useCreateInstancedMesh from "./hooks/useCreateInstancedMesh";
 
 type AddModelProps = {

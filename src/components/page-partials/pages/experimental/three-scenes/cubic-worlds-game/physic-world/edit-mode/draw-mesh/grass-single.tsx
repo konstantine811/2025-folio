@@ -9,8 +9,8 @@ import {
   Vector2,
   Vector3,
 } from "three";
-import { useGeometry } from "../../utils/getModelGeometry.ts";
-import { useEmbeddedMaps } from "../../utils/textureAlbedoHandle.ts";
+import { useGeometry } from "../../../utils/getModelGeometry.ts";
+import { useEmbeddedMaps } from "../../../utils/textureAlbedoHandle.ts";
 import { useFrame } from "@react-three/fiber";
 
 type GrassSingleProps = {

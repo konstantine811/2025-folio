@@ -1,8 +1,8 @@
 import { useFrame } from "@react-three/fiber";
-import { useGeometry } from "../../../utils/getModelGeometry";
-import { useEmbeddedMaps } from "../../../utils/textureAlbedoHandle";
+import { useGeometry } from "../../../../utils/getModelGeometry";
+import { useEmbeddedMaps } from "../../../../utils/textureAlbedoHandle";
 import { useMemo } from "react";
-import { WinderMaterial } from "../../../shaders/winder-shader";
+import { WinderMaterial } from "../../../../shaders/winder-shader";
 import { Vector2 } from "three";
 
 type Props = {

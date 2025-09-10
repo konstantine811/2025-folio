@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Matrix4 } from "three";
-import AddWinderInstancedModelWrap from "../draw-mesh/winder-model/add-winder-instanced-model-wrap";
-import useLoadWinderModel from "../draw-mesh/hooks/useLoadWinderModel";
+import AddWinderInstancedModelWrap from "../edit-mode/draw-mesh/winder-model/add-winder-instanced-model-wrap";
+import useLoadWinderModel from "../edit-mode/draw-mesh/hooks/useLoadWinderModel";
 import { PackedPayload, parsePackedJSON } from "../../utils/save-chunks";
 
 type Props = {
