@@ -1,0 +1,21 @@
+[
+  {
+    "origin": [
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+      "https://2025-folio-one.vercel.app/"
+    ],
+    "method": ["GET", "HEAD", "OPTIONS"],
+    "responseHeader": [
+      "Content-Type",
+      "Authorization",
+      "Content-Length",
+      "Accept-Ranges",
+      "Content-Range",
+      "Range",
+      "x-goog-meta-*",
+      "x-goog-resumable"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]

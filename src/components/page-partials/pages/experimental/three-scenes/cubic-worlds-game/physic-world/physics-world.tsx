@@ -78,7 +78,8 @@ const InitPhysicWorld = () => {
           capsuleHalfHeight={0.6}
           followLight
           disableControl={isEditMode}
-          maxVelLimit={4}
+          maxVelLimit={2.3}
+          sprintMult={3}
         >
           <CharacterControllerAnimation
             characterURL="/3d-models/characters/constantine_character.glb"

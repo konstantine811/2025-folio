@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -23,6 +24,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const provider = new GoogleAuthProvider();
+export const storage = getStorage(app);
 
 export enum FirebaseCollection {
   articles = "articles-blog",
@@ -30,6 +32,7 @@ export enum FirebaseCollection {
   templateTasks = "template-tasks",
   plannedTasks = "planned-tasks",
   dailyAnalytics = "daily-analytics",
+  cubicWorlds = "cubicWorlds",
 }
 
 export const FirebaseCollectionProps = {
@@ -42,4 +45,5 @@ export const FirebaseCollectionProps = {
   [FirebaseCollection.dailyAnalytics]: {
     days: "days",
   },
+  [FirebaseCollection.cubicWorlds]: { scatters: "scatters" },
 };

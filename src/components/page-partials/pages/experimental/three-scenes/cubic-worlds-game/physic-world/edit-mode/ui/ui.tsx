@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { Pause, Play } from "lucide-react";
 import { useEditModeStore } from "../../../store/useEditModeStore";
-import RightSidePanel from "./right-side-panel";
+import RightSidePanel from "./righ-panel/right-side-panel";
 import { AnimatePresence, motion } from "framer-motion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -10,8 +10,13 @@ import { Label } from "@/components/ui/label";
 const UI = () => {
   const hs = useHeaderSizeStore((s) => s.size);
 
-  const { isEditMode, setIsEditMode, isPhysicsDebug, setIsPhysicsDebug } =
-    useEditModeStore();
+  const {
+    isEditMode,
+    setIsEditMode,
+    isPhysicsDebug,
+    setIsPhysicsDebug,
+    setIdEditScatter,
+  } = useEditModeStore();
   return (
     <div
       className="fixed w-full pointer-events-none grid grid-cols-3 z-50 items-start"
@@ -23,7 +28,12 @@ const UI = () => {
             variant="outline"
             size="icon"
             className="size-10"
-            onClick={() => setIsEditMode(!isEditMode)}
+            onClick={() => {
+              setIsEditMode(!isEditMode);
+              if (isEditMode) {
+                setIdEditScatter(null);
+              }
+            }}
           >
             {isEditMode ? <Play /> : <Pause />}
           </Button>

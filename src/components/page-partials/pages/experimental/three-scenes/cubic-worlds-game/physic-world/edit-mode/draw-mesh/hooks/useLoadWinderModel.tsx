@@ -22,7 +22,7 @@ const useLoadWinderModel = ({ modelUrl }: Props) => {
       ...m.uniforms,
       time: { value: 0 },
       albedoMap: { value: albedo ?? null },
-      _fallbackEdgeWidth: { value: 10.5 },
+      _fallbackEdgeWidth: { value: 0.5 },
       _fallbackEdgeDark: { value: 2.01 }, // мін. яскравість краю
       uWindAmp: { value: 0.03 },
       transparency: { value: 0.3 },

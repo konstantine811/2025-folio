@@ -10,6 +10,7 @@ import "./shaders/gradient-shader";
 import { useEditModeStore } from "./store/useEditModeStore";
 import UI from "./physic-world/edit-mode/ui/ui";
 import EditMode from "./physic-world/edit-mode/edit-mode";
+import "./preload-data/preload-gltf-model";
 
 const Init = () => {
   const isEditMode = useEditModeStore((s) => s.isEditMode);

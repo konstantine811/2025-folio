@@ -8,3 +8,10 @@ export const normalizeStr = (str: string) =>
     .replace(/['’ʼ`´]/g, "") // видаляє: ' ’ ʼ ` ´
     .trim()
     .toLowerCase();
+
+export function sanitizeName(input: string) {
+  return input
+    .trim()
+    .replace(/\s+/g, "_")
+    .replace(/[^A-Za-z0-9._-]/g, "");
+}

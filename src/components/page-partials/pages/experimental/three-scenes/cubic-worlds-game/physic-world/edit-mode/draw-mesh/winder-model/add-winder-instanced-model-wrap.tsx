@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import {
   BufferGeometry,
   DynamicDrawUsage,
@@ -16,6 +16,7 @@ type Props = {
   material: ShaderMaterial;
   blade: BufferGeometry<NormalBufferAttributes>;
   isEditMode: boolean;
+  onUpdate?: () => void;
 };
 
 const AddWinderInstancedModelWrap = ({
@@ -23,6 +24,7 @@ const AddWinderInstancedModelWrap = ({
   material,
   blade,
   isEditMode = false,
+  onUpdate,
 }: Props) => {
   const COUNT = Math.max(matrices.length, 1);
 
@@ -51,6 +53,29 @@ const AddWinderInstancedModelWrap = ({
     [aBend, aPhase]
   );
 
+  // цей колбек передамо в AddModelEdit
+  const handleMatrixChange = useCallback(
+    (index: number, nextM: Matrix4) => {
+      // Замість: matrices[index] = nextM;
+      // Правильно:
+      if (matrices[index]) {
+        matrices[index].copy(nextM);
+      } else {
+        matrices[index] = nextM.clone(); // на випадок, якщо індекс новий
+      }
+      onUpdate?.();
+    },
+    [matrices, onUpdate]
+  );
+
+  useEffect(() => {
+    if (isEditMode) {
+      material.uniforms._fallbackEdgeDark.value = 5;
+    } else {
+      material.uniforms._fallbackEdgeDark.value = 2.01;
+    }
+  }, [material, isEditMode]);
+
   return (
     <>
       {!isEditMode ? (
@@ -68,6 +93,7 @@ const AddWinderInstancedModelWrap = ({
           blade={blade}
           onMatrixUpdate={onMatrixUpdate}
           onAddGeometryData={onAddGeometryData}
+          onMatrixChange={handleMatrixChange}
         />
       )}
     </>

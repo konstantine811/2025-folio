@@ -20,7 +20,6 @@ type Props = {
   /** Початковий розмір площини (геометрія 1x1, масштаб = розмір) */
   baseSize?: number;
   /** Показувати прев’ю-курсор (площина/коло) */
-  showPreview?: boolean;
   onChunksCreated: (chunks: Matrix4[][]) => void;
 };
 
@@ -33,7 +32,6 @@ const eraseRadius = 1;
 
 export default function PlanePainter({
   limit = 100_000,
-  showPreview = true,
   onChunksCreated,
 }: Props) {
   const { camera, pointer, gl, raycaster } = useThree();
@@ -72,6 +70,7 @@ export default function PlanePainter({
 
   const eraseAt = useCallback(
     (center: Vector3) => {
+      console.log("on erase");
       setStrokes((prev) => {
         const newStrokes: Vector3[][] = [];
         const newNormals: Vector3[] = [];
@@ -261,22 +260,18 @@ export default function PlanePainter({
   return (
     <>
       {/* Прев’ю пензля */}
-      {showPreview && (
-        <>
-          <group ref={previewRef} rotation={[-Math.PI / 2, 0, 0]}>
-            <mesh material={painterMaterial}>
-              <circleGeometry args={[radius, 32]} />
-            </mesh>
-          </group>
-          <group userData={{ camExcludeCollision: true }}>
-            {strokes.map((pts, i) =>
-              pts.length > 1 ? (
-                <Line key={i} points={pts} color="red" lineWidth={2} />
-              ) : null
-            )}
-          </group>
-        </>
-      )}
+      <group ref={previewRef} rotation={[-Math.PI / 2, 0, 0]}>
+        <mesh material={painterMaterial}>
+          <circleGeometry args={[radius, 32]} />
+        </mesh>
+      </group>
+      <group userData={{ camExcludeCollision: true }}>
+        {strokes.map((pts, i) =>
+          pts.length > 1 ? (
+            <Line key={i} points={pts} color="red" lineWidth={2} />
+          ) : null
+        )}
+      </group>
 
       <ModelInstanceChunks
         modelUrl="/3d-models/cubic-worlds-model/grass.glb"

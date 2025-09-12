@@ -1,15 +1,19 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useMemo } from "react";
 import {
   BufferGeometry,
+  FrontSide,
   InstancedMesh,
   Matrix4,
+  MeshBasicMaterial,
   NormalBufferAttributes,
+  Object3D,
   ShaderMaterial,
 } from "three";
-import { TransformControls as TransformControlsImpl } from "three-stdlib";
 import { ThreeEvent } from "@react-three/fiber";
 import TransformInstanceMatrix from "../../transform-mesh/transform-instance-matrix";
 import useCreateInstancedMesh from "./hooks/useCreateInstancedMesh";
+import EditKeyModelInstance from "./edit/edit-key-model-instance";
+import { useEditModeStore } from "../../../store/useEditModeStore";
 
 type AddModelProps = {
   matrices: Matrix4[];
@@ -21,7 +25,7 @@ type AddModelProps = {
   onMatrixChange?: (index: number, next: Matrix4) => void;
 };
 
-const AddModel = ({
+const AddModelEdit = ({
   matrices,
   material,
   blade,
@@ -30,8 +34,16 @@ const AddModel = ({
   onMatrixUpdate,
 }: AddModelProps) => {
   const meshRef = useRef<InstancedMesh>(null!);
-  const controlsRef = useRef<TransformControlsImpl>(null);
+  const { editTransformMode } = useEditModeStore();
+  // ⬇️ outline instancedMesh (count=1) — показує обвідку вибраного
+  const outlineRef = useRef<InstancedMesh>(null!);
+  const editDummy = useMemo(() => {
+    const o = new Object3D();
+    o.matrixAutoUpdate = true; // потрібно для TransformControls
+    return o;
+  }, []);
   const [selected, setSelected] = useState<number | null>(null);
+
   const { geometry, COUNT } = useCreateInstancedMesh({
     matrices,
     blade,
@@ -40,18 +52,79 @@ const AddModel = ({
     meshRef,
   });
 
-  // вибір інстанса кліком
-  const onPickInstance = useCallback((e: ThreeEvent<PointerEvent>) => {
-    e.stopPropagation();
-    const idx = e.instanceId as number | undefined;
-    if (idx == null) return;
-    setSelected(idx);
-  }, []);
+  // --- три об’єкти для рейтрейсу (як у PlanePainter)
 
-  const clearSelection = useCallback(() => {
+  // --- Grab mode
+
+  // простий матеріал для обвідки
+  const outlineMat = useMemo(
+    () =>
+      new MeshBasicMaterial({
+        color: 0xff0055,
+        side: FrontSide,
+        transparent: true,
+        opacity: 0.5,
+        depthTest: false,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -1,
+      }),
+    []
+  );
+
+  // оновити outline під конкретний індекс
+  const updateOutline = useCallback(
+    (idx: number | null) => {
+      const om = outlineRef.current;
+      const im = meshRef.current;
+      if (!om || !im) return;
+
+      if (idx == null) {
+        om.count = 0;
+        om.visible = false;
+        om.instanceMatrix.needsUpdate = true;
+        return;
+      }
+
+      im.getMatrixAt(idx, editDummy.matrix);
+      // злегка збільшуємо
+      editDummy.matrix.decompose(
+        editDummy.position,
+        editDummy.quaternion,
+        editDummy.scale
+      );
+      editDummy.scale.multiplyScalar(1.06);
+      editDummy.matrix.compose(
+        editDummy.position,
+        editDummy.quaternion,
+        editDummy.scale
+      );
+
+      om.setMatrixAt(0, editDummy.matrix);
+      om.count = 1;
+      om.visible = true;
+      om.instanceMatrix.needsUpdate = true;
+    },
+    [editDummy]
+  );
+
+  // вибір інстансу кліком
+  const onPickInstance = useCallback(
+    (e: ThreeEvent<PointerEvent>) => {
+      e.stopPropagation();
+      const idx = e.instanceId as number | undefined;
+      if (idx == null) return;
+      setSelected(idx);
+      updateOutline(idx);
+    },
+    [updateOutline]
+  );
+
+  const onMissOrConfirm = useCallback(() => {
     setSelected(null);
-    controlsRef.current?.detach();
-  }, []);
+    updateOutline(null);
+  }, [updateOutline]);
 
   return (
     <>
@@ -60,17 +133,35 @@ const AddModel = ({
         args={[geometry, material, COUNT]}
         castShadow
         onPointerDown={onPickInstance} // клік = вибір
-        onPointerMissed={clearSelection} // клік у порожнє — зняти вибір
+        onPointerMissed={onMissOrConfirm} // клік у порожнє — зняти вибір
       />
-      <TransformInstanceMatrix
-        ref={controlsRef}
-        instancedMesh={meshRef.current}
-        onMatrixChange={onMatrixChange}
-        selectedId={selected}
-        geometry={geometry}
+      <instancedMesh
+        ref={outlineRef}
+        args={[geometry, outlineMat, 1]}
+        frustumCulled={false}
+        renderOrder={999}
+        visible={false}
       />
+      {editTransformMode ? (
+        <TransformInstanceMatrix
+          selectedId={selected}
+          editDummy={editDummy}
+          mode={editTransformMode}
+          instancedMesh={meshRef.current}
+          onMatrixChange={onMatrixChange}
+          outlineInstance={outlineRef.current}
+        />
+      ) : (
+        <EditKeyModelInstance
+          meshRef={meshRef}
+          editDummy={editDummy}
+          onMatrixChange={onMatrixChange}
+          selected={selected}
+          updateOutline={updateOutline}
+        />
+      )}
     </>
   );
 };
 
-export default AddModel;
+export default AddModelEdit;

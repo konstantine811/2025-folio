@@ -1,35 +1,32 @@
-import { forwardRef, useCallback, useLayoutEffect, useMemo } from "react";
-import {
-  BackSide,
-  BufferGeometry,
-  InstancedMesh,
-  Matrix4,
-  NormalBufferAttributes,
-  Object3D,
-} from "three";
+import { forwardRef, useCallback, useLayoutEffect } from "react";
+import { InstancedMesh, Matrix4, Object3D, Object3DEventMap } from "three";
 import { TransformControls as TransformControlsImpl } from "three-stdlib";
 import { updateWorldUpwards } from "../../utils/updateWorld";
 import { TransformControls } from "@react-three/drei";
+import { TransformMode } from "@/config/three-world/transform.config";
 
 type Props = {
   instancedMesh: InstancedMesh | null;
   onMatrixChange?: (index: number, next: Matrix4) => void;
   selectedId: number | null;
-  geometry: BufferGeometry<NormalBufferAttributes>;
-  mode?: "translate" | "rotate" | "scale";
+  mode?: TransformMode;
+  editDummy: Object3D<Object3DEventMap>;
+  outlineInstance: InstancedMesh | null;
 };
 
 const TransformInstanceMatrix = forwardRef<TransformControlsImpl, Props>(
   (
-    { instancedMesh, onMatrixChange, selectedId, geometry, mode = "translate" },
+    {
+      instancedMesh,
+      onMatrixChange,
+      selectedId,
+      mode = TransformMode.Translate,
+      editDummy,
+      outlineInstance,
+    },
     ref
   ) => {
     // dummy, яким рухаємо через TransformControls
-    const editDummy = useMemo(() => {
-      const o = new Object3D();
-      o.matrixAutoUpdate = true; // потрібно для TransformControls
-      return o;
-    }, []);
 
     useLayoutEffect(() => {
       if (selectedId == null || !instancedMesh) return;
@@ -58,6 +55,7 @@ const TransformInstanceMatrix = forwardRef<TransformControlsImpl, Props>(
     // запис назад у інстанс і у зовнішній масив матриць
     const commitTransform = useCallback(() => {
       if (selectedId == null || !instancedMesh) return;
+      // updateOutline(selectedId);
       editDummy.updateMatrixWorld(true);
       editDummy.updateMatrix(); // з pos/quat/scale → matrix
 
@@ -70,8 +68,12 @@ const TransformInstanceMatrix = forwardRef<TransformControlsImpl, Props>(
 
       instancedMesh.setMatrixAt(selectedId, local);
       instancedMesh.instanceMatrix.needsUpdate = true;
+      if (outlineInstance) {
+        outlineInstance.setMatrixAt(0, local);
+        outlineInstance.instanceMatrix.needsUpdate = true;
+      }
       onMatrixChange?.(selectedId, local.clone());
-    }, [selectedId, onMatrixChange, editDummy, instancedMesh]);
+    }, [selectedId, onMatrixChange, editDummy, instancedMesh, outlineInstance]);
 
     return (
       <>
@@ -83,31 +85,12 @@ const TransformInstanceMatrix = forwardRef<TransformControlsImpl, Props>(
               mode={mode}
               key={selectedId}
               space="local"
-              onChange={commitTransform}
-              onPointerDown={commitTransform}
+              onObjectChange={commitTransform}
               showX
               showY
               showZ
             />
-            <primitive object={editDummy}>
-              {/* Силует: збільшений бекфейс тієї ж геометрії */}
-              <mesh
-                geometry={geometry}
-                scale={1.06} // трішки більший
-                renderOrder={999} // поверх іншого
-                frustumCulled={false}
-              >
-                <meshBasicMaterial
-                  color={0xff0000}
-                  side={BackSide} // бекфейс → силует
-                  transparent
-                  opacity={1}
-                  polygonOffset // без з-файту
-                  polygonOffsetFactor={-1}
-                  polygonOffsetUnits={-1}
-                />
-              </mesh>
-            </primitive>
+            <primitive object={editDummy} visible={false} />
           </>
         )}
       </>
