@@ -4,7 +4,7 @@ import { Mesh, PlaneGeometry } from "three";
 import { useGameDataStore } from "./character-controller/stores/game-data-store";
 // import { ThreeEvent } from "@react-three/fiber";
 // import { button, useControls } from "leva";
-// import useTouchTexture from "@/hooks/three-world/useTouchTexture";
+import useTouchTexture from "@/hooks/three-world/useTouchTexture";
 // import { useTexture } from "@react-three/drei";
 import { useEditModeStore } from "../store/useEditModeStore";
 

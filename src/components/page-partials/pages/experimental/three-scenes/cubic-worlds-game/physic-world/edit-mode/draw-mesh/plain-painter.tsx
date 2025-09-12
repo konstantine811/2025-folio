@@ -13,6 +13,7 @@ import { useEditModeStore } from "../../../store/useEditModeStore";
 import { Line } from "@react-three/drei";
 import ModelInstanceChunks from "./winder-model/model-instance-chuncks";
 import { useEditPainterStore } from "../../../store/useEditPainterStore";
+import { Key } from "@/config/key";
 
 type Props = {
   /** Максимальна кількість інстансів у буфері */
@@ -70,7 +71,6 @@ export default function PlanePainter({
 
   const eraseAt = useCallback(
     (center: Vector3) => {
-      console.log("on erase");
       setStrokes((prev) => {
         const newStrokes: Vector3[][] = [];
         const newNormals: Vector3[] = [];
@@ -209,12 +209,14 @@ export default function PlanePainter({
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === "c" || e.key === "C") isErasing.current = true;
-      if (e.key === "v" || e.key === "V") isKillStroke.current = true;
+      const key = e.code;
+      if (key === Key.C) isErasing.current = true;
+      if (key === Key.V) isKillStroke.current = true;
     };
     const up = (e: KeyboardEvent) => {
-      if (e.key === "c" || e.key === "C") isErasing.current = false;
-      if (e.key === "v" || e.key === "V") isKillStroke.current = false;
+      const key = e.code;
+      if (key === Key.C) isErasing.current = false;
+      if (key === Key.V) isKillStroke.current = false;
     };
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);

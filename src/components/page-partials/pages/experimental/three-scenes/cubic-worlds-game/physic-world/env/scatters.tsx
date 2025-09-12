@@ -2,11 +2,13 @@ import AddWinderInstanceModel from "../instanced-world/winder-instance";
 import { ScatterObject, useEditModeStore } from "../../store/useEditModeStore";
 import { useEffect } from "react";
 import { useScatters } from "../../hooks/getData/getScatterData";
+import { useGameDataStore } from "../character-controller/stores/game-data-store";
 
 const Scatters = () => {
   // const [scatterData, setScatterData] = useState<ScatterWithData[]>();
   const onAddScatters = useEditModeStore((s) => s.onAddScatters);
   const idEditScatter = useEditModeStore((s) => s.idEditScatter);
+  const touchTextureData = useGameDataStore((s) => s.characterTextureData);
   const { data: scatterData } = useScatters();
 
   useEffect(() => {
@@ -34,6 +36,7 @@ const Scatters = () => {
                 metrices={data.matrices}
                 isEditMode={idEditScatter === data.name}
                 fileName={data.name}
+                textureData={touchTextureData}
               />
             );
           })

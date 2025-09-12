@@ -32,6 +32,12 @@ const useLoadWinderModel = ({ modelUrl }: Props) => {
       windStrNoiseScale: { value: 0.25 }, // масштаб шуму сили
       gustStrength: { value: 0.25 }, // поривчастість (shape)
       noiseScrollDir: { value: 0.5 }, // “дрейф” карти вітру
+      // Для згинання трави
+      uPresenceMap: { value: null }, // твоя touch texture
+      uPresenceMinXZ: { value: new Vector2(0, 0) },
+      uPresenceSizeXZ: { value: new Vector2(1, 1) },
+      uPresenceTexel: { value: new Vector2(1 / 1024, 1 / 1024) }, // 1/size канвасу
+      uPresenceStrength: { value: 0.35 }, //
       // інші твої уніформи...
     };
     return m;

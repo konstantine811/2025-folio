@@ -30,7 +30,6 @@ const AddWinderInstancedModelWrap = ({
 
   const aBend = useMemo(() => new Float32Array(COUNT), [COUNT]);
   const aPhase = useMemo(() => new Float32Array(COUNT), [COUNT]); // додатковий атрибут фази
-
   const onMatrixUpdate = useCallback(
     (index: number) => {
       aBend[index] = 0.7 + ((index * 0.13) % 0.3);

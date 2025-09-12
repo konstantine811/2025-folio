@@ -4,12 +4,14 @@ import AddWinderInstancedModelWrap from "../edit-mode/draw-mesh/winder-model/add
 import useLoadWinderModel from "../edit-mode/draw-mesh/hooks/useLoadWinderModel";
 import { saveScatterToStorage } from "@/services/firebase/cubic-worlds-game/firestore-scatter-objects";
 import { StatusServer, useEditModeStore } from "../../store/useEditModeStore";
+import { CharacterTextureProps } from "../character-controller/stores/game-data-store";
 
 type Props = {
   modelUrl: string;
   metrices: Matrix4[][];
   isEditMode?: boolean;
   fileName?: string;
+  textureData: CharacterTextureProps;
 };
 
 export default function AddWinderInstanceModel({
@@ -17,6 +19,7 @@ export default function AddWinderInstanceModel({
   metrices,
   isEditMode = false,
   fileName,
+  textureData,
 }: Props) {
   const isMatrixUpdate = useRef(false);
 
@@ -24,6 +27,21 @@ export default function AddWinderInstanceModel({
   const { setStatusServer } = useEditModeStore();
 
   const prevIsEdit = useRef(isEditMode);
+
+  useEffect(() => {
+    if (textureData) {
+      const { boundsXZ, presenceTex, sizeTexture } = textureData;
+      sharedMaterial.uniforms.uPresenceMap.value = presenceTex;
+      sharedMaterial.uniforms.uPresenceMinXZ.value.copy(boundsXZ.min);
+      sharedMaterial.uniforms.uPresenceSizeXZ.value.copy(
+        boundsXZ.max.clone().sub(boundsXZ.min)
+      );
+      sharedMaterial.uniforms.uPresenceTexel.value.set(
+        1 / sizeTexture,
+        1 / sizeTexture
+      );
+    }
+  }, [textureData, sharedMaterial]);
 
   useEffect(() => {
     const wasEdit = prevIsEdit.current;

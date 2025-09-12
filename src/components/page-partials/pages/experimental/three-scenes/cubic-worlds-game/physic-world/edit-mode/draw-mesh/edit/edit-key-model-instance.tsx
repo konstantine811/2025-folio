@@ -26,6 +26,7 @@ type Props = {
   // новий колбек — сюди віддаємо оновлену матрицю конкретного індексу
   onMatrixChange?: (index: number, next: Matrix4) => void;
   updateOutline: (idx: number | null) => void;
+  onSelect: (idx: number | null) => void;
 };
 
 const lift = 0.01;
@@ -36,6 +37,7 @@ const EditKeyModelInstance = ({
   editDummy,
   onMatrixChange,
   updateOutline,
+  onSelect,
 }: Props) => {
   const { camera, pointer, raycaster } = useThree();
   const [grabbing, setGrabbing] = useState(false);
@@ -71,6 +73,42 @@ const EditKeyModelInstance = ({
   const onKeyDown = useCallback(
     (e: KeyboardEvent) => {
       const key = e.code;
+
+      // ==== DELETE (X) ====
+      if (key === Key.X && selected !== null && meshRef.current) {
+        const im = meshRef.current;
+
+        // якщо немає що видаляти — просто вийти
+        if (im.count <= 0) return;
+
+        const last = im.count - 1;
+
+        // якщо видаляємо не останній — підміняємо останнім (swap-remove)
+        if (selected !== last) {
+          const tmp = new Matrix4();
+          im.getMatrixAt(last, tmp);
+          im.setMatrixAt(selected, tmp);
+          // можна повідомити про зміну матриці на індексі 'selected'
+          onMatrixChange?.(selected, tmp.clone());
+        }
+
+        // зменшити лічильник і оновити GPU-буфер
+        im.count = last;
+        im.instanceMatrix.needsUpdate = true;
+
+        // прибрати виділення/outline (або лишити на «підставленому» індексі — як хочеш)
+        onSelect(null);
+        updateOutline(null);
+
+        // скинути моди
+        setGrabbing(false);
+        setRotating(false);
+        setScaling(false);
+        savedBeforeGrab.current = null;
+
+        return;
+      }
+
       // ==== SCALE (S) ====
       if (key === Key.S && selected !== null) {
         if (!scaling) {

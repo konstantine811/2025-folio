@@ -9,11 +9,13 @@ import Environment from "./env/env";
 // import DrawMesh from "./draw-mesh/draw-mesh";
 import { useEditModeStore } from "../store/useEditModeStore";
 import FlyCameraControl from "../cameraControls/fly-camera-control";
+
 // import PickUpController from "./controllers/pick-up-controller";
 
 const InitPhysicWorld = () => {
   const isDebug = useEditModeStore((s) => s.isPhysicsDebug);
   const isEditMode = useEditModeStore((s) => s.isEditMode);
+
   return (
     <>
       {/* <CameraControls makeDefault /> */}

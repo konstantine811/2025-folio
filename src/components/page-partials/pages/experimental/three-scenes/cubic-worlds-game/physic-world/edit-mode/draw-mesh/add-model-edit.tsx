@@ -158,6 +158,7 @@ const AddModelEdit = ({
           onMatrixChange={onMatrixChange}
           selected={selected}
           updateOutline={updateOutline}
+          onSelect={setSelected}
         />
       )}
     </>

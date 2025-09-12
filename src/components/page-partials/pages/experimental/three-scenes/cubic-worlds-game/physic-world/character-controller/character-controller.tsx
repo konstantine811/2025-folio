@@ -267,7 +267,9 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
       fall: fallAnimation,
       jumpIdle: jumpIdleAnimation,
     } = useGameStore();
-    const { moveToPoint, setMoveToPoint, setOnGround } = useGameStore();
+    const moveToPoint = useGameStore((s) => s.moveToPoint);
+    const setOnGround = useGameStore((s) => s.setOnGround);
+    const setMoveToPoint = useGameStore((s) => s.setMoveToPoint);
     const { rapier, world } = useRapier();
     const { scene } = useThree();
 
