@@ -12,7 +12,7 @@ const useCharacterCreateTexture = ({
   characterRigidBody: RapierRigidBody | null;
   onGround: boolean;
 }) => {
-  const sizeTexture = 1024;
+  const sizeTexture = 524;
   const setCharacterTextureData = useGameDataStore(
     (s) => s.setCharacterTextureData
   );
@@ -20,8 +20,9 @@ const useCharacterCreateTexture = ({
     size: sizeTexture,
     persist: false,
     radius: 0.001,
-    // isTest: true,
-    darkenPerFrame: 0.02,
+    maxAgeSec: 1.11,
+    //isTest: true,
+    darkenPerFrame: 0.2,
   });
 
   // межі кwарти (XZ)

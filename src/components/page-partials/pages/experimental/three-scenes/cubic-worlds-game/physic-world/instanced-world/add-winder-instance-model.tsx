@@ -71,16 +71,18 @@ export default function AddWinderInstanceModel({
     <group>
       {metrices.map((mats, i) => {
         return (
-          <AddWinderInstancedModelWrap
-            key={i}
-            matrices={mats}
-            material={sharedMaterial}
-            blade={bladeGeom}
-            isEditMode={isEditMode}
-            onUpdate={() => {
-              isMatrixUpdate.current = true;
-            }}
-          />
+          <group key={i}>
+            <AddWinderInstancedModelWrap
+              key={i}
+              matrices={mats}
+              material={sharedMaterial}
+              blade={bladeGeom}
+              isEditMode={isEditMode}
+              onUpdate={() => {
+                isMatrixUpdate.current = true;
+              }}
+            />
+          </group>
         );
       })}
     </group>

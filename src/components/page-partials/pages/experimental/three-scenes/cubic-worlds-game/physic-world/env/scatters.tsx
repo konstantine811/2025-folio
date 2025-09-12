@@ -1,4 +1,4 @@
-import AddWinderInstanceModel from "../instanced-world/winder-instance";
+import AddWinderInstanceModel from "../instanced-world/add-winder-instance-model";
 import { ScatterObject, useEditModeStore } from "../../store/useEditModeStore";
 import { useEffect } from "react";
 import { useScatters } from "../../hooks/getData/getScatterData";
