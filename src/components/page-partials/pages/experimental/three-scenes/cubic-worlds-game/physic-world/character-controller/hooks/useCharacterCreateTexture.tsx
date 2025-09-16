@@ -20,7 +20,7 @@ const useCharacterCreateTexture = ({
     size: sizeTexture,
     persist: false,
     radius: 0.001,
-    maxAgeSec: 1.11,
+    maxAgeSec: 0.11,
     //isTest: true,
     darkenPerFrame: 0.2,
   });

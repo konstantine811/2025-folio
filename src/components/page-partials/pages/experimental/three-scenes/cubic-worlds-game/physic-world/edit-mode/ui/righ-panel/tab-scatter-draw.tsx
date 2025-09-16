@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import NumberInputSlider from "@components/ui-abc/inputs/three-world/number-input-slider";
 import { useEditPainterStore } from "../../../../store/useEditPainterStore";
+import SelectScatterModel from "./scatter-draw/select-scatter-model";
 
 const TabScatterDraw = () => {
   const { isDrawScatter, setIsDrawScatter, isEditMode } = useEditModeStore();
@@ -32,7 +33,8 @@ const TabScatterDraw = () => {
   return (
     <>
       {isDrawScatter ? (
-        <div className="w-full mt-3 min-w-60">
+        <div className="w-full mt-3 min-w-60 flex flex-col gap-5">
+          <SelectScatterModel />
           <div className="pb-3 flex flex-col gap-1">
             <Label className="justify-center text-background">
               Painter optitons

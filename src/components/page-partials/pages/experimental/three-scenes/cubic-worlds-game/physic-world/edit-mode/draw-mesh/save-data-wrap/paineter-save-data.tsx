@@ -4,7 +4,8 @@ import { Matrix4 } from "three";
 import PlanePainter from "../plain-painter";
 
 const PainterSaver = () => {
-  const { isDrawScatter, onSetNewScatter } = useEditModeStore();
+  const { isDrawScatter, onSetNewScatter, scatterModelDraw } =
+    useEditModeStore();
   const chunksRef = useRef<Matrix4[][]>([]);
 
   const onChunksChange = useCallback((chunks: Matrix4[][]) => {
@@ -15,13 +16,23 @@ const PainterSaver = () => {
     if (!isDrawScatter) {
       const latest = chunksRef.current;
       if (latest?.length) {
-        onSetNewScatter(latest);
+        onSetNewScatter({
+          matrix: latest,
+          model: scatterModelDraw,
+        });
         chunksRef.current = []; // опціонально очистити
       }
     }
-  }, [isDrawScatter, onSetNewScatter]);
+  }, [isDrawScatter, onSetNewScatter, scatterModelDraw]);
   return (
-    <>{isDrawScatter && <PlanePainter onChunksCreated={onChunksChange} />}</>
+    <>
+      {isDrawScatter && (
+        <PlanePainter
+          onChunksCreated={onChunksChange}
+          scatterModelDraw={scatterModelDraw}
+        />
+      )}
+    </>
   );
 };
 

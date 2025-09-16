@@ -3,6 +3,7 @@ import {
   BufferGeometry,
   FrontSide,
   InstancedMesh,
+  Material,
   Matrix4,
   MeshBasicMaterial,
   NormalBufferAttributes,
@@ -17,7 +18,7 @@ import { useEditModeStore } from "../../../store/useEditModeStore";
 
 type AddModelProps = {
   matrices: Matrix4[];
-  material: ShaderMaterial;
+  material: ShaderMaterial | Material;
   blade: BufferGeometry<NormalBufferAttributes>;
   onAddGeometryData?: (geom: BufferGeometry<NormalBufferAttributes>) => void;
   onMatrixUpdate?: (index: number) => void;
@@ -52,11 +53,6 @@ const AddModelEdit = ({
     meshRef,
   });
 
-  // --- три об’єкти для рейтрейсу (як у PlanePainter)
-
-  // --- Grab mode
-
-  // простий матеріал для обвідки
   const outlineMat = useMemo(
     () =>
       new MeshBasicMaterial({

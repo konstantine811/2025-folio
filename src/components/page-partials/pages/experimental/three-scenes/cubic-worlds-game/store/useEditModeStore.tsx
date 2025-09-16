@@ -1,10 +1,19 @@
 import { TransformMode } from "@/config/three-world/transform.config";
 import { Matrix4, Object3D } from "three";
 import { create } from "zustand";
+import {
+  PainterModelConfig,
+  ScatterModelDraw,
+} from "../config/3d-model.config";
 
 export enum StatusServer {
   start = "start",
   loaded = "loaded",
+}
+
+export interface ScatterData {
+  matrix: Matrix4[][];
+  model: ScatterModelDraw;
 }
 export interface ScatterObject {
   id: string;
@@ -19,9 +28,10 @@ interface EditModeState {
   isTransformEdit: boolean;
   scatters: ScatterObject[];
   idEditScatter: string | null;
-  scatterData: Matrix4[][];
+  scatterData: ScatterData | null;
   statusServer: StatusServer;
   editTransformMode: TransformMode | null;
+  scatterModelDraw: ScatterModelDraw;
 }
 
 const initialState: EditModeState = {
@@ -32,9 +42,10 @@ const initialState: EditModeState = {
   isTransformEdit: false,
   scatters: [],
   idEditScatter: null,
-  scatterData: [],
+  scatterData: null,
   statusServer: StatusServer.start,
   editTransformMode: null,
+  scatterModelDraw: PainterModelConfig[0],
 };
 
 interface EditModeActions {
@@ -46,10 +57,11 @@ interface EditModeActions {
   onAddScatters: (scatter: ScatterObject[]) => void;
   onRemoveScatters: (id: string) => void;
   setIdEditScatter: (id: string | null) => void;
-  onSetNewScatter: (data: Matrix4[][]) => void;
+  onSetNewScatter: (data: ScatterData | null) => void;
   setStatusServer: (status: StatusServer) => void;
   onRenameScatter: (id: string, newName: string) => void;
   setEditTransformMode: (mode: TransformMode | null) => void;
+  setScatterModelDraw: (model: ScatterModelDraw) => void;
 }
 
 type EditModeStore = EditModeState & EditModeActions;
@@ -82,8 +94,13 @@ export const useEditModeStore = create<EditModeStore>()((set) => ({
     }));
   },
   setIdEditScatter: (id: string | null) => set({ idEditScatter: id }),
-  onSetNewScatter: (data: Matrix4[][]) => {
-    set({ scatterData: data });
+  onSetNewScatter: (data) => {
+    if (!data) {
+      set({ scatterData: null });
+      return;
+    }
+    const { model: modelData, matrix } = data;
+    set({ scatterData: { matrix, model: modelData } });
   },
   setStatusServer: (status: StatusServer) => set({ statusServer: status }),
   onRenameScatter: (id: string, newName: string) =>
@@ -94,4 +111,6 @@ export const useEditModeStore = create<EditModeStore>()((set) => ({
     })),
   setEditTransformMode: (mode: TransformMode | null) =>
     set({ editTransformMode: mode }),
+  setScatterModelDraw: (model: ScatterModelDraw) =>
+    set({ scatterModelDraw: model }),
 }));

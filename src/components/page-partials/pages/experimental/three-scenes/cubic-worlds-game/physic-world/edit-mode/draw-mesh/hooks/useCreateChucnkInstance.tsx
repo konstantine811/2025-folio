@@ -10,6 +10,7 @@ import {
 } from "three";
 import { mulberry32 } from "../../../../utils/mulberry";
 import { buildGridCells } from "../../../../utils/grid";
+import { computeUpAndPivot, UpHint } from "./useCreatePivotPoint";
 
 const EPS_NORMAL = 0.0001;
 
@@ -25,6 +26,7 @@ type Props = {
   randomness: number;
   scale: number;
   geometry: BufferGeometry<NormalBufferAttributes>;
+  hint: UpHint;
 };
 
 const useCreateChunkInstance = ({
@@ -39,35 +41,16 @@ const useCreateChunkInstance = ({
   randomness,
   scale,
   geometry,
+  hint = "auto-normals",
 }: Props) => {
   const dummy = useMemo(() => new Object3D(), []);
   const [chunks, setChunks] = useState<Matrix4[][]>([]);
 
   // 2) ВИЗНАЧАЄМО ЛОКАЛЬНУ "ВГОРУ" МОДЕЛІ + ПРАВИЛЬНИЙ pivotToBottom + qPre
-  const { pivotToBottom, qPre } = useMemo(() => {
-    if (!geometry.boundingBox) geometry.computeBoundingBox();
-    const bb = geometry.boundingBox!.clone();
-    const size = new Vector3().subVectors(bb.max, bb.min);
-
-    // вважаємо віссю "висоти" найдовшу вісь геометрії
-    let axis: "x" | "y" | "z" = "y";
-    if (size.z >= size.y && size.z >= size.x) axis = "z";
-    else if (size.x >= size.y && size.x >= size.z) axis = "x";
-
-    // відстань від origin до "п’ятки" вздовж цієї осі
-    const pivot =
-      axis === "y" ? -bb.min.y : axis === "z" ? -bb.min.z : -bb.min.x;
-
-    // qPre: повертаємо геометрію так, щоб її локальна "up" стала +Y
-    const q = new Quaternion();
-    if (axis === "z")
-      q.setFromAxisAngle(new Vector3(1, 0, 0), Math.PI / 2); // Z->+Y
-    else if (axis === "x")
-      q.setFromAxisAngle(new Vector3(0, 0, 1), -Math.PI / 2); // X->+Y
-    else q.identity();
-
-    return { pivotToBottom: pivot, qPre: q };
-  }, [geometry]);
+  const { pivotToBottom, qPre } = useMemo(
+    () => computeUpAndPivot(geometry, /* наприклад */ hint),
+    [geometry, hint]
+  );
 
   const tmp = useMemo(
     () => ({

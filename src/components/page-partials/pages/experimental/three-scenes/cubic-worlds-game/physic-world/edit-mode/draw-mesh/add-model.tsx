@@ -2,6 +2,7 @@ import { useRef } from "react";
 import {
   BufferGeometry,
   InstancedMesh,
+  Material,
   Matrix4,
   NormalBufferAttributes,
   ShaderMaterial,
@@ -11,7 +12,7 @@ import useCreateInstancedMesh from "./hooks/useCreateInstancedMesh";
 type AddModelProps = {
   meshName?: string;
   matrices: Matrix4[];
-  material: ShaderMaterial;
+  material: ShaderMaterial | Material;
   blade: BufferGeometry<NormalBufferAttributes>;
   onMatrixUpdate?: (index: number) => void;
   onAddGeometryData?: (geom: BufferGeometry<NormalBufferAttributes>) => void;

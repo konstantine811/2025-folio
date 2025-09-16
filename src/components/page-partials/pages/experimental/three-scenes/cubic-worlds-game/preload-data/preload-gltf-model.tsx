@@ -1,6 +1,6 @@
 import { useGLTF } from "@react-three/drei";
-import { modelConfig } from "../config/3d-model.confit";
+import { PainterModelConfig } from "../config/3d-model.config";
 
-Object.values(modelConfig).forEach((url) => {
-  useGLTF.preload(url);
+PainterModelConfig.forEach((model) => {
+  useGLTF.preload(model.path);
 });

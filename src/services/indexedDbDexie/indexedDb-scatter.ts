@@ -8,6 +8,7 @@ import { CachedScatter, db } from "./db";
 import { ref as sref, getBytes, getMetadata, listAll } from "firebase/storage";
 import { storage } from "@/config/firebase.config";
 import { makeId, newerThan } from "@/utils/db.util";
+import { UpHint } from "@/components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/physic-world/edit-mode/draw-mesh/hooks/useCreatePivotPoint";
 
 function scatterDirRef(uid: string) {
   return scatterRef(uid);
@@ -37,6 +38,10 @@ export async function getCachedScatters(): Promise<ScatterWithData[]> {
         dtype: c.dtype,
         order: c.order,
       }),
+      modelName: c.modelName,
+      modelPath: c.modelPath,
+      hint: c.hint as UpHint,
+      type: c.type,
     })
   );
 
@@ -98,6 +103,10 @@ export async function refreshScattersFromNetwork({
         dtype,
         order,
         matricesBytes,
+        modelPath: cm.modelPath ?? "",
+        modelName: cm.modelName ?? "",
+        hint: cm.hint ?? "",
+        type: (cm.type as CachedScatter["type"]) || "point",
       };
 
       await db.scatters.put(rec);
@@ -132,6 +141,10 @@ export async function refreshScattersFromNetwork({
         dtype: c.dtype,
         order: c.order,
       }),
+      modelName: c.modelName,
+      modelPath: c.modelPath,
+      hint: c.hint as UpHint,
+      type: c.type,
     })
   );
 

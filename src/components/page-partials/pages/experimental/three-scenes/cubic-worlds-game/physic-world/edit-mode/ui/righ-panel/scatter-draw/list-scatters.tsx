@@ -5,14 +5,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { SelectSeparator } from "@/components/ui/select";
 import {
   deleteScatterFromStorage,
-  renameScatterInStorage, // <— ДОДАЙ
+  renameScatterInStorage,
 } from "@/services/firebase/cubic-worlds-game/firestore-scatter-objects";
 import {
   StatusServer,
   useEditModeStore,
 } from "@components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/store/useEditModeStore";
 import { MousePointer, Trash2 } from "lucide-react";
-import CheckTransformControl from "./check-transform-control";
+import CheckTransformControl from "../check-transform-control";
 
 const ListScatter = () => {
   const {
@@ -22,8 +22,6 @@ const ListScatter = () => {
     idEditScatter,
     setIsDrawScatter,
     setStatusServer,
-    // ДОДАЙ у стор: оновлення імені в локальному списку
-    // onRenameScatter: (id: string, newName: string) => void
     onRenameScatter,
   } = useEditModeStore();
 

@@ -1,15 +1,12 @@
 import { useFrame } from "@react-three/fiber";
-import { useGeometry } from "../../../../utils/getModelGeometry";
-import { useEmbeddedMaps } from "../../../../utils/textureAlbedoHandle";
-import { useMemo } from "react";
-import { WinderMaterial } from "../../../../shaders/winder-shader";
+import { useGeometry } from "../../../utils/getModelGeometry";
+import { useEmbeddedMaps } from "../../../utils/textureAlbedoHandle";
+import { useEffect, useMemo } from "react";
+import { WinderMaterial } from "../../../shaders/winder-shader";
 import { Vector2 } from "three";
+import { LoadModelProps } from "./load.model";
 
-type Props = {
-  modelUrl: string;
-};
-
-const useLoadWinderModel = ({ modelUrl }: Props) => {
+const LoadWinderModel = ({ modelUrl, onCreateModelGeom }: LoadModelProps) => {
   const bladeGeom = useGeometry(modelUrl);
   const { albedo } = useEmbeddedMaps(modelUrl);
 
@@ -49,7 +46,11 @@ const useLoadWinderModel = ({ modelUrl }: Props) => {
     }
   });
 
-  return { bladeGeom, sharedMaterial };
+  useEffect(() => {
+    onCreateModelGeom(bladeGeom, sharedMaterial);
+  }, [sharedMaterial, bladeGeom]);
+
+  return null;
 };
 
-export default useLoadWinderModel;
+export default LoadWinderModel;

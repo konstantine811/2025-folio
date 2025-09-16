@@ -2,18 +2,23 @@
 import { useThree, useFrame } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  BufferGeometry,
   Color,
+  Material,
   Matrix4,
   MeshBasicMaterial,
   Object3D,
   Quaternion,
+  ShaderMaterial,
   Vector3,
 } from "three";
 import { useEditModeStore } from "../../../store/useEditModeStore";
 import { Line } from "@react-three/drei";
-import ModelInstanceChunks from "./winder-model/model-instance-chuncks";
+import ModelInstanceChunks from "../switch-load-models/model-instance-chuncks";
 import { useEditPainterStore } from "../../../store/useEditPainterStore";
 import { Key } from "@/config/key";
+import { ScatterModelDraw, TypeModel } from "../../../config/3d-model.config";
+import SwitchModelAdd from "./switch-add-model";
 
 type Props = {
   /** Максимальна кількість інстансів у буфері */
@@ -22,6 +27,7 @@ type Props = {
   baseSize?: number;
   /** Показувати прев’ю-курсор (площина/коло) */
   onChunksCreated: (chunks: Matrix4[][]) => void;
+  scatterModelDraw: ScatterModelDraw;
 };
 
 enum PainterColors {
@@ -34,6 +40,7 @@ const eraseRadius = 1;
 export default function PlanePainter({
   limit = 100_000,
   onChunksCreated,
+  scatterModelDraw,
 }: Props) {
   const { camera, pointer, gl, raycaster } = useThree();
   const targets = useEditModeStore((s) => s.targets); // об’єкти для малювання
@@ -54,7 +61,11 @@ export default function PlanePainter({
   const previewRef = useRef<Object3D>(null!);
   const [strokes, setStrokes] = useState<Vector3[][]>([]);
   const [strokeNormals, setStrokeNormals] = useState<Vector3[]>([]);
-
+  const [scatterModelType, setScatterModelType] = useState<{
+    geom: BufferGeometry;
+    material: Material | ShaderMaterial;
+    type: TypeModel;
+  } | null>(null);
   const isErasing = useRef(false);
   const isKillStroke = useRef(false);
 
@@ -274,22 +285,32 @@ export default function PlanePainter({
           ) : null
         )}
       </group>
-
-      <ModelInstanceChunks
-        modelUrl="/3d-models/cubic-worlds-model/grass.glb"
-        strokes={strokes}
-        strokeNormals={strokeNormals}
-        seed={seed}
-        limit={limit}
-        density={density}
-        radius={radius}
-        rotationDeg={rotationDeg}
-        offset={offset}
-        randomness={randomness}
-        isEditMode={false}
-        scale={scale}
-        onChunksCreated={onChunksCreated}
+      <SwitchModelAdd
+        scatterModelDraw={scatterModelDraw}
+        onCreateModelGeom={(geom, mat, type) => {
+          setScatterModelType({ geom, material: mat, type });
+        }}
       />
+      {scatterModelType && (
+        <ModelInstanceChunks
+          geom={scatterModelType.geom}
+          material={scatterModelType.material}
+          type={scatterModelType.type}
+          strokes={strokes}
+          strokeNormals={strokeNormals}
+          hint={scatterModelDraw.hintMode}
+          seed={seed}
+          limit={limit}
+          density={density}
+          radius={radius}
+          rotationDeg={rotationDeg}
+          offset={offset}
+          randomness={randomness}
+          isEditMode={false}
+          scale={scale}
+          onChunksCreated={onChunksCreated}
+        />
+      )}
     </>
   );
 }

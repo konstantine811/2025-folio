@@ -1,4 +1,5 @@
 // db/scatters.db.ts
+import { TypeModel } from "@/components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/config/3d-model.config";
 import Dexie, { Table } from "dexie";
 
 export interface CachedScatter {
@@ -14,6 +15,10 @@ export interface CachedScatter {
   dtype: "f64";
   order: "column-major";
   matricesBytes: Uint8Array; // зберігаємо байти, не об'єкти Matrix4
+  modelPath: string;
+  modelName: string;
+  hint: string;
+  type: TypeModel;
 }
 
 class CubicWorldsDB extends Dexie {

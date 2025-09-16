@@ -1,4 +1,8 @@
 import {
+  ScatterModelDraw,
+  TypeModel,
+} from "./../../../components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/config/3d-model.config";
+import {
   auth,
   FirebaseCollection,
   FirebaseCollectionProps,
@@ -22,6 +26,7 @@ import { waitForUserAuth } from "../userAthUtils";
 import { sanitizeName } from "@/utils/string.util";
 import { db } from "@/services/indexedDbDexie/db";
 import { makeId } from "@/utils/db.util";
+import { UpHint } from "@/components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/physic-world/edit-mode/draw-mesh/hooks/useCreatePivotPoint";
 
 /* ================== Типи ================== */
 
@@ -35,10 +40,17 @@ export type ScatterManifest = {
   rowLengths: number[];
   dtype: "f64";
   order: "column-major";
+  modelPath: string;
+  hint: UpHint;
+  modelName: string;
+  type: TypeModel;
 };
 
 export type ScatterWithData = ScatterManifest & {
   matrices: Matrix4[][];
+  modelPath: string;
+  hint: UpHint;
+  modelName: string;
 };
 
 export function scatterDocRef(uid: string, name: string) {
@@ -57,7 +69,8 @@ export function scatterRef(uid: string) {
 
 export const saveScatterToStorage = async (
   name: string,
-  matrices: Matrix4[][]
+  matrices: Matrix4[][],
+  scatterDraweModel: ScatterModelDraw
 ) => {
   const uid = auth.currentUser?.uid;
   if (!uid) throw new Error("No auth");
@@ -78,6 +91,10 @@ export const saveScatterToStorage = async (
       rowLengths: JSON.stringify(meta.rowLengths),
       dtype: meta.dtype,
       order: meta.order,
+      modelPath: scatterDraweModel.path,
+      modelName: scatterDraweModel.name,
+      hint: scatterDraweModel.hintMode as string,
+      type: scatterDraweModel.type,
     },
   });
 
@@ -95,6 +112,10 @@ export const saveScatterToStorage = async (
     dtype: meta.dtype,
     order: meta.order,
     matricesBytes: bytes,
+    modelPath: scatterDraweModel.path,
+    modelName: scatterDraweModel.name,
+    hint: scatterDraweModel.hintMode as string,
+    type: scatterDraweModel.type,
   });
 };
 
@@ -138,6 +159,9 @@ export async function listScatters(): Promise<ScatterWithData[]> {
         dtype,
         order,
         matrices,
+        modelPath: cm.modelPath ?? "",
+        hint: (cm.hint ?? "auto-normals") as UpHint,
+        modelName: cm.modelName ?? "",
       } as ScatterWithData;
     })
   );

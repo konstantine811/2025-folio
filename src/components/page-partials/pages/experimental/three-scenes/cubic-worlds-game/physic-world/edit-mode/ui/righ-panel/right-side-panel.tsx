@@ -1,5 +1,5 @@
-import ListScatter from "./list-scatters";
-import { ScatterModalWindow } from "./scatter-modal-window";
+import ListScatter from "./scatter-draw/list-scatters";
+import { ScatterModalWindow } from "./scatter-draw/scatter-modal-window";
 import TabMode from "./tab-mode";
 import TabScatterDraw from "./tab-scatter-draw";
 
