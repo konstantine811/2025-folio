@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Matrix4, ShaderMaterial } from "three";
+import { Matrix4, MeshBasicMaterial, ShaderMaterial } from "three";
 import { saveScatterToStorage } from "@/services/firebase/cubic-worlds-game/firestore-scatter-objects";
 import { StatusServer, useEditModeStore } from "../../store/useEditModeStore";
 import { MeshShaderData } from "../edit-mode/switch-load-models/load.model";
@@ -30,7 +30,9 @@ export default function AddSimpleInstanceModel({
   const isMatrixUpdate = useRef(false);
   const [meshData, setMeshData] = useState<MeshShaderData | null>(null);
   const { setStatusServer } = useEditModeStore();
-
+  const editMaterial = new MeshBasicMaterial({
+    color: 0x33bb00,
+  });
   const prevIsEdit = useRef(isEditMode);
 
   useEffect(() => {
@@ -71,7 +73,7 @@ export default function AddSimpleInstanceModel({
                 <AddSimpleInstancedModelWrap
                   key={i}
                   matrices={mats}
-                  material={meshData.material}
+                  material={isEditMode ? editMaterial : meshData.material}
                   blade={meshData.geometry}
                   isEditMode={isEditMode}
                   onUpdate={() => {

@@ -1,6 +1,6 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Expand, Move, Rotate3d } from "lucide-react";
-import { useEditModeStore } from "../../../../store/useEditModeStore";
+import { useEditModeStore } from "../../store/useEditModeStore";
 import { TransformMode } from "@/config/three-world/transform.config";
 
 const CheckTransformControl = () => {

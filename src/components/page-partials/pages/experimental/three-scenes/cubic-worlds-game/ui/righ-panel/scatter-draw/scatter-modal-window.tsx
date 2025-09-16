@@ -14,7 +14,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   StatusServer,
   useEditModeStore,
-} from "../../../../../store/useEditModeStore";
+} from "../../../store/useEditModeStore";
 import { saveScatterToStorage } from "@/services/firebase/cubic-worlds-game/firestore-scatter-objects";
 
 export function ScatterModalWindow() {

@@ -1,8 +1,8 @@
-import { useEditModeStore } from "../../../../store/useEditModeStore";
+import { useEditModeStore } from "../../store/useEditModeStore";
 import { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import NumberInputSlider from "@components/ui-abc/inputs/three-world/number-input-slider";
-import { useEditPainterStore } from "../../../../store/useEditPainterStore";
+import { useEditPainterStore } from "../../store/useEditPainterStore";
 import SelectScatterModel from "./scatter-draw/select-scatter-model";
 
 const TabScatterDraw = () => {

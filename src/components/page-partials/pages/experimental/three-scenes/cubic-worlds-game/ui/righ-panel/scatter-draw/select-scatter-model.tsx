@@ -5,8 +5,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useEditModeStore } from "../../../../../store/useEditModeStore";
-import { PainterModelConfig } from "../../../../../config/3d-model.config";
+import { useEditModeStore } from "../../../store/useEditModeStore";
+import { PainterModelConfig } from "../../../config/3d-model.config";
 
 const SelectScatterModel = () => {
   const setScatterModelDraw = useEditModeStore((s) => s.setScatterModelDraw);

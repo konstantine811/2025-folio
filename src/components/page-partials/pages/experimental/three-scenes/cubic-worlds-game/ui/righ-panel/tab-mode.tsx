@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useEditModeStore } from "../../../../store/useEditModeStore";
+import { useEditModeStore } from "../../store/useEditModeStore";
 import { Pen } from "lucide-react";
 import clsx from "clsx";
 

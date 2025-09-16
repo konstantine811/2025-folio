@@ -8,7 +8,7 @@ import { Stats } from "@react-three/drei";
 import { Perf } from "r3f-perf";
 import "./shaders/gradient-shader";
 import { useEditModeStore } from "./store/useEditModeStore";
-import UI from "./physic-world/edit-mode/ui/ui";
+import UI from "./ui/ui";
 import EditMode from "./physic-world/edit-mode/edit-mode";
 import "./preload-data/preload-gltf-model";
 
