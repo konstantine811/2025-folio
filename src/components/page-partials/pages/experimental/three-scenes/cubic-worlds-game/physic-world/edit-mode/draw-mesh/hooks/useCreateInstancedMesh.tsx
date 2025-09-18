@@ -36,7 +36,6 @@ const useCreateInstancedMesh = ({
 
   useLayoutEffect(() => {
     if (!meshRef.current) return;
-
     const inst = meshRef.current;
     if (!inst) return;
 

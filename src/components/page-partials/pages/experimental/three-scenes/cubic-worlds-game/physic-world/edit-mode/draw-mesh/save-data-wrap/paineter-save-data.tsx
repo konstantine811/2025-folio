@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useEditModeStore } from "../../../../store/useEditModeStore";
 import { Matrix4 } from "three";
-import PlanePainter from "../plain-painter";
+import PlanePainter from "../line-painter";
 
-const PainterSaver = () => {
+const LainPainterSaver = () => {
   const { isDrawScatter, onSetNewScatter, scatterModelDraw } =
     useEditModeStore();
   const chunksRef = useRef<Matrix4[][]>([]);
@@ -36,4 +36,4 @@ const PainterSaver = () => {
   );
 };
 
-export default PainterSaver;
+export default LainPainterSaver;

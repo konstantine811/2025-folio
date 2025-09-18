@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Matrix4, ShaderMaterial } from "three";
 import AddWinderInstancedModelWrap from "../edit-mode/draw-mesh/winder-model/add-winder-instanced-model-wrap";
 import { saveScatterToStorage } from "@/services/firebase/cubic-worlds-game/firestore-scatter-objects";
@@ -8,6 +8,9 @@ import LoadWinderModel from "../edit-mode/switch-load-models/load-winder-model";
 import { MeshShaderData } from "../edit-mode/switch-load-models/load.model";
 import { UpHint } from "../edit-mode/draw-mesh/hooks/useCreatePivotPoint";
 import { TypeModel } from "../../config/3d-model.config";
+import { buildGridCells } from "../../utils/grid";
+import { Key } from "@/config/key";
+import AddInstanceMesh from "../edit-mode/draw-mesh/add-instance-mesh";
 
 type Props = {
   modelUrl: string;
@@ -32,8 +35,10 @@ export default function AddWinderInstanceModel({
   const touchTextureData = useGameDataStore((s) => s.characterTextureData);
   const [meshData, setMeshData] = useState<MeshShaderData | null>(null);
   const { setStatusServer } = useEditModeStore();
-
+  const [newMatrices, setNewMatrices] = useState<Matrix4[][]>(metrices);
   const prevIsEdit = useRef(isEditMode);
+  const [isAddModel, setIsAddModel] = useState(false);
+  const [placementPosition, setPlacementPosition] = useState<Matrix4[]>([]);
 
   useEffect(() => {
     if (touchTextureData && meshData) {
@@ -51,40 +56,75 @@ export default function AddWinderInstanceModel({
     }
   }, [touchTextureData, meshData]);
 
+  const updateServerData = useCallback(
+    (fileName: string, data: Matrix4[][]) => {
+      setStatusServer(StatusServer.start);
+      saveScatterToStorage(fileName, data, {
+        name: modelName,
+        path: modelUrl,
+        type: type,
+        hintMode: hint,
+      }).then(() => {
+        setStatusServer(StatusServer.loaded);
+        setNewMatrices(data);
+        setPlacementPosition([]);
+        isMatrixUpdate.current = false; // СКИДАЙ прапорець після успіху
+      });
+    },
+    [modelName, modelUrl, type, hint, setStatusServer]
+  );
+
   useEffect(() => {
     const wasEdit = prevIsEdit.current;
     const nowEdit = isEditMode;
 
     if (wasEdit && !nowEdit && isMatrixUpdate.current) {
-      (async () => {
-        if (fileName) {
-          setStatusServer(StatusServer.start);
-          saveScatterToStorage(fileName, metrices, {
-            name: modelName,
-            path: modelUrl,
-            type: type,
-            hintMode: hint,
-          }).then(() => {
-            setStatusServer(StatusServer.loaded);
-            isMatrixUpdate.current = false; // СКИДАЙ прапорець після успіху
-          });
-        } else {
-          console.error("File name is not defined");
-          isMatrixUpdate.current = false;
-        }
-      })();
+      if (fileName) {
+        updateServerData(fileName, newMatrices);
+      } else {
+        console.error("File name is not defined");
+        isMatrixUpdate.current = false;
+      }
     }
 
     prevIsEdit.current = nowEdit;
     // ЗВЕРНИ УВАГУ: залежність тільки від isEditMode,
     // parsedChunks/fileName не потрібні тут як тригери.
-  }, [isEditMode, setStatusServer]); // <= тільки перехід режиму
+  }, [isEditMode, setStatusServer, updateServerData, fileName]); // <= тільки перехід режиму
+
+  const onKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      const key = e.code;
+      // ==== SCALE (S) ====
+      if (key === Key.A && e.shiftKey) {
+        setIsAddModel(true);
+      }
+      if (key === Key.ESC) {
+        const matx = buildGridCells([...placementPosition, ...metrices.flat()]);
+        if (fileName) {
+          updateServerData(fileName, matx);
+        }
+        setIsAddModel(false);
+      }
+    },
+    [fileName, placementPosition, metrices, updateServerData]
+  );
+
+  useEffect(() => {
+    if (isEditMode) {
+      window.addEventListener("keydown", onKeyDown);
+    } else {
+      window.removeEventListener("keydown", onKeyDown);
+      setIsAddModel(false);
+    }
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isEditMode, onKeyDown]);
 
   return (
     <group>
-      {meshData && metrices && (
+      {meshData && newMatrices && (
         <>
-          {metrices.map((mats, i) => {
+          {newMatrices.map((mats, i) => {
             return (
               <group key={i}>
                 <AddWinderInstancedModelWrap
@@ -100,6 +140,22 @@ export default function AddWinderInstanceModel({
               </group>
             );
           })}
+          {isAddModel && (
+            <>
+              <AddInstanceMesh
+                geom={meshData.geometry}
+                material={meshData.material}
+                onUpdateMatrices={setPlacementPosition}
+              />
+              <AddWinderInstancedModelWrap
+                matrices={placementPosition}
+                material={meshData.material}
+                blade={meshData.geometry}
+                // meshName="grass"
+                isEditMode={false}
+              />
+            </>
+          )}
         </>
       )}
       <LoadWinderModel

@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useMemo } from "react";
+import { useRef, useState, useCallback, useMemo, useEffect } from "react";
 import {
   BufferGeometry,
   FrontSide,
@@ -23,7 +23,8 @@ type AddModelProps = {
   onAddGeometryData?: (geom: BufferGeometry<NormalBufferAttributes>) => void;
   onMatrixUpdate?: (index: number) => void;
   // новий колбек — сюди віддаємо оновлену матрицю конкретного індексу
-  onMatrixChange?: (index: number, next: Matrix4) => void;
+  onMatrixChange: (index: number, next: Matrix4) => void;
+  onDelete: (index: number) => void;
 };
 
 const AddModelEdit = ({
@@ -33,6 +34,7 @@ const AddModelEdit = ({
   onAddGeometryData,
   onMatrixChange,
   onMatrixUpdate,
+  onDelete,
 }: AddModelProps) => {
   const meshRef = useRef<InstancedMesh>(null!);
   const { editTransformMode } = useEditModeStore();
@@ -122,6 +124,11 @@ const AddModelEdit = ({
     updateOutline(null);
   }, [updateOutline]);
 
+  useEffect(() => {
+    if (!outlineRef.current) return;
+    outlineRef.current.raycast = () => null; // ігнорувати хіти
+  }, []);
+
   return (
     <>
       <instancedMesh
@@ -135,7 +142,6 @@ const AddModelEdit = ({
         ref={outlineRef}
         args={[geometry, outlineMat, 1]}
         frustumCulled={false}
-        renderOrder={999}
         visible={false}
       />
       {editTransformMode ? (
@@ -155,6 +161,7 @@ const AddModelEdit = ({
           selected={selected}
           updateOutline={updateOutline}
           onSelect={setSelected}
+          onDelete={onDelete}
         />
       )}
     </>

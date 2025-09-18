@@ -65,9 +65,9 @@ const ListScatter = () => {
 
   return (
     <div className="flex flex-col gap-2">
-      <ScrollArea className="max-w-md rounded-md border mt-5 bg-background">
+      <ScrollArea className="max-w-md rounded-md border mt-5">
         <div className="p-4">
-          <h4 className="mb-4 text-sm leading-none font-medium">
+          <h4 className="mb-4 text-md text-muted-foreground leading-none font-medium">
             Scatter Objects
           </h4>
 
@@ -96,7 +96,9 @@ const ListScatter = () => {
                         }}
                       />
                     ) : (
-                      <span>{scatter.name}</span>
+                      <span className="text-muted-foreground">
+                        {scatter.name}
+                      </span>
                     )}
                   </div>
 

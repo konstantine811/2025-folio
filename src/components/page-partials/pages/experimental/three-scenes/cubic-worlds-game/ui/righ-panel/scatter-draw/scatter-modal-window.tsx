@@ -30,19 +30,28 @@ export function ScatterModalWindow() {
     }
   }, [scatterData]);
 
-  const onHangleCloseDialog = useCallback(() => {
-    if (scatterData) {
-      onSetStatusServer(StatusServer.start);
-      saveScatterToStorage(fileName, scatterData.matrix, {
-        ...scatterData.model,
-      }).then(() => {
-        setScatterData(null);
+  const onHangleCloseDialog = useCallback(
+    (e: boolean) => {
+      if (e) {
+        if (scatterData) {
+          setIsOpen(false);
+          onSetStatusServer(StatusServer.start);
+          saveScatterToStorage(fileName, scatterData.matrix, {
+            ...scatterData.model,
+          }).then(() => {
+            setScatterData(null);
+            setFileName("");
+            onSetStatusServer(StatusServer.loaded);
+          });
+        }
+      } else {
         setIsOpen(false);
+        setScatterData(null);
         setFileName("");
-        onSetStatusServer(StatusServer.loaded);
-      });
-    }
-  }, [fileName, setScatterData, scatterData, onSetStatusServer]);
+      }
+    },
+    [fileName, setScatterData, scatterData, onSetStatusServer]
+  );
   return (
     <Dialog open={isOpen} onOpenChange={onHangleCloseDialog}>
       <DialogContent className="sm:max-w-md">
@@ -67,7 +76,7 @@ export function ScatterModalWindow() {
             <Button
               type="button"
               variant="secondary"
-              onClick={onHangleCloseDialog}
+              onClick={() => onHangleCloseDialog(true)}
             >
               Save
             </Button>

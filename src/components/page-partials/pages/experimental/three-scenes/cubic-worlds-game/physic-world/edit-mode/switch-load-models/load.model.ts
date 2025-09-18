@@ -10,6 +10,11 @@ export type MeshShaderData = {
   geometry: BufferGeometry;
   material: ShaderMaterial;
 };
+
+export type MixMaterialData = {
+  material: Material | ShaderMaterial;
+  geom: BufferGeometry<NormalBufferAttributes>;
+};
 export type LoadModelProps = {
   modelUrl: string;
   onCreateModelGeom: (

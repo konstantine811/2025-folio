@@ -7,7 +7,7 @@ function extractPos(m: Matrix4) {
   return _p;
 }
 
-export function buildGridCells(mats: Matrix4[], cellSize = 5) {
+export function buildGridCells(mats: Matrix4[], cellSize = 5): Matrix4[][] {
   const cells = new Map<string, Matrix4[]>();
 
   for (const m of mats) {

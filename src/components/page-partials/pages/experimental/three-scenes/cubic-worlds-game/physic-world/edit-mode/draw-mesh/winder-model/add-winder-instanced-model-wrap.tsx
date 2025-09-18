@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   BufferGeometry,
   DynamicDrawUsage,
@@ -11,7 +11,6 @@ import AddModel from "../add-model";
 import AddModelEdit from "../add-model-edit";
 
 type Props = {
-  meshName?: string;
   matrices: Matrix4[];
   material: ShaderMaterial;
   blade: BufferGeometry<NormalBufferAttributes>;
@@ -27,9 +26,9 @@ const AddWinderInstancedModelWrap = ({
   onUpdate,
 }: Props) => {
   const COUNT = Math.max(matrices.length, 1);
-
   const aBend = useMemo(() => new Float32Array(COUNT), [COUNT]);
   const aPhase = useMemo(() => new Float32Array(COUNT), [COUNT]); // додатковий атрибут фази
+  const [update, setUpdate] = useState(true);
   const onMatrixUpdate = useCallback(
     (index: number) => {
       aBend[index] = 0.7 + ((index * 0.13) % 0.3);
@@ -67,6 +66,21 @@ const AddWinderInstancedModelWrap = ({
     [matrices, onUpdate]
   );
 
+  const handleDeleteMatrixChange = useCallback(
+    (index: number) => {
+      setUpdate(false);
+      // Замість: matrices[index] = nextM;
+      // Правильно:
+      matrices.splice(index, 1);
+      onUpdate?.();
+      // невелика затримка, щоб скинути ререндер
+      setTimeout(() => {
+        setUpdate(true);
+      }, 0);
+    },
+    [matrices, onUpdate]
+  );
+
   useEffect(() => {
     if (isEditMode) {
       material.uniforms._fallbackEdgeDark.value = 5;
@@ -86,14 +100,19 @@ const AddWinderInstancedModelWrap = ({
           onAddGeometryData={onAddGeometryData}
         />
       ) : (
-        <AddModelEdit
-          material={material}
-          matrices={matrices}
-          blade={blade}
-          onMatrixUpdate={onMatrixUpdate}
-          onAddGeometryData={onAddGeometryData}
-          onMatrixChange={handleMatrixChange}
-        />
+        <>
+          {update && (
+            <AddModelEdit
+              material={material}
+              matrices={matrices}
+              blade={blade}
+              onMatrixUpdate={onMatrixUpdate}
+              onAddGeometryData={onAddGeometryData}
+              onMatrixChange={handleMatrixChange}
+              onDelete={handleDeleteMatrixChange}
+            />
+          )}
+        </>
       )}
     </>
   );

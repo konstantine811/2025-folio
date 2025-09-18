@@ -14,7 +14,6 @@ const Scatters = () => {
 
   useEffect(() => {
     const scatterNames: ScatterObject[] = [];
-    console.log("scatterData", scatterData);
     scatterData.filter((i) => {
       if (i.matrices && i.matrices.length) {
         scatterNames.push({

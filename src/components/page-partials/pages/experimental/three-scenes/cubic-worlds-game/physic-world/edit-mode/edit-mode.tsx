@@ -1,6 +1,6 @@
 import { GizmoHelper, GizmoViewport } from "@react-three/drei";
 import PainterSaver from "./draw-mesh/save-data-wrap/paineter-save-data";
-import DrawMesh from "./draw-mesh/draw-mesh";
+import DrawSingleInstanceWrap from "./draw-mesh/draw-single-instance/draw-singe-instance-wrap";
 
 const EditMode = () => {
   return (
@@ -12,7 +12,7 @@ const EditMode = () => {
         <GizmoViewport />
         {/* alternative: <GizmoViewcube /> */}
       </GizmoHelper>
-      <DrawMesh />
+      {/* <DrawSingleInstanceWrap /> */}
       <PainterSaver />
     </>
   );

@@ -34,5 +34,5 @@
       "@custom-types/*": ["./src/types/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "model-instance-placement.tsx"]
 }

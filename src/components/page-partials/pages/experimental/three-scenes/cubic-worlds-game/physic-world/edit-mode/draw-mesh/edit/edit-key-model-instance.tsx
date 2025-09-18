@@ -24,9 +24,10 @@ type Props = {
   meshRef: RefObject<InstancedMesh>;
   editDummy: Object3D<Object3DEventMap>;
   // новий колбек — сюди віддаємо оновлену матрицю конкретного індексу
-  onMatrixChange?: (index: number, next: Matrix4) => void;
+  onMatrixChange: (index: number, next: Matrix4) => void;
   updateOutline: (idx: number | null) => void;
   onSelect: (idx: number | null) => void;
+  onDelete: (index: number) => void;
 };
 
 const lift = 0.01;
@@ -38,6 +39,7 @@ const EditKeyModelInstance = ({
   onMatrixChange,
   updateOutline,
   onSelect,
+  onDelete,
 }: Props) => {
   const { camera, pointer, raycaster } = useThree();
   const [grabbing, setGrabbing] = useState(false);
@@ -89,12 +91,14 @@ const EditKeyModelInstance = ({
           im.getMatrixAt(last, tmp);
           im.setMatrixAt(selected, tmp);
           // можна повідомити про зміну матриці на індексі 'selected'
-          onMatrixChange?.(selected, tmp.clone());
+          // onMatrixChange(selected, tmp.clone());
         }
+        onDelete(selected);
 
         // зменшити лічильник і оновити GPU-буфер
         im.count = last;
         im.instanceMatrix.needsUpdate = true;
+        // ⚠️ головне: синхронізуємо СТЕЙТ у React (у батька)
 
         // прибрати виділення/outline (або лишити на «підставленому» індексі — як хочеш)
         onSelect(null);
@@ -165,7 +169,7 @@ const EditKeyModelInstance = ({
             meshRef.current.setMatrixAt(selected, savedBeforeGrab.current);
             meshRef.current.instanceMatrix.needsUpdate = true;
             updateOutline(selected);
-            onMatrixChange?.(selected, editDummy.matrix.clone());
+            onMatrixChange(selected, editDummy.matrix.clone());
           }
         }, 100);
         return;
@@ -207,6 +211,8 @@ const EditKeyModelInstance = ({
       rotating,
       setRotating,
       meshRef,
+      onSelect,
+      onDelete,
     ]
   );
 
@@ -262,7 +268,7 @@ const EditKeyModelInstance = ({
       previewRef.current.setRotationFromQuaternion(qNew);
       meshRef.current.instanceMatrix.needsUpdate = true;
       updateOutline(selected);
-      onMatrixChange?.(selected, editDummy.matrix.clone());
+      onMatrixChange(selected, editDummy.matrix.clone());
     }
     // ==== SCALE MODE ====
     if (scaling && selected !== null) {
@@ -297,7 +303,7 @@ const EditKeyModelInstance = ({
       meshRef.current.instanceMatrix.needsUpdate = true;
 
       updateOutline(selected);
-      onMatrixChange?.(selected, editDummy.matrix.clone());
+      onMatrixChange(selected, editDummy.matrix.clone());
 
       // (опційно) масштабуй превʼю-радіус пропорційно XZ
       const r = Math.max(editDummy.scale.x, editDummy.scale.z) / 5;
@@ -390,7 +396,7 @@ const EditKeyModelInstance = ({
       meshRef.current.instanceMatrix.needsUpdate = true;
 
       updateOutline(selected);
-      onMatrixChange?.(selected, editDummy.matrix.clone());
+      onMatrixChange(selected, editDummy.matrix.clone());
     }
   });
 

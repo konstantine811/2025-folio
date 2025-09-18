@@ -7,7 +7,7 @@ const CheckTransformControl = () => {
   const { setEditTransformMode, editTransformMode } = useEditModeStore();
   return (
     <ToggleGroup
-      className="w-full bg-background"
+      className="w-full bg-background/10"
       type="single"
       onValueChange={(value) => setEditTransformMode(value as TransformMode)}
       defaultValue={editTransformMode as string}
@@ -15,18 +15,21 @@ const CheckTransformControl = () => {
     >
       <ToggleGroupItem
         value={TransformMode.Translate}
+        className="hover:bg-background/20"
         aria-label={`Toggle ${TransformMode.Translate}`}
       >
         <Move />
       </ToggleGroupItem>
       <ToggleGroupItem
         value={TransformMode.Scale}
+        className="hover:bg-background/20"
         aria-label={`Toggle ${TransformMode.Scale}`}
       >
         <Expand />
       </ToggleGroupItem>
       <ToggleGroupItem
         value={TransformMode.Rotate}
+        className="hover:bg-background/20"
         aria-label={`Toggle ${TransformMode.Rotate}`}
       >
         <Rotate3d />

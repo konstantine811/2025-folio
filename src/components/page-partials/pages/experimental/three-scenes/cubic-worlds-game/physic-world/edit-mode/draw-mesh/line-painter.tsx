@@ -37,7 +37,7 @@ enum PainterColors {
 
 const eraseRadius = 1;
 
-export default function PlanePainter({
+export default function LinePainter({
   limit = 100_000,
   onChunksCreated,
   scatterModelDraw,
