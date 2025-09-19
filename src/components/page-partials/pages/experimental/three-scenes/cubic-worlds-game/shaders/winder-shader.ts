@@ -38,7 +38,7 @@ export const WinderMaterial = shaderMaterial(
     uTallThreshold: 100.02, // поріг scaleY інстанса, з якого вважаємо пучок "високим"
     uTallSwayAmp: 0.02, // амплітуда легкого похитування
     uTallSwayFreq: 1.8, // частота похитування
-    uPresenceGamma: 0.5, // <1 робить різкіше (миттєвіше)
+    uPresenceGamma: 0.8, // <1 робить різкіше (миттєвіше)
     uPresenceThreshold: 0.0, // якщо хочеш поріг
   },
   /* glsl */ `

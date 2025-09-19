@@ -43,7 +43,7 @@ const initialState: EditModeState = {
   scatters: [],
   idEditScatter: null,
   scatterData: null,
-  statusServer: StatusServer.start,
+  statusServer: StatusServer.loaded,
   editTransformMode: null,
   scatterModelDraw: PainterModelConfig[0],
 };
