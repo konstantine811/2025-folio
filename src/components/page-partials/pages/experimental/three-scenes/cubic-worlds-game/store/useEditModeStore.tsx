@@ -3,7 +3,7 @@ import { Matrix4, Object3D } from "three";
 import { create } from "zustand";
 import {
   PainterModelConfig,
-  ScatterModelDraw,
+  InstanceModelDraw,
 } from "../config/3d-model.config";
 
 export enum StatusServer {
@@ -11,11 +11,18 @@ export enum StatusServer {
   loaded = "loaded",
 }
 
-export interface ScatterData {
-  matrix: Matrix4[][];
-  model: ScatterModelDraw;
+export enum EditModeAction {
+  drawScatter = "drawScatter",
+  editScatter = "editScatter",
+  addInstance = "addInstance",
+  none = "none",
 }
-export interface ScatterObject {
+
+export interface InstanceData {
+  matrix: Matrix4[][];
+  model: InstanceModelDraw;
+}
+export interface InstanceObject {
   id: string;
   name: string;
   isEdit: boolean;
@@ -24,44 +31,44 @@ interface EditModeState {
   targets: Object3D[];
   isEditMode: boolean;
   isPhysicsDebug: boolean;
-  isDrawScatter: boolean;
-  isTransformEdit: boolean;
-  scatters: ScatterObject[];
-  idEditScatter: string | null;
-  scatterData: ScatterData | null;
+  instances: InstanceObject[];
+  idEditInstance: string | null;
+  instanceData: InstanceData | null;
   statusServer: StatusServer;
   editTransformMode: TransformMode | null;
-  scatterModelDraw: ScatterModelDraw;
+  scatterModelDraw: InstanceModelDraw;
+  instanceModelDraw: InstanceModelDraw;
+  editModeAction: EditModeAction;
 }
 
 const initialState: EditModeState = {
   targets: [],
   isEditMode: false,
-  isPhysicsDebug: true,
-  isDrawScatter: false,
-  isTransformEdit: false,
-  scatters: [],
-  idEditScatter: null,
-  scatterData: null,
+  isPhysicsDebug: false,
+  instances: [],
+  idEditInstance: null,
+  instanceData: null,
   statusServer: StatusServer.loaded,
   editTransformMode: null,
   scatterModelDraw: PainterModelConfig[0],
+  instanceModelDraw: PainterModelConfig[0],
+  editModeAction: EditModeAction.none,
 };
 
 interface EditModeActions {
   setTargets: (targets: Object3D) => void;
   setIsEditMode: (isEditMode: boolean) => void;
   setIsPhysicsDebug: (isPhysicsDebug: boolean) => void;
-  setIsDrawScatter: (isDrawScatter: boolean) => void;
-  setIsTransformEdit: (isTransformEdit: boolean) => void;
-  onAddScatters: (scatter: ScatterObject[]) => void;
-  onRemoveScatters: (id: string) => void;
-  setIdEditScatter: (id: string | null) => void;
-  onSetNewScatter: (data: ScatterData | null) => void;
+  onAddInstances: (instance: InstanceObject[]) => void;
+  onRemoveInstnaces: (id: string) => void;
+  setIdEditInstance: (id: string | null) => void;
+  onSetNewInstance: (data: InstanceData | null) => void;
   setStatusServer: (status: StatusServer) => void;
   onRenameScatter: (id: string, newName: string) => void;
   setEditTransformMode: (mode: TransformMode | null) => void;
-  setScatterModelDraw: (model: ScatterModelDraw) => void;
+  setScatterModelDraw: (model: InstanceModelDraw) => void;
+  setInstanceModelDraw: (model: InstanceModelDraw) => void;
+  setEditModeAction: (action: EditModeAction) => void;
 }
 
 type EditModeStore = EditModeState & EditModeActions;
@@ -72,12 +79,10 @@ export const useEditModeStore = create<EditModeStore>()((set) => ({
     set((state) => ({ targets: [...state.targets, targets] })),
   setIsEditMode: (isEditMode: boolean) => set({ isEditMode }),
   setIsPhysicsDebug: (isPhysicsDebug: boolean) => set({ isPhysicsDebug }),
-  setIsDrawScatter: (isDrawScatter: boolean) => set({ isDrawScatter }),
-  setIsTransformEdit: (isTransformEdit: boolean) => set({ isTransformEdit }),
-  onAddScatters: (incoming: ScatterObject[]) =>
+  onAddInstances: (incoming: InstanceObject[]) =>
     set((state) => {
-      const result: ScatterObject[] = [...state.scatters];
-      const seen = new Set(state.scatters.map((s) => s.name)); // уже існуючі id
+      const result: InstanceObject[] = [...state.instances];
+      const seen = new Set(state.instances.map((s) => s.name)); // уже існуючі id
 
       for (const item of incoming) {
         if (!seen.has(item.name)) {
@@ -86,31 +91,39 @@ export const useEditModeStore = create<EditModeStore>()((set) => ({
         }
       }
 
-      return { scatters: result };
+      return { instances: result };
     }),
-  onRemoveScatters: (id: string) => {
+  onRemoveInstnaces: (id: string) => {
     set((state) => ({
-      scatters: state.scatters.filter((scatter) => scatter.id !== id),
+      instances: state.instances.filter((instance) => instance.id !== id),
     }));
   },
-  setIdEditScatter: (id: string | null) => set({ idEditScatter: id }),
-  onSetNewScatter: (data) => {
+  setIdEditInstance: (id: string | null) => set({ idEditInstance: id }),
+  onSetNewInstance: (data) => {
     if (!data) {
-      set({ scatterData: null });
+      set({ instanceData: null });
       return;
     }
     const { model: modelData, matrix } = data;
-    set({ scatterData: { matrix, model: modelData } });
+    set({ instanceData: { matrix, model: modelData } });
   },
   setStatusServer: (status: StatusServer) => set({ statusServer: status }),
   onRenameScatter: (id: string, newName: string) =>
     set((s) => ({
-      scatters: s.scatters.map((x) =>
+      instances: s.instances.map((x) =>
         x.id === id ? { ...x, name: newName } : x
       ),
     })),
   setEditTransformMode: (mode: TransformMode | null) =>
     set({ editTransformMode: mode }),
-  setScatterModelDraw: (model: ScatterModelDraw) =>
+  setScatterModelDraw: (model: InstanceModelDraw) =>
     set({ scatterModelDraw: model }),
+  setEditModeAction: (action: EditModeAction) => {
+    if (action !== EditModeAction.editScatter) {
+      set({ idEditInstance: null });
+    }
+    set({ editModeAction: action });
+  },
+  setInstanceModelDraw: (model: InstanceModelDraw) =>
+    set({ instanceModelDraw: model }),
 }));

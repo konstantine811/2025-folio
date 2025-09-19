@@ -12,7 +12,8 @@ const EditMode = () => {
         <GizmoViewport />
         {/* alternative: <GizmoViewcube /> */}
       </GizmoHelper>
-      {/* <DrawSingleInstanceWrap /> */}
+      <DrawSingleInstanceWrap />
+      <DrawSingleInstanceWrap />
       <PainterSaver />
     </>
   );

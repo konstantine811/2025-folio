@@ -4,7 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import Experience from "./experience";
 import InitKeyboardController from "./physic-world/character-controller/init-keyboard";
-import { Stats } from "@react-three/drei";
+import { ContactShadows, Stats } from "@react-three/drei";
 import { Perf } from "r3f-perf";
 import "./shaders/gradient-shader";
 import { useEditModeStore } from "./store/useEditModeStore";

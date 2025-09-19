@@ -8,7 +8,7 @@ import { useGameDataStore } from "./character-controller/stores/game-data-store"
 import { useEditModeStore } from "../store/useEditModeStore";
 
 const Ground = () => {
-  const { width, height } = { width: 100, height: 100 };
+  const { width, height } = { width: 200, height: 200 };
   // const [isDrawing, setIsDrawing] = useState(false);
   // const [cursorPos, setCurPos] = useState(new Vector3());
   // const textureMap = useTexture("/images/textures/grassTexture.jpg");
@@ -89,6 +89,7 @@ const Ground = () => {
             rotation={[-Math.PI / 2, 0, 0]}
             receiveShadow
             castShadow
+            position={[0, -0.1, 0]}
             // onPointerDown={handlePointerDown}
             // onPointerUp={handlePointerUpOrOut}
             // onPointerLeave={handlePointerUpOrOut}

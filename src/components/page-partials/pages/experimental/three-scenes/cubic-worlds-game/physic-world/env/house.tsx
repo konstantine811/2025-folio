@@ -42,6 +42,8 @@ const HouseModel = ({ ...props }: Props) => {
     <group {...props} ref={groupRef}>
       <RigidBody type="fixed" colliders="trimesh">
         <mesh
+          castShadow
+          receiveShadow
           geometry={(nodes.house_wall as SkinnedMesh).geometry}
           material={materials["cube_material.002"]}
         />
@@ -59,11 +61,15 @@ const HouseModel = ({ ...props }: Props) => {
         />
       </RigidBody>
       <mesh
+        castShadow
+        receiveShadow
         geometry={(nodes.roof as SkinnedMesh).geometry}
         material={materials["cube_material.002"]}
       />
       <RigidBody type="fixed" colliders="trimesh">
         <mesh
+          castShadow
+          receiveShadow
           geometry={(nodes.fundament as SkinnedMesh).geometry}
           material={materials["cube_material.003"]}
         />

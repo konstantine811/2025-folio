@@ -18,7 +18,7 @@ import ModelInstanceChunks from "../switch-load-models/model-instance-chuncks";
 import { useEditPainterStore } from "../../../store/useEditPainterStore";
 import { Key } from "@/config/key";
 import { ScatterModelDraw, TypeModel } from "../../../config/3d-model.config";
-import SwitchModelAdd from "./switch-add-model";
+import SwitchModelAdd from "../switch-load-models/switch-add-model";
 
 type Props = {
   /** Максимальна кількість інстансів у буфері */

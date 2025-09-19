@@ -82,6 +82,7 @@ const AddWinderInstancedModelWrap = ({
   );
 
   useEffect(() => {
+    if (!material.uniforms) return;
     if (isEditMode) {
       material.uniforms._fallbackEdgeDark.value = 5;
     } else {

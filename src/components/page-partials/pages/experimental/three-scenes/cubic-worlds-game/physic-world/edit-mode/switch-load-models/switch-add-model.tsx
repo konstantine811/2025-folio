@@ -1,16 +1,16 @@
 import { useCallback } from "react";
-import { ScatterModelDraw, TypeModel } from "../../../config/3d-model.config";
-import LoadWinderModel from "../switch-load-models/load-winder-model";
+import { InstanceModelDraw, TypeModel } from "../../../config/3d-model.config";
+import LoadWinderModel from "./load-winder-model";
 import {
   BufferGeometry,
   Material,
   NormalBufferAttributes,
   ShaderMaterial,
 } from "three";
-import LoadSimpleModel from "../switch-load-models/load-simple-model";
+import LoadSimpleModel from "./load-simple-model";
 
 type Props = {
-  scatterModelDraw: ScatterModelDraw;
+  scatterModelDraw: InstanceModelDraw;
   onCreateModelGeom: (
     geom: BufferGeometry<NormalBufferAttributes>,
     material: Material | ShaderMaterial,
@@ -18,7 +18,7 @@ type Props = {
   ) => void;
 };
 
-const SwitchModelAdd = ({ scatterModelDraw, onCreateModelGeom }: Props) => {
+const SwitchAddModel = ({ scatterModelDraw, onCreateModelGeom }: Props) => {
   const switchLoadModel = useCallback(() => {
     switch (scatterModelDraw.type) {
       case TypeModel.simple:
@@ -46,4 +46,4 @@ const SwitchModelAdd = ({ scatterModelDraw, onCreateModelGeom }: Props) => {
   return <>{switchLoadModel()}</>;
 };
 
-export default SwitchModelAdd;
+export default SwitchAddModel;

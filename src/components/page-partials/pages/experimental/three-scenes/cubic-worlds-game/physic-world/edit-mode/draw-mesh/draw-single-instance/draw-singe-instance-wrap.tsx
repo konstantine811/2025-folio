@@ -1,36 +1,63 @@
-import { useState } from "react";
-import LoadWinderModel from "../../switch-load-models/load-winder-model";
+import { useEffect, useState } from "react";
 import { MixMaterialData } from "../../switch-load-models/load.model";
 import DrawMesh from "../add-instance-mesh";
-import AddWinderInstancedModelWrap from "../winder-model/add-winder-instanced-model-wrap";
-import { Matrix4, ShaderMaterial } from "three";
+import { Matrix4 } from "three";
+import {
+  EditModeAction,
+  useEditModeStore,
+} from "../../../../store/useEditModeStore";
+import SwitchAddModel from "../../switch-load-models/switch-add-model";
+import SwitchInstanceModelWrap from "../../switch-load-models/switch-instance-model-wrap";
+import { buildGridCells } from "../../../../utils/grid";
 
 const DrawSingleInstanceWrap = () => {
-  const modelUrl = "/3d-models/cubic-worlds-model/grass.glb";
   const [drawData, setDrawData] = useState<MixMaterialData | null>(null);
   const [placementPosition, setPlacementPosition] = useState<Matrix4[]>([]);
+  const {
+    instanceModelDraw,
+    editModeAction,
+    onSetNewInstance,
+    scatterModelDraw,
+  } = useEditModeStore();
+
+  useEffect(() => {
+    if (
+      editModeAction !== EditModeAction.addInstance &&
+      placementPosition.length
+    ) {
+      const matrix = buildGridCells(placementPosition, 5);
+      onSetNewInstance({
+        matrix,
+        model: scatterModelDraw,
+      });
+      setPlacementPosition([]);
+    }
+  }, [editModeAction, onSetNewInstance, scatterModelDraw, placementPosition]);
   return (
     <>
-      <LoadWinderModel
-        modelUrl={modelUrl}
-        onCreateModelGeom={(geom, material) => {
-          setDrawData({ geom, material });
-        }}
-      />
-      {drawData && (
+      {editModeAction === EditModeAction.addInstance && (
         <>
-          <DrawMesh
-            geom={drawData.geom}
-            material={drawData.material}
-            onUpdateMatrices={setPlacementPosition}
+          <SwitchAddModel
+            scatterModelDraw={instanceModelDraw}
+            onCreateModelGeom={(geom, material) => {
+              setDrawData({ geom, material });
+            }}
           />
-          <AddWinderInstancedModelWrap
-            matrices={placementPosition}
-            material={drawData.material as ShaderMaterial}
-            blade={drawData.geom}
-            // meshName="grass"
-            isEditMode={false}
-          />
+          {drawData && (
+            <>
+              <DrawMesh
+                geom={drawData.geom}
+                material={drawData.material}
+                onUpdateMatrices={setPlacementPosition}
+              />
+              <SwitchInstanceModelWrap
+                type={instanceModelDraw.type}
+                geom={drawData.geom}
+                material={drawData.material}
+                placementPosition={placementPosition}
+              />
+            </>
+          )}
         </>
       )}
     </>

@@ -16,7 +16,7 @@ const UI = () => {
     setIsEditMode,
     isPhysicsDebug,
     setIsPhysicsDebug,
-    setIdEditScatter,
+    setIdEditInstance,
     statusServer,
   } = useEditModeStore();
 
@@ -36,7 +36,7 @@ const UI = () => {
               onClick={() => {
                 setIsEditMode(!isEditMode);
                 if (isEditMode) {
-                  setIdEditScatter(null);
+                  setIdEditInstance(null);
                 }
               }}
             >

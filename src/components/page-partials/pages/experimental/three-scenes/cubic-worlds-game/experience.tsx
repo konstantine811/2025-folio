@@ -13,14 +13,14 @@ const Experience = () => {
     <>
       <InitPhysicWorld />
       {/* <GrassWrapper /> */}
-      <ambientLight intensity={1} />
-      <directionalLight
+      <ambientLight intensity={0.1} />
+      {/* <directionalLight
         name={SceneObjectName.characterLight}
-        intensity={0.4}
+        intensity={1}
         castShadow
         shadow-mapSize={[1024, 1024]}
-      ></directionalLight>
-      <Environment preset="sunset" />
+      ></directionalLight> */}
+      {/* <Environment preset="night" /> */}
     </>
   );
 };

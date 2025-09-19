@@ -1,6 +1,6 @@
 import { UpHint } from "../physic-world/edit-mode/draw-mesh/hooks/useCreatePivotPoint";
 
-function publicModelPath(model: string) {
+export function publicModelPath(model: string) {
   return `/3d-models/cubic-worlds-model/${model}`;
 }
 
@@ -9,14 +9,14 @@ export enum TypeModel {
   winder = "winder",
 }
 
-export interface ScatterModelDraw {
+export interface InstanceModelDraw {
   name: string;
   path: string;
   type: TypeModel;
   hintMode: UpHint;
 }
 
-export const PainterModelConfig: ScatterModelDraw[] = [
+export const PainterModelConfig: InstanceModelDraw[] = [
   {
     name: "Dirty",
     path: publicModelPath("dirty.glb"),

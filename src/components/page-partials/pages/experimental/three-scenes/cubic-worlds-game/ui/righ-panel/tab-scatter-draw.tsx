@@ -1,4 +1,4 @@
-import { useEditModeStore } from "../../store/useEditModeStore";
+import { EditModeAction, useEditModeStore } from "../../store/useEditModeStore";
 import { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import NumberInputSlider from "@components/ui-abc/inputs/three-world/number-input-slider";
@@ -6,7 +6,7 @@ import { useEditPainterStore } from "../../store/useEditPainterStore";
 import SelectScatterModel from "./scatter-draw/select-scatter-model";
 
 const TabScatterDraw = () => {
-  const { isDrawScatter, setIsDrawScatter, isEditMode } = useEditModeStore();
+  const { editModeAction, setEditModeAction, isEditMode } = useEditModeStore();
   const {
     setDensity,
     density,
@@ -27,12 +27,12 @@ const TabScatterDraw = () => {
   } = useEditPainterStore();
   useEffect(() => {
     if (!isEditMode) {
-      setIsDrawScatter(false);
+      setEditModeAction(EditModeAction.none);
     }
-  }, [isEditMode, setIsDrawScatter]);
+  }, [isEditMode, setEditModeAction]);
   return (
     <>
-      {isDrawScatter ? (
+      {editModeAction === EditModeAction.drawScatter ? (
         <div className="w-full mt-3 min-w-60 flex flex-col gap-5">
           <SelectScatterModel />
           <div className="pb-3 flex flex-col gap-1">

@@ -9,6 +9,9 @@ import { useGameDataStore } from "../character-controller/stores/game-data-store
 import { useGameStore } from "../character-controller/stores/game-store";
 import useCharacterCreateTexture from "../character-controller/hooks/useCharacterCreateTexture";
 import { RigidBody } from "@react-three/rapier";
+import { Robot } from "./robot/robot";
+import Lights from "./lights/ortho-lights";
+
 const Environment = () => {
   const characterRigidBody = useGameDataStore(
     (state) => state.characterRigidBody
@@ -19,7 +22,10 @@ const Environment = () => {
   return (
     <>
       <HouseModel position={[-20, 0, 40]} />
+
+      <Lights />
       <Scatters />
+      <Robot scale={3} />
       <RigidBody>
         <mesh position={[0, 0.5, 0]} receiveShadow>
           <boxGeometry args={[1, 1, 1]} />

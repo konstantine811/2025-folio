@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef } from "react";
-import { useEditModeStore } from "../../../../store/useEditModeStore";
+import {
+  EditModeAction,
+  useEditModeStore,
+} from "../../../../store/useEditModeStore";
 import { Matrix4 } from "three";
 import PlanePainter from "../line-painter";
 
 const LainPainterSaver = () => {
-  const { isDrawScatter, onSetNewScatter, scatterModelDraw } =
+  const { editModeAction, onSetNewInstance, scatterModelDraw } =
     useEditModeStore();
   const chunksRef = useRef<Matrix4[][]>([]);
 
@@ -13,20 +16,20 @@ const LainPainterSaver = () => {
   }, []);
 
   useEffect(() => {
-    if (!isDrawScatter) {
+    if (editModeAction !== EditModeAction.drawScatter) {
       const latest = chunksRef.current;
       if (latest?.length) {
-        onSetNewScatter({
+        onSetNewInstance({
           matrix: latest,
           model: scatterModelDraw,
         });
         chunksRef.current = []; // опціонально очистити
       }
     }
-  }, [isDrawScatter, onSetNewScatter, scatterModelDraw]);
+  }, [editModeAction, onSetNewInstance, scatterModelDraw]);
   return (
     <>
-      {isDrawScatter && (
+      {editModeAction === EditModeAction.drawScatter && (
         <PlanePainter
           onChunksCreated={onChunksChange}
           scatterModelDraw={scatterModelDraw}

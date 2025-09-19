@@ -18,39 +18,39 @@ import {
 import { saveScatterToStorage } from "@/services/firebase/cubic-worlds-game/firestore-scatter-objects";
 
 export function ScatterModalWindow() {
-  const scatterData = useEditModeStore((s) => s.scatterData);
-  const setScatterData = useEditModeStore((s) => s.onSetNewScatter);
+  const instanceData = useEditModeStore((s) => s.instanceData);
+  const onSetNewInstance = useEditModeStore((s) => s.onSetNewInstance);
   const onSetStatusServer = useEditModeStore((s) => s.setStatusServer);
   const [isOpen, setIsOpen] = useState(false);
   const [fileName, setFileName] = useState("");
 
   useEffect(() => {
-    if (scatterData) {
+    if (instanceData) {
       setIsOpen(true);
     }
-  }, [scatterData]);
+  }, [instanceData]);
 
   const onHangleCloseDialog = useCallback(
     (e: boolean) => {
       if (e) {
-        if (scatterData) {
+        if (instanceData) {
           setIsOpen(false);
           onSetStatusServer(StatusServer.start);
-          saveScatterToStorage(fileName, scatterData.matrix, {
-            ...scatterData.model,
+          saveScatterToStorage(fileName, instanceData.matrix, {
+            ...instanceData.model,
           }).then(() => {
-            setScatterData(null);
+            onSetNewInstance(null);
             setFileName("");
             onSetStatusServer(StatusServer.loaded);
           });
         }
       } else {
         setIsOpen(false);
-        setScatterData(null);
+        onSetNewInstance(null);
         setFileName("");
       }
     },
-    [fileName, setScatterData, scatterData, onSetStatusServer]
+    [fileName, onSetNewInstance, instanceData, onSetStatusServer]
   );
   return (
     <Dialog open={isOpen} onOpenChange={onHangleCloseDialog}>

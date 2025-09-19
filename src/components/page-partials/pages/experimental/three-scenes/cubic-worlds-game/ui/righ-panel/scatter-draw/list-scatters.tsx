@@ -8,6 +8,7 @@ import {
   renameScatterInStorage,
 } from "@/services/firebase/cubic-worlds-game/firestore-scatter-objects";
 import {
+  EditModeAction,
   StatusServer,
   useEditModeStore,
 } from "@components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/store/useEditModeStore";
@@ -16,13 +17,13 @@ import CheckTransformControl from "../check-transform-control";
 
 const ListScatter = () => {
   const {
-    scatters,
-    onRemoveScatters,
-    setIdEditScatter,
-    idEditScatter,
-    setIsDrawScatter,
+    instances,
+    onRemoveInstnaces,
+    setIdEditInstance,
+    idEditInstance,
     setStatusServer,
     onRenameScatter,
+    setEditModeAction,
   } = useEditModeStore();
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -71,15 +72,15 @@ const ListScatter = () => {
             Scatter Objects
           </h4>
 
-          {scatters.map((scatter: { id: string; name: string }) => {
-            const isEditing = editingId === scatter.id;
+          {instances.map((instance: { id: string; name: string }) => {
+            const isEditing = editingId === instance.id;
             return (
-              <Fragment key={scatter.id}>
+              <Fragment key={instance.id}>
                 <div className="flex gap-2 items-center justify-between">
                   {/* Назва / інпут перейменування */}
                   <div
                     className="flex-1 text-sm select-none"
-                    onDoubleClick={() => startEdit(scatter.id, scatter.name)}
+                    onDoubleClick={() => startEdit(instance.id, instance.name)}
                     title="Double-click to rename"
                   >
                     {isEditing ? (
@@ -88,16 +89,16 @@ const ListScatter = () => {
                         className="w-full px-2 py-1 rounded border bg-background text-sm outline-none"
                         value={draft}
                         onChange={(e) => setDraft(e.target.value)}
-                        onBlur={() => commitRename(scatter.id, scatter.name)}
+                        onBlur={() => commitRename(instance.id, instance.name)}
                         onKeyDown={(e) => {
                           if (e.key === "Enter")
-                            commitRename(scatter.id, scatter.name);
+                            commitRename(instance.id, instance.name);
                           if (e.key === "Escape") cancelEdit();
                         }}
                       />
                     ) : (
                       <span className="text-muted-foreground">
-                        {scatter.name}
+                        {instance.name}
                       </span>
                     )}
                   </div>
@@ -108,14 +109,15 @@ const ListScatter = () => {
                       variant="outline"
                       size="icon"
                       className={`size-6 ${
-                        idEditScatter === scatter.id ? "bg-accent" : ""
+                        idEditInstance === instance.id ? "bg-accent" : ""
                       }`}
                       onClick={() => {
-                        if (idEditScatter === scatter.id) {
-                          setIdEditScatter(null);
+                        if (idEditInstance === instance.id) {
+                          setIdEditInstance(null);
+                          setEditModeAction(EditModeAction.none);
                         } else {
-                          setIdEditScatter(scatter.id);
-                          setIsDrawScatter(false);
+                          setIdEditInstance(instance.id);
+                          setEditModeAction(EditModeAction.editScatter);
                         }
                       }}
                     >
@@ -128,9 +130,9 @@ const ListScatter = () => {
                       className="size-6 bg-destructive"
                       onClick={() => {
                         setStatusServer(StatusServer.start);
-                        deleteScatterFromStorage(scatter.name)
+                        deleteScatterFromStorage(instance.name)
                           .then(() => {
-                            onRemoveScatters(scatter.id);
+                            onRemoveInstnaces(instance.id);
                           })
                           .finally(() => setStatusServer(StatusServer.loaded));
                       }}
@@ -145,7 +147,7 @@ const ListScatter = () => {
           })}
         </div>
       </ScrollArea>
-      {idEditScatter ? <CheckTransformControl /> : null}
+      {idEditInstance ? <CheckTransformControl /> : null}
     </div>
   );
 };

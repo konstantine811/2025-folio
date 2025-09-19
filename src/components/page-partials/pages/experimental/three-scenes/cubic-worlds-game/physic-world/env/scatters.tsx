@@ -1,5 +1,5 @@
 import AddWinderInstanceModel from "../instanced-world/add-winder-instance-model";
-import { ScatterObject, useEditModeStore } from "../../store/useEditModeStore";
+import { InstanceObject, useEditModeStore } from "../../store/useEditModeStore";
 import { useEffect } from "react";
 import { useScatters } from "../../hooks/getData/getScatterData";
 import { TypeModel } from "../../config/3d-model.config";
@@ -7,13 +7,13 @@ import AddSimpleInstanceModel from "../instanced-world/add-simple-instance-model
 
 const Scatters = () => {
   // const [scatterData, setScatterData] = useState<ScatterWithData[]>();
-  const onAddScatters = useEditModeStore((s) => s.onAddScatters);
-  const idEditScatter = useEditModeStore((s) => s.idEditScatter);
+  const onAddInstances = useEditModeStore((s) => s.onAddInstances);
+  const idEditInstance = useEditModeStore((s) => s.idEditInstance);
 
   const { data: scatterData } = useScatters();
 
   useEffect(() => {
-    const scatterNames: ScatterObject[] = [];
+    const scatterNames: InstanceObject[] = [];
     scatterData.filter((i) => {
       if (i.matrices && i.matrices.length) {
         scatterNames.push({
@@ -24,8 +24,8 @@ const Scatters = () => {
         return true;
       }
     });
-    onAddScatters(scatterNames);
-  }, [scatterData, onAddScatters]);
+    onAddInstances(scatterNames);
+  }, [scatterData, onAddInstances]);
   return (
     <>
       {scatterData?.length
@@ -37,7 +37,7 @@ const Scatters = () => {
                     key={data.updatedAt}
                     modelUrl={data.modelPath}
                     metrices={data.matrices}
-                    isEditMode={idEditScatter === data.name}
+                    isEditMode={idEditInstance === data.name}
                     fileName={data.name}
                     modelName={data.name}
                     type={data.type}
@@ -50,7 +50,7 @@ const Scatters = () => {
                     key={data.updatedAt}
                     modelUrl={data.modelPath}
                     metrices={data.matrices}
-                    isEditMode={idEditScatter === data.name}
+                    isEditMode={idEditInstance === data.name}
                     fileName={data.name}
                     modelName={data.name}
                     type={data.type}
