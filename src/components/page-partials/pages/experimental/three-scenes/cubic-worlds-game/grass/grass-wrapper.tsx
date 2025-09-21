@@ -12,7 +12,6 @@ const GrassWrapper = () => {
   // const noiseTexture = useTexture("/images/textures/noiseTexture.png");
   // const grassTexture = useTexture("/images/textures/grassTexture.jpg");
 
-  console.log("groundRef", groundRef);
   return (
     <>
       {/* {groundRef && (

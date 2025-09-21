@@ -1,42 +1,81 @@
-import { JSX } from "react";
+import { JSX, useEffect, useRef } from "react";
 import { useGLTF } from "@react-three/drei";
-import { SkinnedMesh } from "three";
+import { Group, Mesh, MeshStandardMaterial } from "three";
 import { TrimeshRobot } from "./trimesh-robot";
 import { publicModelPath } from "../../../config/3d-model.config";
+import { useEditModeStore } from "../../../store/useEditModeStore";
 
 type Props = JSX.IntrinsicElements["group"] & {};
 
 const path = publicModelPath("robot.glb");
 export function Robot({ ...props }: Props) {
   const { nodes, materials } = useGLTF(path);
-
+  const groupRef = useRef<Group>(null);
+  const setTargetMesh = useEditModeStore((s) => s.setTargets);
+  useEffect(() => {
+    if (groupRef.current) {
+      groupRef.current.name = "robot";
+      setTargetMesh(groupRef.current);
+    }
+  }, [setTargetMesh]);
+  Object.entries(materials).forEach(([key, mat]) => {
+    console.log("mat", key, mat);
+  });
   return (
     <>
-      <group {...props} dispose={null}>
+      <group {...props} dispose={null} ref={groupRef}>
         <mesh
           receiveShadow
           castShadow
-          geometry={(nodes.Cube728 as SkinnedMesh).geometry}
-          material={materials["robot_2.001"]}
+          geometry={(nodes.Cube728 as Mesh).geometry}
+          material={
+            new MeshStandardMaterial({
+              color: "#A49682",
+              metalness: 0.2,
+              roughness: 1.5,
+              side: 2, // FrontSide
+            })
+          }
         />
 
         <mesh
           receiveShadow
           castShadow
-          geometry={(nodes.Cube728_1 as SkinnedMesh).geometry}
-          material={materials["robot.003"]}
+          geometry={(nodes.Cube728_1 as Mesh).geometry}
+          material={
+            new MeshStandardMaterial({
+              color: "white",
+              metalness: 0.5,
+              roughness: 0.5,
+              side: 2, // FrontSide
+            })
+          }
         />
         <mesh
           receiveShadow
           castShadow
-          geometry={(nodes.Cube728_2 as SkinnedMesh).geometry}
-          material={materials["black.002"]}
+          geometry={(nodes.Cube728_2 as Mesh).geometry}
+          material={
+            new MeshStandardMaterial({
+              color: "black",
+              metalness: 0.5,
+              roughness: 0.5,
+              side: 2, // FrontSide
+            })
+          }
         />
         <mesh
           receiveShadow
           castShadow
-          geometry={(nodes.Cube728_3 as SkinnedMesh).geometry}
-          material={materials["robot.002"]}
+          geometry={(nodes.Cube728_3 as Mesh).geometry}
+          material={
+            new MeshStandardMaterial({
+              color: "white",
+              metalness: 0.5,
+              roughness: 0.5,
+              side: 2, // FrontSide
+            })
+          }
         />
         <TrimeshRobot />
       </group>

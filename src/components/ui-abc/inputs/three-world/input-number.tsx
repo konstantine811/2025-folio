@@ -40,7 +40,6 @@ export function NumberField({
 
   const commit = (next: number) => {
     const c = clamp(next, min, max);
-    console.log("c", c);
     onChange(precision !== undefined ? Number(c.toFixed(precision)) : c);
   };
 

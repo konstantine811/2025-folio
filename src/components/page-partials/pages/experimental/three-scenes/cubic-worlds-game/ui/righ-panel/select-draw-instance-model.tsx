@@ -5,7 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PainterModelConfig } from "../../config/3d-model.config";
+import { SingleAddModelConfig } from "../../config/3d-model.config";
 import { useEditModeStore } from "../../store/useEditModeStore";
 
 const SelectDrawInstanceModel = () => {
@@ -15,7 +15,7 @@ const SelectDrawInstanceModel = () => {
     <Select
       defaultValue={instanceModelDraw.name}
       onValueChange={(value) => {
-        const model = PainterModelConfig.find((m) => m.name === value);
+        const model = SingleAddModelConfig.find((m) => m.name === value);
         if (model) {
           setInstanceModelDraw(model);
         }
@@ -25,7 +25,7 @@ const SelectDrawInstanceModel = () => {
         <SelectValue placeholder="Theme" />
       </SelectTrigger>
       <SelectContent>
-        {PainterModelConfig.map((model) => (
+        {SingleAddModelConfig.map((model) => (
           <SelectItem key={model.name} value={model.name}>
             {model.name}
           </SelectItem>

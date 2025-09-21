@@ -18,9 +18,8 @@ import {
 import { saveScatterToStorage } from "@/services/firebase/cubic-worlds-game/firestore-scatter-objects";
 
 export function ScatterModalWindow() {
-  const instanceData = useEditModeStore((s) => s.instanceData);
-  const onSetNewInstance = useEditModeStore((s) => s.onSetNewInstance);
-  const onSetStatusServer = useEditModeStore((s) => s.setStatusServer);
+  const { instanceData, onSetNewInstance, setStatusServer, editedPhysicsData } =
+    useEditModeStore();
   const [isOpen, setIsOpen] = useState(false);
   const [fileName, setFileName] = useState("");
 
@@ -35,13 +34,18 @@ export function ScatterModalWindow() {
       if (e) {
         if (instanceData) {
           setIsOpen(false);
-          onSetStatusServer(StatusServer.start);
-          saveScatterToStorage(fileName, instanceData.matrix, {
-            ...instanceData.model,
-          }).then(() => {
+          setStatusServer(StatusServer.start);
+          saveScatterToStorage(
+            fileName,
+            instanceData.matrix,
+            {
+              ...instanceData.model,
+            },
+            editedPhysicsData
+          ).then(() => {
             onSetNewInstance(null);
             setFileName("");
-            onSetStatusServer(StatusServer.loaded);
+            setStatusServer(StatusServer.loaded);
           });
         }
       } else {
@@ -50,7 +54,7 @@ export function ScatterModalWindow() {
         setFileName("");
       }
     },
-    [fileName, onSetNewInstance, instanceData, onSetStatusServer]
+    [fileName, onSetNewInstance, instanceData, setStatusServer]
   );
   return (
     <Dialog open={isOpen} onOpenChange={onHangleCloseDialog}>

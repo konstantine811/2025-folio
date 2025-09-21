@@ -11,14 +11,12 @@ import Loader from "./loader";
 const UI = () => {
   const hs = useHeaderSizeStore((s) => s.size);
 
-  const {
-    isEditMode,
-    setIsEditMode,
-    isPhysicsDebug,
-    setIsPhysicsDebug,
-    setIdEditInstance,
-    statusServer,
-  } = useEditModeStore();
+  const isEditMode = useEditModeStore((s) => s.isEditMode);
+  const setIsEditMode = useEditModeStore((s) => s.setIsEditMode);
+  const isPhysicsDebug = useEditModeStore((s) => s.isPhysicsDebug);
+  const setIsPhysicsDebug = useEditModeStore((s) => s.setIsPhysicsDebug);
+  const setIdEditInstance = useEditModeStore((s) => s.setIdEditInstance);
+  const statusServer = useEditModeStore((s) => s.statusServer);
 
   return (
     <>

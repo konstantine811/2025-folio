@@ -14,22 +14,21 @@ import {
 } from "@components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/store/useEditModeStore";
 import { MousePointer, Trash2 } from "lucide-react";
 import CheckTransformControl from "../check-transform-control";
+import AddPhysicsControl from "../add-physics-control";
 
 const ListScatter = () => {
-  const {
-    instances,
-    onRemoveInstnaces,
-    setIdEditInstance,
-    idEditInstance,
-    setStatusServer,
-    onRenameScatter,
-    setEditModeAction,
-  } = useEditModeStore();
-
+  const instances = useEditModeStore((s) => s.instances);
+  const onRemoveInstnaces = useEditModeStore((s) => s.onRemoveInstnaces);
+  const setIdEditInstance = useEditModeStore((s) => s.setIdEditInstance);
+  const idEditInstance = useEditModeStore((s) => s.idEditInstance);
+  const setStatusServer = useEditModeStore((s) => s.setStatusServer);
+  const onRenameScatter = useEditModeStore((s) => s.onRenameScatter);
+  const setEditModeAction = useEditModeStore((s) => s.setEditModeAction);
+  const onSetNewPhysicsData = useEditModeStore((s) => s.onSetNewPhysicsData);
+  //
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<string>("");
   const inputRef = useRef<HTMLInputElement | null>(null);
-
   useEffect(() => {
     if (editingId) inputRef.current?.focus();
   }, [editingId]);
@@ -68,11 +67,11 @@ const ListScatter = () => {
     <div className="flex flex-col gap-2">
       <ScrollArea className="max-w-md rounded-md border mt-5">
         <div className="p-4">
-          <h4 className="mb-4 text-md text-muted-foreground leading-none font-medium">
+          <h4 className="mb-4 text-md text-foreground leading-none font-medium">
             Scatter Objects
           </h4>
 
-          {instances.map((instance: { id: string; name: string }) => {
+          {instances.map((instance) => {
             const isEditing = editingId === instance.id;
             return (
               <Fragment key={instance.id}>
@@ -97,9 +96,7 @@ const ListScatter = () => {
                         }}
                       />
                     ) : (
-                      <span className="text-muted-foreground">
-                        {instance.name}
-                      </span>
+                      <span className="text-foreground">{instance.name}</span>
                     )}
                   </div>
 
@@ -118,6 +115,7 @@ const ListScatter = () => {
                         } else {
                           setIdEditInstance(instance.id);
                           setEditModeAction(EditModeAction.editScatter);
+                          onSetNewPhysicsData(instance.physicsData);
                         }
                       }}
                     >
@@ -147,7 +145,12 @@ const ListScatter = () => {
           })}
         </div>
       </ScrollArea>
-      {idEditInstance ? <CheckTransformControl /> : null}
+      {idEditInstance ? (
+        <>
+          <CheckTransformControl />
+          <AddPhysicsControl />
+        </>
+      ) : null}
     </div>
   );
 };

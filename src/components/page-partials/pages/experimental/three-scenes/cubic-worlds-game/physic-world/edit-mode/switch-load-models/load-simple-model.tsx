@@ -17,6 +17,7 @@ const LoadSimpleModel = ({ modelUrl, onCreateModelGeom }: LoadModelProps) => {
 
         // Матеріал у меша може бути або один, або масив (групи)
         const m = mesh.material as Material | Material[];
+
         mat = Array.isArray(m) ? m[0] : m;
 
         // якщо плануєш змінювати параметри — краще клонувати

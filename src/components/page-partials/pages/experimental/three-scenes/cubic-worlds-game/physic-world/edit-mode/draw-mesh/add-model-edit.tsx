@@ -25,6 +25,8 @@ type AddModelProps = {
   // новий колбек — сюди віддаємо оновлену матрицю конкретного індексу
   onMatrixChange: (index: number, next: Matrix4) => void;
   onDelete: (index: number) => void;
+  isPhysics?: boolean;
+  id: string;
 };
 
 const AddModelEdit = ({
@@ -35,9 +37,12 @@ const AddModelEdit = ({
   onMatrixChange,
   onMatrixUpdate,
   onDelete,
+  isPhysics = false,
+  id,
 }: AddModelProps) => {
   const meshRef = useRef<InstancedMesh>(null!);
-  const { editTransformMode } = useEditModeStore();
+  const { editTransformMode, setTargets, deleteTargets } = useEditModeStore();
+  const pickRef = useRef<InstancedMesh>(null!);
   // ⬇️ outline instancedMesh (count=1) — показує обвідку вибраного
   const outlineRef = useRef<InstancedMesh>(null!);
   const editDummy = useMemo(() => {
@@ -54,6 +59,9 @@ const AddModelEdit = ({
     onMatrixUpdate,
     meshRef,
   });
+
+  material.transparent = true;
+  material.opacity = 0.4;
 
   const outlineMat = useMemo(
     () =>
@@ -129,6 +137,19 @@ const AddModelEdit = ({
     outlineRef.current.raycast = () => null; // ігнорувати хіти
   }, []);
 
+  useEffect(() => {
+    if (pickRef.current && isPhysics) {
+      pickRef.current.name = id;
+      // оновлюємо матриці у пікері (як у рендері)
+      matrices.forEach((m, i) => pickRef.current!.setMatrixAt(i, m));
+      pickRef.current.instanceMatrix.needsUpdate = true;
+      // саме пікер даємо як таргет (ВАЖЛИВО — масив)
+      setTargets(pickRef.current);
+    } else {
+      deleteTargets(id);
+    }
+  }, [matrices, setTargets, isPhysics, deleteTargets, id]);
+
   return (
     <>
       <instancedMesh
@@ -138,6 +159,14 @@ const AddModelEdit = ({
         onPointerDown={onPickInstance} // клік = вибір
         onPointerMissed={onMissOrConfirm} // клік у порожнє — зняти вибір
       />
+
+      {isPhysics && (
+        <instancedMesh
+          ref={pickRef}
+          args={[geometry, new MeshBasicMaterial({ visible: false }), COUNT]}
+          visible={false}
+        />
+      )}
       <instancedMesh
         ref={outlineRef}
         args={[geometry, outlineMat, 1]}

@@ -9,7 +9,7 @@ import TabScatterDraw from "./tab-scatter-draw";
 const RightSidePanel = () => {
   const editModeAction = useEditModeStore((s) => s.editModeAction);
   return (
-    <div className="bg-background/5 backdrop-blur-2xl pointer-events-auto py-4 px-1 rounded-tl-md rounded-bl-md min-w-40 h-full">
+    <div className="bg-background/50 backdrop-blur-2xl pointer-events-auto py-4 px-1 rounded-tl-md rounded-bl-md min-w-40 h-full">
       <TabMode />
       <TabScatterDraw />
       {editModeAction === EditModeAction.addInstance ? (

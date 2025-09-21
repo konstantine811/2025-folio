@@ -34,6 +34,7 @@ const HouseModel = ({ ...props }: Props) => {
   }, [joint]);
   useEffect(() => {
     if (groupRef.current) {
+      groupRef.current.name = "house";
       setTargetMesh(groupRef.current);
     }
   }, [setTargetMesh]);

@@ -4,7 +4,12 @@ import { create } from "zustand";
 import {
   PainterModelConfig,
   InstanceModelDraw,
+  DispabledPhysics,
 } from "../config/3d-model.config";
+import {
+  RigidBodyAutoCollider,
+  RigidBodyTypeString,
+} from "@react-three/rapier";
 
 export enum StatusServer {
   start = "start",
@@ -18,14 +23,25 @@ export enum EditModeAction {
   none = "none",
 }
 
+export interface PhysicsData {
+  type: RigidBodyTypeString;
+  colliders: RigidBodyAutoCollider;
+  restitution: number;
+  friction: number;
+  mass: number;
+  isPhysicsEnabled: boolean;
+}
+
 export interface InstanceData {
   matrix: Matrix4[][];
   model: InstanceModelDraw;
+  physics?: PhysicsData;
 }
 export interface InstanceObject {
   id: string;
   name: string;
   isEdit: boolean;
+  physicsData: PhysicsData;
 }
 interface EditModeState {
   targets: Object3D[];
@@ -33,6 +49,7 @@ interface EditModeState {
   isPhysicsDebug: boolean;
   instances: InstanceObject[];
   idEditInstance: string | null;
+  editedPhysicsData: PhysicsData;
   instanceData: InstanceData | null;
   statusServer: StatusServer;
   editTransformMode: TransformMode | null;
@@ -47,6 +64,7 @@ const initialState: EditModeState = {
   isPhysicsDebug: false,
   instances: [],
   idEditInstance: null,
+  editedPhysicsData: DispabledPhysics,
   instanceData: null,
   statusServer: StatusServer.loaded,
   editTransformMode: null,
@@ -57,6 +75,7 @@ const initialState: EditModeState = {
 
 interface EditModeActions {
   setTargets: (targets: Object3D) => void;
+  deleteTargets: (name: string) => void;
   setIsEditMode: (isEditMode: boolean) => void;
   setIsPhysicsDebug: (isPhysicsDebug: boolean) => void;
   onAddInstances: (instance: InstanceObject[]) => void;
@@ -69,27 +88,55 @@ interface EditModeActions {
   setScatterModelDraw: (model: InstanceModelDraw) => void;
   setInstanceModelDraw: (model: InstanceModelDraw) => void;
   setEditModeAction: (action: EditModeAction) => void;
+  onSetNewPhysicsData: (data: PhysicsData) => void;
 }
 
 type EditModeStore = EditModeState & EditModeActions;
 
 export const useEditModeStore = create<EditModeStore>()((set) => ({
   ...initialState,
-  setTargets: (targets: Object3D) =>
-    set((state) => ({ targets: [...state.targets, targets] })),
+  setTargets: (target: Object3D) =>
+    set((state) => {
+      // обираємо ключ: спершу name, інакше fallback на uuid
+      const key = target.name || target.uuid;
+
+      const exists = state.targets.some((t) => (t.name || t.uuid) === key);
+      if (exists) return state; // нічого не міняємо — зайвих ререндерів не буде
+
+      return { targets: [...state.targets, target] };
+    }),
+  deleteTargets: (name: string) =>
+    set((state) => {
+      return {
+        targets: state.targets.filter((t) => t.name !== name),
+      };
+    }),
   setIsEditMode: (isEditMode: boolean) => set({ isEditMode }),
   setIsPhysicsDebug: (isPhysicsDebug: boolean) => set({ isPhysicsDebug }),
   onAddInstances: (incoming: InstanceObject[]) =>
     set((state) => {
-      const result: InstanceObject[] = [...state.instances];
-      const seen = new Set(state.instances.map((s) => s.name)); // уже існуючі id
+      // Швидкий доступ за ключем name
+      const byName = new Map<string, InstanceObject>();
+      for (const inst of state.instances) byName.set(inst.name, inst);
 
+      // Оновлюємо/додаємо з incoming (останнє значення перемагає)
       for (const item of incoming) {
-        if (!seen.has(item.name)) {
-          seen.add(item.name);
-          result.push(item);
-        }
+        const prev = byName.get(item.name);
+        byName.set(item.name, prev ? { ...prev, ...item } : item);
       }
+
+      // Формуємо результат:
+      // 1) у попередньому порядку — вже існуючі (але з оновленими значеннями),
+      // 2) потім — нові, яких не було раніше, у порядку приходу.
+      const existingOrder = state.instances.map((i) => i.name);
+      const existingSet = new Set(existingOrder);
+
+      const result: InstanceObject[] = [
+        ...existingOrder.map((n) => byName.get(n)!),
+        ...incoming
+          .filter((i) => !existingSet.has(i.name))
+          .map((i) => byName.get(i.name)!),
+      ];
 
       return { instances: result };
     }),
@@ -104,8 +151,8 @@ export const useEditModeStore = create<EditModeStore>()((set) => ({
       set({ instanceData: null });
       return;
     }
-    const { model: modelData, matrix } = data;
-    set({ instanceData: { matrix, model: modelData } });
+    const { model: modelData, matrix, physics } = data;
+    set({ instanceData: { matrix, model: modelData, physics } });
   },
   setStatusServer: (status: StatusServer) => set({ statusServer: status }),
   onRenameScatter: (id: string, newName: string) =>
@@ -126,4 +173,7 @@ export const useEditModeStore = create<EditModeStore>()((set) => ({
   },
   setInstanceModelDraw: (model: InstanceModelDraw) =>
     set({ instanceModelDraw: model }),
+  onSetNewPhysicsData: (data: PhysicsData) => {
+    set({ editedPhysicsData: data });
+  },
 }));

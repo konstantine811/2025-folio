@@ -6,7 +6,9 @@ import { useEditPainterStore } from "../../store/useEditPainterStore";
 import SelectScatterModel from "./scatter-draw/select-scatter-model";
 
 const TabScatterDraw = () => {
-  const { editModeAction, setEditModeAction, isEditMode } = useEditModeStore();
+  const editModeAction = useEditModeStore((s) => s.editModeAction);
+  const setEditModeAction = useEditModeStore((s) => s.setEditModeAction);
+  const isEditMode = useEditModeStore((s) => s.isEditMode);
   const {
     setDensity,
     density,

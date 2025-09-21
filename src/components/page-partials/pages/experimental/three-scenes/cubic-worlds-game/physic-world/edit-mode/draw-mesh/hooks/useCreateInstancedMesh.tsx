@@ -17,6 +17,7 @@ type Props = {
   meshRef: RefObject<InstancedMesh<
     BufferGeometry<NormalBufferAttributes>
   > | null>;
+  isFrustumCulled?: boolean;
 };
 
 const useCreateInstancedMesh = ({
@@ -25,6 +26,7 @@ const useCreateInstancedMesh = ({
   onAddGeometryData,
   onMatrixUpdate,
   meshRef,
+  isFrustumCulled = true,
 }: Props) => {
   const COUNT = Math.max(matrices.length, 1);
 
@@ -70,7 +72,7 @@ const useCreateInstancedMesh = ({
       inst.boundingSphere = new Sphere();
     }
 
-    inst.frustumCulled = true;
+    inst.frustumCulled = isFrustumCulled;
 
     const geom = meshRef.current.geometry as BufferGeometry;
     if (onAddGeometryData) {
@@ -83,7 +85,15 @@ const useCreateInstancedMesh = ({
       // важливо, бо geometry клонована
       inst.geometry?.dispose();
     };
-  }, [COUNT, matrices, bbox, onMatrixUpdate, onAddGeometryData, meshRef]);
+  }, [
+    COUNT,
+    matrices,
+    bbox,
+    onMatrixUpdate,
+    onAddGeometryData,
+    meshRef,
+    isFrustumCulled,
+  ]);
 
   return { geometry, COUNT };
 };

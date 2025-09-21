@@ -111,6 +111,7 @@ const AddWinderInstancedModelWrap = ({
               onAddGeometryData={onAddGeometryData}
               onMatrixChange={handleMatrixChange}
               onDelete={handleDeleteMatrixChange}
+              id={"winder-model"}
             />
           )}
         </>

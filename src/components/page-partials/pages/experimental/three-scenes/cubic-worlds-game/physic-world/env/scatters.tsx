@@ -2,16 +2,15 @@ import AddWinderInstanceModel from "../instanced-world/add-winder-instance-model
 import { InstanceObject, useEditModeStore } from "../../store/useEditModeStore";
 import { useEffect } from "react";
 import { useScatters } from "../../hooks/getData/getScatterData";
-import { TypeModel } from "../../config/3d-model.config";
+import { DispabledPhysics, TypeModel } from "../../config/3d-model.config";
 import AddSimpleInstanceModel from "../instanced-world/add-simple-instance-model";
 
 const Scatters = () => {
-  // const [scatterData, setScatterData] = useState<ScatterWithData[]>();
   const onAddInstances = useEditModeStore((s) => s.onAddInstances);
   const idEditInstance = useEditModeStore((s) => s.idEditInstance);
+  const editedPhysicsData = useEditModeStore((s) => s.editedPhysicsData);
 
   const { data: scatterData } = useScatters();
-
   useEffect(() => {
     const scatterNames: InstanceObject[] = [];
     scatterData.filter((i) => {
@@ -20,6 +19,7 @@ const Scatters = () => {
           id: i.name,
           name: i.name,
           isEdit: false,
+          physicsData: i.physicsData ? i.physicsData : DispabledPhysics,
         });
         return true;
       }
@@ -51,6 +51,11 @@ const Scatters = () => {
                     modelUrl={data.modelPath}
                     metrices={data.matrices}
                     isEditMode={idEditInstance === data.name}
+                    physicsData={
+                      idEditInstance === data.name
+                        ? editedPhysicsData
+                        : data.physicsData || undefined
+                    }
                     fileName={data.name}
                     modelName={data.name}
                     type={data.type}

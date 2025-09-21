@@ -151,7 +151,6 @@ const GlibliInfiniteGrass = ({
   patchSize = 10,
   textures,
 }: Props) => {
-  console.log("textures", textures);
   const matRef = useRef<ShaderMaterial>(null);
   const meshRef = useRef<Mesh>(null);
   const characterRef = useGameDataStore((s) => s.characterRigidBody);

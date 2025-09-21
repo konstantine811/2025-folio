@@ -42,6 +42,7 @@ export async function getCachedScatters(): Promise<ScatterWithData[]> {
       modelPath: c.modelPath,
       hint: c.hint as UpHint,
       type: c.type,
+      physicsData: c.physicsData,
     })
   );
 
@@ -107,6 +108,7 @@ export async function refreshScattersFromNetwork({
         modelName: cm.modelName ?? "",
         hint: cm.hint ?? "",
         type: (cm.type as CachedScatter["type"]) || "point",
+        physicsData: cm.physicsData ? JSON.parse(cm.physicsData) : null,
       };
 
       await db.scatters.put(rec);
@@ -145,6 +147,7 @@ export async function refreshScattersFromNetwork({
       modelPath: c.modelPath,
       hint: c.hint as UpHint,
       type: c.type,
+      physicsData: c.physicsData,
     })
   );
 

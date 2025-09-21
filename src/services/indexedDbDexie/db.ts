@@ -1,5 +1,6 @@
 // db/scatters.db.ts
 import { TypeModel } from "@/components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/config/3d-model.config";
+import { PhysicsData } from "@/components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/store/useEditModeStore";
 import Dexie, { Table } from "dexie";
 
 export interface CachedScatter {
@@ -19,6 +20,7 @@ export interface CachedScatter {
   modelName: string;
   hint: string;
   type: TypeModel;
+  physicsData: PhysicsData | null;
 }
 
 class CubicWorldsDB extends Dexie {

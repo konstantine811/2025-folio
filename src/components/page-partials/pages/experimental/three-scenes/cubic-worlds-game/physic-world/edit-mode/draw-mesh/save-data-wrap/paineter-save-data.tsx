@@ -6,7 +6,7 @@ import {
 import { Matrix4 } from "three";
 import PlanePainter from "../line-painter";
 
-const LainPainterSaver = () => {
+const LinePainterSaver = () => {
   const { editModeAction, onSetNewInstance, scatterModelDraw } =
     useEditModeStore();
   const chunksRef = useRef<Matrix4[][]>([]);
@@ -39,4 +39,4 @@ const LainPainterSaver = () => {
   );
 };
 
-export default LainPainterSaver;
+export default LinePainterSaver;

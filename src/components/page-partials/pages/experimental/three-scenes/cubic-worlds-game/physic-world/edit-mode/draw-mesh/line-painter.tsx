@@ -17,7 +17,7 @@ import { Line } from "@react-three/drei";
 import ModelInstanceChunks from "../switch-load-models/model-instance-chuncks";
 import { useEditPainterStore } from "../../../store/useEditPainterStore";
 import { Key } from "@/config/key";
-import { ScatterModelDraw, TypeModel } from "../../../config/3d-model.config";
+import { InstanceModelDraw, TypeModel } from "../../../config/3d-model.config";
 import SwitchModelAdd from "../switch-load-models/switch-add-model";
 
 type Props = {
@@ -27,7 +27,7 @@ type Props = {
   baseSize?: number;
   /** Показувати прев’ю-курсор (площина/коло) */
   onChunksCreated: (chunks: Matrix4[][]) => void;
-  scatterModelDraw: ScatterModelDraw;
+  scatterModelDraw: InstanceModelDraw;
 };
 
 enum PainterColors {

@@ -13,12 +13,8 @@ import { buildGridCells } from "../../../../utils/grid";
 const DrawSingleInstanceWrap = () => {
   const [drawData, setDrawData] = useState<MixMaterialData | null>(null);
   const [placementPosition, setPlacementPosition] = useState<Matrix4[]>([]);
-  const {
-    instanceModelDraw,
-    editModeAction,
-    onSetNewInstance,
-    scatterModelDraw,
-  } = useEditModeStore();
+  const { instanceModelDraw, editModeAction, onSetNewInstance } =
+    useEditModeStore();
 
   useEffect(() => {
     if (
@@ -28,11 +24,11 @@ const DrawSingleInstanceWrap = () => {
       const matrix = buildGridCells(placementPosition, 5);
       onSetNewInstance({
         matrix,
-        model: scatterModelDraw,
+        model: instanceModelDraw,
       });
       setPlacementPosition([]);
     }
-  }, [editModeAction, onSetNewInstance, scatterModelDraw, placementPosition]);
+  }, [editModeAction, onSetNewInstance, instanceModelDraw, placementPosition]);
   return (
     <>
       {editModeAction === EditModeAction.addInstance && (

@@ -1,5 +1,5 @@
 import {
-  ScatterModelDraw,
+  InstanceModelDraw,
   TypeModel,
 } from "./../../../components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/config/3d-model.config";
 import {
@@ -27,6 +27,7 @@ import { sanitizeName } from "@/utils/string.util";
 import { db } from "@/services/indexedDbDexie/db";
 import { makeId } from "@/utils/db.util";
 import { UpHint } from "@/components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/physic-world/edit-mode/draw-mesh/hooks/useCreatePivotPoint";
+import { PhysicsData } from "@/components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/store/useEditModeStore";
 
 /* ================== Типи ================== */
 
@@ -44,6 +45,7 @@ export type ScatterManifest = {
   hint: UpHint;
   modelName: string;
   type: TypeModel;
+  physicsData: PhysicsData | null;
 };
 
 export type ScatterWithData = ScatterManifest & {
@@ -70,7 +72,8 @@ export function scatterRef(uid: string) {
 export const saveScatterToStorage = async (
   name: string,
   matrices: Matrix4[][],
-  scatterDraweModel: ScatterModelDraw
+  scatterDraweModel: InstanceModelDraw,
+  physicsData: PhysicsData | null = null
 ) => {
   const uid = auth.currentUser?.uid;
   if (!uid) throw new Error("No auth");
@@ -95,6 +98,7 @@ export const saveScatterToStorage = async (
       modelName: scatterDraweModel.name,
       hint: scatterDraweModel.hintMode as string,
       type: scatterDraweModel.type,
+      physicsData: JSON.stringify(physicsData),
     },
   });
 
@@ -116,6 +120,7 @@ export const saveScatterToStorage = async (
     modelName: scatterDraweModel.name,
     hint: scatterDraweModel.hintMode as string,
     type: scatterDraweModel.type,
+    physicsData: physicsData,
   });
 };
 
@@ -127,7 +132,6 @@ export async function listScatters(): Promise<ScatterWithData[]> {
 
   const dirRef = sref(storage, scatterRef(user.uid));
   const page = await listAll(dirRef);
-
   const out = await Promise.all(
     page.items.map(async (itemRef) => {
       const md = await getMetadata(itemRef);
@@ -162,6 +166,7 @@ export async function listScatters(): Promise<ScatterWithData[]> {
         modelPath: cm.modelPath ?? "",
         hint: (cm.hint ?? "auto-normals") as UpHint,
         modelName: cm.modelName ?? "",
+        physicsData: cm.physicsData ? JSON.parse(cm.physicsData) : null,
       } as ScatterWithData;
     })
   );

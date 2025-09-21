@@ -52,10 +52,6 @@ const Experience = () => {
     attenuationColor: "#ffffff",
     color: "#ffffff",
   });
-  useEffect(() => {
-    console.log("tier", tier);
-    console.log("isMobile", isMobile);
-  }, [tier, isMobile]);
   return (
     <>
       {sun && <Lights sun={sun} />}

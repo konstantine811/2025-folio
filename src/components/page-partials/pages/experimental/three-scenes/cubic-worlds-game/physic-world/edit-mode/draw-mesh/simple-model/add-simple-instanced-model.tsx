@@ -7,6 +7,8 @@ import {
 import AddModel from "../add-model";
 import AddModelEdit from "../add-model-edit";
 import { useCallback, useState } from "react";
+import { PhysicsData } from "../../../../store/useEditModeStore";
+import AddModelPhysics from "../add-model-physics";
 
 type Props = {
   meshName?: string;
@@ -15,6 +17,8 @@ type Props = {
   blade: BufferGeometry<NormalBufferAttributes>;
   isEditMode: boolean;
   onUpdate?: () => void;
+  physicsData?: PhysicsData | null;
+  id: string;
 };
 
 const AddSimpleInstancedModelWrap = ({
@@ -23,6 +27,8 @@ const AddSimpleInstancedModelWrap = ({
   blade,
   isEditMode = false,
   onUpdate,
+  physicsData,
+  id,
 }: Props) => {
   // цей колбек передамо в AddModelEdit
   const [update, setUpdate] = useState(true);
@@ -55,11 +61,21 @@ const AddSimpleInstancedModelWrap = ({
     },
     [matrices, onUpdate]
   );
-
   return (
     <>
       {!isEditMode ? (
-        <AddModel material={material} matrices={matrices} blade={blade} />
+        <>
+          {physicsData && physicsData.isPhysicsEnabled ? (
+            <AddModelPhysics
+              material={material}
+              matrices={matrices}
+              blade={blade}
+              physicsData={physicsData}
+            />
+          ) : (
+            <AddModel material={material} matrices={matrices} blade={blade} />
+          )}
+        </>
       ) : (
         <>
           {update && (
@@ -69,6 +85,8 @@ const AddSimpleInstancedModelWrap = ({
               blade={blade}
               onMatrixChange={handleMatrixChange}
               onDelete={handleDeleteMatrixChange}
+              isPhysics={!!physicsData?.isPhysicsEnabled}
+              id={id}
             />
           )}
         </>

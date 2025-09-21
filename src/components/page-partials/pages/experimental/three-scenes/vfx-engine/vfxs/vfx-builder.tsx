@@ -19,7 +19,6 @@ const VFXBuilderEmitter = ({ settings, onRestart, onChange }: Props) => {
     Restart: button(() => onRestart()),
     Export: button(() => {
       const exportValues = JSON.stringify(vfxSettingsClone.current);
-      console.log("📋 Values saved to clipboard: ", exportValues);
       navigator.clipboard.writeText(exportValues);
     }),
   });
