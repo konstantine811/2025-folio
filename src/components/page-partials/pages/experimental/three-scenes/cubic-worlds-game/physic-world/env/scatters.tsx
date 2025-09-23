@@ -10,8 +10,11 @@ const Scatters = () => {
   const onAddInstances = useEditModeStore((s) => s.onAddInstances);
   const idEditInstance = useEditModeStore((s) => s.idEditInstance);
   const editedPhysicsData = useEditModeStore((s) => s.editedPhysicsData);
+  const userPublicUid = useEditModeStore((s) => s.uid);
 
-  const { data: scatterData } = useScatters();
+  const { data: scatterData } = useScatters({
+    userUid: userPublicUid || undefined,
+  });
   useEffect(() => {
     const scatterNames: InstanceObject[] = [];
     scatterData.filter((i) => {
@@ -25,7 +28,6 @@ const Scatters = () => {
         return true;
       }
     });
-    console.log("scatterdata", scatterData);
     onAddInstances(scatterNames);
   }, [scatterData, onAddInstances]);
   return (

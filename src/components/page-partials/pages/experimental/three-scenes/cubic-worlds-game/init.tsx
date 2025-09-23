@@ -17,6 +17,9 @@ const isDev = window.location.hostname === "localhost";
 
 const Init = () => {
   const isEditMode = useEditModeStore((s) => s.isEditMode);
+  const setPublicUid = useEditModeStore((s) => s.setPublicUid);
+  const uid = import.meta.env.VITE_CONSTANTINE_UID;
+  setPublicUid(uid);
   return (
     <MainWrapperOffset>
       <InitKeyboardController />

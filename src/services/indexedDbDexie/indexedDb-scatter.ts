@@ -15,11 +15,21 @@ function scatterDirRef(uid: string) {
 }
 
 /** 1) Отримати з кешу (миттєво) */
-export async function getCachedScatters(): Promise<ScatterWithData[]> {
-  const user = await waitForUserAuth();
-  if (!user) return [];
+export async function getCachedScatters({
+  uid,
+}: {
+  uid?: string;
+}): Promise<ScatterWithData[]> {
+  const targetUid =
+    uid?.trim() ||
+    // fallback: вимагай auth і бери свій uid
+    (await (async () => {
+      const user = await waitForUserAuth();
+      if (!user) throw new Error("Auth required to read your own data");
+      return user.uid;
+    })());
 
-  const list = await db.scatters.where("uid").equals(user.uid).toArray();
+  const list = await db.scatters.where("uid").equals(targetUid).toArray();
 
   const out = list.map(
     (c): ScatterWithData => ({
@@ -53,15 +63,21 @@ export async function getCachedScatters(): Promise<ScatterWithData[]> {
 /** 2) Оновити кеш із бекенду (повертає актуальний список) */
 export async function refreshScattersFromNetwork({
   removeMissing = false,
-}: { removeMissing?: boolean } = {}): Promise<ScatterWithData[]> {
-  const user = await waitForUserAuth();
-  if (!user) return [];
-
-  const dirRef = sref(storage, scatterDirRef(user.uid));
+  uid,
+}: { removeMissing?: boolean; uid?: string } = {}): Promise<ScatterWithData[]> {
+  const targetUid =
+    uid?.trim() ||
+    // fallback: вимагай auth і бери свій uid
+    (await (async () => {
+      const user = await waitForUserAuth();
+      if (!user) throw new Error("Auth required to read your own data");
+      return user.uid;
+    })());
+  const dirRef = sref(storage, scatterDirRef(targetUid));
   const page = await listAll(dirRef);
 
   // 2.1 Прочитати кеш у Map
-  const cachedArr = await db.scatters.where("uid").equals(user.uid).toArray();
+  const cachedArr = await db.scatters.where("uid").equals(targetUid).toArray();
   const cachedMap = new Map<string, CachedScatter>(
     cachedArr.map((i) => [i.name, i])
   );
@@ -92,8 +108,8 @@ export async function refreshScattersFromNetwork({
       const matricesBytes = new Uint8Array(ab);
 
       const rec: CachedScatter = {
-        id: makeId(user.uid, name),
-        uid: user.uid,
+        id: makeId(targetUid, name),
+        uid: targetUid,
         name,
         updatedAt,
         email,

@@ -44,6 +44,7 @@ export interface InstanceObject {
   physicsData: PhysicsData;
 }
 interface EditModeState {
+  uid: string | null;
   targets: Object3D[];
   isEditMode: boolean;
   isPhysicsDebug: boolean;
@@ -59,6 +60,7 @@ interface EditModeState {
 }
 
 const initialState: EditModeState = {
+  uid: null,
   targets: [],
   isEditMode: false,
   isPhysicsDebug: false,
@@ -74,6 +76,7 @@ const initialState: EditModeState = {
 };
 
 interface EditModeActions {
+  setPublicUid: (uid: string | null) => void;
   setTargets: (targets: Object3D) => void;
   deleteTargets: (name: string) => void;
   setIsEditMode: (isEditMode: boolean) => void;
@@ -176,4 +179,5 @@ export const useEditModeStore = create<EditModeStore>()((set) => ({
   onSetNewPhysicsData: (data: PhysicsData) => {
     set({ editedPhysicsData: data });
   },
+  setPublicUid: (uid: string | null) => set({ uid }),
 }));

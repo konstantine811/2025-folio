@@ -7,19 +7,19 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { StatusServer, useEditModeStore } from "../../store/useEditModeStore";
 
-export function useScatters() {
+export function useScatters({ userUid }: { userUid?: string }) {
   const [data, setData] = useState<ScatterWithData[]>([]);
   const [loading, setLoading] = useState(true);
   const statusServer = useEditModeStore((s) => s.statusServer);
   const fetchData = useCallback((mounted: boolean) => {
-    getCachedScatters().then((cached) => {
+    getCachedScatters({ uid: userUid }).then((cached) => {
       if (!mounted) return;
       setData(cached);
       setLoading(false);
     });
 
     // 2   ) фонове (для UI) оновлення з бекенду + оновлення стейту, якщо є різниця
-    refreshScattersFromNetwork().then((fresh) => {
+    refreshScattersFromNetwork({ uid: userUid }).then((fresh) => {
       if (!mounted) return;
       // просте порівняння за довжиною/updatedAt; за потреби зроби глибше порівняння
       const hasChange =
@@ -50,6 +50,6 @@ export function useScatters() {
   return {
     data,
     loading,
-    refetch: () => refreshScattersFromNetwork().then(setData),
+    refetch: () => refreshScattersFromNetwork({ uid: userUid }).then(setData),
   };
 }
