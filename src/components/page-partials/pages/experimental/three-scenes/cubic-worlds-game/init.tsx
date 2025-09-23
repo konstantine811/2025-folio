@@ -20,7 +20,6 @@ const Init = () => {
   const setPublicUid = useEditModeStore((s) => s.setPublicUid);
   const uid = import.meta.env.VITE_CONSTANTINE_UID;
   setPublicUid(uid);
-  console.log("here", uid);
   return (
     <MainWrapperOffset>
       <InitKeyboardController />
