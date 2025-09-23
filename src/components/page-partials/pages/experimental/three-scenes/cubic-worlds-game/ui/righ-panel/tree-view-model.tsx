@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Tree,
   getBackendOptions,
@@ -83,7 +81,7 @@ export default function TreeViewModel() {
           sort={false}
           insertDroppableFirst={false}
           dropTargetOffset={6}
-          placeholderRender={(node, { depth }) => (
+          placeholderRender={(_, { depth }) => (
             <div
               style={{
                 marginLeft: depth * 12,

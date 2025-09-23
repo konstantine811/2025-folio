@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AdditiveBlending, Mesh } from "three";
 import { degToRad } from "three/src/math/MathUtils.js";
 import Lights from "./lights";
