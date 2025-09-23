@@ -1,9 +1,10 @@
-import AddWinderInstanceModel from "../instanced-world/add-winder-instance-model";
+import AddTouchWinderInstanceModel from "../instanced-world/add-touch-winder-instance-model";
 import { InstanceObject, useEditModeStore } from "../../store/useEditModeStore";
 import { useEffect } from "react";
 import { useScatters } from "../../hooks/getData/getScatterData";
 import { DispabledPhysics, TypeModel } from "../../config/3d-model.config";
 import AddSimpleInstanceModel from "../instanced-world/add-simple-instance-model";
+import AddWinderInstanceModel from "../instanced-world/add-winder-instance-model";
 
 const Scatters = () => {
   const onAddInstances = useEditModeStore((s) => s.onAddInstances);
@@ -24,6 +25,7 @@ const Scatters = () => {
         return true;
       }
     });
+    console.log("scatterdata", scatterData);
     onAddInstances(scatterNames);
   }, [scatterData, onAddInstances]);
   return (
@@ -31,9 +33,9 @@ const Scatters = () => {
       {scatterData?.length
         ? scatterData.map((data) => {
             switch (data.type) {
-              case TypeModel.winder:
+              case TypeModel.touchWinder:
                 return (
-                  <AddWinderInstanceModel
+                  <AddTouchWinderInstanceModel
                     key={data.updatedAt}
                     modelUrl={data.modelPath}
                     metrices={data.matrices}
@@ -62,6 +64,21 @@ const Scatters = () => {
                     hint={data.hint}
                   />
                 );
+              case TypeModel.winder:
+                return (
+                  <AddWinderInstanceModel
+                    key={data.updatedAt}
+                    modelUrl={data.modelPath}
+                    metrices={data.matrices}
+                    isEditMode={idEditInstance === data.name}
+                    fileName={data.name}
+                    modelName={data.name}
+                    type={data.type}
+                    hint={data.hint}
+                  />
+                );
+              default:
+                return null;
             }
           })
         : null}

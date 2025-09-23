@@ -3,7 +3,7 @@ import { Environment, useHelper } from "@react-three/drei";
 import InitPhysicWorld from "./physic-world/physics-world";
 import { useRef } from "react";
 import { DirectionalLight, DirectionalLightHelper } from "three";
-import { SceneObjectName } from "./physic-world/character-controller/config/character.config";
+// import { SceneObjectName } from "./physic-world/character-controller/config/character.config";
 // import GrassWrapper from "./grass/grass-wrapper";
 
 const Experience = () => {
@@ -13,7 +13,7 @@ const Experience = () => {
     <>
       <InitPhysicWorld />
       {/* <GrassWrapper /> */}
-      <ambientLight intensity={0.001} />
+      <ambientLight intensity={0} />
       {/* <directionalLight
         name={SceneObjectName.characterLight}
         intensity={1}

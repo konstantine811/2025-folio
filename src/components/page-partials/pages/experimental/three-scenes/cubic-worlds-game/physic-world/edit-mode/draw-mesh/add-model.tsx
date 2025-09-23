@@ -39,6 +39,7 @@ const AddModel = ({
       ref={meshRef}
       args={[geometry, material, COUNT]}
       receiveShadow
+      castShadow
     />
   );
 };

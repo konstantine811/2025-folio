@@ -25,6 +25,7 @@ const SwitchInstanceModelWrap = ({
 }: Props) => {
   const switchType = useCallback(() => {
     switch (type) {
+      case TypeModel.touchWinder:
       case TypeModel.winder:
         return (
           <AddWinderInstancedModelWrap
@@ -41,6 +42,7 @@ const SwitchInstanceModelWrap = ({
             material={material as ShaderMaterial}
             blade={geom}
             isEditMode={false}
+            id={"simple-model" /* просто щоб не було помилки  */}
           />
         );
       default:

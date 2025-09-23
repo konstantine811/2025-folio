@@ -2,16 +2,19 @@ import { useFrame } from "@react-three/fiber";
 import { useGeometry } from "../../../utils/getModelGeometry";
 import { useEmbeddedMaps } from "../../../utils/textureAlbedoHandle";
 import { useEffect, useMemo } from "react";
+import { TouchWinderMaterial } from "../../../shaders/touch-winder-shader";
 import { Vector2 } from "three";
 import { LoadModelProps } from "./load.model";
-import { WinderMaterial } from "../../../shaders/winder-shader";
 
-const LoadWinderModel = ({ modelUrl, onCreateModelGeom }: LoadModelProps) => {
+const LoadTouchWinderModel = ({
+  modelUrl,
+  onCreateModelGeom,
+}: LoadModelProps) => {
   const bladeGeom = useGeometry(modelUrl);
   const { albedo } = useEmbeddedMaps(modelUrl);
 
   const sharedMaterial = useMemo(() => {
-    const m = new WinderMaterial();
+    const m = new TouchWinderMaterial();
     // ініціалізація уніформ і флагів один раз:
     m.transparent = false;
     m.defines = { USE_INSTANCING: "" }; // ок
@@ -29,6 +32,12 @@ const LoadWinderModel = ({ modelUrl, onCreateModelGeom }: LoadModelProps) => {
       windStrNoiseScale: { value: 0.25 }, // масштаб шуму сили
       gustStrength: { value: 0.25 }, // поривчастість (shape)
       noiseScrollDir: { value: 0.5 }, // “дрейф” карти вітру
+      // Для згинання трави
+      uPresenceMap: { value: null }, // твоя touch texture
+      uPresenceMinXZ: { value: new Vector2(0, 0) },
+      uPresenceSizeXZ: { value: new Vector2(1, 1) },
+      uPresenceTexel: { value: new Vector2(1 / 1024, 1 / 1024) }, // 1/size канвасу
+      uPresenceStrength: { value: 0.35 }, //
       // інші твої уніформи...
     };
     return m;
@@ -47,4 +56,4 @@ const LoadWinderModel = ({ modelUrl, onCreateModelGeom }: LoadModelProps) => {
   return null;
 };
 
-export default LoadWinderModel;
+export default LoadTouchWinderModel;

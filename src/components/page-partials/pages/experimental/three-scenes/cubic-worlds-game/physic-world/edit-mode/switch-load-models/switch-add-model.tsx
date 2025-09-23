@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { InstanceModelDraw, TypeModel } from "../../../config/3d-model.config";
-import LoadWinderModel from "./load-winder-model";
+import LoadTouchWinderModel from "./load-touch-winder-model";
 import {
   BufferGeometry,
   Material,
@@ -8,6 +8,7 @@ import {
   ShaderMaterial,
 } from "three";
 import LoadSimpleModel from "./load-simple-model";
+import LoadWinderModel from "./load-winder-model";
 
 type Props = {
   scatterModelDraw: InstanceModelDraw;
@@ -24,6 +25,15 @@ const SwitchAddModel = ({ scatterModelDraw, onCreateModelGeom }: Props) => {
       case TypeModel.simple:
         return (
           <LoadSimpleModel
+            modelUrl={scatterModelDraw.path}
+            onCreateModelGeom={(geom, material) =>
+              onCreateModelGeom(geom, material, scatterModelDraw.type)
+            }
+          />
+        );
+      case TypeModel.touchWinder:
+        return (
+          <LoadTouchWinderModel
             modelUrl={scatterModelDraw.path}
             onCreateModelGeom={(geom, material) =>
               onCreateModelGeom(geom, material, scatterModelDraw.type)

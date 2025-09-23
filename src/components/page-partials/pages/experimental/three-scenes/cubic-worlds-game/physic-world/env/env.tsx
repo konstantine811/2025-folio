@@ -1,48 +1,44 @@
 // import GrassWrapper from "../../grass/grass-wrapper";
-// import useEnvSound from "../../hooks/useEnvSound";
+import useEnvSound from "../../hooks/useEnvSound";
 // import Boxes from "./boxes/boxes";
 
-import HouseModel from "./house";
+// import HouseModel from "./house";
 import Scatters from "./scatters";
-import "../../shaders/winder-shader";
+import "../../shaders/touch-winder-shader";
 import { useGameDataStore } from "../character-controller/stores/game-data-store";
 import { useGameStore } from "../character-controller/stores/game-store";
 import useCharacterCreateTexture from "../character-controller/hooks/useCharacterCreateTexture";
-import { RigidBody } from "@react-three/rapier";
+
 import { Robot } from "./robot/robot";
 import Lights from "./lights/ortho-lights";
+import { DuneModel } from "./dune/dune";
+import { Campfire } from "./campfire/campfire";
+import { Tent } from "./tent/tent";
+import { BedRoll } from "./tent/bedroll";
+// import GrassWrapper from "../../grass/grass-wrapper";
 
 const Environment = () => {
   const characterRigidBody = useGameDataStore(
     (state) => state.characterRigidBody
   );
+  useEnvSound({ volume: 0.1 });
   const onGround = useGameStore((s) => s.onGround);
   useCharacterCreateTexture({ characterRigidBody, onGround: !!onGround });
 
   return (
     <>
-      <HouseModel position={[-20, 0, 40]} />
-
+      {/* <HouseModel position={[-20, 0, 40]} /> */}
       <Lights />
       <Scatters />
-      <Robot scale={3} />
-      <RigidBody>
-        <mesh position={[0, 0.5, 0]} receiveShadow>
-          <boxGeometry args={[1, 1, 1]} />
-          <gradientMaterial
-            noiseScale={30.0}
-            gradientEdges={2}
-            edgeWidth={30}
-            bottomSoftnes={40}
-            bottomHeight={-0.8}
-            specularPower={300}
-            baseColor={"#FFBF74"}
-            colorA={"#FFBF74"}
-            colorB={"#FFBF74"}
-            randomK={0}
-          />
-        </mesh>
-      </RigidBody>
+      <Tent scale={2} position={[3, -0.1, -7]} />
+      <BedRoll
+        scale={1.3}
+        position={[7, -0.01, -22]}
+        rotation={[0, Math.PI, 0]}
+      />
+      <Robot scale={3} position={[0, -0.2, 0]} />
+      <DuneModel scale={3} position={[0, -0.7, 0]} />
+      <Campfire position={[0, -0.1, 0]} />
       {/* <GrassWrapper /> */}
       {/* <Boxes count={5000} /> */}
     </>

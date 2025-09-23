@@ -35,6 +35,10 @@ declare module "@react-three/fiber" {
       typeof GradientMaterial,
       typeof GradientMaterial
     >;
+    touchWinderMaterial: ReactThreeFiber.Object3DNode<
+      typeof WinderMaterial,
+      typeof WinderMaterial
+    >;
     winderMaterial: ReactThreeFiber.Object3DNode<
       typeof WinderMaterial,
       typeof WinderMaterial

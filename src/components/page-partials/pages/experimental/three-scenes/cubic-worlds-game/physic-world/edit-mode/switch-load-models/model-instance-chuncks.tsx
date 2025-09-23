@@ -72,7 +72,7 @@ export default function ModelInstanceChunks({
 
   const switchType = useCallback(() => {
     switch (type) {
-      case TypeModel.winder:
+      case TypeModel.touchWinder:
         return chunks.map((mats, i) => {
           return (
             <AddWinderInstancedModelWrap
@@ -93,6 +93,7 @@ export default function ModelInstanceChunks({
               material={material as Material}
               blade={geom}
               isEditMode={isEditMode}
+              id={i.toString()}
             />
           );
         });

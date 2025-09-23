@@ -10,12 +10,12 @@ const useCharacterSfx = () => {
     walkSound.stop();
     switch (curAnimation) {
       case animationSet.walk:
-        walkSound.rate(0.83);
+        walkSound.rate(0.73);
         walkSound.volume(0.3);
         walkSound.play();
         break;
       case animationSet.run:
-        walkSound.rate(1.2);
+        walkSound.rate(1);
         walkSound.volume(0.45);
         walkSound.play();
         break;

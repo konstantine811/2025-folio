@@ -80,7 +80,7 @@ const InitPhysicWorld = () => {
           capsuleHalfHeight={0.6}
           followLight
           disableControl={isEditMode}
-          maxVelLimit={2.3}
+          maxVelLimit={3}
           sprintMult={3}
         >
           <CharacterControllerAnimation

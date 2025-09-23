@@ -1,7 +1,26 @@
 import { useGLTF } from "@react-three/drei";
 import { LoadModelProps, MeshData } from "./load.model";
 import { useEffect, useMemo } from "react";
-import { BufferGeometry, Material, Mesh, Object3D } from "three";
+import {
+  BufferGeometry,
+  Material,
+  Mesh,
+  MeshBasicMaterial,
+  MeshStandardMaterial,
+  Object3D,
+} from "three";
+
+function toLit(mat: Material) {
+  if (mat.type === "MeshBasicMaterial") {
+    return new MeshStandardMaterial({
+      // metalness: 0.01,
+      // roughness: 0.8,
+      color: (mat as MeshBasicMaterial).color,
+      map: (mat as MeshBasicMaterial).map ?? null,
+    });
+  }
+  return mat;
+}
 
 const LoadSimpleModel = ({ modelUrl, onCreateModelGeom }: LoadModelProps) => {
   const { scene } = useGLTF(modelUrl);
@@ -15,13 +34,12 @@ const LoadSimpleModel = ({ modelUrl, onCreateModelGeom }: LoadModelProps) => {
 
         geom = mesh.geometry;
 
-        // Матеріал у меша може бути або один, або масив (групи)
         const m = mesh.material as Material | Material[];
+        const base = Array.isArray(m) ? m[0] : m;
 
-        mat = Array.isArray(m) ? m[0] : m;
-
-        // якщо плануєш змінювати параметри — краще клонувати
-        mat = mat.clone();
+        // якщо unlit — замінюємо на стандартний
+        const lit = toLit(base);
+        mat = lit.clone(); // якщо потрібно мати свій інстанс матеріалу
       }
     });
 

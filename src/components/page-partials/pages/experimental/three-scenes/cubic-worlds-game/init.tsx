@@ -11,15 +11,18 @@ import { useEditModeStore } from "./store/useEditModeStore";
 import UI from "./ui/ui";
 import EditMode from "./physic-world/edit-mode/edit-mode";
 import "./preload-data/preload-gltf-model";
+import ThreeLoader from "../common/three-loader";
+
+const isDev = window.location.hostname === "localhost";
 
 const Init = () => {
   const isEditMode = useEditModeStore((s) => s.isEditMode);
   return (
     <MainWrapperOffset>
       <InitKeyboardController />
-      <Stats />
+      {isDev && <Stats />}
       <UI />
-      {/* <ThreeLoader /> */}
+      {!isDev && <ThreeLoader />}
       <Canvas
         shadows
         camera={{ position: [5, 3, 5], fov: 70 }}
@@ -35,13 +38,15 @@ const Init = () => {
           }
         }}
       >
-        {/* <color attach="background" args={["#698FF3"]} /> */}
+        <color attach="background" args={["#698FF3"]} />
 
         {/* <Perf position="bottom-left" /> */}
         <Suspense fallback={null}>
           <Experience />
           {isEditMode && <EditMode />}
-          <Perf position="bottom-left" showGraph deepAnalyze antialias />
+          {isDev && (
+            <Perf position="bottom-left" showGraph deepAnalyze antialias />
+          )}
         </Suspense>
       </Canvas>
     </MainWrapperOffset>

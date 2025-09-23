@@ -1,4 +1,4 @@
-import "../shaders/winder-shader";
+import "../shaders/touch-winder-shader";
 import "../shaders/grass-gradient-shader-2";
 // import GlibliInfiniteGrass from "./glibli-infinite-grass";
 import { useGameDataStore } from "../physic-world/character-controller/stores/game-data-store";

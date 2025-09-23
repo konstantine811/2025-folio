@@ -14,12 +14,14 @@ type Props = {
   loop?: boolean;
   shuffle?: boolean;
   crossfadeMs?: number;
+  volume?: number; // можна додати, якщо треба керувати звідси
 };
 
 export default function useEnvSound({
   loop = true,
   shuffle = false,
   crossfadeMs = 1000,
+  volume = 0.5,
 }: Props) {
   const [unlocked, setUnlocked] = useState(false); // ← стартуємо тільки після жесту
   const [index, setIndex] = useState(Math.floor(Math.random() * tracks.length));
@@ -54,7 +56,7 @@ export default function useEnvSound({
   }, []);
 
   const createHowl = useCallback(
-    (i: number, vol = 1) => {
+    (i: number, vol = volume) => {
       const h = new Howl({
         src: tracks[i].src,
         html5: true, // для великих треків ок; WebAudio також працюватиме, коли не html5
@@ -95,7 +97,7 @@ export default function useEnvSound({
       howlRef.current = next;
       // старт наступного з 0 → 1
       playingIdRef.current = next.play();
-      next.fade(0, 1, crossfadeMs, playingIdRef.current ?? undefined);
+      next.fade(0, volume, crossfadeMs, playingIdRef.current ?? undefined);
       // затухання старого і розвантаження
       const id = playingIdRef.current ?? undefined;
       prev.fade(prev.volume(), 0, crossfadeMs, id);
@@ -104,14 +106,14 @@ export default function useEnvSound({
     }
 
     prev?.unload();
-    const h = createHowl(index, 1);
+    const h = createHowl(index, volume);
     howlRef.current = h;
     playingIdRef.current = h.play();
 
     return () => {
       h.unload();
     };
-  }, [unlocked, index, createHowl, crossfadeMs]);
+  }, [unlocked, index, createHowl, crossfadeMs, volume]);
 
   // автопауза при втраті фокусу/видимості
   useEffect(() => {
@@ -129,7 +131,7 @@ export default function useEnvSound({
         h.fade(h.volume(), 0, 400, id);
       } else {
         // відновити гучність лише якщо вже граємо
-        h.fade(h.volume(), 1, 400, id);
+        h.fade(h.volume(), volume, 400, id);
       }
     };
     handleVisibility();
@@ -145,7 +147,7 @@ export default function useEnvSound({
       window.removeEventListener("pageshow", handleVisibility);
       window.removeEventListener("pagehide", handleVisibility);
     };
-  }, [unlocked]);
+  }, [unlocked, volume]);
 
   // опціонально віддай керування назовні
   const next = useCallback(() => setIndex((i) => (i + 1) % tracks.length), []);

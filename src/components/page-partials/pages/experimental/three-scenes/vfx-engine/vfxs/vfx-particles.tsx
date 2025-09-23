@@ -15,6 +15,7 @@ import {
 } from "react";
 import {
   AdditiveBlending,
+  Box3,
   BufferAttribute,
   Color,
   DynamicDrawUsage,
@@ -24,6 +25,7 @@ import {
   PlaneGeometry,
   Quaternion,
   ShaderMaterial,
+  Sphere,
   Texture,
   Vector3,
 } from "three";
@@ -67,6 +69,23 @@ const VFXParticles = ({
     instanceSpeed: new Float32Array(nbParticles * 1),
     instanceRotationSpeed: new Float32Array(nbParticles * 3),
   });
+  const aabbMin = useRef(new Vector3(Infinity, Infinity, Infinity));
+  const aabbMax = useRef(new Vector3(-Infinity, -Infinity, -Infinity));
+
+  const expandBoundsBy = (p: Vector3) => {
+    aabbMin.current.min(p);
+    aabbMax.current.max(p);
+  };
+
+  const applyBoundsToGeometry = () => {
+    if (!mesh.current) return;
+    const g = mesh.current.geometry;
+    if (!g.boundingBox) g.boundingBox = new Box3();
+    g.boundingBox.min.copy(aabbMin.current);
+    g.boundingBox.max.copy(aabbMax.current);
+    if (!g.boundingSphere) g.boundingSphere = new Sphere();
+    g.boundingBox.getBoundingSphere(g.boundingSphere);
+  };
   const cursor = useRef(0);
   const lastCursor = useRef(0);
   const needsUpdate = useRef(false);
@@ -127,6 +146,7 @@ const VFXParticles = ({
           if (cursor.current >= nbParticles) {
             cursor.current = 0;
           }
+
           const {
             position,
             scale,
@@ -138,6 +158,17 @@ const VFXParticles = ({
             colorEnd,
             colorStart,
           } = setup();
+
+          expandBoundsBy(tmpPosition);
+          // 2) приблизна кінцева позиція (максимальний зсув)
+          const t = lifeTime[1]; // тривалість (максимальна)
+          const dir = new Vector3().fromArray(direction); // не нормалізую — як є
+          const grav = new Vector3().fromArray(gravity); // з settings
+          const end = tmpPosition
+            .clone()
+            .add(dir.multiplyScalar(speed * t))
+            .add(grav.multiplyScalar(0.5 * t * t));
+          expandBoundsBy(end);
 
           tmpPosition.set(...position);
           tmpRotationEuler.set(...rotation);
@@ -167,6 +198,7 @@ const VFXParticles = ({
           cursor.current++;
           cursor.current = cursor.current % nbParticles;
         }
+        applyBoundsToGeometry();
         needsUpdate.current = true;
       }
     },
@@ -198,6 +230,7 @@ const VFXParticles = ({
         args={[defaultGeometry, undefined, nbParticles]}
         ref={mesh}
         onBeforeRender={onBeforeRender}
+        frustumCulled={false}
       >
         {geometry}
         <particlesMaterial

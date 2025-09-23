@@ -1,10 +1,6 @@
-import {
-  OrthographicCamera,
-  TransformControls,
-  useHelper,
-} from "@react-three/drei";
+import { OrthographicCamera, useHelper } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { SceneObjectName } from "../../character-controller/config/character.config";
 
@@ -14,11 +10,7 @@ type Props = {
   enableTargetGizmo?: boolean;
 };
 
-export default function Lights({
-  showHelpers = false,
-  enableLightGizmo = true,
-  enableTargetGizmo = true,
-}: Props) {
+export default function Lights({ showHelpers = false }: Props) {
   const lightRef = useRef<THREE.DirectionalLight>(null!);
   const targetRef = useRef<THREE.Object3D>(null!);
   const { scene } = useThree();
@@ -73,12 +65,18 @@ export default function Lights({
         name={SceneObjectName.characterLight}
         ref={lightRef}
         position={[30, 50, 25]}
-        intensity={0.1}
+        intensity={1}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
-        shadow-bias={-0.0005}
-        shadow-normalBias={0.02}
+        shadow-bias={0.000001} // дуже мале за модулем
+        shadow-normalBias={0.04} // головний параметр проти acne
+        shadow-camera-near={1}
+        shadow-camera-far={60}
+        shadow-camera-left={-20}
+        shadow-camera-right={20}
+        shadow-camera-top={20}
+        shadow-camera-bottom={-20}
       >
         {/* Ортографічна камера тіней */}
         <OrthographicCamera
@@ -91,12 +89,6 @@ export default function Lights({
           far={120}
         />
       </directionalLight>
-
-      {/* Видимий “маркер” таргета (для наочності) */}
-      <mesh ref={targetRef} position={[0, 0, 0]}>
-        <sphereGeometry args={[0.2, 16, 16]} />
-        <meshBasicMaterial color="orange" />
-      </mesh>
 
       {/* -------- TransformControls для світла -------- */}
       {/* {enableLightGizmo && lightRef.current && (

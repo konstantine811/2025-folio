@@ -3,13 +3,14 @@ import { Matrix4, ShaderMaterial } from "three";
 import AddWinderInstancedModelWrap from "../edit-mode/draw-mesh/winder-model/add-winder-instanced-model-wrap";
 import { saveScatterToStorage } from "@/services/firebase/cubic-worlds-game/firestore-scatter-objects";
 import { StatusServer, useEditModeStore } from "../../store/useEditModeStore";
+import { useGameDataStore } from "../character-controller/stores/game-data-store";
+import LoadTouchWinderModel from "../edit-mode/switch-load-models/load-touch-winder-model";
 import { MeshShaderData } from "../edit-mode/switch-load-models/load.model";
 import { UpHint } from "../edit-mode/draw-mesh/hooks/useCreatePivotPoint";
 import { TypeModel } from "../../config/3d-model.config";
 import { buildGridCells } from "../../utils/grid";
 import { Key } from "@/config/key";
 import AddInstanceMesh from "../edit-mode/draw-mesh/add-instance-mesh";
-import LoadWinderModel from "../edit-mode/switch-load-models/load-winder-model";
 
 type Props = {
   modelUrl: string;
@@ -21,7 +22,7 @@ type Props = {
   type: TypeModel;
 };
 
-export default function AddWinderInstanceModel({
+export default function AddTouchWinderInstanceModel({
   modelUrl,
   metrices,
   isEditMode = false,
@@ -31,12 +32,29 @@ export default function AddWinderInstanceModel({
   type,
 }: Props) {
   const isMatrixUpdate = useRef(false);
+  const touchTextureData = useGameDataStore((s) => s.characterTextureData);
   const [meshData, setMeshData] = useState<MeshShaderData | null>(null);
   const { setStatusServer } = useEditModeStore();
   const [newMatrices, setNewMatrices] = useState<Matrix4[][]>(metrices);
   const prevIsEdit = useRef(isEditMode);
   const [isAddModel, setIsAddModel] = useState(false);
   const [placementPosition, setPlacementPosition] = useState<Matrix4[]>([]);
+
+  useEffect(() => {
+    if (touchTextureData && meshData) {
+      const shaderMaterial = meshData.material;
+      const { boundsXZ, presenceTex, sizeTexture } = touchTextureData;
+      shaderMaterial.uniforms.uPresenceMap.value = presenceTex;
+      shaderMaterial.uniforms.uPresenceMinXZ.value.copy(boundsXZ.min);
+      shaderMaterial.uniforms.uPresenceSizeXZ.value.copy(
+        boundsXZ.max.clone().sub(boundsXZ.min)
+      );
+      shaderMaterial.uniforms.uPresenceTexel.value.set(
+        1 / sizeTexture,
+        1 / sizeTexture
+      );
+    }
+  }, [touchTextureData, meshData]);
 
   const updateServerData = useCallback(
     (fileName: string, data: Matrix4[][]) => {
@@ -140,7 +158,7 @@ export default function AddWinderInstanceModel({
           )}
         </>
       )}
-      <LoadWinderModel
+      <LoadTouchWinderModel
         modelUrl={modelUrl}
         onCreateModelGeom={(geom, mat) => {
           setMeshData({ geometry: geom, material: mat as ShaderMaterial });
