@@ -24,7 +24,7 @@ const Init = () => {
     <MainWrapperOffset>
       <InitKeyboardController />
       {isDev && <Stats />}
-      <UI />
+      {!uid && <UI />}
       {!isDev && <ThreeLoader />}
       <Canvas
         shadows
