@@ -7,7 +7,7 @@ import {
   type NodeModel,
 } from "@minoru/react-dnd-treeview";
 import { DndProvider } from "react-dnd";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 // ---- тип метаданих вузла
 type Meta = {
@@ -65,15 +65,6 @@ export default function TreeViewModel() {
   const [treeData, setTreeData] = useState<NodeModel<Meta>[]>(initialData);
   const [selected, setSelected] = useState<NodeModel<Meta> | null>(null);
 
-  // айдішки груп для швидкої перевірки
-  const groupIds = useMemo(
-    () =>
-      new Set(
-        treeData.filter((n) => n.data?.type === "group").map((n) => n.id)
-      ),
-    [treeData]
-  );
-
   return (
     <div>
       <DndProvider backend={MultiBackend} options={getBackendOptions()}>
@@ -82,7 +73,7 @@ export default function TreeViewModel() {
           rootId={0}
           onDrop={(newTree) => setTreeData(newTree)}
           // тільки в корінь або в group
-          canDrop={(currentTree, { dropTargetId, dropTarget }) =>
+          canDrop={(_, { dropTargetId, dropTarget }) =>
             dropTargetId === 0 ||
             (dropTarget &&
               dropTarget.droppable &&
