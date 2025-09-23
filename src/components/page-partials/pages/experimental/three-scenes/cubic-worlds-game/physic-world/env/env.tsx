@@ -1,13 +1,7 @@
 // import GrassWrapper from "../../grass/grass-wrapper";
 import useEnvSound from "../../hooks/useEnvSound";
-// import Boxes from "./boxes/boxes";
-
-// import HouseModel from "./house";
 import Scatters from "./scatters";
 import "../../shaders/touch-winder-shader";
-import { useGameDataStore } from "../character-controller/stores/game-data-store";
-import { useGameStore } from "../character-controller/stores/game-store";
-import useCharacterCreateTexture from "../character-controller/hooks/useCharacterCreateTexture";
 
 import { Robot } from "./robot/robot";
 import Lights from "./lights/ortho-lights";
@@ -18,12 +12,7 @@ import { BedRoll } from "./tent/bedroll";
 // import GrassWrapper from "../../grass/grass-wrapper";
 
 const Environment = () => {
-  const characterRigidBody = useGameDataStore(
-    (state) => state.characterRigidBody
-  );
   useEnvSound({ volume: 0.1 });
-  const onGround = useGameStore((s) => s.onGround);
-  useCharacterCreateTexture({ characterRigidBody, onGround: !!onGround });
 
   return (
     <>

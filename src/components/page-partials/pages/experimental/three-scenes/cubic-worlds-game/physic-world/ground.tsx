@@ -83,19 +83,23 @@ const Ground = () => {
     <>
       <group>
         {/* ПІДЛОГА: обов'язково з UV (PlaneGeometry має їх за замовчуванням) */}
-        <RigidBody userData={{ isGround: true }} type="fixed">
+        <RigidBody
+          userData={{ isGround: true }}
+          colliders="cuboid"
+          type="fixed"
+        >
           <mesh
             ref={floorRef}
             rotation={[-Math.PI / 2, 0, 0]}
             receiveShadow
             castShadow
-            position={[0, -0.1, 0]}
+            position={[0, -0.57, 0]}
             // onPointerDown={handlePointerDown}
             // onPointerUp={handlePointerUpOrOut}
             // onPointerLeave={handlePointerUpOrOut}
             // onPointerMove={handlePointerMove}
           >
-            <planeGeometry args={[width, height, 1, 1]} />
+            <boxGeometry args={[width, height, 1, 1]} />
             {/* ДЕМО-матеріал: накладаємо карту як map, щоб бачити мазки.
 У вашому проєкті, ймовірно, передаватимете texture як uniform у шейдер або як alphaMap. */}
             <meshStandardMaterial color="#FFBF74" />

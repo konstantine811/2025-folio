@@ -68,6 +68,7 @@ const AddModelPhysics = ({
       restitution={physicsData.restitution}
       friction={physicsData.friction}
       mass={physicsData.mass}
+      userData={{ isGround: true }}
     >
       <instancedMesh
         ref={meshRef}

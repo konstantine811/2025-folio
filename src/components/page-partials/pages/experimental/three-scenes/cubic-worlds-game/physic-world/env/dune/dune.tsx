@@ -22,7 +22,13 @@ export function DuneModel({ ...props }: Props) {
   }, [setTargetMesh]);
   return (
     <group {...props} dispose={null} ref={groupRef}>
-      <RigidBody type="fixed" colliders="trimesh" friction={1} restitution={0}>
+      <RigidBody
+        userData={{ isGround: true }}
+        type="fixed"
+        colliders="trimesh"
+        friction={1}
+        restitution={0}
+      >
         <mesh
           castShadow
           receiveShadow

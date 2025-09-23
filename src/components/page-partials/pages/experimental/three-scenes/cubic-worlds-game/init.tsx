@@ -1,5 +1,4 @@
 import MainWrapperOffset from "@/components/ui-abc/main-wrapper-offset";
-// import ThreeLoader from "../common/three-loader";
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import Experience from "./experience";
@@ -20,11 +19,12 @@ const Init = () => {
   const setPublicUid = useEditModeStore((s) => s.setPublicUid);
   const uid = import.meta.env.VITE_CONSTANTINE_UID;
   setPublicUid(uid);
+
   return (
     <MainWrapperOffset>
       <InitKeyboardController />
       {isDev && <Stats />}
-      {!uid && <UI />}
+      {(!uid || isDev) && <UI />}
       {!isDev && <ThreeLoader />}
       <Canvas
         shadows

@@ -12,7 +12,7 @@ const CampfireCollider = ({ ...props }: Props) => {
   const { nodes } = useGLTF(path);
   return (
     <group {...props} dispose={null}>
-      <RigidBody type="fixed" colliders="hull">
+      <RigidBody userData={{ isGround: true }} type="fixed" colliders="hull">
         <mesh
           geometry={(nodes.Cylinder as Mesh).geometry}
           position={[2.439, 0.586, 1.636]}

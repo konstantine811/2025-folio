@@ -50,6 +50,7 @@ import { pointToMove, PointToMoveProps } from "./utils/pointMove";
 import { SceneObjectName } from "./config/character.config";
 import { useGameDataStore } from "./stores/game-data-store";
 import { CollisionWorldType } from "../../../config/collision";
+import useCharacterCreateTexture from "./hooks/useCharacterCreateTexture";
 
 export type camListenerTargetType = "document" | "domElement";
 
@@ -406,6 +407,11 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
       () => props.gravityScale ?? 1,
       [props.gravityScale]
     );
+
+    useCharacterCreateTexture({
+      characterRigidBody: characterRef.current,
+      onGround: !canJump,
+    });
     // Slope detection ray setup
     const slopeAngle: number = 0;
     const actualSlopeAngle: number = 0;

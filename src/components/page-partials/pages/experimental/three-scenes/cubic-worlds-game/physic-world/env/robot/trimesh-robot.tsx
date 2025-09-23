@@ -13,7 +13,7 @@ export function TrimeshRobot({ ...props }: Props) {
 
   return (
     <group {...props} dispose={null}>
-      <RigidBody type="fixed" colliders="trimesh">
+      <RigidBody type="fixed" colliders="trimesh" userData={{ isGround: true }}>
         <mesh
           geometry={(nodes.Cylinder004 as SkinnedMesh).geometry}
           material={(nodes.Cylinder004 as SkinnedMesh).material}

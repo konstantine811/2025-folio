@@ -16,7 +16,7 @@ export function TentCollider({ ...props }: Props) {
   const { nodes } = useGLTF(path);
   return (
     <group {...props} dispose={null}>
-      <RigidBody type="fixed" colliders="trimesh">
+      <RigidBody userData={{ isGround: true }} type="fixed" colliders="trimesh">
         <mesh
           geometry={(nodes.tent_collider as Mesh).geometry}
           material-visible={false}
