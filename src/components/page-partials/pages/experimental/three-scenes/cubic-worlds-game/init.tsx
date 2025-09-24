@@ -11,6 +11,7 @@ import UI from "./ui/ui";
 import "./preload-data/preload-gltf-model";
 import ThreeLoader from "../common/three-loader";
 import EditModeInit from "./physic-world/edit-mode/edit-mode-init";
+import Pause from "./ui/pause";
 
 const isDev = window.location.hostname === "localhost";
 
@@ -25,6 +26,7 @@ const Init = () => {
       {isDev && <Stats />}
       {(!uid || isDev) && <UI />}
       {!isDev && <ThreeLoader />}
+      <Pause />
       <Canvas shadows camera={{ position: [5, 3, 5], fov: 70 }}>
         <color attach="background" args={["#698FF3"]} />
 

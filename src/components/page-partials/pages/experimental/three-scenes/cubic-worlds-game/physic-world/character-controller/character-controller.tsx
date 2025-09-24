@@ -611,7 +611,6 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         slopeMaxAngle,
         canJump
       );
-      setOnGround(canJump);
 
       if (forward || backward || leftward || rightward) {
         const moveCharacterProps: MoveCharacterProps = {
@@ -843,10 +842,12 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
           fallTimerRef.current += delta;
           if (fallTimerRef.current >= 0.22) {
             fallAnimation();
+            setOnGround(false);
           }
         } else {
           // скидаємо, якщо приземлились або не падаємо
           fallTimerRef.current = 0;
+          setOnGround(true);
         }
       }
     });

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Howl, Howler } from "howler";
+import { usePauseStore } from "../store/usePauseMode";
 
 const getTrackPath = (name: string) => `/sound/game-sfx/music/${name}.mp3`;
 
@@ -14,7 +15,7 @@ type Props = {
   loop?: boolean;
   shuffle?: boolean;
   crossfadeMs?: number;
-  volume?: number; // можна додати, якщо треба керувати звідси
+  volume?: number;
 };
 
 export default function useEnvSound({
@@ -23,16 +24,17 @@ export default function useEnvSound({
   crossfadeMs = 1000,
   volume = 0.5,
 }: Props) {
-  const [unlocked, setUnlocked] = useState(false); // ← стартуємо тільки після жесту
+  const [unlocked, setUnlocked] = useState(false); // стартуємо після жесту
   const [index, setIndex] = useState(Math.floor(Math.random() * tracks.length));
   const howlRef = useRef<Howl | null>(null);
   const playingIdRef = useRef<number | null>(null);
+
+  const isPaused = usePauseStore((s) => s.isPaused);
 
   // ---- unlock on first user gesture
   useEffect(() => {
     const unlock = async () => {
       try {
-        // HTML5 Audio: Howler сам робить unlock, але для WebAudio – резюмимо контекст
         if (Howler.ctx && Howler.ctx.state !== "running") {
           await Howler.ctx.resume();
         }
@@ -46,7 +48,6 @@ export default function useEnvSound({
     window.addEventListener("pointerdown", unlock, { once: true });
     window.addEventListener("keydown", unlock, { once: true });
 
-    // Якщо користувач уже взаємодіяв раніше (SPA навігація), контекст може бути running
     if (Howler.ctx?.state === "running") setUnlocked(true);
 
     return () => {
@@ -56,10 +57,10 @@ export default function useEnvSound({
   }, []);
 
   const createHowl = useCallback(
-    (i: number, vol = volume) => {
+    (i: number, vol: number) => {
       const h = new Howl({
         src: tracks[i].src,
-        html5: true, // для великих треків ок; WebAudio також працюватиме, коли не html5
+        html5: true,
         preload: true,
         volume: vol,
         onend: () => {
@@ -74,8 +75,8 @@ export default function useEnvSound({
         },
         onloaderror: (_, err) => console.warn("music loaderror", err),
         onplayerror: (_, err) => {
-          // якщо ще раз заблоковано (деякі браузери) — спробувати після unlock
           console.warn("music playerror", err);
+          // слухаємо unlock саме на екземплярі треку
           h.once("unlock", () => {
             playingIdRef.current = h.play();
           });
@@ -86,21 +87,36 @@ export default function useEnvSound({
     [shuffle, loop]
   );
 
-  // створюємо/міняємо поточний трек (після unlock!)
+  // Створюємо/міняємо поточний трек (після unlock)
+  // ПОВНІСТЮ без логіки видимості/фокусу — лише isPaused
   useEffect(() => {
     if (!unlocked) return;
 
     const prev = howlRef.current;
 
+    // Якщо пауза — готуємо трек «тихо» і не запускаємо його
+    if (isPaused) {
+      prev?.unload();
+      const h = createHowl(index, 0);
+      howlRef.current = h;
+      // НЕ запускаємо h.play() поки на паузі
+      return () => h.unload();
+    }
+
+    // ---- звичайний сценарій (без паузи) ----
     if (crossfadeMs > 0 && prev) {
+      const prevId = playingIdRef.current ?? undefined;
+
       const next = createHowl(index, 0);
       howlRef.current = next;
-      // старт наступного з 0 → 1
-      playingIdRef.current = next.play();
-      next.fade(0, volume, crossfadeMs, playingIdRef.current ?? undefined);
-      // затухання старого і розвантаження
-      const id = playingIdRef.current ?? undefined;
-      prev.fade(prev.volume(), 0, crossfadeMs, id);
+
+      // play нового з 0 → volume
+      const nextId = next.play();
+      playingIdRef.current = nextId;
+      next.fade(0, volume, crossfadeMs, nextId);
+
+      // затухання старого за його prevId і розвантаження
+      prev.fade(prev.volume(), 0, crossfadeMs, prevId);
       const t = setTimeout(() => prev.unload(), crossfadeMs + 60);
       return () => clearTimeout(t);
     }
@@ -113,43 +129,36 @@ export default function useEnvSound({
     return () => {
       h.unload();
     };
-  }, [unlocked, index, createHowl, crossfadeMs, volume]);
+  }, [unlocked, index, createHowl, crossfadeMs, volume, isPaused]);
 
-  // автопауза при втраті фокусу/видимості
+  // Реакція на зміну isPaused: fade до 0 + pause(), або play() + fade до volume
   useEffect(() => {
     if (!unlocked) return;
+    const h = howlRef.current;
+    if (!h) return;
 
-    const handleVisibility = () => {
-      const hidden =
-        document.hidden ||
-        document.visibilityState !== "visible" ||
-        !document.hasFocus();
-      const h = howlRef.current;
-      if (!h) return;
-      const id = playingIdRef.current ?? undefined;
-      if (hidden) {
-        h.fade(h.volume(), 0, 400, id);
-      } else {
-        // відновити гучність лише якщо вже граємо
-        h.fade(h.volume(), volume, 400, id);
+    const id = playingIdRef.current ?? undefined;
+    if (!id) return;
+    if (isPaused) {
+      const from = h.volume(id) as number;
+      h.fade(from, 0, 300, id);
+      const t = setTimeout(() => {
+        if (howlRef.current === h) h.pause(id);
+      }, 320);
+      return () => clearTimeout(t);
+    } else {
+      // якщо було на паузі — відновлюємо
+      if (!h.playing(id)) {
+        const newId = h.play(id);
+        playingIdRef.current =
+          typeof newId === "number" ? newId : playingIdRef.current;
       }
-    };
-    handleVisibility();
-    document.addEventListener("visibilitychange", handleVisibility);
-    window.addEventListener("blur", handleVisibility);
-    window.addEventListener("focus", handleVisibility);
-    window.addEventListener("pageshow", handleVisibility);
-    window.addEventListener("pagehide", handleVisibility);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibility);
-      window.removeEventListener("blur", handleVisibility);
-      window.removeEventListener("focus", handleVisibility);
-      window.removeEventListener("pageshow", handleVisibility);
-      window.removeEventListener("pagehide", handleVisibility);
-    };
-  }, [unlocked, volume]);
+      const from = h.volume(id) as number;
+      h.fade(from, volume, 300, id);
+    }
+  }, [isPaused, unlocked, volume]);
 
-  // опціонально віддай керування назовні
+  // Опціонально управління назовні
   const next = useCallback(() => setIndex((i) => (i + 1) % tracks.length), []);
   const prev = useCallback(
     () => setIndex((i) => (i - 1 + tracks.length) % tracks.length),
