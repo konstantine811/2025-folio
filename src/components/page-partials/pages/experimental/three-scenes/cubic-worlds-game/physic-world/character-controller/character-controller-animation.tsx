@@ -3,10 +3,8 @@ import { useEffect, useRef, Suspense } from "react";
 import { useGameStore } from "./stores/game-store";
 import {
   AnimationAction,
-  AnimationClip,
   AnimationMixer,
   AnimationMixerEventMap,
-  EventListener,
   Group,
   LoopOnce,
   LoopRepeat,
