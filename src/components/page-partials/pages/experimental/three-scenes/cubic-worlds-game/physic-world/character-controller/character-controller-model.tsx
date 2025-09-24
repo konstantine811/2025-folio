@@ -1,7 +1,7 @@
 import { ActionName } from "./config/character.config";
-import { Mesh } from "three";
+import { Mesh, Object3D } from "three";
 import { useGLTF } from "@react-three/drei";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useGameDataStore } from "./stores/game-data-store";
 
 const CharacterControllerModel = ({
@@ -15,6 +15,7 @@ const CharacterControllerModel = ({
   animation?: ActionName;
 }) => {
   const { scene, nodes } = useGLTF(path);
+  const charRef = useRef<Object3D>(null);
   const setCharacterNodes = useGameDataStore((s) => s.setCharacterNodes);
   scene.traverse((child) => {
     if (child instanceof Mesh) {
@@ -27,6 +28,8 @@ const CharacterControllerModel = ({
     useGLTF.preload(path);
   }, [path]);
 
-  return <primitive object={scene} position={position} scale={scale} />;
+  return (
+    <primitive object={scene} position={position} scale={scale} ref={charRef} />
+  );
 };
 export default CharacterControllerModel;

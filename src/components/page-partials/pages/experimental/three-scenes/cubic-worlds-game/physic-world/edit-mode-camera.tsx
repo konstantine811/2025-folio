@@ -8,6 +8,7 @@ import AttachCharacterStaff from "./character/attach-character-staff";
 
 const EditModeCamera = () => {
   const isEditMode = useEditModeStore((s) => s.isEditMode);
+
   return (
     <>
       <FlyCameraControl active={isEditMode} />

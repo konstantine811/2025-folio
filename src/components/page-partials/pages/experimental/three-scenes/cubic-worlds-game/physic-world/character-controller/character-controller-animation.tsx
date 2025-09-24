@@ -8,6 +8,7 @@ import {
   Group,
   LoopOnce,
   LoopRepeat,
+  MathUtils,
 } from "three";
 import { animationSet, AnimationSet } from "./config/character.config";
 import { useGameDataStore } from "./stores/game-data-store";
@@ -19,6 +20,17 @@ export type CharacterControllerAnimationProps = {
   children: React.ReactNode;
 };
 
+function playFromFraction(action: AnimationAction, frac = 0.5, fade = 0.06) {
+  const clip = action.getClip();
+  const t = MathUtils.clamp(frac, 0, 0.99) * clip.duration; // 0..duration
+  action.stop(); // скинь попередній програш
+  action.enabled = true;
+  action.setLoop(LoopOnce, 0);
+  action.time = t; // СТАРТ З СЕРЕДИНИ
+  action.setEffectiveWeight(1).fadeIn(fade).play();
+  action.clampWhenFinished = false; // щоб не «зависав» на останньому кадрі
+}
+
 const CharacterControllerAnimation = (
   props: CharacterControllerAnimationProps
 ) => {
@@ -28,6 +40,7 @@ const CharacterControllerAnimation = (
   const { actions, mixer } = useAnimations(animations, group);
   const setCharacterAnim = useGameDataStore((state) => state.setCharacterAnim);
   useCharacterSfx();
+
   /**
    * Character animations setup
    */
@@ -56,6 +69,7 @@ const CharacterControllerAnimation = (
 
   useEffect(() => {
     // вибираємо дію
+    console.log("click");
     const key = curAnimation ?? props.animationSet.jumpIdle;
     const action: AnimationAction | undefined = key
       ? actions[key] ?? undefined
@@ -76,7 +90,13 @@ const CharacterControllerAnimation = (
     }
 
     if (isPlayOnce) {
-      action.reset().fadeIn(0.2).setLoop(LoopOnce, 0).play();
+      if (curAnimation === props.animationSet.action1) {
+        action.timeScale = 1.5;
+        playFromFraction(action, 0.2, 0.06);
+        // action.reset().setLoop(LoopOnce, 0).play();
+      } else {
+        action.reset().fadeIn(0.2).setLoop(LoopOnce, 0).play();
+      }
       action.clampWhenFinished = true;
     } else {
       action.reset().fadeIn(0.2).play();
@@ -87,6 +107,7 @@ const CharacterControllerAnimation = (
     const onFinished = (e: AnimationMixerEventMap["finished"]) => {
       // на випадок, якщо в міксері кілька дій — фільтруємо саме нашу
       if (e.action === action) resetAnimation();
+      window.dispatchEvent(new Event("attack:end"));
     };
 
     mixer.addEventListener("finished", onFinished);
@@ -115,12 +136,15 @@ const CharacterControllerAnimation = (
 
   useEffect(() => {
     const onClick = () => {
-      action1();
+      resetAnimation();
+      setTimeout(() => {
+        action1();
+      });
     };
 
     window.addEventListener("click", onClick);
     return () => window.removeEventListener("click", onClick);
-  }, [action1]);
+  }, [action1, resetAnimation]);
 
   return (
     <Suspense fallback={null}>
