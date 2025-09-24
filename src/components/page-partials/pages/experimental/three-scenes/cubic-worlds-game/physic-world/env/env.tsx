@@ -12,7 +12,7 @@ import { BedRoll } from "./tent/bedroll";
 // import GrassWrapper from "../../grass/grass-wrapper";
 
 const Environment = () => {
-  // useEnvSound({ volume: 0.1 });
+  useEnvSound({ volume: 0.1 });
   return (
     <>
       {/* <HouseModel position={[-20, 0, 40]} /> */}
