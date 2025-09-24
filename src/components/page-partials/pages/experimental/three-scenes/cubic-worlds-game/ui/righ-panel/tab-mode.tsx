@@ -5,11 +5,8 @@ import { Pen, SquarePlus } from "lucide-react";
 import clsx from "clsx";
 
 const TabMode = () => {
-  const {
-    setEditModeAction,
-    editModeAction,
-    // setIsTransformEdit,
-  } = useEditModeStore();
+  const editModeAction = useEditModeStore((s) => s.editModeAction);
+  const setEditModeAction = useEditModeStore((s) => s.setEditModeAction);
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">

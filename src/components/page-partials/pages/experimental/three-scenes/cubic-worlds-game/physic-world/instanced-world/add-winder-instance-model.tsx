@@ -32,7 +32,7 @@ export default function AddWinderInstanceModel({
 }: Props) {
   const isMatrixUpdate = useRef(false);
   const [meshData, setMeshData] = useState<MeshShaderData | null>(null);
-  const { setStatusServer } = useEditModeStore();
+  const setStatusServer = useEditModeStore((s) => s.setStatusServer);
   const [newMatrices, setNewMatrices] = useState<Matrix4[][]>(metrices);
   const prevIsEdit = useRef(isEditMode);
   const [isAddModel, setIsAddModel] = useState(false);

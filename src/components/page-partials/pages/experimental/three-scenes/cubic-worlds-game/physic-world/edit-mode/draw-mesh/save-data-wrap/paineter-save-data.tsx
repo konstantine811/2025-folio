@@ -7,8 +7,10 @@ import { Matrix4 } from "three";
 import PlanePainter from "../line-painter";
 
 const LinePainterSaver = () => {
-  const { editModeAction, onSetNewInstance, scatterModelDraw } =
-    useEditModeStore();
+  const editModeAction = useEditModeStore((s) => s.editModeAction);
+  const onSetNewInstance = useEditModeStore((s) => s.onSetNewInstance);
+  const scatterModelDraw = useEditModeStore((s) => s.scatterModelDraw);
+  // ⬇️ реф для збереження останніх чанків, щоб не втрачати їх при зміні екшену
   const chunksRef = useRef<Matrix4[][]>([]);
 
   const onChunksChange = useCallback((chunks: Matrix4[][]) => {

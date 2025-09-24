@@ -13,8 +13,9 @@ import { buildGridCells } from "../../../../utils/grid";
 const DrawSingleInstanceWrap = () => {
   const [drawData, setDrawData] = useState<MixMaterialData | null>(null);
   const [placementPosition, setPlacementPosition] = useState<Matrix4[]>([]);
-  const { instanceModelDraw, editModeAction, onSetNewInstance } =
-    useEditModeStore();
+  const instanceModelDraw = useEditModeStore((s) => s.instanceModelDraw);
+  const editModeAction = useEditModeStore((s) => s.editModeAction);
+  const onSetNewInstance = useEditModeStore((s) => s.onSetNewInstance);
 
   useEffect(() => {
     if (

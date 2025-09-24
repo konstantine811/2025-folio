@@ -9,7 +9,7 @@ import AddWinderInstanceModel from "../instanced-world/add-winder-instance-model
 const Scatters = () => {
   const onAddInstances = useEditModeStore((s) => s.onAddInstances);
   const idEditInstance = useEditModeStore((s) => s.idEditInstance);
-  const editedPhysicsData = useEditModeStore((s) => s.editedPhysicsData);
+  // const editedPhysicsData = useEditModeStore((s) => s.editedPhysicsData);
   // const userPublicUid = useEditModeStore((s) => s.uid);
 
   const { data: scatterData } = useScatters({
@@ -55,11 +55,7 @@ const Scatters = () => {
                     modelUrl={data.modelPath}
                     metrices={data.matrices}
                     isEditMode={idEditInstance === data.name}
-                    physicsData={
-                      idEditInstance === data.name
-                        ? editedPhysicsData
-                        : data.physicsData || undefined
-                    }
+                    physicsData={data.physicsData}
                     fileName={data.name}
                     modelName={data.name}
                     type={data.type}

@@ -9,6 +9,7 @@ import {
 } from "@/services/firebase/cubic-worlds-game/firestore-scatter-objects";
 import {
   EditModeAction,
+  PhysicsData,
   StatusServer,
   useEditModeStore,
 } from "@components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/store/useEditModeStore";
@@ -25,6 +26,8 @@ const ListScatter = () => {
   const onRenameScatter = useEditModeStore((s) => s.onRenameScatter);
   const setEditModeAction = useEditModeStore((s) => s.setEditModeAction);
   const onSetNewPhysicsData = useEditModeStore((s) => s.onSetNewPhysicsData);
+  const [editingPhysicsData, setEditingPhysicsData] =
+    useState<PhysicsData | null>(null);
   //
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<string>("");
@@ -63,9 +66,16 @@ const ListScatter = () => {
     }
   };
 
+  const handleUpdatePhysicsData = (data: PhysicsData | null) => {
+    if (idEditInstance && data) {
+      setEditingPhysicsData(data);
+      onSetNewPhysicsData(idEditInstance, data);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-2">
-      <ScrollArea className="max-w-md rounded-md border mt-5">
+      <ScrollArea className="max-w-md rounded-md border mt-5 max-h-60 overflow-auto">
         <div className="p-4">
           <h4 className="mb-4 text-md text-foreground leading-none font-medium">
             Scatter Objects
@@ -115,7 +125,8 @@ const ListScatter = () => {
                         } else {
                           setIdEditInstance(instance.id);
                           setEditModeAction(EditModeAction.editScatter);
-                          onSetNewPhysicsData(instance.physicsData);
+                          setEditingPhysicsData(instance.physicsData || null);
+                          // onSetNewPhysicsData(instance.physicsData);
                         }
                       }}
                     >
@@ -148,7 +159,12 @@ const ListScatter = () => {
       {idEditInstance ? (
         <>
           <CheckTransformControl />
-          <AddPhysicsControl />
+          <AddPhysicsControl
+            editedPhysicsData={editingPhysicsData}
+            setEditPhysicsData={(data) => {
+              handleUpdatePhysicsData(data);
+            }}
+          />
         </>
       ) : null}
     </div>

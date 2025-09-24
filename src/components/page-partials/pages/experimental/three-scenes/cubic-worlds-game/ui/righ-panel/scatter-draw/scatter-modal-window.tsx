@@ -18,8 +18,9 @@ import {
 import { saveScatterToStorage } from "@/services/firebase/cubic-worlds-game/firestore-scatter-objects";
 
 export function ScatterModalWindow() {
-  const { instanceData, onSetNewInstance, setStatusServer, editedPhysicsData } =
-    useEditModeStore();
+  const instanceData = useEditModeStore((s) => s.instanceData);
+  const onSetNewInstance = useEditModeStore((s) => s.onSetNewInstance);
+  const setStatusServer = useEditModeStore((s) => s.setStatusServer);
   const [isOpen, setIsOpen] = useState(false);
   const [fileName, setFileName] = useState("");
 
@@ -41,7 +42,7 @@ export function ScatterModalWindow() {
             {
               ...instanceData.model,
             },
-            editedPhysicsData
+            instanceData.physics
           ).then(() => {
             onSetNewInstance(null);
             setFileName("");

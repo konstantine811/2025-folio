@@ -13,7 +13,6 @@ import { BedRoll } from "./tent/bedroll";
 
 const Environment = () => {
   useEnvSound({ volume: 0.1 });
-
   return (
     <>
       {/* <HouseModel position={[-20, 0, 40]} /> */}

@@ -41,7 +41,10 @@ const AddModelEdit = ({
   id,
 }: AddModelProps) => {
   const meshRef = useRef<InstancedMesh>(null!);
-  const { editTransformMode, setTargets, deleteTargets } = useEditModeStore();
+  const editTransformMode = useEditModeStore((s) => s.editTransformMode);
+  const setTargets = useEditModeStore((s) => s.setTargets);
+  const deleteTargets = useEditModeStore((s) => s.deleteTargets);
+  // ⬇️ pick instancedMesh (count=COUNT) — для вибору інстансів кліком
   const pickRef = useRef<InstancedMesh>(null!);
   // ⬇️ outline instancedMesh (count=1) — показує обвідку вибраного
   const outlineRef = useRef<InstancedMesh>(null!);

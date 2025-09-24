@@ -4,7 +4,6 @@ import { create } from "zustand";
 import {
   PainterModelConfig,
   InstanceModelDraw,
-  DispabledPhysics,
 } from "../config/3d-model.config";
 import {
   RigidBodyAutoCollider,
@@ -50,7 +49,6 @@ interface EditModeState {
   isPhysicsDebug: boolean;
   instances: InstanceObject[];
   idEditInstance: string | null;
-  editedPhysicsData: PhysicsData;
   instanceData: InstanceData | null;
   statusServer: StatusServer;
   editTransformMode: TransformMode | null;
@@ -66,7 +64,6 @@ const initialState: EditModeState = {
   isPhysicsDebug: false,
   instances: [],
   idEditInstance: null,
-  editedPhysicsData: DispabledPhysics,
   instanceData: null,
   statusServer: StatusServer.loaded,
   editTransformMode: null,
@@ -91,7 +88,7 @@ interface EditModeActions {
   setScatterModelDraw: (model: InstanceModelDraw) => void;
   setInstanceModelDraw: (model: InstanceModelDraw) => void;
   setEditModeAction: (action: EditModeAction) => void;
-  onSetNewPhysicsData: (data: PhysicsData) => void;
+  onSetNewPhysicsData: (instanceId: string, data: PhysicsData) => void;
 }
 
 type EditModeStore = EditModeState & EditModeActions;
@@ -176,8 +173,12 @@ export const useEditModeStore = create<EditModeStore>()((set) => ({
   },
   setInstanceModelDraw: (model: InstanceModelDraw) =>
     set({ instanceModelDraw: model }),
-  onSetNewPhysicsData: (data: PhysicsData) => {
-    set({ editedPhysicsData: data });
+  onSetNewPhysicsData: (instanceId, data: PhysicsData) => {
+    set((s) => ({
+      instances: s.instances.map((x) =>
+        x.id === instanceId ? { ...x, physicsData: data } : x
+      ),
+    }));
   },
   setPublicUid: (uid: string | null) => set({ uid }),
 }));

@@ -4,7 +4,8 @@ import { useEditModeStore } from "../../store/useEditModeStore";
 import { TransformMode } from "@/config/three-world/transform.config";
 
 const CheckTransformControl = () => {
-  const { setEditTransformMode, editTransformMode } = useEditModeStore();
+  const setEditTransformMode = useEditModeStore((s) => s.setEditTransformMode);
+  const editTransformMode = useEditModeStore((s) => s.editTransformMode);
   return (
     <ToggleGroup
       className="w-full bg-background/10"

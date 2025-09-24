@@ -8,7 +8,7 @@ import {
 } from "../../store/useEditModeStore";
 import { MeshShaderData } from "../edit-mode/switch-load-models/load.model";
 import { UpHint } from "../edit-mode/draw-mesh/hooks/useCreatePivotPoint";
-import { DispabledPhysics, TypeModel } from "../../config/3d-model.config";
+import { TypeModel } from "../../config/3d-model.config";
 import AddSimpleInstancedModelWrap from "../edit-mode/draw-mesh/simple-model/add-simple-instanced-model";
 import LoadSimpleModel from "../edit-mode/switch-load-models/load-simple-model";
 import { Key } from "@/config/key";
@@ -39,8 +39,8 @@ export default function AddSimpleInstanceModel({
   const isMatrixUpdate = useRef(false);
   const [meshData, setMeshData] = useState<MeshShaderData | null>(null);
   const [newMatrices, setNewMatrices] = useState<Matrix4[][]>(metrices);
-  const { setStatusServer, editedPhysicsData, onSetNewPhysicsData } =
-    useEditModeStore();
+  const setStatusServer = useEditModeStore((s) => s.setStatusServer);
+  const instanceData = useEditModeStore((s) => s.instances);
   const [isAddModel, setIsAddModel] = useState(false);
   const drawMaterial = useMemo(
     () => (meshData ? meshData.material.clone() : null),
@@ -60,12 +60,12 @@ export default function AddSimpleInstanceModel({
           type: type,
           hintMode: hint,
         },
-        editedPhysicsData
+        instanceData.find((i) => i.name === fileName)?.physicsData ||
+          physicsData
       ).then(() => {
         setStatusServer(StatusServer.loaded);
         setNewMatrices(data);
         isMatrixUpdate.current = false; // СКИДАЙ прапорець після успіху
-        onSetNewPhysicsData(DispabledPhysics);
       });
     },
     [
@@ -74,8 +74,8 @@ export default function AddSimpleInstanceModel({
       type,
       hint,
       setStatusServer,
-      editedPhysicsData,
-      onSetNewPhysicsData,
+      physicsData,
+      instanceData,
     ]
   );
 

@@ -407,6 +407,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
       () => props.gravityScale ?? 1,
       [props.gravityScale]
     );
+    const fallTimerRef = useRef(0);
 
     useCharacterCreateTexture({
       characterRigidBody: characterRef.current,
@@ -836,9 +837,16 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         } else if (!canJump) {
           jumpIdleAnimation();
         }
-        // On high sky, play falling animation
+        // --- оновлена логіка падіння ---
         if (rayHit == null && isFalling) {
-          fallAnimation();
+          // накопичуємо час, поки триває падіння
+          fallTimerRef.current += delta;
+          if (fallTimerRef.current >= 0.22) {
+            fallAnimation();
+          }
+        } else {
+          // скидаємо, якщо приземлились або не падаємо
+          fallTimerRef.current = 0;
         }
       }
     });
