@@ -1,6 +1,6 @@
-import { JSX, useEffect, useRef } from "react";
+import { JSX, useEffect, useMemo, useRef } from "react";
 import { useGLTF } from "@react-three/drei";
-import { Group, Mesh } from "three";
+import { Group, Mesh, MeshStandardMaterial } from "three";
 import { TrimeshRobot } from "./trimesh-robot";
 import { publicModelPath } from "../../../config/3d-model.config";
 import { useEditModeStore } from "../../../store/useEditModeStore";
@@ -18,6 +18,18 @@ export function Robot({ ...props }: Props) {
       setTargetMesh(groupRef.current);
     }
   }, [setTargetMesh]);
+
+  const matRobotF = useMemo(() => {
+    const m = (materials["robot_2.001"] as MeshStandardMaterial).clone();
+    m.color.multiplyScalar(1); // 60% яскравості
+    return m;
+  }, [materials]);
+
+  const matRobotT = useMemo(() => {
+    const m = (materials["robot.003"] as MeshStandardMaterial).clone();
+    m.color.multiplyScalar(1); // 60% яскравості
+    return m;
+  }, [materials]);
   return (
     <>
       <group {...props} dispose={null} ref={groupRef}>
@@ -25,13 +37,13 @@ export function Robot({ ...props }: Props) {
           castShadow
           receiveShadow
           geometry={(nodes.Cube216 as Mesh).geometry}
-          material={materials["robot_2.001"]}
+          material={matRobotF}
         />
         <mesh
           castShadow
           receiveShadow
           geometry={(nodes.Cube216_1 as Mesh).geometry}
-          material={materials["robot.003"]}
+          material={matRobotT}
         />
         <mesh
           castShadow
