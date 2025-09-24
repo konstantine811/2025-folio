@@ -32,7 +32,7 @@ const useCharacterSfx = () => {
   }, [onGround]);
 
   useEffect(() => {
-    if (!onGround && curAnimation === animationSet.jump) {
+    if (onGround && curAnimation === animationSet.jump) {
       jumpSound.play("first");
     }
   }, [onGround, curAnimation]);

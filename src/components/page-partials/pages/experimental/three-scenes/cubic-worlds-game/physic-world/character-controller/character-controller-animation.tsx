@@ -3,12 +3,15 @@ import { useEffect, useRef, Suspense } from "react";
 import { useGameStore } from "./stores/game-store";
 import {
   AnimationAction,
+  AnimationClip,
   AnimationMixer,
   AnimationMixerEventMap,
+  EventListener,
   Group,
   LoopOnce,
+  LoopRepeat,
 } from "three";
-import { AnimationSet } from "./config/character.config";
+import { animationSet, AnimationSet } from "./config/character.config";
 import { useGameDataStore } from "./stores/game-data-store";
 import useCharacterSfx from "./hooks/useCharacterSfx";
 
@@ -31,6 +34,7 @@ const CharacterControllerAnimation = (
    * Character animations setup
    */
   const curAnimation = useGameStore((state) => state.curAnimation);
+  const action1 = useGameStore((state) => state.action1);
   const resetAnimation = useGameStore((state) => state.resetAnimation);
   const initializeAnimationSet = useGameStore(
     (state) => state.initializeAnimationSet
@@ -94,6 +98,31 @@ const CharacterControllerAnimation = (
       mixer.removeEventListener("finished", onFinished);
     };
   }, [curAnimation, props.animationSet, group, actions, resetAnimation]);
+
+  useEffect(() => {
+    // ---- Постійне кліпання: грає паралельно завжди
+    const blink = actions[animationSet.blink];
+    if (!blink) return;
+
+    blink
+      .reset()
+      .setLoop(LoopRepeat, Infinity)
+      .setEffectiveWeight(1)
+      .fadeIn(0.3) // повна вага кліпу
+      .play();
+
+    // за бажанням прискорити/сповільнити:
+    blink.timeScale = 1; // 1 = як в Blender’і
+  }, [actions]);
+
+  useEffect(() => {
+    const onClick = () => {
+      action1();
+    };
+
+    window.addEventListener("click", onClick);
+    return () => window.removeEventListener("click", onClick);
+  }, [action1]);
 
   return (
     <Suspense fallback={null}>

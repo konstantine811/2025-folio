@@ -407,7 +407,6 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
       () => props.gravityScale ?? 1,
       [props.gravityScale]
     );
-    const fallTimerRef = useRef(0);
 
     useCharacterCreateTexture({
       characterRigidBody: characterRef.current,
@@ -730,7 +729,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         initialGravityScale,
         fallingGravityScale
       );
-
+      setOnGround(canJump);
       if (autoBalance && characterRef.current) {
         autoBalanceCharacter(
           characterRef.current,
@@ -839,15 +838,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         // --- оновлена логіка падіння ---
         if (rayHit == null && isFalling) {
           // накопичуємо час, поки триває падіння
-          fallTimerRef.current += delta;
-          if (fallTimerRef.current >= 0.22) {
-            fallAnimation();
-            setOnGround(false);
-          }
-        } else {
-          // скидаємо, якщо приземлились або не падаємо
-          fallTimerRef.current = 0;
-          setOnGround(true);
+          fallAnimation();
         }
       }
     });

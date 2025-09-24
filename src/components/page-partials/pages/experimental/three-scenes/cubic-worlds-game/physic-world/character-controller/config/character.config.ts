@@ -39,7 +39,10 @@ export const animationSet = {
   idle: "Idle",
   walk: "Walk",
   run: "Run",
-  jump: "FallingIdle",
-  jumpIdle: "FallingIdle",
-  fall: "FallingIdle",
+  jump: "Fall",
+  jumpIdle: "Fall",
+  fall: "Fall",
+  blink: "eye_blink",
+  fightHand: "attack_spin",
+  action1: "atack_spin",
 };
