@@ -91,7 +91,6 @@ export default function AttachHandCollider({
       name?: string;
     };
     punchSound.play("first");
-    console.log("HIT", userData);
     if (userData && userData.breakable && userData.name) {
       boxTakeDamage(userData.name, 100);
     }

@@ -19,6 +19,7 @@ const isDev = window.location.hostname === "localhost";
 const Init = () => {
   const setPublicUid = useEditModeStore((s) => s.setPublicUid);
   const uid = import.meta.env.VITE_CONSTANTINE_UID;
+  console.log("Public uid from .env:", uid);
   setPublicUid(uid);
   useEnvSound({ volume: 0.1 });
   return (

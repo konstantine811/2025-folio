@@ -11,26 +11,29 @@ export function useScatters({ userUid }: { userUid?: string }) {
   const [data, setData] = useState<ScatterWithData[]>([]);
   const [loading, setLoading] = useState(true);
   const statusServer = useEditModeStore((s) => s.statusServer);
-  const fetchData = useCallback((mounted: boolean) => {
-    getCachedScatters({ uid: userUid }).then((cached) => {
-      if (!mounted) return;
-      setData(cached);
-      setLoading(false);
-    });
+  const fetchData = useCallback(
+    (mounted: boolean) => {
+      getCachedScatters({ uid: userUid }).then((cached) => {
+        if (!mounted) return;
+        setData(cached);
+        setLoading(false);
+      });
 
-    // 2   ) фонове (для UI) оновлення з бекенду + оновлення стейту, якщо є різниця
-    refreshScattersFromNetwork({ uid: userUid }).then((fresh) => {
-      if (!mounted) return;
-      // просте порівняння за довжиною/updatedAt; за потреби зроби глибше порівняння
-      const hasChange =
-        fresh.length !== data.length ||
-        fresh.some(
-          (f, i) =>
-            f.name !== data[i]?.name || f.updatedAt !== data[i]?.updatedAt
-        );
-      if (hasChange) setData(fresh);
-    });
-  }, []);
+      // 2   ) фонове (для UI) оновлення з бекенду + оновлення стейту, якщо є різниця
+      refreshScattersFromNetwork({ uid: userUid }).then((fresh) => {
+        if (!mounted) return;
+        // просте порівняння за довжиною/updatedAt; за потреби зроби глибше порівняння
+        const hasChange =
+          fresh.length !== data.length ||
+          fresh.some(
+            (f, i) =>
+              f.name !== data[i]?.name || f.updatedAt !== data[i]?.updatedAt
+          );
+        if (hasChange) setData(fresh);
+      });
+    },
+    [userUid]
+  );
 
   useEffect(() => {
     let mounted = true;
