@@ -9,9 +9,10 @@ import {
   Vector3,
   Quaternion,
 } from "three";
-import { InstancedRigidBodies } from "@react-three/rapier";
+import { InstancedRigidBodies, interactionGroups } from "@react-three/rapier";
 import useCreateInstancedMesh from "./hooks/useCreateInstancedMesh";
 import { PhysicsData } from "../../../store/useEditModeStore";
+import { CollisionWorldType } from "../../../../config/collision";
 
 type Props = {
   matrices: Matrix4[];
@@ -69,6 +70,7 @@ const AddModelPhysics = ({
       friction={physicsData.friction}
       mass={physicsData.mass}
       userData={{ isGround: true }}
+      collisionGroups={interactionGroups(CollisionWorldType.boxes)}
     >
       <instancedMesh
         ref={meshRef}

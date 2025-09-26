@@ -32,7 +32,7 @@ export function Robot({ ...props }: Props) {
   }, [materials]);
   return (
     <>
-      <group {...props} dispose={null} ref={groupRef}>
+      <group {...props} dispose={null} ref={groupRef} frustumCulled={true}>
         <mesh
           castShadow
           receiveShadow

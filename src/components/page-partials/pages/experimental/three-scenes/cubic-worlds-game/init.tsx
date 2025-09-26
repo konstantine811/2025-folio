@@ -12,6 +12,7 @@ import "./preload-data/preload-gltf-model";
 import ThreeLoader from "../common/three-loader";
 import EditModeInit from "./physic-world/edit-mode/edit-mode-init";
 import Pause from "./ui/pause";
+import useEnvSound from "./hooks/useEnvSound";
 
 const isDev = window.location.hostname === "localhost";
 
@@ -19,7 +20,7 @@ const Init = () => {
   const setPublicUid = useEditModeStore((s) => s.setPublicUid);
   const uid = import.meta.env.VITE_CONSTANTINE_UID;
   setPublicUid(uid);
-
+  useEnvSound({ volume: 0.1 });
   return (
     <MainWrapperOffset>
       <InitKeyboardController />

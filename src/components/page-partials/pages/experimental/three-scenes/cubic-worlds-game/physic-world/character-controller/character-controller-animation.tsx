@@ -69,7 +69,6 @@ const CharacterControllerAnimation = (
 
   useEffect(() => {
     // вибираємо дію
-    console.log("click");
     const key = curAnimation ?? props.animationSet.jumpIdle;
     const action: AnimationAction | undefined = key
       ? actions[key] ?? undefined

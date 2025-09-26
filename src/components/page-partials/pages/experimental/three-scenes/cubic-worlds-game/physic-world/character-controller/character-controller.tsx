@@ -843,60 +843,65 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
       }
     });
     return (
-      <RigidBody
-        ccd
-        softCcdPrediction={0.4}
-        contactSkin={0.02}
-        colliders={false}
-        ref={characterRef}
-        position={props.position || [0, 5, 0]}
-        friction={props.friction || -0.5}
-        collisionGroups={interactionGroups(CollisionWorldType.mainCharacter)}
-        onContactForce={(e) =>
-          bodyContactForce.set(e.totalForce.x, e.totalForce.y, e.totalForce.z)
-        }
-        onCollisionExit={() => bodyContactForce.set(0, 0, 0)}
-        userData={{ canJump: false }}
-        {...props}
-      >
-        <CapsuleCollider
-          name="character-capsule-collider"
-          args={[capsuleHalfHeight, capsuleRadius]}
-        />
-        {/* Body collide sensor (only for point to move mode) */}
-        {isModePointToMove && (
-          <CylinderCollider
-            ref={bodySensorRef}
-            sensor
-            mass={0}
-            args={[bodySensorSize[0], bodySensorSize[1]]}
-            position={[
-              bodySensorPosition.x,
-              bodySensorPosition.y,
-              bodySensorPosition.z,
-            ]}
-            onIntersectionEnter={handleOnIntersectionEnter}
-            onIntersectionExit={handleOnIntersectionExit}
+      <group position={[10, 0, 10]}>
+        <RigidBody
+          ccd
+          softCcdPrediction={0.4}
+          contactSkin={0.02}
+          colliders={false}
+          ref={characterRef}
+          position={props.position || [0, 5, 0]}
+          friction={props.friction || -0.5}
+          collisionGroups={interactionGroups(CollisionWorldType.mainCharacter)}
+          onContactForce={(e) =>
+            bodyContactForce.set(e.totalForce.x, e.totalForce.y, e.totalForce.z)
+          }
+          onCollisionExit={() => bodyContactForce.set(0, 0, 0)}
+          userData={{ canJump: false }}
+          {...props}
+        >
+          <CapsuleCollider
+            name="character-capsule-collider"
+            args={[capsuleHalfHeight, capsuleRadius]}
           />
-        )}
-        <group ref={characterModelRef} userData={{ camExcludeCollision: true }}>
-          {/* This mesh is used for positioning the slope ray origin */}
-          <mesh
-            position={[
-              rayOriginOffest.x,
-              rayOriginOffest.y,
-              rayOriginOffest.z + slopeRayOriginOffest,
-            ]}
-            ref={slopeRayOriginRef}
-            visible={showSlopeRayOrigin}
-            userData={{ camExcludeCollision: true }} // this won't be collide by camera ray
+          {/* Body collide sensor (only for point to move mode) */}
+          {isModePointToMove && (
+            <CylinderCollider
+              ref={bodySensorRef}
+              sensor
+              mass={0}
+              args={[bodySensorSize[0], bodySensorSize[1]]}
+              position={[
+                bodySensorPosition.x,
+                bodySensorPosition.y,
+                bodySensorPosition.z,
+              ]}
+              onIntersectionEnter={handleOnIntersectionEnter}
+              onIntersectionExit={handleOnIntersectionExit}
+            />
+          )}
+          <group
+            ref={characterModelRef}
+            userData={{ camExcludeCollision: true }}
           >
-            <boxGeometry args={[0.15, 0.15, 0.15]} />
-          </mesh>
-          {/* Character model */}
-          {children}
-        </group>
-      </RigidBody>
+            {/* This mesh is used for positioning the slope ray origin */}
+            <mesh
+              position={[
+                rayOriginOffest.x,
+                rayOriginOffest.y,
+                rayOriginOffest.z + slopeRayOriginOffest,
+              ]}
+              ref={slopeRayOriginRef}
+              visible={showSlopeRayOrigin}
+              userData={{ camExcludeCollision: true }} // this won't be collide by camera ray
+            >
+              <boxGeometry args={[0.15, 0.15, 0.15]} />
+            </mesh>
+            {/* Character model */}
+            {children}
+          </group>
+        </RigidBody>
+      </group>
     );
   }
 );

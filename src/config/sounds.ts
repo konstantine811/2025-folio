@@ -4,8 +4,8 @@ function getEfxPath(name: string): string {
   return `/sound/ui-efx/${name}.mp3`;
 }
 
-function getGameEfxPath(name: string): string {
-  return `/sound/game-sfx/${name}.mp3`;
+function getGameEfxPath(name: string, format = "mp3"): string {
+  return `/sound/game-sfx/${name}.${format}`;
 }
 // sounds.ts
 export const buttonHoverSound = new Howl({
@@ -171,6 +171,23 @@ export const jumpLandSound = new Howl({
   rate: 1.2,
   sprite: {
     first: [1894, 500],
+  },
+});
+
+export const whooshHandSound = new Howl({
+  src: [getGameEfxPath("whoosh_hand", "wav")],
+  volume: 1,
+  loop: false,
+  rate: 0.8,
+});
+
+export const punchSound = new Howl({
+  src: [getGameEfxPath("punch")],
+  volume: 0.5,
+  loop: false,
+  rate: 1,
+  sprite: {
+    first: [0, 1000],
   },
 });
 

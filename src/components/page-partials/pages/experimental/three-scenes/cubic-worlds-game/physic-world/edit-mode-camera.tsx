@@ -5,6 +5,7 @@ import { animationSet } from "./character-controller/config/character.config";
 import CharacterControllerModel from "./character-controller/character-controller-model";
 import { useEditModeStore } from "../store/useEditModeStore";
 import AttachCharacterStaff from "./character/attach-character-staff";
+import AttachHandCollider from "./character/attach-hand-collider";
 
 const EditModeCamera = () => {
   const isEditMode = useEditModeStore((s) => s.isEditMode);
@@ -31,6 +32,7 @@ const EditModeCamera = () => {
         </CharacterControllerAnimation>
       </CompolexController>
       <AttachCharacterStaff />
+      <AttachHandCollider />
     </>
   );
 };
