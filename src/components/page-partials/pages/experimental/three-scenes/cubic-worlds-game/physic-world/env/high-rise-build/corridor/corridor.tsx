@@ -7,7 +7,7 @@ import { JSX } from "react";
 import { publicModelPath } from "../../../../config/3d-model.config";
 import { interactionGroups, RigidBody } from "@react-three/rapier";
 import { CollisionWorldType } from "../../../../../config/collision";
-import { Mesh } from "three";
+import { BackSide, Mesh } from "three";
 import CorridorLight from "./corridor-light";
 
 type Props = JSX.IntrinsicElements["group"] & {};
@@ -31,6 +31,7 @@ export default function Corridor(props: Props) {
           material={materials.Brownstone_Facade_Flr_2}
           position={[9.857, -24.036, 24.799]}
           scale={1.446}
+          material-side={BackSide}
         />
         <mesh
           castShadow
@@ -39,6 +40,7 @@ export default function Corridor(props: Props) {
           material={materials.floor_betton}
           position={[9.857, -24.036, 24.799]}
           scale={1.446}
+          material-side={BackSide}
         />
         <mesh
           castShadow
@@ -47,6 +49,7 @@ export default function Corridor(props: Props) {
           material={materials.Brownstone_Facade_Flr_2}
           position={[9.857, -24.036, 24.799]}
           scale={1.446}
+          material-side={BackSide}
         />
         <mesh
           castShadow
@@ -55,6 +58,7 @@ export default function Corridor(props: Props) {
           material={materials.Brownstone_Facade_Flr_2}
           position={[9.857, -24.036, 24.799]}
           scale={1.446}
+          material-side={BackSide}
         />
         <mesh
           castShadow
@@ -63,6 +67,7 @@ export default function Corridor(props: Props) {
           material={materials.floor_betton}
           position={[9.857, -24.036, 24.799]}
           scale={1.446}
+          material-side={BackSide}
         />
         <mesh
           castShadow
@@ -71,6 +76,7 @@ export default function Corridor(props: Props) {
           material={materials.Brownstone_Facade_Flr_2}
           position={[9.857, -24.036, 24.799]}
           scale={1.446}
+          material-side={BackSide}
         />
         <mesh
           castShadow
@@ -79,6 +85,7 @@ export default function Corridor(props: Props) {
           material={materials.Brownstone_Facade_Flr_2}
           position={[9.857, -24.036, 24.799]}
           scale={1.446}
+          material-side={BackSide}
         />
         <mesh
           castShadow
@@ -87,6 +94,7 @@ export default function Corridor(props: Props) {
           material={materials.Brownstone_Facade_Flr_2}
           position={[9.857, -24.036, 24.799]}
           scale={1.446}
+          material-side={BackSide}
         />
       </RigidBody>
     </group>
