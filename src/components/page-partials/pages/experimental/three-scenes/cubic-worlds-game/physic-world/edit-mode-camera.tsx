@@ -6,6 +6,7 @@ import CharacterControllerModel from "./character-controller/character-controlle
 import { useEditModeStore } from "../store/useEditModeStore";
 import AttachCharacterStaff from "./character/attach-character-staff";
 import AttachHandCollider from "./character/attach-hand-collider";
+import { Vector3 } from "three";
 
 const EditModeCamera = () => {
   const isEditMode = useEditModeStore((s) => s.isEditMode);
@@ -18,6 +19,9 @@ const EditModeCamera = () => {
         capsuleHalfHeight={0.6}
         followLight
         disableControl={isEditMode}
+        camMinDis={-0.2}
+        camTargetPos={new Vector3(0, 0, 0)}
+        camMaxDis={-7}
         maxVelLimit={3}
         sprintMult={3}
       >

@@ -28,7 +28,7 @@ const Init = () => {
       {isDev && <Stats />}
       {(!uid || isDev) && <UI />}
       {!isDev && <ThreeLoader />}
-      <Pause />
+      {/* <Pause /> */}
       <Canvas shadows camera={{ position: [5, 3, 5], fov: 70 }}>
         <color attach="background" args={["#698FF3"]} />
 

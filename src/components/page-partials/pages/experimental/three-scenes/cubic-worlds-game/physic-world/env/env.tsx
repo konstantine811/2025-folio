@@ -9,7 +9,8 @@ import { Campfire } from "./campfire/campfire";
 import { Tent } from "./tent/tent";
 import { BedRoll } from "./tent/bedroll";
 import BreakableCrate from "./box-crash/box-crash";
-import HighRiseBuild from "./high-rise-build/high-rise-build";
+import OwnHouse from "./own-house/own-house";
+// import HighRiseBuild from "./high-rise-build/high-rise-build";
 // import GrassWrapper from "../../grass/grass-wrapper";
 
 const Environment = () => {
@@ -18,7 +19,8 @@ const Environment = () => {
       {/* <HouseModel position={[-20, 0, 40]} /> */}
       <Lights />
       <Scatters />
-      <HighRiseBuild position={[60, 25, 10]} rotation={[0, -Math.PI / 2, 0]} />
+      <OwnHouse position={[37, 0, 16]} rotation={[0, Math.PI, 0]} />
+      {/* <HighRiseBuild position={[60, 25, 10]} rotation={[0, -Math.PI / 2, 0]} /> */}
       <BreakableCrate idBox="box-first" position={[0, 1, 0]} scale={3} />
       <BreakableCrate idBox="box-second" position={[8, 5, 5]} scale={3} />
       <BreakableCrate idBox="box-third" position={[6, 5, -5]} scale={3} />
