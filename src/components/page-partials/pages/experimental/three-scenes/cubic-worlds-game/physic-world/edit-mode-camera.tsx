@@ -7,6 +7,7 @@ import { useEditModeStore } from "../store/useEditModeStore";
 import AttachCharacterStaff from "./character/attach-character-staff";
 import AttachHandCollider from "./character/attach-hand-collider";
 import { Vector3 } from "three";
+import { Models } from "../config/3d-model.config";
 
 const EditModeCamera = () => {
   const isEditMode = useEditModeStore((s) => s.isEditMode);
@@ -26,12 +27,12 @@ const EditModeCamera = () => {
         sprintMult={3}
       >
         <CharacterControllerAnimation
-          characterURL="/3d-models/characters/constantine_character.glb"
+          characterURL={Models.mainCharacter}
           animationSet={animationSet}
         >
           <CharacterControllerModel
             position={[0, -0.9, 0]}
-            path="/3d-models/characters/constantine_character.glb"
+            path={Models.mainCharacter}
           />
         </CharacterControllerAnimation>
       </CompolexController>

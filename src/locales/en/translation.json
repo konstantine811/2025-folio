@@ -15,6 +15,13 @@
   "hobbies": "Hobbies",
   "leisure": "Leisure",
   "pickDate": "Pick a date",
+  "cubic_worlds_game": {
+    "pause": {
+      "title": "Pause",
+      "description": "Game is paused. Press the button to continue.",
+      "resume": "Resume"
+    }
+  },
   "months": [
     "January",
     "February",

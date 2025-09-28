@@ -7,6 +7,7 @@ export enum Key {
   C = "KeyC",
   V = "KeyV",
   A = "KeyA",
+  P = "KeyP",
   ESC = "Escape",
   ENTER = "Enter",
   SPACE = "Space",

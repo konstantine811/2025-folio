@@ -5,6 +5,10 @@ export function publicModelPath(model: string) {
   return `/3d-models/cubic-worlds-model/${model}`;
 }
 
+export const Models = {
+  mainCharacter: "/3d-models/characters/constantine_character.glb",
+};
+
 export enum TypeModel {
   simple = "simple",
   winder = "winder",
