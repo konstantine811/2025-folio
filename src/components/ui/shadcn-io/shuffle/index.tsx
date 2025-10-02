@@ -245,7 +245,7 @@ const Shuffle: React.FC<ShuffleProps> = ({
         onRepeat: () => {
           if (scrambleCharset) randomizeScrambles();
           gsap.set(strips, {
-            x: (i, t: HTMLElement) =>
+            x: (_, t: HTMLElement) =>
               parseFloat(t.getAttribute("data-start-x") || "0"),
           });
           onShuffleComplete?.();

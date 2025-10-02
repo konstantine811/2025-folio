@@ -40,7 +40,7 @@ const FirstSection = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 4, duration: 1.5 }}
+              transition={{ delay: 2, duration: 1.5 }}
               className="flex items-end justify-end text-xl text-foreground/60"
             >
               <h3>
@@ -58,7 +58,7 @@ const FirstSection = () => {
                 type: "spring",
                 bounce: 0.2,
                 duration: 3,
-                delay: 4.05,
+                delay: 2.05,
               }}
             >
               <Trans
