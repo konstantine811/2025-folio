@@ -105,30 +105,28 @@ const useStartSound = ({
   useEffect(() => {
     if (!unlocked) return;
 
+    // ⬇️ якщо звук відключено — не створюємо/не граємо нічого
+    if (!isSoundEnabled) return;
+
     const prev = howlRef.current;
 
-    // Якщо пауза — готуємо трек «тихо» і не запускаємо його
     if (isGameStarted) {
       prev?.unload();
       const h = createHowl(index, 0);
       howlRef.current = h;
-      // НЕ запускаємо h.play() поки на паузі
       return () => h.unload();
     }
 
-    // ---- звичайний сценарій (без паузи) ----
     if (crossfadeMs > 0 && prev) {
       const prevId = playingIdRef.current ?? undefined;
 
       const next = createHowl(index, 0);
       howlRef.current = next;
 
-      // play нового з 0 → volume
       const nextId = next.play();
       playingIdRef.current = nextId;
       next.fade(0, volume, crossfadeMs, nextId);
 
-      // затухання старого за його prevId і розвантаження
       prev.fade(prev.volume(), 0, crossfadeMs, prevId);
       const t = setTimeout(() => prev.unload(), crossfadeMs + 60);
       return () => clearTimeout(t);
@@ -142,20 +140,41 @@ const useStartSound = ({
     return () => {
       h.unload();
     };
-  }, [unlocked, index, createHowl, crossfadeMs, volume, isGameStarted]);
+  }, [
+    unlocked,
+    index,
+    createHowl,
+    crossfadeMs,
+    volume,
+    isGameStarted,
+    isSoundEnabled,
+  ]); // ⬅️ додали залежність
 
+  // 🔧 ЕФЕКТ на isSoundEnabled — глобальний mute, БЕЗ unload у cleanup
   useEffect(() => {
-    if (!isSoundEnabled) {
-      howlRef.current?.stop();
-    } else {
-      howlRef.current?.play();
-    }
-    return () => {
-      howlRef.current?.unload();
-    };
-  }, [isSoundEnabled]);
+    // глобально вимикаємо/вмикаємо звук для всіх Howl
+    Howler.mute(!isSoundEnabled);
 
-  // Реакція на зміну isPaused: fade до 0 + pause(), або play() + fade до volume
+    const h = howlRef.current;
+    const id = playingIdRef.current ?? undefined;
+
+    if (!h || !id) return;
+
+    if (!isSoundEnabled) {
+      // для економії CPU ставимо на паузу
+      if (h.playing(id)) h.pause(id);
+    } else {
+      // відновлюємо лише якщо вже можна грати
+      if (unlocked && !isGameStarted && !h.playing(id)) {
+        const newId = h.play(id);
+        if (typeof newId === "number") playingIdRef.current = newId;
+      }
+    }
+
+    // ❌ НЕ робимо h.unload() в cleanup!
+  }, [isSoundEnabled, unlocked, isGameStarted]);
+
+  // 🧯 ЕФЕКТ реакції на паузу гри — без змін (можна лишити ваш)
   useEffect(() => {
     if (!unlocked) return;
     const h = howlRef.current;
@@ -163,6 +182,7 @@ const useStartSound = ({
 
     const id = playingIdRef.current ?? undefined;
     if (!id) return;
+
     if (isGameStarted) {
       const from = h.volume(id) as number;
       h.fade(from, 0, 300, id);
@@ -171,7 +191,6 @@ const useStartSound = ({
       }, 320);
       return () => clearTimeout(t);
     } else {
-      // якщо було на паузі — відновлюємо
       if (!h.playing(id)) {
         const newId = h.play(id);
         playingIdRef.current =
