@@ -41,15 +41,15 @@ const TaskAnalytics = lazyPage(
   () => import("../components/page-partials/pages/task-manager/pages/Analytics")
 );
 
-const Test = lazyPage(
-  () => import("../components/page-partials/pages/experimental/test")
-);
-const BirdyBeats = lazyPage(
-  () =>
-    import(
-      "../components/page-partials/pages/experimental/bidry-beats/bidry-beats"
-    )
-);
+// const Test = lazyPage(
+//   () => import("../components/page-partials/pages/experimental/test")
+// );
+// const BirdyBeats = lazyPage(
+//   () =>
+//     import(
+//       "../components/page-partials/pages/experimental/bidry-beats/bidry-beats"
+//     )
+// );
 const ThreePhysicsEngine = lazyPage(
   () =>
     import(
