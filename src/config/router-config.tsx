@@ -483,7 +483,7 @@ export const router: AppRoute[] = [
     Component: HomePage,
     isNav: true,
     id: "home",
-    isDev: true, // Set to true for development purposes
+    isDev: false, // Set to true for development purposes
   },
   {
     path: RoutPath.EXPERIMENTAL,
