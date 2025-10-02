@@ -29,6 +29,8 @@ export type AnimationSet = {
   action2?: string;
   action3?: string;
   action4?: string;
+  sleeping?: string;
+  standUp?: string;
 };
 
 export enum SceneObjectName {
@@ -45,4 +47,6 @@ export const animationSet = {
   blink: "eye_blink",
   fightHand: "stable_attack",
   action1: "stable_attack",
+  sleeping: "Sleep_Idle",
+  standUp: "Standing_Up",
 };

@@ -10,6 +10,7 @@ export interface GameState {
   currentPosition: { x: number; y: number; z: number };
   onGround?: boolean;
   grassMaterial: THREE.ShaderMaterial | null;
+  isDisableTriggerAnim: boolean;
 }
 
 export const initialGameState: GameState = {
@@ -19,6 +20,7 @@ export const initialGameState: GameState = {
   currentPosition: { x: 0, y: 0, z: 0 },
   onGround: true,
   grassMaterial: null,
+  isDisableTriggerAnim: false,
 };
 
 type GameActions = {
@@ -37,11 +39,12 @@ type GameActions = {
   action2: () => void;
   action3: () => void;
   action4: () => void;
-
+  sleeping: () => void;
+  standUp: () => void;
   setMoveToPoint: (v: THREE.Vector3 | null) => void;
   onMove: (pos: { x: number; y: number; z: number }) => void;
   setOnGround: (v: boolean) => void;
-
+  setIsDisableTriggerAnim: (v: boolean) => void;
   // (за бажанням) універсальні сетери:
   setStatePartial: (partial: Partial<GameState>) => void;
 };
@@ -66,7 +69,7 @@ export const useGameStore = create<GameStore>((set) => ({
         ? { animationSet: animSet }
         : state
     ),
-
+  setIsDisableTriggerAnim: (v) => set({ isDisableTriggerAnim: v }),
   resetAnimation: () =>
     set((state) => ({ curAnimation: state.animationSet.idle || null })),
 
@@ -137,12 +140,16 @@ export const useGameStore = create<GameStore>((set) => ({
     ),
 
   action1: () =>
-    set((state) =>
-      state.animationSet.action1 &&
-      state.curAnimation === state.animationSet.idle
-        ? { curAnimation: state.animationSet.action1 }
-        : {}
-    ),
+    set((state) => {
+      if (
+        state.animationSet.action1 &&
+        state.curAnimation === state.animationSet.idle
+      ) {
+        return { curAnimation: state.animationSet.action1 };
+      } else {
+        return {};
+      }
+    }),
 
   action2: () =>
     set((state) =>
@@ -171,7 +178,16 @@ export const useGameStore = create<GameStore>((set) => ({
         ? { curAnimation: state.animationSet.action4 }
         : {}
     ),
-
+  sleeping: () => {
+    set((state) => ({ curAnimation: state.animationSet.sleeping }));
+  },
+  standUp: () =>
+    set((state) =>
+      state.animationSet.standUp &&
+      state.curAnimation === state.animationSet.sleeping
+        ? { curAnimation: state.animationSet.standUp }
+        : {}
+    ),
   setMoveToPoint: (v) => set({ moveToPoint: v }),
   onMove: (pos) => set({ currentPosition: pos }),
   setOnGround: (v) => set({ onGround: v }),

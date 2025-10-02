@@ -9,6 +9,7 @@ import {
   RigidBodyAutoCollider,
   RigidBodyTypeString,
 } from "@react-three/rapier";
+import { CameraControls } from "@react-three/drei";
 
 export enum StatusServer {
   start = "start",
@@ -44,6 +45,7 @@ export interface InstanceObject {
 }
 interface EditModeState {
   uid: string | null;
+  cameraControls: CameraControls | null;
   targets: Object3D[];
   isEditMode: boolean;
   isPhysicsDebug: boolean;
@@ -55,11 +57,14 @@ interface EditModeState {
   scatterModelDraw: InstanceModelDraw;
   instanceModelDraw: InstanceModelDraw;
   editModeAction: EditModeAction;
+  isDebug: boolean;
+  isEditModeEnabled: boolean;
 }
 
 const initialState: EditModeState = {
   uid: null,
   targets: [],
+  cameraControls: null,
   isEditMode: false,
   isPhysicsDebug: false,
   instances: [],
@@ -70,6 +75,8 @@ const initialState: EditModeState = {
   scatterModelDraw: PainterModelConfig[0],
   instanceModelDraw: PainterModelConfig[0],
   editModeAction: EditModeAction.none,
+  isDebug: false,
+  isEditModeEnabled: true,
 };
 
 interface EditModeActions {
@@ -89,6 +96,9 @@ interface EditModeActions {
   setInstanceModelDraw: (model: InstanceModelDraw) => void;
   setEditModeAction: (action: EditModeAction) => void;
   onSetNewPhysicsData: (instanceId: string, data: PhysicsData) => void;
+  setCameraControls: (controls: CameraControls) => void;
+  setIsDebug: (isDebug: boolean) => void;
+  setIsEditModeEnabled: (isEnabled: boolean) => void;
 }
 
 type EditModeStore = EditModeState & EditModeActions;
@@ -181,4 +191,9 @@ export const useEditModeStore = create<EditModeStore>()((set) => ({
     }));
   },
   setPublicUid: (uid: string | null) => set({ uid }),
+  setCameraControls: (controls: CameraControls) =>
+    set({ cameraControls: controls }),
+  setIsDebug: (isDebug: boolean) => set({ isDebug }),
+  setIsEditModeEnabled: (isEnabled: boolean) =>
+    set({ isEditModeEnabled: isEnabled }),
 }));

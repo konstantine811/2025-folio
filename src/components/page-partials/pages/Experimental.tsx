@@ -1,11 +1,9 @@
-import TestDrawerOpen from "./experimental/test-drawer-open";
-import { Outlet } from "react-router";
+import Test from "./experimental/test";
 
 const Experimental = () => {
   return (
     <>
-      <Outlet />
-      <TestDrawerOpen />
+      <Test />
     </>
   );
 };

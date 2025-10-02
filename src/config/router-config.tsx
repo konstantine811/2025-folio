@@ -1,200 +1,212 @@
 import AuthGuard from "@/components/auth/auth-guard";
 import { AppRoute } from "@/types/route";
 import { ChartSpline, LayoutDashboard } from "lucide-react";
-import { lazy } from "react";
+import { lazy, type ComponentType, type LazyExoticComponent } from "react";
 import { Navigate } from "react-router";
 
-const HomePage = lazy(() => import("../components/page-partials/pages/Home"));
-const ExperimentalPage = lazy(
+type Routable = ComponentType<object>;
+
+export function lazyPage<P extends object>(
+  loader: () => Promise<{ default: ComponentType<P> }>
+): LazyExoticComponent<Routable> {
+  return lazy(loader) as LazyExoticComponent<Routable>;
+}
+
+const HomePage = lazyPage(
+  () => import("../components/page-partials/pages/Home")
+);
+const ExperimentalPage = lazyPage(
   () => import("../components/page-partials/pages/Experimental")
 );
-const BlogPage = lazy(
+const BlogPage = lazyPage(
   () => import("../components/page-partials/pages/blog/Blog")
 );
 
-const ArticlePage = lazy(
+const ArticlePage = lazyPage(
   () => import("../components/page-partials/pages/blog/Article")
 );
 
-const TaskManager = lazy(
+const TaskManager = lazyPage(
   () => import("../components/page-partials/pages/task-manager/TaskManager")
 );
-const TemplateTask = lazy(
+const TemplateTask = lazyPage(
   () =>
     import("../components/page-partials/pages/task-manager/pages/TemplateTask")
 );
-const DailyTask = lazy(
+const DailyTask = lazyPage(
   () => import("../components/page-partials/pages/task-manager/pages/DailyTask")
 );
 
-const TaskAnalytics = lazy(
+const TaskAnalytics = lazyPage(
   () => import("../components/page-partials/pages/task-manager/pages/Analytics")
 );
 
-const Test = lazy(
+const Test = lazyPage(
   () => import("../components/page-partials/pages/experimental/test")
 );
-const BirdyBeats = lazy(
+const BirdyBeats = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/bidry-beats/bidry-beats"
     )
 );
-const ThreePhysicsEngine = lazy(
+const ThreePhysicsEngine = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/physics-engine/init"
     )
 );
 
-const ThreeStaging = lazy(
+const ThreeStaging = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/staging/init"
     )
 );
 
-const ThreeViews = lazy(
+const ThreeViews = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/three-views/init"
     )
 );
 
-const ThreeCameraControls = lazy(
+const ThreeCameraControls = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/camera-controls/init"
     )
 );
 
-const ThreeRenderTarget = lazy(
+const ThreeRenderTarget = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/render-target/init"
     )
 );
 
-const ThreePostProcessing = lazy(
+const ThreePostProcessing = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/post-processing/init"
     )
 );
 
-const ThreeTheatreJs = lazy(
+const ThreeTheatreJs = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/theatre-js/init"
     )
 );
 
-const ThreeOptimization = lazy(
+const ThreeOptimization = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/optimization/init"
     )
 );
 
-const ThreeShaderIntro = lazy(
+const ThreeShaderIntro = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/shader-intro/init"
     )
 );
 
-const ThreeShaderShapingFunctions = lazy(
+const ThreeShaderShapingFunctions = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/shader-shaping-functions/init"
     )
 );
 
-const ThreeShaderImageSlider = lazy(
+const ThreeShaderImageSlider = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/shader-image-slider/init"
     )
 );
 
-const ThreeWaterShader = lazy(
+const ThreeWaterShader = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/shader-water/init"
     )
 );
 
-const ThreeTransitionShader = lazy(
+const ThreeTransitionShader = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/shader-transition/init"
     )
 );
 
-const ThreeVFXParticles = lazy(
+const ThreeVFXParticles = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/vfx-particles/init"
     )
 );
 
-const ThreeVFXTrail = lazy(
+const ThreeVFXTrail = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/vfx-trail/init"
     )
 );
 
-const ThreeCubicWorldsGame = lazy(
+const ThreeCubicWorldsGame = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/init"
     )
 );
 
-const ThreeVFXEngine = lazy(
+const ThreeVFXEngine = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/vfx-engine/init"
     )
 );
 
-const TwoCanvasFirstSimpleBall = lazy(
+const TwoCanvasFirstSimpleBall = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/2d-canvas/first-simple-ball/init"
     )
 );
 
-const ThreeVFXFireworks = lazy(
+const ThreeVFXFireworks = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/vfx-fireworks/init"
     )
 );
 
-const TwoCanvasPhysicsTrain = lazy(
+const TwoCanvasPhysicsTrain = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/2d-canvas/physics-train/wrap"
     )
 );
 
-const ThreeWizardGame = lazy(
+const ThreeWizardGame = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/wizard-game/init"
     )
 );
 
-const ThreeWebGPU = lazy(
+const ThreeWebGPU = lazyPage(
   () =>
     import(
       "../components/page-partials/pages/experimental/three-scenes/webgpu/init"
     )
 );
 
-const LoginPage = lazy(() => import("../components/page-partials/pages/Login"));
+const LoginPage = lazyPage(
+  () => import("../components/page-partials/pages/Login")
+);
 
 export enum RoutPath {
   HOME = "/",
@@ -261,23 +273,30 @@ export const TASK_MANAGER_ROUTERS = [
   },
 ];
 
-export const EXPERIMENTAL_ROUTERS = [
-  {
-    path: RoutPath.EXPERIMENTAL_TEST,
-    Component: Test,
-    id: "experimental-test",
-    icon: "🚀",
-  },
-  {
-    path: RoutPath.EXPERIMENTAL_BIRDY_BEATS,
-    Component: BirdyBeats,
-    id: "experimental-birdy-beats",
-    icon: "🐦",
-  },
+const imagePath = (imageName: string, format = "jpg") => {
+  return `images/three-views-scene/page_images/${imageName}.${format}`;
+};
+
+export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
+  // {
+  //   path: RoutPath.EXPERIMENTAL_TEST,
+  //   Component: Test,
+  //   id: "experimental-test",
+  //   icon: "🚀",
+  // },
+  // {
+  //   path: RoutPath.EXPERIMENTAL_BIRDY_BEATS,
+  //   Component: BirdyBeats,
+  //   id: "experimental-birdy-beats",
+  //   icon: "🐦",
+  // },
   {
     path: RoutPath.EXPERIMENTAL_THREE_PHYSICS_ENGINE,
     Component: ThreePhysicsEngine,
     id: "experimental-three-physics-engine",
+    imageUrl: imagePath("three-physics-engine"),
+    description:
+      "A simple physics engine simulation using Three.js and Rapier.js.",
     icon: "🌌",
   },
   {
@@ -285,126 +304,176 @@ export const EXPERIMENTAL_ROUTERS = [
     Component: ThreeStaging,
     id: "experimental-three-staging",
     icon: "🎭",
+    description:
+      "Demonstration of scene staging and management in Three.js applications.",
+    imageUrl: imagePath("three-staging"),
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_VIEWS,
     Component: ThreeViews,
     id: "experimental-three-views",
     icon: "👀",
+    description:
+      "A Three.js scene showcasing multiple camera views and perspectives.",
+    imageUrl: imagePath("three-views"),
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_CAMERA_CONTROLS,
     Component: ThreeCameraControls,
     id: "experimental-three-camera-controls",
     icon: "🎥",
+    description:
+      "Exploring various camera controls and interactions in Three.js.",
+    imageUrl: imagePath("three-camera-controls"),
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_RENDER_TARGET,
     Component: ThreeRenderTarget,
     id: "experimental-three-render-target",
     icon: "🎯",
+    description:
+      "Using render targets in Three.js for advanced rendering techniques.",
+    imageUrl: imagePath("three-render-target"),
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_POST_PROCESSING,
     Component: ThreePostProcessing,
     id: "experimental-three-post-processing",
     icon: "🖼️",
+    description: "Post-processing effects and techniques in Three.js.",
+    imageUrl: imagePath("three-post-processing"),
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_THEATRE_JS,
     Component: ThreeTheatreJs,
     id: "experimental-three-theatre-js",
     icon: "🎭",
+    description:
+      "Integrating Theatre.js for animation and scene management in Three.js.",
+    imageUrl: imagePath("three-theatre-js"),
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_OPTIMIZATION,
     Component: ThreeOptimization,
     id: "experimental-three-optimization",
     icon: "⚙️",
+    description:
+      "Techniques and strategies for optimizing Three.js applications.",
+    imageUrl: imagePath("three-optimization"),
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_SHADER_INTRO,
     Component: ThreeShaderIntro,
     id: "experimental-three-shader-intro",
     icon: "🎨",
+    description: "An introduction to shaders and GLSL in Three.js.",
+    imageUrl: imagePath("three-shader-intro"),
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_SHADER_SHAPING_FUNCTIONS,
     Component: ThreeShaderShapingFunctions,
     id: "experimental-three-shader-shaping-functions",
     icon: "🖌️",
+    description: "Exploring shaping functions in GLSL shaders with Three.js.",
+    imageUrl: imagePath("three-shader-shaping-functions"),
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_SHADER_IMAGE_SLIDER,
     Component: ThreeShaderImageSlider,
     id: "experimental-three-shader-image-slider",
     icon: "🖼️",
+    description: "Creating an image slider using shaders in Three.js.",
+    imageUrl: imagePath("three-shader-image-slider"),
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_SHADER_WATER,
     Component: ThreeWaterShader,
     id: "experimental-three-shader-water",
     icon: "💧",
+    description: "A realistic water shader implementation in Three.js.",
+    imageUrl: imagePath("three-shader-water"),
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_SHADER_TRANSITION,
     Component: ThreeTransitionShader,
     id: "experimental-three-shader-transition",
     icon: "🔄",
+    description: "Shader-based transitions and effects in Three.js.",
+    imageUrl: imagePath("three-shader-transition"),
   },
   {
     path: RoutPath.EXPERIMENTAL_VFX_PARTICLES,
     Component: ThreeVFXParticles,
     id: "experimental-three-vfx-particles",
     icon: "✨",
+    description: "Creating stunning particle effects using Three.js.",
+    imageUrl: imagePath("three-vfx-particles"),
   },
   {
     path: RoutPath.EXPERIMENTAL_VFX_TRAIL,
     Component: ThreeVFXTrail,
     id: "experimental-three-vfx-trail",
     icon: "🌠",
+    description: "Implementing trail effects in Three.js for dynamic visuals.",
+    imageUrl: imagePath("three-vfx-trail"),
   },
   {
     path: RoutPath.EXPERIMENTAL_CUBIC_WORLDS_GAME,
     Component: ThreeCubicWorldsGame,
     id: "experimental-three-cubic-worlds-game",
     icon: "🕹️",
+    description: "A simple cubic worlds game built with Three.js.",
+    imageUrl: imagePath("three-cubic-worlds-game"),
   },
   {
     path: RoutPath.EXPERIMENTAL_VFX_ENGINE,
     Component: ThreeVFXEngine,
     id: "experimental-three-vfx-engine",
     icon: "⚙️",
+    description:
+      "A visual effects engine using Three.js for real-time graphics.",
+    imageUrl: imagePath("three-vfx-engine"),
   },
   {
     path: RoutPath.EXPERIMENTAL_2D_CANVAS_FIRST_SIMPLE_BALL,
     Component: TwoCanvasFirstSimpleBall,
     id: "experimental-two-canvas-first-simple-ball",
     icon: "🎨",
+    description: "A simple 2D canvas example drawing and animating a ball.",
+    imageUrl: imagePath("two-canvas-first-simple-ball"),
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_VFX_FIREWORKS,
     Component: ThreeVFXFireworks,
     id: "experimental-three-vfx-fireworks",
     icon: "🎆",
+    description: "Creating fireworks effects using Three.js for celebrations.",
+    imageUrl: imagePath("three-vfx-fireworks"),
   },
   {
     path: RoutPath.EXPERIMENTAL_2D_CANVAS_PHYSICS_TRAIN,
     Component: TwoCanvasPhysicsTrain,
     id: "experimental-two-canvas-physics-train",
     icon: "🚂",
+    description: "A 2D canvas simulation of a physics-based train system.",
+    imageUrl: imagePath("two-canvas-physics-train"),
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_WIZARD_GAME,
     Component: ThreeWizardGame,
     id: "experimental-three-wizard-game",
     icon: "🧙‍♂️",
+    description: "A magical wizard game created with Three.js.",
+    imageUrl: imagePath("three-wizard-game"),
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_WEB_GPU,
     Component: ThreeWebGPU,
     id: "experimental-three-web-gpu",
     icon: "🌐",
+    description:
+      "Exploring WebGPU capabilities with Three.js for next-gen graphics.",
+    imageUrl: imagePath("three-web-gpu"),
   },
 ];
 
@@ -422,16 +491,8 @@ export const router: AppRoute[] = [
     isNav: true,
     id: "experimental",
     isDev: false, // Set to true for development purposes
-    children: [
-      ...EXPERIMENTAL_ROUTERS,
-      {
-        path: "",
-        Component: () => <Navigate to={RoutPath.EXPERIMENTAL_TEST} replace />,
-        id: "experimental-redirect",
-        isNav: false,
-      },
-    ],
   },
+  ...EXPERIMENTAL_ROUTERS,
   {
     path: RoutPath.BLOG,
     Component: BlogPage,

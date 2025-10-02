@@ -71,6 +71,7 @@ const AddModelPhysics = ({
       mass={physicsData.mass}
       userData={{ isGround: true }}
       collisionGroups={interactionGroups(CollisionWorldType.boxes)}
+      ccd={physicsData.type === "dynamic" ? true : false}
     >
       <instancedMesh
         ref={meshRef}

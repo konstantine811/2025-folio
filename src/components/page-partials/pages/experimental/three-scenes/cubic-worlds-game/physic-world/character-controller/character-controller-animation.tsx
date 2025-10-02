@@ -1,5 +1,5 @@
 import { useGLTF, useAnimations } from "@react-three/drei";
-import { useEffect, useRef, Suspense } from "react";
+import { useEffect, useRef, Suspense, useCallback } from "react";
 import { useGameStore } from "./stores/game-store";
 import {
   AnimationAction,
@@ -13,6 +13,8 @@ import {
 import { animationSet, AnimationSet } from "./config/character.config";
 import { useGameDataStore } from "./stores/game-data-store";
 import useCharacterSfx from "./hooks/useCharacterSfx";
+import { useThree } from "@react-three/fiber";
+import { useEditModeStore } from "../../store/useEditModeStore";
 
 export type CharacterControllerAnimationProps = {
   characterURL: string;
@@ -39,7 +41,9 @@ const CharacterControllerAnimation = (
   const { animations } = useGLTF(props.characterURL);
   const { actions, mixer } = useAnimations(animations, group);
   const setCharacterAnim = useGameDataStore((state) => state.setCharacterAnim);
+  const isEditMode = useEditModeStore((s) => s.isEditMode);
   useCharacterSfx();
+  const { gl } = useThree();
 
   /**
    * Character animations setup
@@ -47,6 +51,10 @@ const CharacterControllerAnimation = (
   const curAnimation = useGameStore((state) => state.curAnimation);
   const action1 = useGameStore((state) => state.action1);
   const resetAnimation = useGameStore((state) => state.resetAnimation);
+  const isDisableTriggerAnim = useGameStore(
+    (state) => state.isDisableTriggerAnim
+  );
+
   const initializeAnimationSet = useGameStore(
     (state) => state.initializeAnimationSet
   );
@@ -133,17 +141,22 @@ const CharacterControllerAnimation = (
     blink.timeScale = 1; // 1 = як в Blender’і
   }, [actions]);
 
-  useEffect(() => {
-    const onClick = () => {
-      resetAnimation();
-      setTimeout(() => {
-        action1();
-      });
-    };
+  const onClick = useCallback(() => {
+    if (isDisableTriggerAnim) return;
+    resetAnimation();
+    setTimeout(() => {
+      action1();
+    });
+  }, [isDisableTriggerAnim, action1, resetAnimation]);
 
-    window.addEventListener("click", onClick);
-    return () => window.removeEventListener("click", onClick);
-  }, [action1, resetAnimation]);
+  useEffect(() => {
+    if (isEditMode) {
+      gl.domElement.removeEventListener("click", onClick);
+    } else {
+      gl.domElement.addEventListener("click", onClick);
+    }
+    return () => gl.domElement.removeEventListener("click", onClick);
+  }, [onClick, gl, isEditMode]);
 
   return (
     <Suspense fallback={null}>

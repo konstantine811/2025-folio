@@ -49,7 +49,7 @@ const Login = () => {
                 className="w-8 h-8 rounded-full overflow-hidden"
               />
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent side={"left"}>
               <p className="text-background">{user.email}</p>
             </TooltipContent>
           </Tooltip>

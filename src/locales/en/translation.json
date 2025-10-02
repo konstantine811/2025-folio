@@ -20,6 +20,37 @@
       "title": "Pause",
       "description": "Game is paused. Press the button to continue.",
       "resume": "Resume"
+    },
+    "portfolio": {
+      "title": "Press <span>F</span> to enter the Portfolio",
+      "description": "Explore my projects and works.",
+      "main_section": {
+        "name": "Konstantin Abramkin",
+        "description": "I create interactive 3D experiences on the web.",
+        "scroll_down_text": "Scroll to explore the house ↓",
+        "subtitle": "The beginning is always the moment of the finest balance. Every master of the web knows this. To study the path of the <b>Web Developer</b>, first place it in sequence: <mono>HTML</mono>, <mono>CSS</mono>, <mono>JavaScript</mono>. And then — build interactive worlds and three-dimensional stories. Place it in space: the Universe of the Web, where every line of code is like a detective trail, leading wherever your imagination takes you. And do not be deceived by the thought that your years have passed, or that school failed to teach you enough — just act. And then you discover true weapons: <tech>React</tech>, <tech>Node.js</tech>, and <tech>Three.js</tech>; the world of interactive maps with <tech>Mapbox</tech>; animations powered by <tech>Framer Motion</tech> or <tech>GSAP</tech>. And the modern Web reveals itself as a living world — one where the architect <em>is you</em>.",
+        "start_text": {
+          "1": "Привіт. Це мій сайт-портфоліо. Тут я хочу провести тебе стежкою, якою йшов сам — від дитячої любові до ігор до світу, де фантазія стає реальністю."
+        },
+        "role": {
+          "1": "3D/GIS",
+          "2": "Web Developer"
+        },
+        "skills": {
+          "web_developer": "Web Developer",
+          "react": "React",
+          "maps": "Maps",
+          "three_js": "Three.js",
+          "webgl": "WebGL",
+          "r3f": "R3F",
+          "animations": "Animations",
+          "gamedev": "GameDev"
+        },
+        "scroll_down": "Scroll Down"
+      },
+      "about_section": {
+        "3d": "<p>I have been doing 3D modeling for a long time — at first more as a hobby. Lately, however, I have immersed myself much deeper in study and practice to bring my ideas to life. In the CGBoost <em>Cubic Worlds</em> course and several Udemy lessons, I gained practical skills: environment modeling, basic shader creation, animation, character rigging, and much more.</p><p>Right now I feel that in this field almost nothing is impossible for me — all I need is time and a good idea.</p><p>On my blog, I’ve prepared full-length articles with step-by-step instructions for modeling <em>Cubic Worlds</em> — from the very first steps to building complete 3D scenes. You’re welcome to explore them here: <link>My Cubic Worlds blog</link>.</p>"
+      }
     }
   },
   "months": [

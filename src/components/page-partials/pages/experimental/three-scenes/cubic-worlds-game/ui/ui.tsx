@@ -17,12 +17,14 @@ const UI = () => {
   const setIsPhysicsDebug = useEditModeStore((s) => s.setIsPhysicsDebug);
   const setIdEditInstance = useEditModeStore((s) => s.setIdEditInstance);
   const statusServer = useEditModeStore((s) => s.statusServer);
+  const setIsDebug = useEditModeStore((s) => s.setIsDebug);
+  const isDebug = useEditModeStore((s) => s.isDebug);
 
   return (
     <>
       {statusServer !== StatusServer.loaded && <Loader />}
       <div
-        className="fixed w-full pointer-events-none grid grid-cols-3 z-50 items-start"
+        className="fixed w-full pointer-events-none grid grid-cols-3 z-20 items-start"
         style={{ height: `calc(100vh - ${hs}px)`, top: `${hs}px` }}
       >
         <div className="pointer-events-auto col-span-1 flex h-auto align-baseline justify-center mt-1">
@@ -48,6 +50,16 @@ const UI = () => {
                 id="isPhysics"
                 checked={isPhysicsDebug}
                 onCheckedChange={setIsPhysicsDebug}
+              />
+            </div>
+            <div className="h-auto flex gap-1 flex-col">
+              <Label htmlFor="isPhysics" className="text-background">
+                isDebug
+              </Label>
+              <Checkbox
+                id="isDebug"
+                checked={isDebug}
+                onCheckedChange={setIsDebug}
               />
             </div>
           </div>

@@ -1,0 +1,84 @@
+import { Trans, useTranslation } from "react-i18next";
+import { motion, useTransform } from "framer-motion";
+import TypingText from "@/components/ui/shadcn-io/typing-text";
+import { useProgressMV } from "../../hooks/useProgressMV";
+import { useEffect } from "react";
+import { keyboardTypingSound } from "@/config/sounds";
+
+const FirstSection = () => {
+  const { t, i18n } = useTranslation();
+  const p = useProgressMV();
+  // fade-out заголовка від 0.1 до 0.25 прогресу
+  const titleOpacity = useTransform(p, [0.0, 0, 0.05], [1, 1, 0]);
+  const titleY = useTransform(p, [0.0, 0.05], [0, 640]);
+
+  useEffect(() => {
+    keyboardTypingSound.play();
+    setTimeout(() => {
+      keyboardTypingSound.stop();
+    }, 3000);
+  }, [t]);
+  return (
+    <section className="w-full h-full flex flex-col grow">
+      <div className="flex flex-col grow gap-4 md:gap-10">
+        <div className="flex grow flex-col justify-between  gap-4 md:gap-10 px-20 border-t-1 border-muted-foreground/30 mt-30 pt-20">
+          <motion.div
+            style={{ opacity: titleOpacity, y: titleY }}
+            className="text-center text-foreground/90 max-w-1/2 mx-auto"
+          >
+            <h1 className="text-5xl uppercase">
+              <TypingText
+                key={`name-${i18n.language}`}
+                text={[t("cubic_worlds_game.portfolio.main_section.name")]}
+                typingSpeed={75}
+                pauseDuration={1500}
+                showCursor={true}
+                cursorClassName="h-12"
+                variableSpeed={{ min: 50, max: 120 }}
+              />
+            </h1>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 4, duration: 1.5 }}
+              className="flex items-end justify-end text-xl text-foreground/60"
+            >
+              <h3>
+                {t("cubic_worlds_game.portfolio.main_section.role.1")}/
+                {t("cubic_worlds_game.portfolio.main_section.role.2")}
+              </h3>
+            </motion.div>
+          </motion.div>
+          <div className="font-pixel text-center mb-40">
+            <motion.div
+              className="text-lg text-foreground/70 mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                type: "spring",
+                bounce: 0.2,
+                duration: 3,
+                delay: 4.05,
+              }}
+            >
+              <Trans
+                i18nKey="cubic_worlds_game.portfolio.main_section.subtitle"
+                key={`subtitle-${i18n.language}`}
+                components={{
+                  b: <strong className="text-accent font-semibold" />,
+                  mono: <span className="text-yellow-300" />,
+                  em: <em className="italic uppercase" />,
+                  tech: (
+                    <span className="px-1 rounded bg-muted-foreground text-background font-mono" />
+                  ),
+                }}
+              />
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default FirstSection;

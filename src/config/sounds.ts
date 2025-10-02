@@ -191,6 +191,13 @@ export const punchSound = new Howl({
   },
 });
 
+export const keyboardTypingSound = new Howl({
+  src: [getGameEfxPath("keyboard_typing", "wav")],
+  volume: 1,
+  loop: false,
+  rate: 1,
+});
+
 export const atmospericSoundFirst = new Howl({
   src: ["/sound/game-sfx/music/mean_streats_phoenix_tail.mp3"],
   volume: 0.5,

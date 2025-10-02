@@ -7,8 +7,10 @@ import PauseView from "../pause/pause-view";
 const Pause = () => {
   const setIsPaused = usePauseStore((s) => s.setIsPaused);
   const isPaused = usePauseStore((s) => s.isPaused);
+  const isGameStarted = usePauseStore((s) => s.isGameStarted);
   const [t] = useTranslation();
   useEffect(() => {
+    if (!isGameStarted) return;
     const handleVisibility = () => {
       setIsPaused(true);
     };
@@ -30,11 +32,11 @@ const Pause = () => {
       window.removeEventListener("pagehide", handleVisibility);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [setIsPaused]);
+  }, [setIsPaused, isGameStarted]);
   return (
     <>
-      {isPaused && (
-        <div className="fixed z-50 h-full w-full bg-background/10 backdrop-blur-md text-muted-foreground flex justify-center items-center">
+      {isPaused && isGameStarted && (
+        <div className="fixed z-10 h-full w-full bg-background/10 backdrop-blur-md text-muted-foreground flex justify-center items-center">
           <div className="bg-background/70 p-1 rounded-lg border-2 border-background inset-ring-2 inset-ring-foreground/10 flex flex-wrap">
             <div className="flex flex-col justify-around items gap-3 p-4">
               <h2 className="uppercase text-center text-3xl font-bold">

@@ -25,11 +25,14 @@ export default function useEnvSound({
   volume = 0.5,
 }: Props) {
   const [unlocked, setUnlocked] = useState(false); // стартуємо після жесту
-  const [index, setIndex] = useState(Math.floor(Math.random() * tracks.length));
+  const [index, setIndex] = useState(
+    shuffle ? Math.floor(Math.random() * tracks.length) : 0
+  );
   const howlRef = useRef<Howl | null>(null);
   const playingIdRef = useRef<number | null>(null);
 
   const isPaused = usePauseStore((s) => s.isPaused);
+  const isGameStarted = usePauseStore((s) => s.isGameStarted);
 
   // ---- unlock on first user gesture
   useEffect(() => {
@@ -95,7 +98,7 @@ export default function useEnvSound({
     const prev = howlRef.current;
 
     // Якщо пауза — готуємо трек «тихо» і не запускаємо його
-    if (isPaused) {
+    if (isPaused || !isGameStarted) {
       prev?.unload();
       const h = createHowl(index, 0);
       howlRef.current = h;
@@ -129,7 +132,15 @@ export default function useEnvSound({
     return () => {
       h.unload();
     };
-  }, [unlocked, index, createHowl, crossfadeMs, volume, isPaused]);
+  }, [
+    unlocked,
+    index,
+    createHowl,
+    crossfadeMs,
+    volume,
+    isPaused,
+    isGameStarted,
+  ]);
 
   // Реакція на зміну isPaused: fade до 0 + pause(), або play() + fade до volume
   useEffect(() => {
@@ -139,7 +150,7 @@ export default function useEnvSound({
 
     const id = playingIdRef.current ?? undefined;
     if (!id) return;
-    if (isPaused) {
+    if (isPaused || !isGameStarted) {
       const from = h.volume(id) as number;
       h.fade(from, 0, 300, id);
       const t = setTimeout(() => {
@@ -156,7 +167,13 @@ export default function useEnvSound({
       const from = h.volume(id) as number;
       h.fade(from, volume, 300, id);
     }
-  }, [isPaused, unlocked, volume]);
+  }, [isPaused, unlocked, volume, isGameStarted]);
+
+  useEffect(() => {
+    if (!isGameStarted) {
+      howlRef.current?.stop();
+    }
+  }, [isGameStarted]);
 
   // Опціонально управління назовні
   const next = useCallback(() => setIndex((i) => (i + 1) % tracks.length), []);

@@ -1,12 +1,15 @@
-import { RoutPath } from "@/config/router-config";
-import { ComponentType, LazyExoticComponent, ReactElement } from "react";
+import { ComponentType, LazyExoticComponent, ReactNode } from "react";
+
+type Routable = ComponentType<object>; // ✅ будь-які об’єктні пропси (без any)
 
 export type AppRoute = {
-  path: RoutPath | string;
-  Component: LazyExoticComponent<ComponentType> | (() => ReactElement);
+  path: string;
+  Component: LazyExoticComponent<Routable> | Routable; // ✅
   isNav?: boolean;
   id: string;
   children?: AppRoute[];
-  icon?: ReactElement | string;
+  icon?: ReactNode; // краще ніж ReactElement | string
   isDev?: boolean;
+  imageUrl?: string;
+  description?: string;
 };

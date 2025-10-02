@@ -12,7 +12,6 @@ const LoadTouchWinderModel = ({
 }: LoadModelProps) => {
   const bladeGeom = useGeometry(modelUrl);
   const { albedo } = useEmbeddedMaps(modelUrl);
-
   const sharedMaterial = useMemo(() => {
     const m = new TouchWinderMaterial();
     // ініціалізація уніформ і флагів один раз:
@@ -23,7 +22,7 @@ const LoadTouchWinderModel = ({
       time: { value: 0 },
       albedoMap: { value: albedo ?? null },
       _fallbackEdgeWidth: { value: 0.5 },
-      _fallbackEdgeDark: { value: 2.01 }, // мін. яскравість краю
+      _fallbackEdgeDark: { value: 0.5 }, // мін. яскравість краю
       uWindAmp: { value: 0.03 },
       transparency: { value: 0.3 },
       uWindFreq: { value: 3.2 },

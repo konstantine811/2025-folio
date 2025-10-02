@@ -2,10 +2,20 @@ import { RenderMode } from "@/types/three/vfx-particles.model";
 import VFXEmitter from "../../../../vfx-engine/vfxs/vfx-emitter";
 import VFXParticles from "../../../../vfx-engine/vfxs/vfx-particles";
 import FireSound from "./fire-sound";
+import { JSX } from "react";
 
-const FireParticle = () => {
+type Props = JSX.IntrinsicElements["group"] & {
+  smokeDirMin?: [number, number, number];
+  smokeDirMax?: [number, number, number];
+};
+
+const FireParticle = ({
+  smokeDirMin = [-0.5, 1, 0.5],
+  smokeDirMax = [0.0, 1, 0.0],
+  ...props
+}: Props) => {
   return (
-    <>
+    <group {...props} dispose={null}>
       <FireSound />
       <VFXParticles
         name="fire"
@@ -23,7 +33,7 @@ const FireParticle = () => {
         position={[2.5, 0, 1.7]}
         emitter="fire"
         settings={{
-          particlesLifetime: [0.1, 0.6],
+          particlesLifetime: [0.1, 0.3],
           nbParticles: 100,
 
           colorStart: ["#ffc900", "#e30000", "#fc024d"],
@@ -50,15 +60,15 @@ const FireParticle = () => {
           size: [0.1, 1.6],
           startPositionMin: [0, 0, 0],
           startPositionMax: [0, 0, 0],
-          directionMin: [-0.3, 1, -0.3],
-          directionMax: [0.0, 1, 0.0],
+          directionMin: smokeDirMin,
+          directionMax: smokeDirMax,
           startRotationMax: [Math.PI, Math.PI, Math.PI],
           startRotationMin: [-Math.PI, -Math.PI, -Math.PI],
           speed: [2, 2.3],
           loop: true,
         }}
       />
-    </>
+    </group>
   );
 };
 

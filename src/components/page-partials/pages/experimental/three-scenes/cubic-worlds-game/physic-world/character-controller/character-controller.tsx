@@ -28,6 +28,7 @@ import {
 } from "three";
 import {
   RayColliderHit,
+  RigidBodyType,
   Vector,
   type Collider,
 } from "@dimforge/rapier3d-compat";
@@ -83,6 +84,10 @@ interface OwnProps {
   disableFollowCam?: boolean;
   disableFollowCamPos?: Vector3 | null;
   disableFollowCamTarget?: Vector3 | null;
+  // character
+  characterPosition?: Vector3;
+  characterRotation?: Euler;
+  isOuterAnim?: boolean;
   // camera
   camInitDis?: number;
   camMaxDis?: number;
@@ -172,6 +177,8 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
   (
     {
       children,
+      characterPosition,
+      characterRotation,
       capsuleHalfHeight = 0.35,
       capsuleRadius = 0.3,
       floatHeight = -0.02,
@@ -252,6 +259,8 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
     ref
   ) => {
     const characterRef = useRef<RapierRigidBody | null>(null);
+    const capsuleRef = useRef<Collider | null>(null);
+
     const characterModelRef = useRef<Group | null>(null);
     const characterModelIndicator: Object3D = useMemo(() => new Object3D(), []);
     const { forward, backward, rightward, leftward, run, jump } =
@@ -271,6 +280,9 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
     const moveToPoint = useGameStore((s) => s.moveToPoint);
     const setOnGround = useGameStore((s) => s.setOnGround);
     const setMoveToPoint = useGameStore((s) => s.setMoveToPoint);
+    const isDisableTriggerAnim = useGameStore(
+      (state) => state.isDisableTriggerAnim
+    );
     const { rapier, world } = useRapier();
     const { scene } = useThree();
 
@@ -491,11 +503,37 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
       }
     }, [setCharacterRigidBody]);
 
+    useEffect(() => {
+      const rb = characterRef.current;
+      const cap = capsuleRef.current;
+      if (!rb || !cap) return;
+      if (isDisableTriggerAnim) {
+        // 1) зупиняємо й "заморожуємо" тіло
+        rb.setLinvel({ x: 0, y: 0, z: 0 }, true);
+        rb.setAngvel({ x: 0, y: 0, z: 0 }, true);
+        rb.lockTranslations(true, true);
+        rb.lockRotations(true, true);
+        // (опційно) зробити кінематичним, щоб на нього не діяла гравітація
+        rb.setBodyType(RigidBodyType.KinematicPositionBased, true);
+
+        // 2) вимикаємо фізичні контакти капсули (перетворюємо у сенсор)
+        cap.setSensor(true);
+      } else {
+        // повертаємо динаміку
+        rb.setBodyType(RigidBodyType.Dynamic, true);
+        rb.lockTranslations(false, true);
+        rb.lockRotations(false, true);
+
+        cap.setSensor(false);
+      }
+    }, [isDisableTriggerAnim]);
+
     useFrame(({ camera }, delta) => {
       if (delta > 1) delta %= 1;
       // Character current position/velocity
 
       if (!characterRef.current) return;
+
       if (disableControl) {
         characterRef.current.lockRotations(true, false);
         return;
@@ -843,14 +881,14 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
       }
     });
     return (
-      <group position={[10, 0, 10]}>
+      <group position={characterPosition} rotation={characterRotation}>
         <RigidBody
           ccd
           softCcdPrediction={0.4}
           contactSkin={0.02}
           colliders={false}
           ref={characterRef}
-          position={props.position || [0, 5, 0]}
+          position={props.position || [0, 2, 0]}
           friction={props.friction || -0.5}
           collisionGroups={interactionGroups(CollisionWorldType.mainCharacter)}
           onContactForce={(e) =>
@@ -861,6 +899,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
           {...props}
         >
           <CapsuleCollider
+            ref={capsuleRef}
             name="character-capsule-collider"
             args={[capsuleHalfHeight, capsuleRadius]}
           />

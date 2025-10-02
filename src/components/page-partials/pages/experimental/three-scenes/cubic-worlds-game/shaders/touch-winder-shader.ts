@@ -26,7 +26,7 @@ export const TouchWinderMaterial = shaderMaterial(
 
     // fallback-параметр для UV-затемнення, якщо edgeMask відсутня
     _fallbackEdgeWidth: 1.05, // 0..0.5
-    _fallbackEdgeDark: 0.01, // мін. яскравість краю
+    _fallbackEdgeDark: 0.5, // мін. яскравість краю
     // --- НОВЕ: слідова карта присутності ---
     uPresenceMap: null, // sampler2D
     uPresenceMinXZ: new Vector2(0, 0), // world мін XZ

@@ -15,7 +15,7 @@ const InitPhysicWorld = () => {
 
   return (
     <>
-      <Physics timeStep="vary" debug={isDebug}>
+      <Physics timeStep="vary" debug={isDebug} gravity={[0, -9.81, 0]}>
         <Environment />
         <Ground />
         <EditModeCamera />

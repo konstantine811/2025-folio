@@ -9,6 +9,7 @@ import {
 } from "three";
 import AddModel from "../add-model";
 import AddModelEdit from "../add-model-edit";
+import { useEditModeStore } from "../../../../store/useEditModeStore";
 
 type Props = {
   matrices: Matrix4[];
@@ -28,6 +29,7 @@ const AddWinderInstancedModelWrap = ({
   const COUNT = Math.max(matrices.length, 1);
   const aBend = useMemo(() => new Float32Array(COUNT), [COUNT]);
   const aPhase = useMemo(() => new Float32Array(COUNT), [COUNT]); // додатковий атрибут фази
+  const isMainEditMode = useEditModeStore((s) => s.isEditMode);
   const [update, setUpdate] = useState(true);
   const onMatrixUpdate = useCallback(
     (index: number) => {
@@ -36,7 +38,6 @@ const AddWinderInstancedModelWrap = ({
     },
     [aBend, aPhase]
   );
-
   const onAddGeometryData = useCallback(
     (geom: BufferGeometry<NormalBufferAttributes>) => {
       const bendAttr = new InstancedBufferAttribute(aBend, 1);
@@ -84,12 +85,20 @@ const AddWinderInstancedModelWrap = ({
   useEffect(() => {
     if (!material.uniforms) return;
     if (isEditMode) {
-      material.uniforms._fallbackEdgeDark.value = 5;
+      material.uniforms._fallbackEdgeDark.value = 2;
     } else {
-      material.uniforms._fallbackEdgeDark.value = 2.01;
+      material.uniforms._fallbackEdgeDark.value = 0.5;
     }
   }, [material, isEditMode]);
 
+  useEffect(() => {
+    if (!material.uniforms) return;
+    if (isMainEditMode) {
+      material.uniforms._fallbackEdgeDark.value = 2;
+    } else {
+      material.uniforms._fallbackEdgeDark.value = 0.5;
+    }
+  }, [material, isMainEditMode]);
   return (
     <>
       {!isEditMode ? (
