@@ -35,7 +35,7 @@ const FlyCameraControl = ({
           // BACKEND VIEW
           new Vector3(41.4, 3.73, 13.7),
           // D3.jS And AGGRID
-          new Vector3(40.8, 3.73, 13.7),
+          new Vector3(41.5, 3.73, 13.7),
           // FRONTEND VIEW
           new Vector3(41.1720657571576, 3.3570588529308814, 13.7),
           // UI VIEW

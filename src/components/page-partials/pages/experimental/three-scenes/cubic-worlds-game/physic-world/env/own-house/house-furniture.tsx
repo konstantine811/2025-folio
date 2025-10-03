@@ -10,6 +10,7 @@ import { RigidBody } from "@react-three/rapier";
 import { RotorModel } from "./rotor";
 import InfoZone from "./zone-to-folio";
 import { useEditModeStore } from "../../../store/useEditModeStore";
+import { usePauseStore } from "../../../store/usePauseMode";
 
 const path = publicModelPath("house_furniture.glb");
 
@@ -17,6 +18,7 @@ type Props = JSX.IntrinsicElements["group"] & {};
 
 export default function HouseFurniture(props: Props) {
   const isEditModeEnabled = useEditModeStore((s) => s.isEditModeEnabled);
+  const isGameStarted = usePauseStore((s) => s.isGameStarted);
   const { nodes, materials } = useGLTF(path);
 
   const { kernelMat, dreamMat } = useMemo(() => {
@@ -574,7 +576,7 @@ export default function HouseFurniture(props: Props) {
           />
         </group>
       </RigidBody>
-      {!isEditModeEnabled && (
+      {(!isEditModeEnabled || isGameStarted) && (
         <InfoZone position={[-6.082, 1.239, 4.838]} size={[4.9, 2, 3]} />
       )}
 

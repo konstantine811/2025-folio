@@ -13,7 +13,7 @@ import LockPointer from "./physic-world/edit-mode/lock-pointer";
 import Pause from "./ui/pause";
 import useEnvSound from "./hooks/useEnvSound";
 import useStartSound from "./hooks/startSound";
-import ScrollOverlay from "./ui/portfolio-content/scrll-overlay";
+import ScrollOverlay from "./ui/portfolio-content/scroll-overlay";
 import DebugMode from "./debug-mode";
 import { usePauseStore } from "./store/usePauseMode";
 import { useAuthStore } from "@/storage/useAuthStore";

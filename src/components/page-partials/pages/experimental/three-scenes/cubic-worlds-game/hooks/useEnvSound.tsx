@@ -7,7 +7,6 @@ const getTrackPath = (name: string) => `/sound/game-sfx/music/${name}.mp3`;
 const tracks = [
   { src: [getTrackPath("snowlight")], title: "Track 2" },
   { src: [getTrackPath("breathing_woods")], title: "Track 3" },
-  // { src: [getTrackPath("mean_streats_phoenix_tail")], title: "Track 1" },
   { src: [getTrackPath("listen_forest")], title: "Track 4" },
 ];
 
@@ -24,7 +23,7 @@ export default function useEnvSound({
   crossfadeMs = 1000,
   volume = 0.5,
 }: Props) {
-  const [unlocked, setUnlocked] = useState(false); // стартуємо після жесту
+  const [unlocked, setUnlocked] = useState(false);
   const [index, setIndex] = useState(
     shuffle ? Math.floor(Math.random() * tracks.length) : 0
   );
@@ -33,6 +32,8 @@ export default function useEnvSound({
 
   const isPaused = usePauseStore((s) => s.isPaused);
   const isGameStarted = usePauseStore((s) => s.isGameStarted);
+
+  const shouldPlay = unlocked && isGameStarted && !isPaused;
 
   // ---- unlock on first user gesture
   useEffect(() => {
@@ -66,6 +67,8 @@ export default function useEnvSound({
         html5: true,
         preload: true,
         volume: vol,
+        // важливо: не автоплеїмо, ми самі керуємо play/pause
+        autoplay: false,
         onend: () => {
           const next = shuffle
             ? Math.floor(Math.random() * tracks.length)
@@ -79,9 +82,9 @@ export default function useEnvSound({
         onloaderror: (_, err) => console.warn("music loaderror", err),
         onplayerror: (_, err) => {
           console.warn("music playerror", err);
-          // слухаємо unlock саме на екземплярі треку
           h.once("unlock", () => {
-            playingIdRef.current = h.play();
+            const id = h.play();
+            playingIdRef.current = typeof id === "number" ? id : null;
           });
         },
       });
@@ -90,99 +93,130 @@ export default function useEnvSound({
     [shuffle, loop]
   );
 
-  // Створюємо/міняємо поточний трек (після unlock)
-  // ПОВНІСТЮ без логіки видимості/фокусу — лише isPaused
+  // Створення/заміна Howl при зміні треку (та після unlock)
+  // ВАЖЛИВО: тут не вирішуємо play/pause, лише готуємо інстанси і — за потреби — кросфейд між треками
   useEffect(() => {
     if (!unlocked) return;
 
     const prev = howlRef.current;
 
-    // Якщо пауза — готуємо трек «тихо» і не запускаємо його
-    if (isPaused || !isGameStarted) {
-      prev?.unload();
-      const h = createHowl(index, 0);
-      howlRef.current = h;
-      // НЕ запускаємо h.play() поки на паузі
-      return () => h.unload();
-    }
-
-    // ---- звичайний сценарій (без паузи) ----
     if (crossfadeMs > 0 && prev) {
       const prevId = playingIdRef.current ?? undefined;
 
       const next = createHowl(index, 0);
       howlRef.current = next;
 
-      // play нового з 0 → volume
+      // Стартуємо новий (безумовно), але якщо shouldPlay=false, просто залишиться на 0 гучності і ми його відпаузаємо нижче
       const nextId = next.play();
-      playingIdRef.current = nextId;
-      next.fade(0, volume, crossfadeMs, nextId);
+      playingIdRef.current = typeof nextId === "number" ? nextId : null;
 
-      // затухання старого за його prevId і розвантаження
-      prev.fade(prev.volume(), 0, crossfadeMs, prevId);
-      const t = setTimeout(() => prev.unload(), crossfadeMs + 60);
-      return () => clearTimeout(t);
+      // Якщо насправді гра має звучати — піднімаємо до target volume, інакше залишаємо 0
+      if (shouldPlay) {
+        next.fade(0, volume, crossfadeMs, nextId as number);
+      }
+
+      // затухання старого
+      if (prev) {
+        if (prevId !== undefined) {
+          prev.fade(prev.volume(prevId) as number, 0, crossfadeMs, prevId);
+        } else {
+          // запасний варіант
+          prev.fade(prev.volume() as number, 0, crossfadeMs);
+        }
+        const t = setTimeout(() => prev.unload(), crossfadeMs + 80);
+        return () => clearTimeout(t);
+      }
+      return;
     }
 
+    // Без кросфейду: створюємо новий і одразу play()
     prev?.unload();
-    const h = createHowl(index, volume);
+    const h = createHowl(index, 0);
     howlRef.current = h;
-    playingIdRef.current = h.play();
+
+    const id = h.play();
+    playingIdRef.current = typeof id === "number" ? id : null;
+
+    if (shouldPlay) {
+      h.fade(0, volume, 250, id as number);
+    }
 
     return () => {
       h.unload();
     };
-  }, [
-    unlocked,
-    index,
-    createHowl,
-    crossfadeMs,
-    volume,
-    isPaused,
-    isGameStarted,
-  ]);
+  }, [unlocked, index, createHowl, crossfadeMs, volume, shouldPlay]);
 
-  // Реакція на зміну isPaused: fade до 0 + pause(), або play() + fade до volume
+  // Реакція на перемикання shouldPlay (isPaused / isGameStarted)
   useEffect(() => {
     if (!unlocked) return;
     const h = howlRef.current;
     if (!h) return;
 
-    const id = playingIdRef.current ?? undefined;
-    if (!id) return;
-    if (isPaused || !isGameStarted) {
-      const from = h.volume(id) as number;
-      h.fade(from, 0, 300, id);
-      const t = setTimeout(() => {
-        if (howlRef.current === h) h.pause(id);
-      }, 320);
-      return () => clearTimeout(t);
-    } else {
-      // якщо було на паузі — відновлюємо
-      if (!h.playing(id)) {
-        const newId = h.play(id);
-        playingIdRef.current =
-          typeof newId === "number" ? newId : playingIdRef.current;
-      }
-      const from = h.volume(id) as number;
-      h.fade(from, volume, 300, id);
-    }
-  }, [isPaused, unlocked, volume, isGameStarted]);
+    let id = playingIdRef.current ?? undefined;
 
+    if (shouldPlay) {
+      // Якщо ще немає id або sound не грає — запускаємо
+      if (!id) {
+        const newId = h.play();
+        id = typeof newId === "number" ? newId : undefined;
+        if (id) playingIdRef.current = id;
+      }
+      if (id && !h.playing(id)) {
+        const newId = h.play(id);
+        id = typeof newId === "number" ? newId : id;
+        if (id) playingIdRef.current = id;
+      }
+      if (id) {
+        const from = h.volume(id) as number;
+        h.fade(from, volume, 300, id);
+      }
+    } else {
+      // Мають бути тиша + пауза
+      if (id) {
+        const from = h.volume(id) as number;
+        h.fade(from, 0, 300, id);
+        const t = setTimeout(() => {
+          if (howlRef.current === h) {
+            h.pause(id as number);
+          }
+        }, 320);
+        return () => clearTimeout(t);
+      } else {
+        // навіть якщо немає id, гарантуємо тишу інстансу
+        h.volume(0);
+      }
+    }
+  }, [shouldPlay, unlocked, volume]);
+
+  // Коли гру вимкнено — зупиняємо повністю і чистимо стан
   useEffect(() => {
     if (!isGameStarted) {
-      howlRef.current?.stop();
+      const h = howlRef.current;
+      if (h) {
+        try {
+          h.stop();
+        } finally {
+          playingIdRef.current = null;
+          // опційно: повністю вивантажити, якщо не плануємо швидкого повернення
+          // h.unload();
+        }
+      }
     }
   }, [isGameStarted]);
 
-  // Опціонально управління назовні
   const next = useCallback(() => setIndex((i) => (i + 1) % tracks.length), []);
   const prev = useCallback(
     () => setIndex((i) => (i - 1 + tracks.length) % tracks.length),
     []
   );
   const stop = useCallback(() => {
-    howlRef.current?.stop();
+    const h = howlRef.current;
+    if (!h) return;
+    try {
+      h.stop();
+    } finally {
+      playingIdRef.current = null;
+    }
   }, []);
 
   return { unlocked, index, next, prev, stop };

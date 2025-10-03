@@ -19,10 +19,10 @@ const ThreeLoader = () => {
   if (!showLoader) return null;
 
   return (
-    <div className="fixed inset-0 flex flex-col justify-center items-center z-50 bg-background/80 backdrop-blur">
-      <div className="w-1/2 h-8 bg-muted overflow-hidden mb-2 rounded">
+    <div className="fixed inset-0 flex flex-col justify-center items-center z-20 bg-background/10 backdrop-blur">
+      <div className="w-full  h-1 bg-muted overflow-hidden mb-2 rounded">
         <div
-          className="h-full bg-foreground transition-all duration-300"
+          className="h-full bg-foreground  transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>

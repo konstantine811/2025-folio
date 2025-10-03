@@ -7,20 +7,27 @@ const getTrackPath = (name: string) => `/sound/game-sfx/music/${name}.mp3`;
 const tracks = [
   {
     src: [getTrackPath("ES_Against the Tide - Daniella Ljungsberg")],
-    title: "Track 1",
+    title: "Track 2",
   },
   {
     src: [getTrackPath("ES_Luminance - Pawan Krishna")],
-    title: "Track 2",
-  },
-
-  {
-    src: [getTrackPath("ES_Perpetuity - Johan Lind")],
     title: "Track 3",
   },
   {
-    src: [getTrackPath("ES_Bewitched (Instrumental Version) - Onoe Caponoe")],
+    src: [
+      getTrackPath(
+        "CTRL S - Let’s End This Conversation Now - Instrumental version"
+      ),
+    ],
+    title: "Track 1",
+  },
+  {
+    src: [getTrackPath("ES_Perpetuity - Johan Lind")],
     title: "Track 4",
+  },
+  {
+    src: [getTrackPath("ES_Bewitched (Instrumental Version) - Onoe Caponoe")],
+    title: "Track 5",
   },
 ];
 
