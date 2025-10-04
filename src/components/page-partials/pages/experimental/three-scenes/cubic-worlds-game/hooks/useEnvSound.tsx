@@ -97,7 +97,7 @@ export default function useEnvSound({
   // ВАЖЛИВО: тут не вирішуємо play/pause, лише готуємо інстанси і — за потреби — кросфейд між треками
   useEffect(() => {
     if (!unlocked) return;
-
+    if (!isGameStarted) return;
     const prev = howlRef.current;
 
     if (crossfadeMs > 0 && prev) {
@@ -144,13 +144,22 @@ export default function useEnvSound({
     return () => {
       h.unload();
     };
-  }, [unlocked, index, createHowl, crossfadeMs, volume, shouldPlay]);
+  }, [
+    unlocked,
+    index,
+    createHowl,
+    crossfadeMs,
+    volume,
+    shouldPlay,
+    isGameStarted,
+  ]);
 
   // Реакція на перемикання shouldPlay (isPaused / isGameStarted)
   useEffect(() => {
     if (!unlocked) return;
     const h = howlRef.current;
     if (!h) return;
+    if (!isGameStarted) return;
 
     let id = playingIdRef.current ?? undefined;
 
@@ -186,7 +195,7 @@ export default function useEnvSound({
         h.volume(0);
       }
     }
-  }, [shouldPlay, unlocked, volume]);
+  }, [shouldPlay, unlocked, volume, isGameStarted]);
 
   // Коли гру вимкнено — зупиняємо повністю і чистимо стан
   useEffect(() => {

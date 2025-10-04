@@ -73,28 +73,28 @@ const SecondSection = () => {
             </div>
             <div className="grid grid-cols-2">
               <img
-                className="border-4 h-full border-background object-cover"
+                className="border-4 border-background object-cover"
                 src="/images/portfolio/blender_skill_drivers_rig.gif"
                 alt="Blender skill: drivers rig"
                 loading="lazy"
                 decoding="async"
               />
               <img
-                className="border-4 h-full border-background object-cover"
+                className="border-4 border-background object-cover"
                 src="/images/portfolio/blender_skill_scatter_grass.gif"
                 alt="Blender skill: scatter grass"
                 loading="lazy"
                 decoding="async"
               />
               <img
-                className="border-4 h-full border-background object-cover"
+                className="border-4 border-background object-cover"
                 src="/images/portfolio/blender_skill_rig_animation.gif"
                 alt="Blender skill: rig animation"
                 loading="lazy"
                 decoding="async"
               />
               <img
-                className="border-4 h-full border-background object-cover"
+                className="border-4 border-background object-cover"
                 src="/images/portfolio/blender_skill_modelling_robot.gif"
                 alt="Blender skill: modelling robot"
                 loading="lazy"
