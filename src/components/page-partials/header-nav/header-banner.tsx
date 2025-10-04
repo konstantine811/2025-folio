@@ -11,10 +11,16 @@ const HeaderBanner = () => {
     setPathName(location.pathname.split("/")[1]);
   }, [location.pathname]);
   return (
-    <div className="flex flex-col items-center justify-center">
-      <h3 className="text-mono">@ 2025 abc-folio</h3>
+    <div className="flex flex-wrap flex-col items-center justify-center">
+      <h3 className="text-mono hidden sm:block">@ 2025 abc-folio</h3>
       {pathName && (
-        <TextEffect as="h4" key={pathName} per="char" preset="slide">
+        <TextEffect
+          as="h4"
+          key={pathName}
+          per="char"
+          preset="slide"
+          className="whitespace-normal hidden sm:block break-words text-balance"
+        >
           {t(`pages.${pathName}`) || pathName}
         </TextEffect>
       )}

@@ -42,7 +42,7 @@ const Test = () => {
           </div>
         </div>
       ) : null}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols sm:grid-cols-2 lg:grid-cols-4 gap-2">
         {EXPERIMENTAL_ROUTERS.map((item) => {
           return (
             <Link
