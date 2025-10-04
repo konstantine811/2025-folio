@@ -18,7 +18,7 @@ const ScrollProgressContent = () => {
     <div className="pointer-events-none fixed inset-0 grid place-items-center container mx-auto">
       <motion.div
         style={{ opacity: infoOpacity, y: infoY }}
-        className="absolute bottom-12 w-full text-center"
+        className="absolute bottom-2 lg:bottom-12 w-full text-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 5.5, duration: 1.5 }}

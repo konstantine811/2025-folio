@@ -19,6 +19,12 @@ import FourthSection from "./fourth-section";
 import FifthSection from "./fifth-section";
 import SixthSection from "./sixth-section";
 import SeventhSection from "./seventh-section";
+import EighthSection from "./eighth-section";
+import KernelSection from "./kernel-section";
+import UStudioSection from "./ustdio-section";
+import IxlayerSection from "./ixlayer-section";
+import AboutGameSection from "./about-game.section";
+import SocialLinks from "./social-links";
 
 export default function ScrollOverlay() {
   const setProgress = useScrollStore((s) => s.setProgress);
@@ -84,7 +90,7 @@ export default function ScrollOverlay() {
           {startScroll ? (
             <div
               style={{ top: hs }}
-              className="fixed right-20 z-50 cursor-pointer pointer-events-auto"
+              className="fixed right-0 sm:right-5 lg:right-20 z-50 cursor-pointer pointer-events-auto"
             >
               <CloseButton
                 onClick={() => {
@@ -123,26 +129,14 @@ export default function ScrollOverlay() {
                   >
                     <FirstSection />
                   </section>
-                  <section
-                    className="grid"
-                    style={{ minHeight: `calc(100vh - ${hs}px)` }}
-                  ></section>
-                  <section
-                    className="grid"
-                    style={{ minHeight: `calc(100vh - ${hs}px)` }}
-                  >
+                  <div className="h-[100vh] md:h-screen lg:h-[50vh]"></div>
+                  <section className="grid">
                     <SecondSection />
                   </section>
-                  <section
-                    className="grid"
-                    style={{ minHeight: `calc(100vh - ${hs}px)` }}
-                  >
+                  <section className="grid">
                     <ThirdSection />
                   </section>
-                  <section
-                    className="grid"
-                    style={{ minHeight: `calc(100vh - ${hs}px)` }}
-                  >
+                  <section className="grid">
                     <FourthSection />
                   </section>
                   <section className="grid">
@@ -154,36 +148,25 @@ export default function ScrollOverlay() {
                   <section className="grid">
                     <SeventhSection />
                   </section>
-                  <section
-                    className="grid"
-                    style={{ minHeight: `calc(100vh - ${hs}px)` }}
-                  >
-                    Mapbox section
+                  <section className="grid">
+                    <EighthSection />
                   </section>
-                  <section
-                    className="grid"
-                    style={{ minHeight: `calc(100vh - ${hs}px)` }}
-                  >
-                    Kernel Section
+                  <section className="grid">
+                    <KernelSection />
                   </section>
-                  <section
-                    className="grid"
-                    style={{ minHeight: `calc(100vh - ${hs}px)` }}
-                  >
-                    UDReam Sectioin
+                  <section className="grid">
+                    <UStudioSection />
                   </section>
-                  <section
-                    className="grid"
-                    style={{ minHeight: `calc(100vh - ${hs}px)` }}
-                  >
-                    Other Exp Section
+                  <section className="grid">
+                    <IxlayerSection />
                   </section>
-                  <section
-                    className="grid"
-                    style={{ minHeight: `calc(100vh - ${hs}px)` }}
-                  >
-                    About own game section
-                    <Button onClick={() => setIsGameStarted(true)}>
+                  <section className="grid">
+                    <AboutGameSection />
+                    <SocialLinks />
+                    <Button
+                      className="mx-auto bg-yellow-400 text-black hover:bg-yellow-300 hover:scale-105 focus:scale-105 active:scale-95 transition-all mt-10 mb-20 px-10 py-8"
+                      onClick={() => setIsGameStarted(true)}
+                    >
                       Start Game
                     </Button>
                   </section>

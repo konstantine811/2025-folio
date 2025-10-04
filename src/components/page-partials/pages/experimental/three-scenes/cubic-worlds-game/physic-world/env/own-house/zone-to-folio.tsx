@@ -20,6 +20,8 @@ export default function InfoZone({
   size = [2, 2, 2],
 }: Props) {
   const setIsGameStarted = usePauseStore((s) => s.setIsGameStarted);
+  const setIsFolioZoneActive = usePauseStore((s) => s.setIsFolioZoneActive);
+  const isTouch = usePauseStore((s) => s.isTouch);
   const [active, setActive] = useState(false);
   const rb = useRef<RapierRigidBody>(null);
   const { i18n } = useTranslation();
@@ -47,13 +49,15 @@ export default function InfoZone({
           args={[size[0] / 2, size[1] / 2, size[2] / 2]}
           onIntersectionEnter={() => {
             setActive(true);
+            setIsFolioZoneActive(true);
           }}
           onIntersectionExit={() => {
             setActive(false);
+            setIsFolioZoneActive(false);
           }}
         />
         {/* HTML якір у 3D: масштабується/оклюдується */}
-        {active && (
+        {active && !isTouch && (
           <Html
             transform
             sprite // завжди повернутий до камери

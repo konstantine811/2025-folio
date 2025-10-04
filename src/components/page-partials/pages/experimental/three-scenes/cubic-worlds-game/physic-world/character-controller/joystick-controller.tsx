@@ -1,5 +1,6 @@
 import { useRef, useState, TouchEvent } from "react";
 import { useControlStore } from "./stores/control-game-store";
+import { usePauseStore } from "../../store/usePauseMode";
 
 const DEADZONE = 8;
 const MAX_DRAG = 60;
@@ -17,7 +18,8 @@ const JoystickController = () => {
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [active, setActive] = useState(false);
   const { setAll, setJump, setRun } = useControlStore();
-
+  const isFolioZoneActive = usePauseStore((s) => s.isFolioZoneActive);
+  const setIsGameStarted = usePauseStore((s) => s.setIsGameStarted);
   const centerFlags = () => {
     setAll({
       forward: false,
@@ -116,7 +118,7 @@ const JoystickController = () => {
         </div>
       </div>
 
-      <div className="fixed bottom-6 right-6 z-[10000]">
+      <div className="fixed flex gap-2 bottom-6 right-6 z-[10000]">
         <button
           draggable={false}
           className="w-[60px] h-[60px] rounded-full bg-blue-600 text-white text-sm font-semibold shadow-md
@@ -129,6 +131,22 @@ const JoystickController = () => {
         >
           Jump
         </button>
+
+        {isFolioZoneActive ? (
+          <button
+            draggable={false}
+            className="w-[60px] h-[60px] rounded-full bg-black text-foreground text-sm font-semibold shadow-md
+               active:scale-95 transition-transform
+               touch-none select-none
+               [-webkit-user-select:none] [-webkit-touch-callout:none]
+               [-webkit-tap-highlight-color:transparent]"
+            onTouchStart={() => {
+              setIsGameStarted(false);
+            }}
+          >
+            To Folio
+          </button>
+        ) : null}
       </div>
     </>
   );

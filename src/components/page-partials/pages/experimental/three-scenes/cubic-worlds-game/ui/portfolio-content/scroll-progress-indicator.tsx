@@ -27,7 +27,7 @@ function ScrollProgressIndicator({ showPercent = true, className }: Props) {
   return (
     <div
       className={clsx(
-        "fixed left-0 top-0 w-24 md:w-28 z-50",
+        "fixed -left-6 lg:left-0 top-0 w-24 md:w-28 z-50",
         "select-none",
         "text-[10px] md:text-xs py-10",
         className
