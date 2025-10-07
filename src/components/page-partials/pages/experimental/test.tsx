@@ -13,7 +13,7 @@ const Test = () => {
   const svgRef = useRef<SVGSVGElement>(null);
   const navigateTo = useTransitionRouteTo();
   return (
-    <>
+    <div className="container mx-auto">
       {isDev ? (
         <div className="container mx-auto">
           <div
@@ -38,7 +38,10 @@ const Test = () => {
           </div>
         </div>
       ) : null}
-      <WrapperHoverElement className="grid grid-cols sm:grid-cols-2 lg:grid-cols-4 gap-2 lg:px-20 w-full pt-10">
+      <WrapperHoverElement
+        as="ul"
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 pt-10"
+      >
         {EXPERIMENTAL_ROUTERS.map((item) => {
           return (
             <Card
@@ -55,7 +58,7 @@ const Test = () => {
           );
         })}
       </WrapperHoverElement>
-    </>
+    </div>
   );
 };
 
