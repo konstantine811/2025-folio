@@ -1,21 +1,17 @@
+import Card from "@/components/ui-abc/card/card";
 import LogoAnimated from "@/components/ui-abc/logo";
+import WrapperHoverElement from "@/components/ui-abc/wrapper-hover-element";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { EXPERIMENTAL_ROUTERS } from "@/config/router-config";
+import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
 import { isDev } from "@/utils/check-env";
 import { exportHtmlToPng, exportSvgToFile } from "@/utils/export-to-png";
 import { useRef } from "react";
-import { Link } from "react-router";
 
 const Test = () => {
   const svgWrapRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const navigateTo = useTransitionRouteTo();
   return (
     <>
       {isDev ? (
@@ -42,34 +38,23 @@ const Test = () => {
           </div>
         </div>
       ) : null}
-      <div className="grid grid-cols sm:grid-cols-2 lg:grid-cols-4 gap-2">
+      <WrapperHoverElement className="grid grid-cols sm:grid-cols-2 lg:grid-cols-4 gap-2 lg:px-20">
         {EXPERIMENTAL_ROUTERS.map((item) => {
           return (
-            <Link
-              to={item.path.startsWith("/") ? item.path : `/${item.path}`}
+            <Card
+              onClick={() => {
+                navigateTo(
+                  item.path.startsWith("/") ? item.path : `/${item.path}`
+                );
+              }}
               key={item.id}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    {item.icon} {item.id}
-                  </CardTitle>
-                  <CardDescription>{item.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {item.imageUrl ? (
-                    <img
-                      className="object-cover h-52 w-full"
-                      src={item.imageUrl}
-                      alt={item.id}
-                    />
-                  ) : null}
-                </CardContent>
-              </Card>
-            </Link>
+              srcImage={item.imageUrl}
+              title={item.id}
+              description={item.description}
+            />
           );
         })}
-      </div>
+      </WrapperHoverElement>
     </>
   );
 };
