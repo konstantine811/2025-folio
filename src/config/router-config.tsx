@@ -204,6 +204,13 @@ const ThreeWebGPU = lazyPage(
     )
 );
 
+const ThreeHome3D = lazyPage(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/home-3d/init"
+    )
+);
+
 const LoginPage = lazyPage(
   () => import("../components/page-partials/pages/Login")
 );
@@ -242,6 +249,7 @@ export enum RoutPath {
   EXPERIMENTAL_2D_CANVAS_PHYSICS_TRAIN = "two-canvas-physics-train",
   EXPERIMENTAL_THREE_WIZARD_GAME = "three-wizard-game",
   EXPERIMENTAL_THREE_WEB_GPU = "three-web-gpu",
+  EXPERIMENTAL_THREE_HOME_3D = "three-home-3d",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -474,6 +482,14 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     description:
       "Exploring WebGPU capabilities with Three.js for next-gen graphics.",
     imageUrl: imagePath("three-web-gpu"),
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_HOME_3D,
+    Component: ThreeHome3D,
+    id: "experimental-three-home-3d",
+    icon: "🏠",
+    description: "A 3D home scene created with Three.js.",
+    imageUrl: imagePath("home_earth"),
   },
 ];
 
