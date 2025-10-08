@@ -69,7 +69,7 @@ export function Campfire({ ...props }: Props) {
   const blackMaterial = new MeshBasicMaterial({ color: "black" });
   return (
     <group {...props} dispose={null}>
-      <FireParticle position={[-0.2, -0.9, -0.1]} />
+      <FireParticle position={[0, 0, 0]} />
       <CampfireCollider />
       <mesh
         castShadow

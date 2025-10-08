@@ -23,12 +23,15 @@ export function useScatters({ userUid }: { userUid?: string }) {
       refreshScattersFromNetwork({ uid: userUid }).then((fresh) => {
         if (!mounted) return;
         // просте порівняння за довжиною/updatedAt; за потреби зроби глибше порівняння
+        console.log("fresh", fresh);
+        console.log("data", data);
         const hasChange =
           fresh.length !== data.length ||
           fresh.some(
             (f, i) =>
               f.name !== data[i]?.name || f.updatedAt !== data[i]?.updatedAt
           );
+        console.log("hasChange", hasChange);
         if (hasChange) setData(fresh);
       });
     },
