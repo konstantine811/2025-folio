@@ -84,7 +84,6 @@ export async function refreshScattersFromNetwork({
 
   // 2.2 Пройти по віддаленим файлам
   const seenNames = new Set<string>();
-
   for (const itemRef of page.items) {
     const md = await getMetadata(itemRef);
     const cm = md.customMetadata ?? {};
@@ -97,12 +96,10 @@ export async function refreshScattersFromNetwork({
     const order = (cm.order ?? "column-major") as "column-major";
     const size = md.size ?? 0;
     const storagePath = itemRef.fullPath;
-
     seenNames.add(name);
 
     const cached = cachedMap.get(name);
     const shouldDownload = !cached || newerThan(updatedAt, cached.updatedAt);
-
     if (shouldDownload) {
       const ab = await getBytes(itemRef);
       const matricesBytes = new Uint8Array(ab);
@@ -126,7 +123,6 @@ export async function refreshScattersFromNetwork({
         type: (cm.type as CachedScatter["type"]) || "point",
         physicsData: cm.physicsData ? JSON.parse(cm.physicsData) : null,
       };
-
       await db.scatters.put(rec);
       cachedMap.set(name, rec);
     }

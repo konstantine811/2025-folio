@@ -20,20 +20,19 @@ export function useScatters({ userUid }: { userUid?: string }) {
       });
 
       // 2   ) фонове (для UI) оновлення з бекенду + оновлення стейту, якщо є різниця
-      refreshScattersFromNetwork({ uid: userUid }).then((fresh) => {
-        if (!mounted) return;
-        // просте порівняння за довжиною/updatedAt; за потреби зроби глибше порівняння
-        console.log("fresh", fresh);
-        console.log("data", data);
-        const hasChange =
-          fresh.length !== data.length ||
-          fresh.some(
-            (f, i) =>
-              f.name !== data[i]?.name || f.updatedAt !== data[i]?.updatedAt
-          );
-        console.log("hasChange", hasChange);
-        if (hasChange) setData(fresh);
-      });
+      refreshScattersFromNetwork({ uid: userUid, removeMissing: true }).then(
+        (fresh) => {
+          if (!mounted) return;
+          // просте порівняння за довжиною/updatedAt; за потреби зроби глибше порівняння
+          const hasChange =
+            fresh.length !== data.length ||
+            fresh.some(
+              (f, i) =>
+                f.name !== data[i]?.name || f.updatedAt !== data[i]?.updatedAt
+            );
+          if (hasChange) setData(fresh);
+        }
+      );
     },
     [userUid]
   );
