@@ -203,3 +203,9 @@ export const atmospericSoundFirst = new Howl({
   volume: 0.5,
   loop: true,
 });
+
+export const envSound = new Howl({
+  src: ["/sound/music/ES_Intermission - Hanna Lindgren.mp3"],
+  volume: 0.5,
+  loop: true,
+});

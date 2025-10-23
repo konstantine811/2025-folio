@@ -3,7 +3,6 @@ import NavMenu from "./nav-menu";
 import { memo, useEffect, useRef } from "react";
 import { useHeaderSizeStore } from "@storage/headerSizeStore";
 import LanguagePicker from "../page-setting/lange-picker/language-picker";
-import HeaderBanner from "./header-banner";
 import ToggleSound from "../page-setting/toggle-sound";
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 import Login from "./login";
@@ -21,15 +20,10 @@ const Header = memo(() => {
   return (
     <header
       ref={headerRef}
-      className="sticky top-0 z-40 border-b backdrop-blur-md  bg-background"
+      className="sticky top-0 z-40 backdrop-blur-md  bg-background"
     >
-      <div className="grid grid-cols-1 md:grid-cols-3 items-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 items-center">
         <NavMenu />
-        {!isMdSize && (
-          <div className="text-foreground/70 font-mono tracking-wide text-center">
-            <HeaderBanner />
-          </div>
-        )}
 
         {!isMdSize && (
           <div className="text-foreground pr-4 items-center justify-end flex">

@@ -10,10 +10,12 @@ import Login from "./login";
 import LogoAnimated from "@/components/ui-abc/logo";
 import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
 import { RoutPath } from "@/config/router-config";
+import useEnvSoundToPath from "@/hooks/sound/useEnvSoundToPath";
 
 export default function NavMenu() {
   const { isAdoptiveSize: isMdSize } = useIsAdoptive();
   const navigateTo = useTransitionRouteTo();
+  useEnvSoundToPath();
   return (
     <div className="relative md:max-w-md w-full">
       <div className="relative z-20 flex items-center justify-between gap-4 w-full bg-card/90 px-5  backdrop-blur-2xl py-2">
