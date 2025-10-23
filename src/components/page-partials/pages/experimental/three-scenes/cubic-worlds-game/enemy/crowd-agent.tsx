@@ -10,7 +10,6 @@ export type AgentProps = {
 export const Agent = forwardRef<CrowdAgent | undefined, AgentProps>(
   ({ initialPosition, ...crowdAgentParams }, ref) => {
     const crowd = useNavigation((s) => s.crowd);
-
     const [agent, setAgent] = useState<CrowdAgent | undefined>();
 
     useImperativeHandle(ref, () => agent, [agent]);
@@ -31,7 +30,7 @@ export const Agent = forwardRef<CrowdAgent | undefined, AgentProps>(
 
         crowd.removeAgent(agent);
       };
-    }, [crowd]);
+    }, [crowd, crowdAgentParams, initialPosition]);
 
     return null;
   }

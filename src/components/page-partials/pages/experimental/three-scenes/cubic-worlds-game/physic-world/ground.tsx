@@ -1,4 +1,3 @@
-import { RigidBody } from "@react-three/rapier";
 import { useEffect, useRef } from "react";
 import { Mesh, PlaneGeometry } from "three";
 import { useGameDataStore } from "./character-controller/stores/game-data-store";
@@ -6,6 +5,8 @@ import { useGameDataStore } from "./character-controller/stores/game-data-store"
 // import { button, useControls } from "leva";
 // import { useTexture } from "@react-three/drei";
 import { useEditModeStore } from "../store/useEditModeStore";
+import { RigidBody } from "@react-three/rapier";
+import { RegisterObstacle } from "../nav-mesh/register-obstacle";
 
 const Ground = () => {
   const { width, height } = { width: 200, height: 200 };
@@ -21,6 +22,7 @@ const Ground = () => {
     if (floorRef.current) {
       setCharacterGroundMesh(floorRef.current);
       setTargetMesh(floorRef.current);
+      floorRef.current.geometry.computeVertexNormals();
     }
   }, [floorRef, setCharacterGroundMesh, setTargetMesh]);
 
@@ -82,7 +84,6 @@ const Ground = () => {
   return (
     <>
       <group>
-        {/* ПІДЛОГА: обов'язково з UV (PlaneGeometry має їх за замовчуванням) */}
         <RigidBody
           userData={{ isGround: true }}
           colliders="cuboid"
@@ -94,18 +95,12 @@ const Ground = () => {
             receiveShadow
             castShadow
             position={[0, -0.57, 0]}
-            // onPointerDown={handlePointerDown}
-            // onPointerUp={handlePointerUpOrOut}
-            // onPointerLeave={handlePointerUpOrOut}
-            // onPointerMove={handlePointerMove}
           >
             <boxGeometry args={[width, height, 1, 1]} />
-            {/* ДЕМО-матеріал: накладаємо карту як map, щоб бачити мазки.
-У вашому проєкті, ймовірно, передаватимете texture як uniform у шейдер або як alphaMap. */}
             <meshStandardMaterial color="#FFBF74" />
           </mesh>
         </RigidBody>
-
+        <RegisterObstacle target={floorRef} />
         {/* КОЛО-КУРСОР, що слідує за мишею, коли drawMode=true */}
         {/* {controls.drawMode && (
           <mesh position={cursorPos} rotation-x={-Math.PI / 2}>

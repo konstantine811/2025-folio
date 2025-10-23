@@ -2,21 +2,22 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Box3, Mesh, Vector3 } from "three";
 import { useInterval } from "./common/hooks/useInterval";
 import { Crowd, NavMeshQuery, RecastConfig } from "recast-navigation";
-import { traversableQuery } from "./ecs";
 import { useNavigation } from "../store/useNavigationStore";
 import { DebugDrawer, getPositionsAndIndices } from "@recast-navigation/three";
 import { useEffect, useState } from "react";
 import { useControls } from "leva";
 import { usePageVisible } from "./common/hooks/use-page-visible";
 import { DynamicTiledNavMesh } from "./nav/DynamicTiledNavMesh";
+import { ensureRecast } from "./nav/recast-init";
+import { traversableQuery } from "@components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/enemy/entity-component-store";
 
 const navMeshBounds = new Box3(
-  new Vector3(-50, -10, -50),
-  new Vector3(70, 30, 40)
+  new Vector3(-100, -10, -100),
+  new Vector3(100, 0, 100)
 );
 
 const cellSize = 0.15;
-const cellHeight = 0.45;
+const cellHeight = 0.1;
 
 const recastConfig: Partial<RecastConfig> = {
   tileSize: 128,
@@ -26,11 +27,6 @@ const recastConfig: Partial<RecastConfig> = {
   walkableClimb: 1.5 / cellHeight,
   walkableHeight: 3 / cellHeight,
 };
-
-const navMeshWorkers = navigator.hardwareConcurrency ?? 3;
-
-const maxAgents = 50;
-const maxAgentRadius = 0.5;
 
 export const getTraversableMeshes = () => {
   const traversable = traversableQuery.entities.map((e) => e.three);
@@ -48,13 +44,21 @@ export const getTraversableMeshes = () => {
   return Array.from(traversableMeshes);
 };
 
+const getTraversablePositionsAndIndices = (): [
+  positions: Float32Array,
+  indices: Uint32Array
+] => {
+  const traversableMeshes = getTraversableMeshes();
+  return getPositionsAndIndices(traversableMeshes);
+};
+
 const NavMeshDebug = () => {
   const dynamicTiledNavMesh = useNavigation((s) => s.dynamicTiledNavMesh);
   const scene = useThree((state) => state.scene);
 
   useEffect(() => {
     if (!dynamicTiledNavMesh) return;
-
+    console.log("update dynaic", dynamicTiledNavMesh);
     const debugDrawer = new DebugDrawer();
     debugDrawer.drawNavMesh(dynamicTiledNavMesh.navMesh);
     scene.add(debugDrawer);
@@ -82,63 +86,48 @@ export const Navigation = () => {
     navMeshDebug: true,
   });
 
+  const [navMeshWorkers, setWorkers] = useState<number | null>(null);
+
+  // 1) Визначаємо воркери один раз
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && navigator.hardwareConcurrency) {
+      setWorkers(Math.max(1, navigator.hardwareConcurrency - 1));
+    } else {
+      setWorkers(3);
+    }
+  }, []);
+
   const [dynamicTiledNavMesh, setDynamicTiledNavMesh] =
     useState<DynamicTiledNavMesh>();
 
-  const getTraversablePositionsAndIndices = (): [
-    positions: Float32Array,
-    indices: Uint32Array
-  ] => {
-    const traversableMeshes = getTraversableMeshes();
-    return getPositionsAndIndices(traversableMeshes);
-  };
-
   useEffect(() => {
-    const dynamicTiledNavMesh = new DynamicTiledNavMesh({
-      navMeshBounds,
-      recastConfig,
-      workers: navMeshWorkers,
-    });
-    const navMeshQuery = new NavMeshQuery(dynamicTiledNavMesh.navMesh);
-    const crowd = new Crowd(dynamicTiledNavMesh.navMesh, {
-      maxAgents,
-      maxAgentRadius,
-    });
+    if (navMeshWorkers == null) return;
+    let dtm: DynamicTiledNavMesh | undefined;
+    let navMeshQuery: NavMeshQuery | undefined;
+    let crowd: Crowd | undefined;
 
-    setDynamicTiledNavMesh(dynamicTiledNavMesh);
-    useNavigation.setState({
-      dynamicTiledNavMesh,
-      navMesh: dynamicTiledNavMesh.navMesh,
-      navMeshQuery,
-      crowd,
-    });
+    (async () => {
+      if (typeof window === "undefined") return; // SSR guard
+      await ensureRecast(); // <<< обов’язково!
 
-    /* build tiles where traversable entities are added */
-    const unsubTraversableQueryAdd = traversableQuery.onEntityAdded.add(
-      (entity) => {
-        const bounds = new Box3();
+      dtm = new DynamicTiledNavMesh({
+        navMeshBounds,
+        recastConfig,
+        workers: navMeshWorkers,
+      });
 
-        const meshes: Mesh[] = [];
-        entity.three.traverse((child) => {
-          if (child instanceof Mesh) {
-            meshes.push(child);
-            bounds.expandByObject(child);
-          }
-        });
-
-        const [positions, indices] = getTraversablePositionsAndIndices();
-
-        const tiles = dynamicTiledNavMesh.getTilesForBounds(bounds);
-
-        for (const tile of tiles) {
-          dynamicTiledNavMesh.buildTile(positions, indices, tile);
-        }
-      }
-    );
+      navMeshQuery = new NavMeshQuery(dtm.navMesh);
+      crowd = new Crowd(dtm.navMesh, { maxAgents: 50, maxAgentRadius: 0.5 });
+      setDynamicTiledNavMesh(dtm);
+      useNavigation.setState({
+        dynamicTiledNavMesh: dtm,
+        navMesh: dtm.navMesh,
+        navMeshQuery,
+        crowd,
+      });
+    })();
 
     return () => {
-      unsubTraversableQueryAdd();
-
       useNavigation.setState({
         dynamicTiledNavMesh: undefined,
         navMesh: undefined,
@@ -146,32 +135,70 @@ export const Navigation = () => {
         crowd: undefined,
       });
 
-      dynamicTiledNavMesh.destroy();
-      navMeshQuery.destroy();
-      crowd.destroy();
+      dtm?.destroy();
+      navMeshQuery?.destroy();
+      crowd?.destroy();
     };
-  }, []);
+  }, [navMeshWorkers]);
+
+  useEffect(() => {
+    const unsubTraversableQueryAdd = traversableQuery.onEntityAdded.add(
+      (entity) => {
+        const bounds = new Box3();
+        const meshes: Mesh[] = [];
+
+        entity.three.traverse((child) => {
+          if (child instanceof Mesh) {
+            meshes.push(child);
+            bounds.expandByObject(child);
+          }
+        });
+        const [positions, indices] = getTraversablePositionsAndIndices();
+        if (dynamicTiledNavMesh) {
+          const tiles = dynamicTiledNavMesh.getTilesForBounds(bounds);
+          for (const tile of tiles) {
+            dynamicTiledNavMesh.buildTile(positions, indices, tile);
+          }
+        }
+      }
+    );
+    return () => {
+      if (unsubTraversableQueryAdd) {
+        unsubTraversableQueryAdd();
+      }
+    };
+  }, [dynamicTiledNavMesh]);
+
+  useEffect(() => {
+    if (!dynamicTiledNavMesh) return;
+
+    const id = requestAnimationFrame(() => {
+      const [positions, indices] = getTraversablePositionsAndIndices();
+      dynamicTiledNavMesh.buildAllTiles(positions, indices);
+    });
+
+    return () => cancelAnimationFrame(id);
+  }, [dynamicTiledNavMesh]);
 
   /* rebuild tiles with active rigid bodies every 200ms */
   useInterval(() => {
     if (!dynamicTiledNavMesh) return;
 
     const [positions, indices] = getTraversablePositionsAndIndices();
-
     const tiles = new Map<string, [x: number, y: number]>();
-
     for (const entity of traversableQuery) {
       if (!entity.rigidBody) continue;
-      if (entity.rigidBody.isSleeping()) continue;
+      // if (entity.rigidBody.isSleeping()) continue;
+      if (entity.three) {
+        const box3 = new Box3();
+        box3.expandByObject(entity.three);
 
-      const box3 = new Box3();
-      box3.expandByObject(entity.three);
+        const entityTiles = dynamicTiledNavMesh.getTilesForBounds(box3);
 
-      const entityTiles = dynamicTiledNavMesh.getTilesForBounds(box3);
-
-      for (const tile of entityTiles) {
-        const key = `${tile[0]},${tile[1]}`;
-        tiles.set(key, tile);
+        for (const tile of entityTiles) {
+          const key = `${tile[0]},${tile[1]}`;
+          tiles.set(key, tile);
+        }
       }
     }
 

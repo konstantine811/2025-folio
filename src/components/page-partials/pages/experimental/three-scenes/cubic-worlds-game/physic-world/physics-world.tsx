@@ -7,6 +7,7 @@ import Environment from "./env/env";
 // import DrawMesh from "./draw-mesh/draw-mesh";
 import { useEditModeStore } from "../store/useEditModeStore";
 import EditModeCamera from "./edit-mode-camera";
+import { Navigation } from "../enemy/navigation";
 
 // import PickUpController from "./controllers/pick-up-controller";
 
@@ -16,6 +17,7 @@ const InitPhysicWorld = () => {
   return (
     <>
       <Physics timeStep="vary" debug={isDebug} gravity={[0, -9.81, 0]}>
+        {/* <Navigation /> */}
         <Environment />
         <Ground />
         <EditModeCamera />

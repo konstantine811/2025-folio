@@ -67,7 +67,6 @@ export class DynamicTiledNavMesh {
     this.recastConfig = recastConfig;
 
     const navMesh = new NavMesh();
-
     // tile size
     const gridSize = calcGridSize(
       navMeshBounds[0],

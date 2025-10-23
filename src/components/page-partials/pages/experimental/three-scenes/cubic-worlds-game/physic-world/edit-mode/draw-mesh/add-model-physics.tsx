@@ -13,6 +13,7 @@ import { InstancedRigidBodies, interactionGroups } from "@react-three/rapier";
 import useCreateInstancedMesh from "./hooks/useCreateInstancedMesh";
 import { PhysicsData } from "../../../store/useEditModeStore";
 import { CollisionWorldType } from "../../../../config/collision";
+import { RegisterObstacle } from "../../../nav-mesh/register-obstacle";
 
 type Props = {
   matrices: Matrix4[];
@@ -79,6 +80,7 @@ const AddModelPhysics = ({
         receiveShadow
         castShadow
       />
+      <RegisterObstacle target={meshRef} />
     </InstancedRigidBodies>
   );
 };

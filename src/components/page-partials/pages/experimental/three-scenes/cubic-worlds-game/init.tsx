@@ -19,6 +19,7 @@ import { usePauseStore } from "./store/usePauseMode";
 import { useAuthStore } from "@/storage/useAuthStore";
 import useFirebaseLogin from "@/hooks/auth/firebase-login";
 import { isDev } from "@/utils/check-env";
+import Panel from "./ui/build-nav";
 
 type Props = {
   uid: string | null;
@@ -70,6 +71,7 @@ const Init = ({
       {!isDev && <ThreeLoader />}
       <Pause />
       {!isEditMode && <ScrollOverlay />}
+
       <Canvas
         shadows
         key={`canvas-${sessionKey}`}
@@ -84,6 +86,7 @@ const Init = ({
           <Experience />
           <LockPointer />
           <DebugMode />
+          {/* <Panel /> */}
         </Suspense>
       </Canvas>
     </MainWrapperOffset>

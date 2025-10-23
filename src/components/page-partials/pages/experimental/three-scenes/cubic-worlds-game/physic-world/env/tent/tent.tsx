@@ -7,6 +7,7 @@ import { useGLTF } from "@react-three/drei";
 import { publicModelPath } from "../../../config/3d-model.config";
 import { Mesh, MeshStandardMaterial } from "three";
 import { TentCollider } from "./tent-collider";
+import ObstacleWrapper from "../../../nav-mesh/obstacle-wrapper";
 
 type Props = JSX.IntrinsicElements["group"] & {};
 
@@ -28,24 +29,30 @@ export function Tent({ ...props }: Props) {
         rotation={[0.68, 1.175, -0.852]}
         scale={[0.019, 0.12, 0.019]}
       >
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={(nodes.Cube247 as Mesh).geometry}
-          material={materials.wood}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={(nodes.Cube247_1 as Mesh).geometry}
-          material={materials.rope}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={(nodes.Cube247_2 as Mesh).geometry}
-          material={tentMat}
-        />
+        <ObstacleWrapper>
+          <mesh
+            castShadow
+            receiveShadow
+            geometry={(nodes.Cube247 as Mesh).geometry}
+            material={materials.wood}
+          />
+        </ObstacleWrapper>
+        <ObstacleWrapper>
+          <mesh
+            castShadow
+            receiveShadow
+            geometry={(nodes.Cube247_1 as Mesh).geometry}
+            material={materials.rope}
+          />
+        </ObstacleWrapper>
+        <ObstacleWrapper>
+          <mesh
+            castShadow
+            receiveShadow
+            geometry={(nodes.Cube247_2 as Mesh).geometry}
+            material={tentMat}
+          />
+        </ObstacleWrapper>
       </group>
     </group>
   );

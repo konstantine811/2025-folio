@@ -6,6 +6,7 @@ import { JSX, useEffect, useRef, useState } from "react";
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import { useWorldStore } from "../../../store/useWorldStore";
 import BoxDestroyed from "./box-distroyed";
+import ObstacleWrapper from "../../../nav-mesh/obstacle-wrapper";
 
 const path = publicModelPath("simple_box.glb");
 type Props = JSX.IntrinsicElements["group"] & {
@@ -60,13 +61,15 @@ export default function BoxCrash({ idBox, ...props }: Props) {
           userData={{ breakable: true, name: idBox }}
         >
           {/* візуал цілого */}
-          <mesh
-            castShadow
-            receiveShadow
-            geometry={(nodes.Cube514 as Mesh).geometry}
-            material={materials.box_darken}
-            scale={props.scale}
-          />
+          <ObstacleWrapper>
+            <mesh
+              castShadow
+              receiveShadow
+              geometry={(nodes.Cube514 as Mesh).geometry}
+              material={materials.box_darken}
+              scale={props.scale}
+            />
+          </ObstacleWrapper>
           <mesh
             castShadow
             receiveShadow

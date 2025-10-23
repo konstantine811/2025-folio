@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import Loader from "./loader";
+import { useNav } from "../nav-mesh/useNavMesh";
 
 const UI = () => {
   const hs = useHeaderSizeStore((s) => s.size);
@@ -19,6 +20,8 @@ const UI = () => {
   const statusServer = useEditModeStore((s) => s.statusServer);
   const setIsDebug = useEditModeStore((s) => s.setIsDebug);
   const isDebug = useEditModeStore((s) => s.isDebug);
+  const setIsNavMeshDebug = useNav((s) => s.setIsNavMeshDebug);
+  const isNavMeshDebug = useNav((s) => s.isNavMeshDebug);
 
   return (
     <>
@@ -60,6 +63,16 @@ const UI = () => {
                 id="isDebug"
                 checked={isDebug}
                 onCheckedChange={setIsDebug}
+              />
+            </div>
+            <div className="h-auto flex gap-1 flex-col">
+              <Label htmlFor="isPhysics" className="text-background">
+                is Nav Mesh Debug
+              </Label>
+              <Checkbox
+                id="isNavMeshDebug"
+                checked={isNavMeshDebug}
+                onCheckedChange={setIsNavMeshDebug}
               />
             </div>
           </div>

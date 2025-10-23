@@ -9,7 +9,7 @@ const useCharacterCreateTexture = ({
   characterRigidBody,
   onGround,
 }: {
-  characterRigidBody: RapierRigidBody | null;
+  characterRigidBody: RapierRigidBody | null | undefined;
   onGround: boolean;
 }) => {
   const sizeTexture = 524;

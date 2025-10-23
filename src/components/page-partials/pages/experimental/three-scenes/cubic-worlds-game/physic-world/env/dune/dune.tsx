@@ -4,6 +4,7 @@ import { Group, Mesh, MeshStandardMaterial } from "three";
 import { publicModelPath } from "../../../config/3d-model.config";
 import { RigidBody } from "@react-three/rapier";
 import { useEditModeStore } from "../../../store/useEditModeStore";
+import ObstacleWrapper from "../../../nav-mesh/obstacle-wrapper";
 
 type Props = JSX.IntrinsicElements["group"] & {};
 
@@ -29,19 +30,21 @@ export function DuneModel({ ...props }: Props) {
         friction={1}
         restitution={0}
       >
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={(nodes.dune104 as Mesh).geometry}
-          rotation={[-0.075, -0.801, -0.039]}
-        >
-          <meshStandardMaterial
-            attach="material"
-            map={groundMat.map}
-            roughness={0.8}
-            metalness={0.1}
-          />
-        </mesh>
+        <ObstacleWrapper>
+          <mesh
+            castShadow
+            receiveShadow
+            geometry={(nodes.dune104 as Mesh).geometry}
+            rotation={[-0.075, -0.801, -0.039]}
+          >
+            <meshStandardMaterial
+              attach="material"
+              map={groundMat.map}
+              roughness={0.8}
+              metalness={0.1}
+            />
+          </mesh>
+        </ObstacleWrapper>
       </RigidBody>
     </group>
   );

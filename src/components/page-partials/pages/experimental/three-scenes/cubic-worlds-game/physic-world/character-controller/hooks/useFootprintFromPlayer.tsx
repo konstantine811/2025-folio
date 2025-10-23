@@ -9,7 +9,7 @@ export function useFootprintFromPlayer(opts: {
   boundsXZ: Bounds; // межі карти у світових координатах XZ
   addTouch: (p: { x: number; y: number }) => void; // з useTouchTexture
   brushStep?: number; // м'який даунсемпл: як часто малювати
-  characterRigidBody: RapierRigidBody | null;
+  characterRigidBody: RapierRigidBody | null | undefined;
   onGround: boolean;
 }) {
   const last = new Vector3();

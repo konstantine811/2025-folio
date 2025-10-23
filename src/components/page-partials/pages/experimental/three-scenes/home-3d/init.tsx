@@ -42,6 +42,7 @@ const Init = () => {
   return (
     <MainWrapperOffset>
       <ThreeLoader />
+
       <Canvas
         gl={{ preserveDrawingBuffer: true }}
         camera={{ position: [1, 1, 0], fov: 65, near: 0.001 }}

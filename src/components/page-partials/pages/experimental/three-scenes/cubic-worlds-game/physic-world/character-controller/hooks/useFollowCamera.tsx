@@ -42,7 +42,7 @@ const useFollowCamera = ({
   const { scene, camera, gl } = useThree();
   const isEditMode = useEditModeStore((s) => s.isEditMode);
   // const { rapier, world } = useRapier();
-
+  const camRayCastRef = useRef(new Raycaster());
   const previousTouch1 = useRef<Touch | null>(null);
   const previousTouch2 = useRef<Touch | null>(null);
 
@@ -61,19 +61,12 @@ const useFollowCamera = ({
   /** Camera collison detect setups */
   let smallestDistance = null;
   const cameraDistance = useRef<number | null>(null);
-  let intersects = null;
   // let intersectObjects: THREE.Object3D[] = [];
   const intersectObjects = useRef<Object3D[]>([]);
   const cameraRayDir = useMemo(() => new Vector3(), []);
   const cameraRayOrigin = useMemo(() => new Vector3(), []);
   const cameraPosition = useMemo(() => new Vector3(), []);
   const camLerpingPoint = useMemo(() => new Vector3(), []);
-  const camRayCast = new Raycaster(
-    cameraRayOrigin,
-    cameraRayDir,
-    0,
-    -camMaxDis
-  );
   // Rapier ray setup (optional)
   // const rayCast = new rapier.Ray(cameraRayOrigin, cameraRayDir);
   // let rayLength = null;
@@ -230,21 +223,24 @@ const useFollowCamera = ({
    * Camera collision detection function
    */
   const cameraCollisionDetect = (delta: number) => {
-    if (isEditMode) return;
+    if (isEditMode || !camera) return;
     // Update collision detect ray origin and pointing direction
     // Which is from pivot point to camera position
     cameraRayOrigin.copy(pivot.position);
     camera.getWorldPosition(cameraPosition);
-    cameraRayDir.subVectors(cameraPosition, pivot.position);
-    // rayLength = cameraRayDir.length();
+    cameraRayDir.subVectors(cameraPosition, pivot.position).normalize();
 
-    // casting ray hit, if object in between character and camera,
-    // change the smallestDistance to the ray hit toi
-    // otherwise the smallestDistance is same as camera original position (originZDis)
-    intersects = camRayCast.intersectObjects(intersectObjects.current);
-    if (intersects.length && intersects[0].distance <= -originZDis.current) {
+    const ray = camRayCastRef.current;
+    ray.camera = camera; // <<< КЛЮЧОВО ДЛЯ LineSegments2
+    ray.ray.origin.copy(cameraRayOrigin);
+    ray.ray.direction.copy(cameraRayDir);
+    ray.near = 0;
+    ray.far = -camMaxDis; // твій максимум дистанції
+
+    const hits = ray.intersectObjects(intersectObjects.current, true);
+    if (hits.length && hits[0].distance <= -originZDis.current) {
       smallestDistance = Math.min(
-        -intersects[0].distance * camCollisionOffset,
+        -hits[0].distance * camCollisionOffset,
         camMinDis
       );
     } else {
@@ -341,7 +337,7 @@ const useFollowCamera = ({
 
   // If followCam is disabled set to disableFollowCamPos, target to disableFollowCamTarget
   useEffect(() => {
-    if (disableFollowCam) {
+    if (disableFollowCam && camera) {
       if (disableFollowCamPos)
         camera.position.set(
           disableFollowCamPos.x,

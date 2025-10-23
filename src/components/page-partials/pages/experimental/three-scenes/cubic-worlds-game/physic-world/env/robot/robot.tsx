@@ -4,6 +4,7 @@ import { Group, Mesh, MeshStandardMaterial } from "three";
 import { TrimeshRobot } from "./trimesh-robot";
 import { publicModelPath } from "../../../config/3d-model.config";
 import { useEditModeStore } from "../../../store/useEditModeStore";
+import ObstacleWrapper from "../../../nav-mesh/obstacle-wrapper";
 
 type Props = JSX.IntrinsicElements["group"] & {};
 
@@ -33,24 +34,30 @@ export function Robot({ ...props }: Props) {
   return (
     <>
       <group {...props} dispose={null} ref={groupRef} frustumCulled={true}>
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={(nodes.Cube216 as Mesh).geometry}
-          material={matRobotF}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={(nodes.Cube216_1 as Mesh).geometry}
-          material={matRobotT}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={(nodes.Cube216_2 as Mesh).geometry}
-          material={materials["black.002"]}
-        />
+        <ObstacleWrapper>
+          <mesh
+            castShadow
+            receiveShadow
+            geometry={(nodes.Cube216 as Mesh).geometry}
+            material={matRobotF}
+          />
+        </ObstacleWrapper>
+        <ObstacleWrapper>
+          <mesh
+            castShadow
+            receiveShadow
+            geometry={(nodes.Cube216_1 as Mesh).geometry}
+            material={matRobotT}
+          />
+        </ObstacleWrapper>
+        <ObstacleWrapper>
+          <mesh
+            castShadow
+            receiveShadow
+            geometry={(nodes.Cube216_2 as Mesh).geometry}
+            material={materials["black.002"]}
+          />
+        </ObstacleWrapper>
         <TrimeshRobot />
       </group>
     </>
