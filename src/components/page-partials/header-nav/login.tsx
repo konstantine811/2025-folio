@@ -1,5 +1,5 @@
 import { useAuthStore } from "@/storage/useAuthStore";
-import { SoundTypeElement } from "@custom-types/sound";
+import { HoverStyleElement, SoundTypeElement } from "@custom-types/sound";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import SelectItem from "@/components/ui-abc/select/select-item";
 import { LogOut, User } from "lucide-react";
@@ -22,6 +22,7 @@ const Login = () => {
       <SoundHoverElement
         as="button"
         hoverTypeElement={SoundTypeElement.SELECT}
+        hoverStyleElement={HoverStyleElement.none}
         hoverAnimType="scale"
         onClick={handleLogin}
         tooltipText={t("login.to_google")}
@@ -61,6 +62,7 @@ const Login = () => {
             as="li"
             variants={itemVariants}
             hoverTypeElement={SoundTypeElement.SELECT}
+            hoverStyleElement={HoverStyleElement.none}
             hoverAnimType="scale"
             onClick={handleLogout}
             tooltipText={t("login.out")}

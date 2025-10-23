@@ -3,7 +3,7 @@ import SoundHoverElement from "@components/ui-abc/sound-hover-element";
 import NavToggler from "./nav-toggler";
 import RevealNavMenu from "./reveal-nav-menu";
 
-import { SoundTypeElement } from "@custom-types/sound";
+import { HoverStyleElement, SoundTypeElement } from "@custom-types/sound";
 import HeaderBanner from "./header-banner";
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 import Login from "./login";
@@ -17,11 +17,12 @@ export default function NavMenu() {
   const navigateTo = useTransitionRouteTo();
   useEnvSoundToPath();
   return (
-    <div className="relative md:max-w-md w-full">
-      <div className="relative z-20 flex items-center justify-between gap-4 w-full bg-card/90 px-5  backdrop-blur-2xl py-2">
+    <div className="relative md:max-w-md w-full m-2">
+      <div className="relative  z-20 flex items-center justify-between bg-muted-foreground/45 gap-4 w-full rounded-2xl px-5  backdrop-blur-xs py-2">
         <div className="flex items-center gap-2">
           <SoundHoverElement
-            hoverTypeElement={SoundTypeElement.LOGO}
+            hoverTypeElement={SoundTypeElement.NONE}
+            hoverStyleElement={HoverStyleElement.none}
             className="w-12 flex items-center justify-center relative px-2 py-3"
             hoverAnimType="translate"
             onClick={() => {
@@ -37,7 +38,11 @@ export default function NavMenu() {
             <HeaderBanner />
           </div>
         )}
-        <SoundHoverElement hoverAnimType="scale" className="caret-transparent">
+        <SoundHoverElement
+          hoverStyleElement={HoverStyleElement.none}
+          hoverAnimType="scale"
+          className="caret-transparent"
+        >
           <NavToggler />
         </SoundHoverElement>
       </div>

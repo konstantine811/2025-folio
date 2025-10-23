@@ -1,9 +1,7 @@
-import SoundHoverElement from "../sound-hover-element";
-import { SoundTypeElement } from "@custom-types/sound";
 import { AnimatePresence, Variants } from "motion/react";
 import { useState } from "react";
-import WrapperHoverElement from "../wrapper-hover-element";
 import { MOTION_FRAME_TRANSITION } from "@config/animations";
+import { motion } from "framer-motion";
 
 type SelectItemProps = {
   renderItems: (itemVariants: Variants) => React.ReactNode;
@@ -44,17 +42,14 @@ const SelectItem = ({
   return (
     <>
       <div className="relative">
-        <SoundHoverElement
-          as="button"
-          hoverTypeElement={SoundTypeElement.LOGO}
-          className="p-3 rounded-full relative z-[1000]"
-          hoverAnimType="translate"
+        <button
+          className="p-3 rounded-full relative z-[1000] select-none"
           onClick={() => {
             setIsOpen(!isOpen);
           }}
         >
           {selectNode}
-        </SoundHoverElement>
+        </button>
         <div
           className={`${
             isOpen ? "pointer-events-auto" : "pointer-events-none"
@@ -68,18 +63,17 @@ const SelectItem = ({
                   transform: `translate(${dropPosition.x}px, ${dropPosition.y}px)`,
                 }}
               >
-                <WrapperHoverElement
-                  className="flex flex-col gap-1"
+                <motion.ul
+                  className="flex flex-col gap-1 select-none"
                   initial="hidden"
                   animate="visible"
-                  as="ul"
                   exit="hidden"
                   key={isOpen ? "visible" : "hidden"} // 👈 це важливо
                   variants={containerVariants}
                   onClick={() => setIsOpen(false)}
                 >
                   {renderItems(itemVariants)}
-                </WrapperHoverElement>
+                </motion.ul>
               </div>
             )}
           </AnimatePresence>

@@ -1,4 +1,3 @@
-import MainWrapperOffset from "@/components/ui-abc/main-wrapper-offset";
 import { Canvas } from "@react-three/fiber";
 import { Suspense, useEffect } from "react";
 import ThreeLoader from "../common/three-loader";
@@ -40,7 +39,7 @@ const Init = () => {
     });
   }, []);
   return (
-    <MainWrapperOffset>
+    <div className="h-screen">
       <ThreeLoader />
 
       <Canvas
@@ -55,7 +54,7 @@ const Init = () => {
           </SheetProvider>
         </Suspense>
       </Canvas>
-    </MainWrapperOffset>
+    </div>
   );
 };
 

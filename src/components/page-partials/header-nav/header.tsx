@@ -20,19 +20,20 @@ const Header = memo(() => {
   return (
     <header
       ref={headerRef}
-      className="sticky top-0 z-40 backdrop-blur-md  bg-background"
+      className="fixed top-0 z-40 w-full container mx-auto left-0 right-0"
     >
       <div className="grid grid-cols-1 md:grid-cols-2 items-center">
-        <NavMenu />
-
         {!isMdSize && (
-          <div className="text-foreground pr-4 items-center justify-end flex">
-            <ToggleSound />
-            <ColorPicker />
-            <LanguagePicker />
+          <div className="text-foreground pr-4 items-center flex">
             <Login />
           </div>
         )}
+        <div className="flex justify-end items-center">
+          <ColorPicker />
+          <LanguagePicker />
+          <ToggleSound />
+          <NavMenu />
+        </div>
       </div>
     </header>
   );
