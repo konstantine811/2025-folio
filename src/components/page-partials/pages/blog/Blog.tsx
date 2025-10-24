@@ -30,7 +30,7 @@ const Blog = () => {
   return (
     <div
       className="bg-background pb-10"
-      style={{ minHeight: `calc(100vh - ${hSize}px)` }}
+      style={{ minHeight: `calc(100vh - ${hSize}px)`, marginTop: `${hSize}px` }}
     >
       {loading ? (
         <Preloader />

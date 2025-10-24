@@ -103,22 +103,22 @@ const StickCursor = () => {
               <>
                 {/* top-left */}
                 <span
-                  className={`${classHoverLink} top-0 left-0 border-t-2 border-l-2 rounded-tl-md`}
+                  className={`${classHoverLink} top-0 left-0 border-t-1 border-l-1 rounded-tl-sm`}
                 />
 
                 {/* top-right */}
                 <span
-                  className={`${classHoverLink} top-0 right-0 border-t-2 border-r-2 rounded-tr-md`}
+                  className={`${classHoverLink} top-0 right-0 border-t-1 border-r-1 rounded-tr-sm`}
                 />
 
                 {/* bottom-left */}
                 <span
-                  className={`${classHoverLink} bottom-0 left-0 border-b-2 border-l-2 rounded-bl-md`}
+                  className={`${classHoverLink} bottom-0 left-0 border-b-1 border-l-1 rounded-bl-sm`}
                 />
 
                 {/* bottom-right */}
                 <span
-                  className={`${classHoverLink} bottom-0 right-0 border-b-2 border-r-2 rounded-br-md`}
+                  className={`${classHoverLink} bottom-0 right-0 border-b-1 border-r-1 rounded-br-sm`}
                 />
               </>
             )}

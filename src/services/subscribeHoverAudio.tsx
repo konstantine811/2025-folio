@@ -6,6 +6,7 @@ import {
   selectSound_3,
   selectSound_2,
   buttonClickSound,
+  menuOpenSound,
 } from "@config/sounds";
 import { SoundTypeElement } from "@custom-types/sound";
 import { useHoverStore } from "@storage/hoverStore";
@@ -49,6 +50,9 @@ export function subscribeToHoverSound() {
         case SoundTypeElement.SHIFT:
           buttonClickSound.play("first");
           break;
+        case SoundTypeElement.OPEN:
+          menuOpenSound.play();
+          break;
       }
     } else {
       // 🧠 не граємо end звук, якщо вже було false
@@ -72,6 +76,9 @@ export function subscribeToHoverSound() {
         case SoundTypeElement.SHIFT:
           buttonClickSound.stop();
           whooshSound.play("second");
+          break;
+        case SoundTypeElement.OPEN:
+          menuOpenSound.stop();
           break;
       }
     }

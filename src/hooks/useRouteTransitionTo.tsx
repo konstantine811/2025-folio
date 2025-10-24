@@ -1,4 +1,4 @@
-import { riserSound, shinySound } from "@/config/sounds";
+import { transitionSound } from "@/config/sounds";
 import { useSoundEnabledStore } from "@/storage/soundEnabled";
 import { useTransitionStore } from "@/storage/transitionRoutePath";
 import { useNavigate } from "react-router";
@@ -14,8 +14,7 @@ const useTransitionRouteTo = () => {
 
     onTransition(true);
     if (isSoundEnabled) {
-      riserSound.play("first");
-      shinySound.play("first");
+      transitionSound.play();
     }
     setTimeout(() => {
       navigate(routePath);

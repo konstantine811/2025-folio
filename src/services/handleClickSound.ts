@@ -1,6 +1,7 @@
 import {
   buttonClickSound,
   buttonClickSound3,
+  menuOpenSound,
   selectSound_2,
   selectSound_3,
 } from "@config/sounds";
@@ -20,5 +21,9 @@ export function switchPlaySound(sound: SoundTypeElement) {
       break;
     case SoundTypeElement.SELECT:
       selectSound_2.stop();
+      break;
+    case SoundTypeElement.OPEN:
+      menuOpenSound.play();
+      break;
   }
 }

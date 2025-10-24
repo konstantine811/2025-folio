@@ -1,7 +1,7 @@
 import SelectItem from "@components/ui-abc/select/select-item";
 import SoundHoverElement from "@components/ui-abc/sound-hover-element";
 import { buttonClickSound2 } from "@config/sounds";
-import { SoundTypeElement } from "@custom-types/sound";
+import { HoverStyleElement, SoundTypeElement } from "@custom-types/sound";
 import { LanguageType } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import en from "/icon/png/england.png";
@@ -31,6 +31,7 @@ const LanguagePicker = () => {
               key={key}
               variants={itemVariants}
               hoverTypeElement={SoundTypeElement.SELECT}
+              hoverStyleElement={HoverStyleElement.none}
               hoverAnimType="scale"
               animValue={0.9}
               onClick={() => {

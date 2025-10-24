@@ -1,7 +1,7 @@
 import { Howl } from "howler";
 
-function getEfxPath(name: string): string {
-  return `/sound/ui-efx/${name}.mp3`;
+function getEfxPath(name: string, format = "mp3"): string {
+  return `/sound/ui-efx/${name}.${format}`;
 }
 
 function getGameEfxPath(name: string, format = "mp3"): string {
@@ -32,6 +32,11 @@ export const buttonClickSound = new Howl({
   sprite: {
     first: [300, 1700],
   },
+});
+
+export const menuOpenSound = new Howl({
+  volume: 0.5,
+  src: [getEfxPath("menu-open", "wav")],
 });
 
 export const buttonClickSound2 = new Howl({
@@ -130,6 +135,21 @@ export const riserSound = new Howl({
   },
 });
 
+export const transitionSound = new Howl({
+  src: [getEfxPath("transition", "wav")],
+  volume: 1,
+});
+
+export const revealDarkSound = new Howl({
+  src: [getEfxPath("reveal-dark", "wav")],
+  volume: 1,
+});
+
+export const revealSound = new Howl({
+  src: [getEfxPath("reveal", "wav")],
+  volume: 1,
+});
+
 export const whooshSound = new Howl({
   src: [getEfxPath("whoosh")],
   volume: 0.1,
@@ -205,7 +225,7 @@ export const atmospericSoundFirst = new Howl({
 });
 
 export const envSound = new Howl({
-  src: ["/sound/music/ES_Intermission - Hanna Lindgren.mp3"],
-  volume: 0.5,
+  src: ["/sound/music/ES_Forsaken - Luba Hilman.mp3"],
+  volume: 1,
   loop: true,
 });

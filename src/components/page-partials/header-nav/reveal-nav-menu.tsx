@@ -1,14 +1,11 @@
-import SoundHoverElement from "@components/ui-abc/sound-hover-element";
-import WrapperHoverElement from "@components/ui-abc/wrapper-hover-element";
 import { MOTION_FRAME_TRANSITION } from "@config/animations";
 import { router } from "@config/router-config";
-import { HoverStyleElement, SoundTypeElement } from "@custom-types/sound";
+import { SoundTypeElement } from "@custom-types/sound";
 import { useClickStore } from "@storage/clickStore";
 import { useNavMenuStore } from "@storage/navMenuStore";
 import { AnimatePresence, motion, Variants } from "motion/react";
 import { memo } from "react";
 import LanguagePicker from "../page-setting/lange-picker/language-picker";
-import ColorPicker from "../page-setting/color-picker/color-picker";
 import ToggleSound from "../page-setting/toggle-sound";
 import { useSoundEnabledStore } from "@/storage/soundEnabled";
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
@@ -16,6 +13,7 @@ import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
 import { useTranslation } from "react-i18next";
 import useRoutingPath from "@/hooks/useRoutingPath";
 import { isLocalhost } from "@/utils/env-inspect";
+import ThemeToggle from "../page-setting/theme-toggle/theme-toggle";
 
 const RevealNavMenu = memo(() => {
   const { isOpen, setOpen } = useNavMenuStore((state) => state);
@@ -28,19 +26,19 @@ const RevealNavMenu = memo(() => {
   const containerVariants = {
     visible: {
       transition: {
-        staggerChildren: 0.05, // ⏱ затримка між появою пунктів
+        staggerChildren: 0.1, // ⏱ затримка між появою пунктів
         delayChildren: 0.1, // ⏳ затримка перед першим
       },
     },
   };
 
   const itemVariants: Variants = {
-    hidden: { opacity: 0, y: -15 },
+    hidden: { opacity: 0, y: -40 },
     visible: {
       opacity: 1,
       y: 0,
 
-      transition: MOTION_FRAME_TRANSITION.spring2,
+      transition: { ...MOTION_FRAME_TRANSITION.spring3 },
     },
     exit: { opacity: 0, y: 1 }, // 👈 додай це
   };
@@ -67,17 +65,16 @@ const RevealNavMenu = memo(() => {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={MOTION_FRAME_TRANSITION.spring}
+              transition={MOTION_FRAME_TRANSITION.spring3}
               layout="size"
-              className="absolute z-10 bottom-0 left-0 w-full bg-card  border border-foreground/10 translate-y-full rounded-br-md shadow-xs shadow-muted-foreground"
+              className="absolute z-10 bottom-0 left-0 w-full translate-y-full bg-card rounded-2xl backdrop-blur-xs"
             >
               <motion.nav className="flex items-center justify-center ">
-                <WrapperHoverElement
+                <motion.ul
                   className="flex flex-col w-full"
                   initial="hidden"
                   animate="visible"
                   exit="hidden"
-                  as="ul"
                   variants={containerVariants}
                 >
                   {router
@@ -100,30 +97,27 @@ const RevealNavMenu = memo(() => {
                           }
                         }}
                         className={`${
-                          route.path === firstPathName &&
-                          "bg-background rounded-sm border-b border-t border-muted-foreground"
-                        }`}
+                          route.path === firstPathName
+                            ? "bg-background rounded-sm"
+                            : "opacity-50 hover:scale-103 duration-300"
+                        } overflow-hidden flex gap-2 items-center select-none cursor-pointer`}
                       >
-                        <SoundHoverElement
+                        <span className="ml-4 h-1 w-1 bg-foreground"></span>
+                        <motion.li
                           variants={itemVariants}
-                          className="relative  w-full py-2 px-4 text-foreground text-lg font-medium hover:bg-main/5 rounded-md"
-                          hoverTypeElement={SoundTypeElement.LINK}
-                          hoverStyleElement={HoverStyleElement.quad}
-                          hoverAnimType="scale"
-                          animValue={0.98}
-                          as="li"
+                          className="relative  w-full py-5 px-4 text-foreground text-lg font-thin hover:bg-main/5 rounded-md"
                         >
                           {t(`pages.${route.id}`)}
-                        </SoundHoverElement>
+                        </motion.li>
                       </a>
                     ))}
-                </WrapperHoverElement>
+                </motion.ul>
               </motion.nav>
               {isMdSize && (
                 <div className="flex px-5 py-5 justify-between items-center text-foreground/55 border-t border-background">
                   <div className="flex gap-5 items-center justify-center">
                     <ToggleSound />
-                    <ColorPicker />
+                    <ThemeToggle />
                     <LanguagePicker />
                   </div>
                 </div>

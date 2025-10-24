@@ -1,19 +1,53 @@
 import Card from "@/components/ui-abc/card/card";
 import LogoAnimated from "@/components/ui-abc/logo";
-import WrapperHoverElement from "@/components/ui-abc/wrapper-hover-element";
 import { Button } from "@/components/ui/button";
 import { EXPERIMENTAL_ROUTERS } from "@/config/router-config";
 import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { isDev } from "@/utils/check-env";
 import { exportHtmlToPng, exportSvgToFile } from "@/utils/export-to-png";
-import { useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 const Test = () => {
   const svgWrapRef = useRef<HTMLDivElement>(null);
+  const hs = useHeaderSizeStore((s) => s.size);
   const svgRef = useRef<SVGSVGElement>(null);
   const navigateTo = useTransitionRouteTo();
+  const dataGridRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<HTMLDivElement[]>([]);
+
+  // стабільний setter, щоб не створювати нову функцію на кожен рендер
+  const setCardRef = useCallback((index: number) => {
+    return (el: HTMLDivElement | null) => {
+      if (el) cardRefs.current[index] = el;
+      else delete cardRefs.current[index]; // cleanup, якщо картку прибрали
+    };
+  }, []);
+  useEffect(() => {
+    const cards = cardRefs.current;
+    const dataGrid = dataGridRef.current;
+    const handlePointerMove = (e: PointerEvent) => {
+      cards.forEach((card) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        card.style.setProperty("--mouse-x", `${x}px`);
+        card.style.setProperty("--mouse-y", `${y}px`);
+      });
+    };
+    dataGrid?.addEventListener("pointermove", handlePointerMove);
+
+    return () => {
+      dataGrid?.removeEventListener("pointermove", handlePointerMove);
+    };
+  }, []);
   return (
-    <div className="container mx-auto">
+    <div
+      className="container mx-auto"
+      style={{ paddingTop: hs }}
+      ref={dataGridRef}
+    >
       {isDev ? (
         <div className="container mx-auto">
           <div
@@ -38,13 +72,11 @@ const Test = () => {
           </div>
         </div>
       ) : null}
-      <WrapperHoverElement
-        as="ul"
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 pt-10"
-      >
-        {EXPERIMENTAL_ROUTERS.map((item) => {
+      <ul className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-6 pt-10">
+        {EXPERIMENTAL_ROUTERS.map((item, idx) => {
           return (
             <Card
+              ref={setCardRef(idx)}
               onClick={() => {
                 navigateTo(
                   item.path.startsWith("/") ? item.path : `/${item.path}`
@@ -57,7 +89,7 @@ const Test = () => {
             />
           );
         })}
-      </WrapperHoverElement>
+      </ul>
     </div>
   );
 };

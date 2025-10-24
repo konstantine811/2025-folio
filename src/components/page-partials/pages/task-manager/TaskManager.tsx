@@ -10,6 +10,7 @@ import {
   DockItem,
   DockLabel,
 } from "@/components/ui/shadcn-io/dock";
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 
 export interface TaskManagerOutletContext {
   className: string;
@@ -21,8 +22,9 @@ const TaskManager = () => {
   const outletConext: TaskManagerOutletContext = {
     className: "pb-24",
   };
+  const hs = useHeaderSizeStore((s) => s.size);
   return (
-    <>
+    <div style={{ paddingTop: hs }} className="min-h-screen">
       <Outlet context={outletConext} />
       <div className="fixed bottom-2 left-1/2 max-w-full -translate-x-1/2 z-10">
         <Dock className="items-end pb-3 bg-card/30 backdrop-blur-sm border border-foreground/10">
@@ -56,7 +58,7 @@ const TaskManager = () => {
           })}
         </Dock>
       </div>
-    </>
+    </div>
   );
 };
 

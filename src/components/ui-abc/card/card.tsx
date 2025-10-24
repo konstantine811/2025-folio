@@ -1,44 +1,52 @@
-import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
-import SoundHoverElement from "../sound-hover-element";
+import { forwardRef } from "react";
 import LogoAnimated from "../logo";
+import { useThemeStore } from "@/storage/themeStore";
+import { ThemePalette } from "@/config/theme-colors.config";
 
 type Props = {
-  onClick: () => void;
-  srcImage?: string | undefined | null;
+  srcImage?: string;
   title: string;
   description?: string;
+  onClick?: () => void;
 };
 
-const Card = ({ onClick, srcImage, title, description }: Props) => {
-  return (
-    <SoundHoverElement
-      hoverAnimType="scale"
-      animValue={0.97}
-      hoverTypeElement={SoundTypeElement.SELECT}
-      hoverStyleElement={HoverStyleElement.quad}
-      as="li"
-      className="bg-card text-foreground rounded-xs overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col h-full"
-      onClick={onClick}
-    >
-      <div className="w-full h-48 flex items-center justify-center">
-        {srcImage ? (
-          <img
-            className="object-cover w-full h-48"
-            src={srcImage}
-            alt={title}
-          />
-        ) : (
-          <div className="w-15 flex items-center justify-center h-full">
-            <LogoAnimated />
-          </div>
-        )}
+const Card = forwardRef<HTMLDivElement, Props>(
+  ({ srcImage, title, onClick }, ref) => {
+    const theme = useThemeStore((state) => state.selectedTheme);
+    return (
+      <div
+        ref={ref}
+        onClick={onClick}
+        className="group relative rounded-md cursor-pointer bg-foreground/10 card p-[1px] hover:scale-99 duration-300 flex flex-col"
+      >
+        <div className="flex z-[2] bg-card  aspect-square  relative rounded-t-md">
+          {srcImage ? (
+            <img
+              className="object-cover w-full p-5"
+              src={srcImage}
+              alt={title}
+            />
+          ) : (
+            <div className="w-15 flex items-center justify-center h-full">
+              <LogoAnimated />
+            </div>
+          )}
+        </div>
+        <div className="relative z-20 flex items-center mt-[1px] justify-between  w-full px-4 py-2 bg-card rounded-b-md grow">
+          <span className="w-1 h-1 rounded-full bg-foreground/20"></span>
+          <span className="">{title}</span>
+          <span className="w-1 h-1 rounded-full bg-foreground/20"></span>
+        </div>
+
+        <div
+          className="absolute top-0 left-0 w-full h-full transition-opacity duration-500 rounded-md opacity-0 group-hover:opacity-100 z-1"
+          style={{
+            background: `radial-gradient(400px circle at var(--mouse-x) var(--mouse-y),${ThemePalette[theme]["muted-foreground"]},transparent 40%)`,
+          }}
+        ></div>
       </div>
-      <div className="p-4 flex flex-col flex-grow bg-card/15 backdrop-blur-2xl">
-        <h4 className="text-lg font-semibold mb-2">{title}</h4>
-        <p className="text-sm text-muted-foreground flex-grow">{description}</p>
-      </div>
-    </SoundHoverElement>
-  );
-};
+    );
+  }
+);
 
 export default Card;

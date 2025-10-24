@@ -1,11 +1,11 @@
-import ColorPicker from "@components/page-partials/page-setting/color-picker/color-picker";
 import NavMenu from "./nav-menu";
 import { memo, useEffect, useRef } from "react";
 import { useHeaderSizeStore } from "@storage/headerSizeStore";
 import LanguagePicker from "../page-setting/lange-picker/language-picker";
 import ToggleSound from "../page-setting/toggle-sound";
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
-import Login from "./login";
+import LogoHomeNav from "./logo-home-nav";
+import ThemeToggle from "../page-setting/theme-toggle/theme-toggle";
 
 const Header = memo(() => {
   const headerRef = useRef<HTMLDivElement>(null!);
@@ -25,11 +25,11 @@ const Header = memo(() => {
       <div className="grid grid-cols-1 md:grid-cols-2 items-center">
         {!isMdSize && (
           <div className="text-foreground pr-4 items-center flex">
-            <Login />
+            <LogoHomeNav />
           </div>
         )}
         <div className="flex justify-end items-center">
-          <ColorPicker />
+          <ThemeToggle />
           <LanguagePicker />
           <ToggleSound />
           <NavMenu />

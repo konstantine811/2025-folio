@@ -23,7 +23,7 @@ const SelectTabs = ({
         initial="hidden"
         animate="visible"
         exit="hidden"
-        className="relative flex flex-wrap md:border border-foreground rounded-sm  items-center justify-center"
+        className="relative flex flex-wrap rounded-sm  items-center justify-center"
       >
         {items.map((item, index) => (
           <SoundHoverElement
@@ -33,7 +33,7 @@ const SelectTabs = ({
             hoverAnimType="scale"
             key={index}
             className={`relative z-10 cursor-pointer px-6 py-2 ${
-              selected === item ? "text-background" : "text-foreground"
+              selected === item ? "text-foreground" : "text-foreground"
             }`}
             onClick={() => {
               setSelected(item);
@@ -45,7 +45,7 @@ const SelectTabs = ({
             {selected === item && (
               <motion.div
                 layoutId="highlight"
-                className="absolute inset-0 bg-foreground"
+                className="absolute inset-0 bg-muted-foreground/20 rounded-xs"
                 transition={MOTION_FRAME_TRANSITION.spring}
               />
             )}

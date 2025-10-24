@@ -29,7 +29,7 @@ const TopicBlogPost = ({
     <div>
       <div
         ref={refTopic}
-        className="bg-card p-6 md:sticky top-0 flex flex-wrap gap-2 items-center z-10 bottom-0"
+        className="bg-card/10 backdrop-blur-sm p-6 md:sticky top-0 flex flex-wrap gap-2 items-center z-10 bottom-0 container mx-auto"
         style={{ top: hSize }}
       >
         <h2 className="text-foreground text-2xl uppercase font-bold">

@@ -20,7 +20,7 @@ export const MOTION_FRAME_TRANSITION: Record<string, Transition> = {
   },
   spring3: {
     type: "spring",
-    stiffness: 300,
-    damping: 30,
+    stiffness: 100,
+    damping: 40,
   },
 };
