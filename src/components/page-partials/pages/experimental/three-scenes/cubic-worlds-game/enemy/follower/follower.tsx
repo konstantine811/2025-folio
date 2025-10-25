@@ -31,9 +31,9 @@ const Follower = (props: FollowerProps) => {
         <Agent
           ref={agentRef}
           {...agentProps}
-          onCreateAgent={(agent) => {
-            console.log("agent", agent);
-          }}
+          // onCreateAgent={(agent) => {
+          //   console.log("agent", agent);
+          // }}
         />
       </Component>
       <Component name="three">

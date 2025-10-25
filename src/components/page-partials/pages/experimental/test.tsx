@@ -6,48 +6,15 @@ import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { isDev } from "@/utils/check-env";
 import { exportHtmlToPng, exportSvgToFile } from "@/utils/export-to-png";
-import { useCallback, useEffect, useRef } from "react";
+import { useRef } from "react";
 
 const Test = () => {
   const svgWrapRef = useRef<HTMLDivElement>(null);
   const hs = useHeaderSizeStore((s) => s.size);
   const svgRef = useRef<SVGSVGElement>(null);
   const navigateTo = useTransitionRouteTo();
-  const dataGridRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<HTMLDivElement[]>([]);
-
-  // стабільний setter, щоб не створювати нову функцію на кожен рендер
-  const setCardRef = useCallback((index: number) => {
-    return (el: HTMLDivElement | null) => {
-      if (el) cardRefs.current[index] = el;
-      else delete cardRefs.current[index]; // cleanup, якщо картку прибрали
-    };
-  }, []);
-  useEffect(() => {
-    const cards = cardRefs.current;
-    const dataGrid = dataGridRef.current;
-    const handlePointerMove = (e: PointerEvent) => {
-      cards.forEach((card) => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        card.style.setProperty("--mouse-x", `${x}px`);
-        card.style.setProperty("--mouse-y", `${y}px`);
-      });
-    };
-    dataGrid?.addEventListener("pointermove", handlePointerMove);
-
-    return () => {
-      dataGrid?.removeEventListener("pointermove", handlePointerMove);
-    };
-  }, []);
   return (
-    <div
-      className="container mx-auto"
-      style={{ paddingTop: hs }}
-      ref={dataGridRef}
-    >
+    <div className="container mx-auto" style={{ paddingTop: hs }}>
       {isDev ? (
         <div className="container mx-auto">
           <div
@@ -73,10 +40,9 @@ const Test = () => {
         </div>
       ) : null}
       <ul className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-6 pt-10">
-        {EXPERIMENTAL_ROUTERS.map((item, idx) => {
+        {EXPERIMENTAL_ROUTERS.map((item) => {
           return (
             <Card
-              ref={setCardRef(idx)}
               onClick={() => {
                 navigateTo(
                   item.path.startsWith("/") ? item.path : `/${item.path}`
