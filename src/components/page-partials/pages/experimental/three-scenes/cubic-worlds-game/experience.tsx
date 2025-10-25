@@ -6,7 +6,7 @@ import { DirectionalLight, DirectionalLightHelper } from "three";
 import Followers from "./enemy/follower/followers";
 import NavMeshDebug from "./nav-mesh/nav-mesh-debug";
 import useBuildNavMesh from "./nav-mesh/useBuildNavMesh";
-import CrowdEnemy from "./nav-mesh/crowd/crowd-enemy";
+// import CrowdEnemy from "./nav-mesh/crowd/crowd-enemy";
 // import { SceneObjectName } from "./physic-world/character-controller/config/character.config";
 // import GrassWrapper from "./grass/grass-wrapper";
 

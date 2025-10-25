@@ -7,7 +7,7 @@ import Environment from "./env/env";
 // import DrawMesh from "./draw-mesh/draw-mesh";
 import { useEditModeStore } from "../store/useEditModeStore";
 import EditModeCamera from "./edit-mode-camera";
-import { Navigation } from "../enemy/navigation";
+// import { Navigation } from "../enemy/navigation";
 
 // import PickUpController from "./controllers/pick-up-controller";
 
