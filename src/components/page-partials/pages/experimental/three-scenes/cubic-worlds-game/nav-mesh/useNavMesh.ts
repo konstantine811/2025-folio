@@ -7,7 +7,10 @@ import {
   NavMesh,
   NavMeshQuery,
 } from "recast-navigation";
-import WorkerCtor from "@/workers/three/build-solo-nav-mesh?worker";
+const navMeshWorker = new Worker(
+  new URL("./build-solo-nav-mesh.ts", import.meta.url),
+  { type: "module" }
+);
 import { buildPositionsAndIndices } from "./buildArray";
 
 const recastReady = recastInit(); // достатньо запустити, нижче будемо await-ити
@@ -123,13 +126,12 @@ export const useNav = create<NavState>((set, get) => ({
     const { positions, indices } = buildPositionsAndIndices(meshes);
 
     // 4) воркер
-    const worker = new WorkerCtor();
-    worker.postMessage({ positions, indices, config: defaultBuild }, [
+    navMeshWorker.postMessage({ positions, indices, config: defaultBuild }, [
       positions.buffer,
       indices.buffer,
     ]);
 
-    worker.onmessage = (e) => {
+    navMeshWorker.onmessage = (e) => {
       const navMeshExport = e.data;
       const { navMesh } = importNavMesh(navMeshExport);
       const query = new NavMeshQuery(navMesh);
