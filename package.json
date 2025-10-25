@@ -38,6 +38,7 @@
     "@react-three/rapier": "^2.1.0",
     "@recast-navigation/three": "^0.43.0",
     "@supabase/supabase-js": "^2.49.4",
+    "@tensorflow/tfjs": "^4.22.0",
     "@theatre/core": "^0.7.2",
     "@theatre/r3f": "^0.7.2",
     "@theatre/studio": "^0.7.2",
