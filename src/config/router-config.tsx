@@ -211,6 +211,13 @@ const ThreeHome3D = lazyPage(
     )
 );
 
+const ThreeAi = lazyPage(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/ai-three/init"
+    )
+);
+
 const LoginPage = lazyPage(
   () => import("../components/page-partials/pages/Login")
 );
@@ -250,6 +257,7 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_WIZARD_GAME = "three-wizard-game",
   EXPERIMENTAL_THREE_WEB_GPU = "three-web-gpu",
   EXPERIMENTAL_THREE_HOME_3D = "three-home-3d",
+  EXPERIMENTAL_THREE_AI = "three-ai",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -490,6 +498,14 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🏠",
     description: "A 3D home scene created with Three.js.",
     imageUrl: imagePath("home_earth"),
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_AI,
+    Component: ThreeAi,
+    id: "experimental-three-ai",
+    icon: "🤖",
+    description: "A 3D AI scene created with Three.js.",
+    imageUrl: imagePath("three-ai"),
   },
 ];
 

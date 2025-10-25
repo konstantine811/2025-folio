@@ -3,15 +3,15 @@ import { create } from "zustand";
 import { InstancedMesh, Mesh } from "three";
 import {
   init as recastInit,
-  importNavMesh,
+  // importNavMesh,
   NavMesh,
   NavMeshQuery,
 } from "recast-navigation";
-const navMeshWorker = new Worker(
-  new URL("./build-solo-nav-mesh.ts", import.meta.url),
-  { type: "module" }
-);
-import { buildPositionsAndIndices } from "./buildArray";
+// const navMeshWorker = new Worker(
+//   new URL("./build-solo-nav-mesh.ts", import.meta.url),
+//   { type: "module" }
+// );
+// import { buildPositionsAndIndices } from "./buildArray";
 
 const recastReady = recastInit(); // достатньо запустити, нижче будемо await-ити
 
@@ -66,22 +66,22 @@ async function waitForStableMeshes(
   }
 }
 
-type BuildConfig = {
-  cs: number;
-  ch: number;
-  walkableRadius: number;
-  walkableHeight: number;
-  walkableClimb: number;
-  walkableSlopeAngle: number;
-};
-const defaultBuild: BuildConfig = {
-  cs: 0.15,
-  ch: 0.02,
-  walkableRadius: 0.3,
-  walkableHeight: 1.6,
-  walkableClimb: 0.4,
-  walkableSlopeAngle: 50,
-};
+// type BuildConfig = {
+//   cs: number;
+//   ch: number;
+//   walkableRadius: number;
+//   walkableHeight: number;
+//   walkableClimb: number;
+//   walkableSlopeAngle: number;
+// };
+// const defaultBuild: BuildConfig = {
+//   cs: 0.15,
+//   ch: 0.02,
+//   walkableRadius: 0.3,
+//   walkableHeight: 1.6,
+//   walkableClimb: 0.4,
+//   walkableSlopeAngle: 50,
+// };
 
 interface NavState {
   meshes: Mesh[];
@@ -123,19 +123,19 @@ export const useNav = create<NavState>((set, get) => ({
     if (!meshes.length) return;
     console.log("meshse", meshes);
     // 3) знімаємо масиви
-    const { positions, indices } = buildPositionsAndIndices(meshes);
+    // const { positions, indices } = buildPositionsAndIndices(meshes);
 
     // 4) воркер
-    navMeshWorker.postMessage({ positions, indices, config: defaultBuild }, [
-      positions.buffer,
-      indices.buffer,
-    ]);
+    // navMeshWorker.postMessage({ positions, indices, config: defaultBuild }, [
+    //   positions.buffer,
+    //   indices.buffer,
+    // ]);
 
-    navMeshWorker.onmessage = (e) => {
-      const navMeshExport = e.data;
-      const { navMesh } = importNavMesh(navMeshExport);
-      const query = new NavMeshQuery(navMesh);
-      set({ navMesh, isBuilt: true, query });
-    };
+    // navMeshWorker.onmessage = (e) => {
+    //   const navMeshExport = e.data;
+    //   const { navMesh } = importNavMesh(navMeshExport);
+    //   const query = new NavMeshQuery(navMesh);
+    //   set({ navMesh, isBuilt: true, query });
+    // };
   },
 }));
