@@ -3,10 +3,11 @@ import { useAutoResize } from "./hooks/useAutoResize";
 import { sendSceneCommand } from "../api/apiClient";
 import { useSceneStore } from "../store/useSceneStore";
 import { SceneObjectFromServer } from "../types/object.model";
+import { Spinner } from "@/components/ui/spinner";
 
 const PromptUI = () => {
   const [value, setValue] = useState("");
-
+  const [isLoading, setIsLoading] = useState(false);
   const textareaRef = useAutoResize(value);
 
   // дістали з zustand метод додати обʼєкти
@@ -16,9 +17,8 @@ const PromptUI = () => {
 
   async function handleSubmit() {
     if (!value.trim()) return;
-    console.log("value", value);
+    setIsLoading(true);
     const serverResp = await sendSceneCommand(value);
-    console.log("serverResp", serverResp);
     // захист на випадок дичі
     if (
       serverResp &&
@@ -28,7 +28,7 @@ const PromptUI = () => {
       // змінимо глобальний store
       addObjectsFromServer(serverResp.objects as SceneObjectFromServer[]);
     }
-
+    setIsLoading(false);
     // очистити інпут
     setValue("");
   }
@@ -40,7 +40,7 @@ const PromptUI = () => {
         z-10 flex flex-col gap-2 max-w-4xl mx-auto
         bg-card/70  backdrop-blur-md
         rounded-xl
-        overflow-hidden
+        overflow-hidden user-select-none
       "
     >
       <div
@@ -49,6 +49,7 @@ const PromptUI = () => {
          rounded-xl
           px-4 py-3
           flex
+          user-select-none
         "
       >
         <textarea
@@ -89,7 +90,7 @@ const PromptUI = () => {
             transition-colors
           "
         >
-          Add Object to the Scene
+          {isLoading ? <Spinner /> : "Add Object to the Scene"}
         </button>
       </div>
     </div>
