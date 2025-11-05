@@ -35,7 +35,7 @@ export const buttonClickSound = new Howl({
 });
 
 export const menuOpenSound = new Howl({
-  volume: 0.5,
+  volume: 0.05,
   src: [getEfxPath("menu-open", "wav")],
 });
 
@@ -137,7 +137,7 @@ export const riserSound = new Howl({
 
 export const transitionSound = new Howl({
   src: [getEfxPath("transition", "wav")],
-  volume: 1,
+  volume: 0.3,
 });
 
 export const revealDarkSound = new Howl({
@@ -225,7 +225,7 @@ export const atmospericSoundFirst = new Howl({
 });
 
 export const envSound = new Howl({
-  src: ["/sound/music/ES_Forsaken - Luba Hilman.mp3"],
-  volume: 1,
+  src: ["/sound/music/ES_Intermission - Hanna Lindgren.mp3"],
+  volume: 0.3,
   loop: true,
 });

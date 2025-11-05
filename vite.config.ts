@@ -61,6 +61,8 @@ export default defineConfig({
     fs: {
       strict: false,
     },
+    host: "0.0.0.0", // Listen on all network interfaces
+    port: 5173, // Or any other available port
   },
   build: {
     rollupOptions: {

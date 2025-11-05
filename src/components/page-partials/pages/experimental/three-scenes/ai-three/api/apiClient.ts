@@ -1,4 +1,5 @@
 const API_URL = "https://node-backend-ai-creact-objects-zoif.vercel.app";
+// const LOCAL_URL = "http://localhost:3001";
 
 export async function sendSceneCommand(userText: string) {
   const resp = await fetch(`${API_URL}/api/scene-parse`, {

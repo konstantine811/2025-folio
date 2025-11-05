@@ -14,9 +14,9 @@ const useEnvSoundToPath = () => {
       path.includes(RoutPath.EXPERIMENTAL_CUBIC_WORLDS_GAME) ||
       !isSoundEnabled
     ) {
-      envSound.fade(1, 0, 1000);
+      envSound.fade(0.3, 0, 1000);
     } else {
-      envSound.fade(0, 1, 1000);
+      envSound.fade(0, 0.3, 1000);
     }
   }, [path, isSoundEnabled]);
 };
