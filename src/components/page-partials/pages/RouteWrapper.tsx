@@ -16,7 +16,7 @@ const RouteWrapper = ({ children }: { children: React.ReactNode }) => {
   }, [location.pathname, setHover]);
   useEffect(() => {
     if (isSoundEnabled) {
-      riserSound.play("second");
+      riserSound.play("first");
     }
     onTransition(false);
     // тут твій хук або виклик функції

@@ -61,7 +61,7 @@ const Init2DSketch = forwardRef<SketchHandle>((_, ref) => {
   const start = useCallback(() => {
     if (rafRef.current == null) rafRef.current = requestAnimationFrame(loop);
   }, [loop]);
-
+  
   const stop = useCallback(() => {
     if (rafRef.current != null) {
       cancelAnimationFrame(rafRef.current);
@@ -140,7 +140,7 @@ const Init2DSketch = forwardRef<SketchHandle>((_, ref) => {
     };
   }, [setCanvasSize, start, stop, resize]);
 
-  return <canvas className="border" ref={canvasRef} />;
+  return <canvas ref={canvasRef} />;
 });
 
 export default Init2DSketch;

@@ -3,12 +3,12 @@ import RevealNavMenu from "./reveal-nav-menu";
 import HeaderBanner from "./header-banner";
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 import Login from "./login";
-import useEnvSoundToPath from "@/hooks/sound/useEnvSoundToPath";
+// import useEnvSoundToPath from "@/hooks/sound/useEnvSoundToPath";
 
 export default function NavMenu() {
   const { isAdoptiveSize: isMdSize } = useIsAdoptive();
 
-  useEnvSoundToPath();
+  // useEnvSoundToPath();
   return (
     <div className="relative md:max-w-md w-full m-2">
       <div className="bg-card rounded-2xl">

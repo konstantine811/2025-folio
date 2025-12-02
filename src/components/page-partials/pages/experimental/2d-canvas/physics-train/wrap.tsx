@@ -10,6 +10,7 @@ import {
 import { GridPlugin } from "./plugins/grid";
 import { BouncingBall } from "./plugins/bouncing-ball";
 import { GraphPlugin } from "./plugins/graph/graph";
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 const items: { key: string; label: string; plugin: () => SketchPlugin }[] = [
   { key: "grid", label: "Grid", plugin: GridPlugin },
   { key: "ball", label: "Bouncing Ball", plugin: BouncingBall },
@@ -20,6 +21,7 @@ const STORAGE_KEY = "wrapPhysics.plugin";
 
 const WrapPhysics = () => {
   const ref = useRef<SketchHandle>(null);
+  const hs = useHeaderSizeStore((s) => s.size);
   const [selected, setSelected] = useState<string>(
     window.localStorage.getItem(STORAGE_KEY) as string | "grid"
   );
@@ -36,7 +38,7 @@ const WrapPhysics = () => {
   }, [selected]);
 
   return (
-    <>
+    <div style={{ paddingTop: hs }}>
       <div className="absolute ml-5 mt-5">
         <DropdownMenu>
           <DropdownMenuTrigger className="px-3 py-2 rounded border">
@@ -59,7 +61,7 @@ const WrapPhysics = () => {
       </div>
 
       <Init2DSketch ref={ref} />
-    </>
+    </div>
   );
 };
 

@@ -128,7 +128,7 @@ export const shinySound = new Howl({
 
 export const riserSound = new Howl({
   src: [getEfxPath("riser-2")],
-  volume: 0.5,
+  volume: 0.1,
   sprite: {
     first: [6008, 1000],
     second: [7000, 3000],
@@ -137,7 +137,7 @@ export const riserSound = new Howl({
 
 export const transitionSound = new Howl({
   src: [getEfxPath("transition", "wav")],
-  volume: 0.3,
+  volume: 0.1,
 });
 
 export const revealDarkSound = new Howl({
