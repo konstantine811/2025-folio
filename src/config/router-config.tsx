@@ -218,13 +218,6 @@ const ThreeAi = lazyPage(
     )
 );
 
-const ThreeVrThreeController = lazyPage(
-  () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/vr-three-controller/init"
-    )
-);
-
 const ThreePhysicsSimulation = lazyPage(
   () =>
     import(
@@ -272,7 +265,6 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_WEB_GPU = "three-web-gpu",
   EXPERIMENTAL_THREE_HOME_3D = "three-home-3d",
   EXPERIMENTAL_THREE_AI = "three-ai",
-  EXPERIMENTAL_THREE_VR_THREE_CONTROLLER = "three-vr-three-controller",
   EXPERIMENTAL_THREE_PHYSICS_SIMULATION = "three-physics-simulation",
 }
 
@@ -522,14 +514,6 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🤖",
     description: "A 3D AI scene created with Three.js.",
     imageUrl: imagePath("three-ai"),
-  },
-  {
-    path: RoutPath.EXPERIMENTAL_THREE_VR_THREE_CONTROLLER,
-    Component: ThreeVrThreeController,
-    id: "experimental-three-vr-three-controller",
-    icon: "🎮",
-    description: "A VR three controller scene created with Three.js.",
-    imageUrl: imagePath("three-vr-three-controller"),
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_PHYSICS_SIMULATION,
