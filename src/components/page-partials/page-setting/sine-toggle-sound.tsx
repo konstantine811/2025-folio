@@ -17,7 +17,6 @@ const SineToggleSound = ({ onClick, isEnabled }: Props) => {
         initial={false}
         animate={{ opacity: isEnabled ? 1 : 0.3 }}
         transition={{ duration: 0.6, ease: "easeInOut" }}
-        className="font-thin text-sm"
       >
         Sound
       </motion.h5>

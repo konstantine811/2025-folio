@@ -1,6 +1,7 @@
 import MainWrapperOffset from "@/components/ui-abc/main-wrapper-offset";
 import { CameraControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
+import { Suspense } from "react";
 
 const CanvasWrap = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -10,8 +11,8 @@ const CanvasWrap = ({ children }: { children: React.ReactNode }) => {
       >
         <ambientLight intensity={0.5} />
         <directionalLight position={[1, 1, 1]} intensity={1} castShadow />
-        <CameraControls />
-        {children}
+        <CameraControls makeDefault />
+        <Suspense fallback={null}>{children}</Suspense>
       </Canvas>
     </MainWrapperOffset>
   );

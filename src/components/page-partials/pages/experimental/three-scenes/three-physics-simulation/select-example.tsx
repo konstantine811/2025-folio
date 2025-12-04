@@ -1,17 +1,19 @@
+import BouncingBall from "./examples/bouncing-ball";
+import { useEffect, useState } from "react";
+import { ModelItem } from "./models/items-config";
+import ExampleSimpleCube from "./examples/example-simle-cube";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@radix-ui/react-dropdown-menu";
-import BouncingBall from "./examples/bouncing-ball";
-import { useEffect, useState } from "react";
-import { ModelItem } from "./models/items-config";
-import ExampleSimpleCube from "./examples/example-simle-cube";
+} from "@/components/ui/dropdown-menu";
+import ChartFunction from "./examples/chart-fn";
 
 const items: ModelItem[] = [
   { key: "bouncing-ball", label: "Bouncing Ball", element: <BouncingBall /> },
   { key: "simple-cube", label: "Simple Cube", element: <ExampleSimpleCube /> },
+  { key: "chart-fn", label: "Chart Function", element: <ChartFunction /> },
 ];
 
 const SelectExample = ({

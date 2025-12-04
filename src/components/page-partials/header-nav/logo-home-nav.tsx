@@ -1,4 +1,4 @@
-import LogoAnimated from "@/components/ui-abc/logo";
+import MinimalLogo from "@/components/ui-abc/logo/minimal-logo";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { RoutPath } from "@/config/router-config";
 import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
@@ -16,7 +16,7 @@ const LogoHomeNav = () => {
         navigateTo(RoutPath.HOME);
       }}
     >
-      <LogoAnimated />
+      <MinimalLogo />
     </SoundHoverElement>
   );
 };

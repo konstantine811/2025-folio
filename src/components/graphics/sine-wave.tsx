@@ -109,7 +109,7 @@ const SineWave = ({
     >
       <g>
         <line
-          strokeWidth={0.8}
+          strokeWidth={0.4}
           stroke={ThemePalette[theme]["muted-foreground"]}
           x1="0"
           x2="100%"
@@ -119,10 +119,10 @@ const SineWave = ({
         <motion.path
           d={d}
           fill="none"
-          strokeWidth={1}
+          strokeWidth={0.4}
           strokeLinecap="round"
           strokeLinejoin="round"
-          stroke={ThemePalette[theme].accent}
+          stroke={ThemePalette[theme].foreground}
         />
       </g>
     </svg>

@@ -43,7 +43,7 @@ const SelectItem = ({
     <>
       <div className="relative">
         <button
-          className="p-3 rounded-full relative z-[1000] select-none"
+          className="p-3 rounded-full relative z-[1000] select-none cursor-pointer text-sm"
           onClick={() => {
             setIsOpen(!isOpen);
           }}
@@ -64,7 +64,7 @@ const SelectItem = ({
                 }}
               >
                 <motion.ul
-                  className="flex flex-col gap-1 select-none"
+                  className="flex flex-col select-none"
                   initial="hidden"
                   animate="visible"
                   exit="hidden"

@@ -13,7 +13,7 @@ const GROUND_POSITION = new Vector3(
   BOX_POSITION.z
 );
 const SPHERE_RADIUS = 1;
-const BOUNCE_FACTOR = 1;
+const BOUNCE_FACTOR = 0.3;
 
 const BouncingBall = () => {
   const ballRef = useRef<Mesh>(null);

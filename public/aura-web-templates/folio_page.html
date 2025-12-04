@@ -1,0 +1,413 @@
+<html lang="uk" class="scroll-smooth"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio | GIS &amp; 3D Web Architect</title>
+<!-- Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=JetBrains+Mono:wght@300;400;500&amp;family=Oswald:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body {
+font-family: 'Inter', sans-serif;
+background-color: #050505;
+color: #e4e4e7; /* zinc-200 */
+margin: 0;
+overflow-x: hidden;
+}
+.font-display { font-family: 'Oswald', sans-serif; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #09090b; }
+::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+/* Smooth fade for menu */
+.menu-enter { opacity: 0; transform: scale(0.95) translateY(-10px); pointer-events: none; }
+.menu-enter-active { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; }
+/* Subtle glow for active elements */
+.glow-text { text-shadow: 0 0 20px rgba(255,255,255,0.3); }
+</style></head>
+<body class="antialiased selection:bg-white/20 selection:text-white relative">
+
+    <!-- 3D Background Layer -->
+    <div id="canvas-container" class="fixed inset-0 z-0 opacity-40 pointer-events-none mix-blend-screen"></div>
+
+    <!-- Top Navigation -->
+    <nav class="fixed top-0 left-0 w-full z-40 px-6 md:px-12 py-6 flex items-center justify-between mix-blend-difference">
+        <!-- Logo / Name -->
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-white text-black flex items-center justify-center font-bold font-display text-sm tracking-tighter rounded-sm">
+                DA
+            </div>
+            <div class="flex flex-col">
+                <span class="font-mono text-xs font-bold tracking-widest text-white uppercase">ІМ'Я ПРІЗВИЩЕ</span>
+                <span class="hidden md:block font-mono text-[10px] tracking-widest text-white/50">WEB ARCHITECT</span>
+            </div>
+        </div>
+
+        <!-- Top Right Controls -->
+        <div class="flex items-center gap-6 font-mono text-xs text-white/70">
+            <button class="hover:text-white transition-colors">
+                <i data-lucide="moon" class="w-4 h-4 stroke-[1.5]"></i>
+            </button>
+            <div class="flex items-center gap-2">
+                <span class="text-sm">🇺🇦</span>
+            </div>
+            <div class="flex items-center gap-2 group cursor-pointer hover:text-white transition-colors">
+                <span>Sound</span>
+                <i data-lucide="activity" class="w-4 h-4 stroke-[1.5] group-hover:animate-pulse"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Floating Right Trigger -->
+    <button id="menu-trigger" class="fixed right-4 md:right-8 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-zinc-900/50 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-zinc-800 transition-all duration-300 group shadow-2xl">
+        <i data-lucide="align-right" class="w-5 h-5 stroke-[1.5]"></i>
+    </button>
+
+    <!-- Floating Menu Card -->
+    <div id="custom-menu" class="fixed right-20 top-1/2 -translate-y-1/2 z-50 w-80 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-[0_0_50px_-12px_rgba(0,0,0,1)] transition-all duration-300 menu-enter flex flex-col overflow-hidden">
+        <div class="flex items-center justify-between p-4 border-b border-white/5 bg-zinc-900/20">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center overflow-hidden">
+                    <i data-lucide="user" class="w-4 h-4 text-zinc-400"></i>
+                </div>
+                <span class="font-mono text-xs text-zinc-400">User Profile</span>
+            </div>
+            <button id="menu-close" class="text-zinc-500 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5 stroke-[1.5]"></i>
+            </button>
+        </div>
+        <div class="p-2">
+            <nav class="flex flex-col gap-1">
+                <a href="#" class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-zinc-900 text-zinc-400 hover:text-white transition-all group">
+                    <div class="w-1 h-1 bg-zinc-600 rounded-full group-hover:bg-blue-500 transition-colors"></div>
+                    <span class="font-mono text-sm">Головна</span>
+                </a>
+                <a href="#projects" class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-zinc-900 text-zinc-400 hover:text-white transition-all group">
+                    <div class="w-1 h-1 bg-zinc-600 rounded-full group-hover:bg-purple-500 transition-colors"></div>
+                    <span class="font-mono text-sm">Демо проекти</span>
+                </a>
+                <a href="#experience" class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-zinc-900 text-zinc-400 hover:text-white transition-all group">
+                    <div class="w-1 h-1 bg-zinc-600 rounded-full group-hover:bg-green-500 transition-colors"></div>
+                    <span class="font-mono text-sm">Блог</span>
+                </a>
+                <a href="#stack" class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-zinc-900 text-zinc-400 hover:text-white transition-all group">
+                    <div class="w-1 h-1 bg-zinc-600 rounded-full group-hover:bg-orange-500 transition-colors"></div>
+                    <span class="font-mono text-sm">Менеджер завдань</span>
+                </a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center justify-between font-mono text-[10px] text-zinc-600 uppercase">
+                <span>Status: Online</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <main class="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-12 pt-40 pb-20">
+        
+        <!-- Hero Section -->
+        <header class="relative w-full min-h-[80vh] flex flex-col justify-center">
+            <!-- Meta -->
+            <div class="absolute top-0 left-0 font-mono text-[10px] text-zinc-500 tracking-widest border-l border-zinc-800 pl-4">
+                COORD: 50.4501° N, 30.5234° E<br>
+                SYS.VER.2.0.4
+            </div>
+
+            <!-- NAME BADGE (Added Here) -->
+            <div class="relative z-10 mb-8 inline-flex items-center gap-3 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md w-fit">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span class="font-mono text-xs font-medium text-zinc-100 tracking-[0.2em] uppercase">ІМ'Я ПРІЗВИЩЕ</span>
+            </div>
+
+            <!-- Title -->
+            <div class="relative z-10">
+                <h1 class="text-[12vw] leading-[0.85] font-semibold font-display tracking-tight text-white mix-blend-overlay opacity-90">
+                    DIGITAL<br>ARCHITECT
+                </h1>
+                <h1 class="text-[12vw] leading-[0.85] font-semibold font-display tracking-tight text-transparent stroke-text absolute top-0 left-0 pointer-events-none" style="-webkit-text-stroke: 1px rgba(255,255,255,0.1);">
+                    DIGITAL<br>ARCHITECT
+                </h1>
+            </div>
+
+            <!-- Description -->
+            <div class="mt-12 max-w-xl border-l border-zinc-800 pl-8">
+                <p class="font-mono text-xs md:text-sm text-zinc-400 leading-relaxed uppercase tracking-wide">
+                    I convert millions of data points into immersive 3D web experiences. Specialized in WebGL, React Three Fiber, and high-performance mapping systems.
+                </p>
+                
+                <div class="mt-8 flex gap-8">
+                     <a href="#projects" class="text-xs font-mono uppercase text-white border-b border-white pb-1 hover:opacity-70 transition-opacity">View Dossier</a>
+                     <a href="mailto:contact@dev.ua" class="text-xs font-mono uppercase text-zinc-500 hover:text-white transition-colors">Contact</a>
+                </div>
+            </div>
+        </header>
+
+        <div class="w-full h-px bg-white/10 my-20"></div>
+
+        <!-- Tech Stack -->
+        <section id="stack" class="py-20">
+            <div class="flex justify-between items-end mb-12">
+                <h2 class="font-display text-4xl md:text-5xl font-medium tracking-tight text-white">Arsenal</h2>
+                <span class="font-mono text-xs text-zinc-600">[ TECH_STACK_INIT ]</span>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 border-t border-l border-white/10">
+                <!-- Item -->
+                <div class="aspect-square border-r border-b border-white/10 p-6 flex flex-col justify-between hover:bg-zinc-900 transition-colors group">
+                    <i data-lucide="box" class="w-6 h-6 text-zinc-500 group-hover:text-white transition-colors stroke-[1.5]"></i>
+                    <div>
+                        <span class="font-mono text-[10px] text-zinc-600 block mb-1">CORE 3D</span>
+                        <span class="font-display text-lg tracking-tight text-zinc-300 group-hover:text-white">Three.js / R3F</span>
+                    </div>
+                </div>
+                <!-- Item -->
+                <div class="aspect-square border-r border-b border-white/10 p-6 flex flex-col justify-between hover:bg-zinc-900 transition-colors group">
+                    <i data-lucide="map" class="w-6 h-6 text-zinc-500 group-hover:text-white transition-colors stroke-[1.5]"></i>
+                    <div>
+                        <span class="font-mono text-[10px] text-zinc-600 block mb-1">MAPPING</span>
+                        <span class="font-display text-lg tracking-tight text-zinc-300 group-hover:text-white">Mapbox / ArcGIS</span>
+                    </div>
+                </div>
+                <!-- Item -->
+                <div class="aspect-square border-r border-b border-white/10 p-6 flex flex-col justify-between hover:bg-zinc-900 transition-colors group">
+                    <i data-lucide="cpu" class="w-6 h-6 text-zinc-500 group-hover:text-white transition-colors stroke-[1.5]"></i>
+                    <div>
+                        <span class="font-mono text-[10px] text-zinc-600 block mb-1">FRONTEND</span>
+                        <span class="font-display text-lg tracking-tight text-zinc-300 group-hover:text-white">Angular / React</span>
+                    </div>
+                </div>
+                <!-- Item -->
+                <div class="aspect-square border-r border-b border-white/10 p-6 flex flex-col justify-between hover:bg-zinc-900 transition-colors group">
+                    <i data-lucide="database" class="w-6 h-6 text-zinc-500 group-hover:text-white transition-colors stroke-[1.5]"></i>
+                    <div>
+                        <span class="font-mono text-[10px] text-zinc-600 block mb-1">DATA</span>
+                        <span class="font-display text-lg tracking-tight text-zinc-300 group-hover:text-white">D3.js / WebGL</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experience Section -->
+        <section id="experience" class="py-12">
+            <div class="mb-16 border-b border-white/10 pb-4 flex justify-between items-baseline">
+                <h2 class="font-display text-3xl md:text-4xl font-medium tracking-tight text-white uppercase">Selected Works</h2>
+                <a href="#" class="font-mono text-xs uppercase text-zinc-500 hover:text-white transition-colors">Full Archive -&gt;</a>
+            </div>
+
+            <div class="space-y-0">
+                <!-- Row 1 -->
+                <div class="group border-b border-white/5 py-10 flex flex-col md:flex-row md:items-center justify-between gap-8 hover:bg-white/5 transition-colors px-4 -mx-4 rounded-lg">
+                    <div class="md:w-1/3">
+                        <span class="font-mono text-[10px] text-zinc-500 mb-2 block tracking-widest">01 / GOVERNMENT</span>
+                        <h3 class="text-2xl md:text-3xl font-display font-medium tracking-tight text-white group-hover:translate-x-2 transition-transform duration-300">DREAM.GOV.UA</h3>
+                    </div>
+                    <div class="md:w-1/3">
+                        <p class="font-mono text-xs text-zinc-400 leading-relaxed max-w-sm">
+                            National restoration ecosystem. Visualizing destroyed infrastructure on interactive maps with real-time data.
+                        </p>
+                    </div>
+                    <div class="md:w-1/6 flex justify-end">
+                        <div class="flex flex-col items-end gap-2 text-zinc-500">
+                            <span class="border border-white/10 px-2 py-1 font-mono text-[10px] uppercase rounded bg-black/50">Angular</span>
+                            <span class="border border-white/10 px-2 py-1 font-mono text-[10px] uppercase rounded bg-black/50">Mapbox GL</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2 -->
+                <div class="group border-b border-white/5 py-10 flex flex-col md:flex-row md:items-center justify-between gap-8 hover:bg-white/5 transition-colors px-4 -mx-4 rounded-lg">
+                    <div class="md:w-1/3">
+                        <span class="font-mono text-[10px] text-zinc-500 mb-2 block tracking-widest">02 / AGRO TECH</span>
+                        <h3 class="text-2xl md:text-3xl font-display font-medium tracking-tight text-white group-hover:translate-x-2 transition-transform duration-300">LAND ANALYTICS</h3>
+                    </div>
+                    <div class="md:w-1/3">
+                        <p class="font-mono text-xs text-zinc-400 leading-relaxed max-w-sm">
+                            Field digitization system processing 8000+ polygons. Soil analysis visualization and machinery tracking.
+                        </p>
+                    </div>
+                    <div class="md:w-1/6 flex justify-end">
+                        <div class="flex flex-col items-end gap-2 text-zinc-500">
+                            <span class="border border-white/10 px-2 py-1 font-mono text-[10px] uppercase rounded bg-black/50">ArcGIS</span>
+                            <span class="border border-white/10 px-2 py-1 font-mono text-[10px] uppercase rounded bg-black/50">D3.js</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects / Image Grid -->
+        <section id="projects" class="py-20">
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Card 1 -->
+                <div class="group relative aspect-video bg-zinc-900 border border-white/10 overflow-hidden cursor-pointer rounded-lg">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-blue-900/20 to-purple-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div class="absolute inset-0 p-8 flex flex-col justify-between text-zinc-300">
+                        <div class="flex justify-between items-start z-10">
+                            <span class="font-mono text-xs text-zinc-500">[ CASE STUDY 01 ]</span>
+                            <div class="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-black/50 group-hover:bg-white group-hover:text-black transition-colors">
+                                <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </div>
+                        </div>
+                        <h3 class="font-display text-3xl uppercase tracking-tight text-white z-10 group-hover:translate-x-2 transition-transform">Urban<br>Planning</h3>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="group relative aspect-video bg-zinc-900 border border-white/10 overflow-hidden cursor-pointer rounded-lg">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-emerald-900/20 to-teal-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div class="absolute inset-0 p-8 flex flex-col justify-between text-zinc-300">
+                        <div class="flex justify-between items-start z-10">
+                            <span class="font-mono text-xs text-zinc-500">[ CASE STUDY 02 ]</span>
+                            <div class="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-black/50 group-hover:bg-white group-hover:text-black transition-colors">
+                                <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </div>
+                        </div>
+                        <h3 class="font-display text-3xl uppercase tracking-tight text-white z-10 group-hover:translate-x-2 transition-transform">Climate<br>Data Viz</h3>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="pt-20 border-t border-white/10">
+            <div class="flex flex-col md:flex-row justify-between items-end gap-12">
+                <div>
+                    <span class="font-mono text-xs uppercase mb-4 block text-zinc-500">
+                        Status: Available
+                    </span>
+                    <a href="mailto:email@example.com" class="font-display text-5xl md:text-7xl font-bold tracking-tight text-white hover:text-zinc-400 transition-colors">
+                        LET'S TALK
+                    </a>
+                </div>
+                
+                <div class="flex flex-col items-end gap-8">
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 border border-white/20 rounded flex items-center justify-center hover:bg-white hover:text-black transition-colors text-zinc-400">
+                            <i data-lucide="github" class="w-4 h-4"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 border border-white/20 rounded flex items-center justify-center hover:bg-white hover:text-black transition-colors text-zinc-400">
+                            <i data-lucide="linkedin" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-display font-medium uppercase tracking-tight text-lg text-white">Ім'я Прізвище</p>
+                        <p class="font-mono text-[10px] text-zinc-600 mt-1">© 2024. KYIV, UA.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        // --- MENU INTERACTION ---
+        const menuTrigger = document.getElementById('menu-trigger');
+        const menuClose = document.getElementById('menu-close');
+        const customMenu = document.getElementById('custom-menu');
+        let isMenuOpen = false;
+
+        function toggleMenu() {
+            isMenuOpen = !isMenuOpen;
+            if (isMenuOpen) {
+                customMenu.classList.remove('menu-enter');
+                customMenu.classList.add('menu-enter-active');
+            } else {
+                customMenu.classList.add('menu-enter');
+                customMenu.classList.remove('menu-enter-active');
+            }
+        }
+
+        menuTrigger.addEventListener('click', toggleMenu);
+        menuClose.addEventListener('click', toggleMenu);
+
+        document.addEventListener('click', (e) => {
+            if (isMenuOpen && !customMenu.contains(e.target) && !menuTrigger.contains(e.target)) {
+                toggleMenu();
+            }
+        });
+
+        // --- THREE.JS SETUP ---
+        const container = document.getElementById('canvas-container');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050505, 0.002);
+
+        const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+        camera.position.z = 100;
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        const geometry = new THREE.IcosahedronGeometry(40, 4);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0xffffff, 
+            wireframe: true,
+            transparent: true,
+            opacity: 0.05
+        });
+
+        const sphere = new THREE.Mesh(geometry, material);
+        sphere.position.set(20, 0, 0); 
+        scene.add(sphere);
+
+        const particlesGeo = new THREE.BufferGeometry();
+        const particleCount = 400;
+        const posArray = new Float32Array(particleCount * 3);
+        for(let i = 0; i < particleCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 200;
+        }
+        particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particlesMat = new THREE.PointsMaterial({
+            size: 0.5,
+            color: 0x555555,
+            transparent: true,
+            opacity: 0.8
+        });
+        const particles = new THREE.Points(particlesGeo, particlesMat);
+        scene.add(particles);
+
+        const clock = new THREE.Clock();
+        let mouseX = 0;
+        let mouseY = 0;
+        
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const elapsedTime = clock.getElapsedTime();
+            sphere.rotation.y = elapsedTime * 0.05;
+            sphere.rotation.x = Math.sin(elapsedTime * 0.1) * 0.05;
+            sphere.position.y = Math.sin(elapsedTime * 0.5) * 2;
+            scene.rotation.y = THREE.MathUtils.lerp(scene.rotation.y, mouseX * 0.1, 0.05);
+            scene.rotation.x = THREE.MathUtils.lerp(scene.rotation.x, mouseY * 0.1, 0.05);
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body></html>

@@ -18,7 +18,7 @@ const ThemeToggle = () => {
   return (
     <div className="flex flex-col items-center gap-2">
       <ThemeToggleButton
-        className="border-none hover:bg-accent/20 duration-300 rounded-full"
+        className="border-none hover:bg-transparent duration-300 cursor-pointer text-muted-foreground hover:text-foreground"
         theme={selectedTheme}
         onClick={() => {
           if (isSoundEnabled) {

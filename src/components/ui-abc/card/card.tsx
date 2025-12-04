@@ -1,6 +1,6 @@
 import { forwardRef, useState, useEffect, useRef } from "react";
 import { Loader2Icon } from "lucide-react";
-import LogoAnimated from "../logo";
+import LogoAnimated from "../logo/logo";
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemePalette } from "@/config/theme-colors.config";
 import { cn } from "@/lib/utils";

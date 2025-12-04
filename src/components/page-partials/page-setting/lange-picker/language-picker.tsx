@@ -4,13 +4,11 @@ import { buttonClickSound2 } from "@config/sounds";
 import { HoverStyleElement, SoundTypeElement } from "@custom-types/sound";
 import { LanguageType } from "@/i18n";
 import { useTranslation } from "react-i18next";
-import en from "/icon/png/england.png";
-import ua from "/icon/png/ukraine.png";
 import { LocalStorageKey } from "@/config/local-storage.config";
 
 const icons = {
-  [LanguageType.EN]: en,
-  [LanguageType.UA]: ua,
+  [LanguageType.EN]: "🇬🇧",
+  [LanguageType.UA]: "🇺🇦",
 };
 
 const LanguagePicker = () => {
@@ -22,7 +20,7 @@ const LanguagePicker = () => {
         x: 12,
         y: 0,
       }}
-      selectNode={<img className="w-6 h-6" src={icons[currentLanguage]} />}
+      selectNode={icons[currentLanguage]}
       renderItems={(itemVariants) =>
         Object.entries(LanguageType).map(([key, value]) => {
           const isSelected = value === currentLanguage;
@@ -45,14 +43,7 @@ const LanguagePicker = () => {
               }}
               as="li"
             >
-              <img
-                className={`w-6 h-6 ${
-                  isSelected
-                    ? "border-2 border-primary rounded-full opacity-30"
-                    : ""
-                }`}
-                src={icons[value]}
-              />
+              <span className="text-md cursor-pointer">{icons[value]}</span>
             </SoundHoverElement>
           );
         })

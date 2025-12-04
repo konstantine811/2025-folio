@@ -1,5 +1,5 @@
 import Card from "@/components/ui-abc/card/card";
-import LogoAnimated from "@/components/ui-abc/logo";
+import LogoAnimated from "@/components/ui-abc/logo/logo";
 import { Button } from "@/components/ui/button";
 import { EXPERIMENTAL_ROUTERS } from "@/config/router-config";
 import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
