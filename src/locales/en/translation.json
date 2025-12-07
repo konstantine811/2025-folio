@@ -118,7 +118,15 @@
       "analytics": "Analytics"
     }
   },
-
+  "portfolio": {
+    "coord": "COORD: 48.9226° N, 24.7111° E",
+    "sys_ver": "SYS.VER.{{app_version}}",
+    "name": "Konstantin Abramkin",
+    "title": "DIGITAL <br /> ARCHITECT",
+    "description": " I convert millions of data points into immersive 3D web experiences. Specialized in WebGL, React Three Fiber, and high-performance mapping systems.",
+    "view_dossier": "View Dossier",
+    "contact": "Contact"
+  },
   "login": {
     "status": {
       "title": "Status",
