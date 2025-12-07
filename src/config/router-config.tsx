@@ -532,6 +532,9 @@ export const router: AppRoute[] = [
     isNav: true,
     id: "home",
     isDev: false, // Set to true for development purposes
+    classes: {
+      linkCircle: "bg-blue-500",
+    },
   },
   {
     path: RoutPath.EXPERIMENTAL,
@@ -539,6 +542,9 @@ export const router: AppRoute[] = [
     isNav: true,
     id: "experimental",
     isDev: false, // Set to true for development purposes
+    classes: {
+      linkCircle: "bg-purple-500",
+    },
   },
   ...EXPERIMENTAL_ROUTERS,
   {
@@ -546,12 +552,18 @@ export const router: AppRoute[] = [
     Component: BlogPage,
     isNav: true,
     id: "blog",
+    classes: {
+      linkCircle: "bg-green-500",
+    },
   },
   {
     path: RoutPath.ARTICLE,
     Component: ArticlePage,
     isNav: false,
     id: "article",
+    classes: {
+      linkCircle: "bg-yellow-500",
+    },
   },
   {
     path: RoutPath.TASK_MANAGER,
@@ -573,6 +585,9 @@ export const router: AppRoute[] = [
         isNav: false,
       },
     ],
+    classes: {
+      linkCircle: "bg-orange-500",
+    },
   },
   {
     path: RoutPath.LOGIN,

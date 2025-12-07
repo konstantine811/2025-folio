@@ -120,6 +120,11 @@
   },
 
   "login": {
+    "status": {
+      "title": "Status",
+      "online": "Online",
+      "offline": "Offline"
+    },
     "to_google": "Login with Google",
     "out": "Logout",
     "switch": "Login to another account"

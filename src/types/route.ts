@@ -12,4 +12,7 @@ export type AppRoute = {
   isDev?: boolean;
   imageUrl?: string;
   description?: string;
+  classes?: {
+    linkCircle?: string;
+  };
 };

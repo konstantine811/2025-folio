@@ -11,14 +11,18 @@ const NavToggler = () => {
   const isSoundEnabled = useSoundEnabledStore((state) => state.isSoundEnabled);
 
   useEffect(() => {
-    if (isSoundEnabled && isOpen) {
-      setClick(SoundTypeElement.OPEN);
+    if (isSoundEnabled) {
+      if (isOpen) {
+        setClick(SoundTypeElement.OPEN);
+      } else {
+        setClick(SoundTypeElement.BUTTON);
+      }
     }
   }, [isOpen, isSoundEnabled, setClick]);
   return (
     <>
       <div
-        className="h-12 w-12 flex items-center justify-center relative select-none"
+        className="h-full w-full relative select-none flex items-center justify-center pb-2"
         onClick={() => {
           setOpen(!isOpen);
         }}

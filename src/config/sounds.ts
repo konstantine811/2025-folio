@@ -36,7 +36,7 @@ export const buttonClickSound = new Howl({
 
 export const menuOpenSound = new Howl({
   volume: 0.05,
-  src: [getEfxPath("menu-open", "wav")],
+  src: [getEfxPath("menu-open-2", "wav")],
 });
 
 export const buttonClickSound2 = new Howl({
@@ -81,7 +81,7 @@ export const selectSound = new Howl({
 
 export const selectSound_2 = new Howl({
   src: [getEfxPath("select-2")],
-  volume: 0.1,
+  volume: 0.3,
   sprite: {
     first: [0, 2000],
     second: [2885, 2000],

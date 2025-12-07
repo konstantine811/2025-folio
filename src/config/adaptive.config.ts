@@ -1,5 +1,5 @@
 export const BreakPoints = {
-  sm: 640,
+  sm: 639,
   md: 768, // 👈 ОЦЕ md
   lg: 1024,
   xl: 1280,

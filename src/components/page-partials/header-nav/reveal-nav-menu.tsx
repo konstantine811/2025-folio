@@ -1,75 +1,56 @@
 import { MOTION_FRAME_TRANSITION } from "@config/animations";
 import { router } from "@config/router-config";
-import { SoundTypeElement } from "@custom-types/sound";
-import { useClickStore } from "@storage/clickStore";
 import { useNavMenuStore } from "@storage/navMenuStore";
-import { AnimatePresence, motion, Variants } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { memo } from "react";
 import LanguagePicker from "../page-setting/lange-picker/language-picker";
 import ToggleSound from "../page-setting/toggle-sound";
-import { useSoundEnabledStore } from "@/storage/soundEnabled";
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
 import { useTranslation } from "react-i18next";
 import useRoutingPath from "@/hooks/useRoutingPath";
 import { isLocalhost } from "@/utils/env-inspect";
 import ThemeToggle from "../page-setting/theme-toggle/theme-toggle";
+import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
+import WrapperHoverElement from "@/components/ui-abc/wrapper-hover-element";
+import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
+import clsx from "clsx";
+import Login from "./login";
+import { useAuthStore } from "@/storage/useAuthStore";
 
 const RevealNavMenu = memo(() => {
   const { isOpen, setOpen } = useNavMenuStore((state) => state);
+  const user = useAuthStore((s) => s.user);
   const [t] = useTranslation();
   const navigateTo = useTransitionRouteTo();
-  const setClick = useClickStore((state) => state.setClick);
-  const isSoundEnabled = useSoundEnabledStore((state) => state.isSoundEnabled);
   const { isAdoptiveSize: isMdSize } = useIsAdoptive();
   const firstPathName = useRoutingPath("parent");
   const containerVariants = {
     visible: {
       transition: {
-        staggerChildren: 0.1, // ⏱ затримка між появою пунктів
-        delayChildren: 0.1, // ⏳ затримка перед першим
+        staggerChildren: 0.05, // ⏱ затримка між появою пунктів
+        delayChildren: 0.05, // ⏳ затримка перед першим
       },
     },
   };
 
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, y: -40 },
-    visible: {
-      opacity: 1,
-      y: 0,
-
-      transition: { ...MOTION_FRAME_TRANSITION.spring3 },
-    },
-    exit: { opacity: 0, y: 1 }, // 👈 додай це
-  };
   return (
     <>
-      <div
-        className={`${isOpen ? "pointer-events-auto" : "pointer-events-none"}`}
-      >
+      <AnimatePresence>
         {isOpen && (
-          <div
-            className="fixed top-0 left-0 w-full h-full z-10"
-            style={{ height: `${document.body.scrollHeight}px` }}
-            onClick={() => {
-              if (isSoundEnabled) {
-                setClick(SoundTypeElement.BUTTON);
-              }
-              setOpen(false);
-            }}
-          ></div>
-        )}
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={MOTION_FRAME_TRANSITION.spring3}
-              layout="size"
-              className="absolute z-10 bottom-0 left-0 w-full translate-y-full bg-card rounded-2xl backdrop-blur-xs"
-            >
-              <motion.nav className="flex items-center justify-center ">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={MOTION_FRAME_TRANSITION.spring2}
+            layout="size"
+            className="z-10 fixed right-0 sm:right-14 w-full translate-y-1/2 sm:translate-y-0 sm:w-auto sm:min-w-80 bg-background backdrop-blur-xs border border-muted-foreground/20 rounded-sm shadow-[0_0_50px_-12px_rgba(0,0,0,1)] menu-enter flex flex-col container mx-auto"
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-foreground/5 bg-card">
+              <Login />
+            </div>
+            <motion.nav className="p-2">
+              <WrapperHoverElement>
                 <motion.ul
                   className="flex flex-col w-full"
                   initial="hidden"
@@ -84,8 +65,12 @@ const RevealNavMenu = memo(() => {
                         (!route.isDev || (route.isDev && isLocalhost))
                     )
                     .map((route, i) => (
-                      <a
+                      <SoundHoverElement
+                        as="a"
                         key={i}
+                        animValue={0.99}
+                        hoverTypeElement={SoundTypeElement.SELECT}
+                        hoverStyleElement={HoverStyleElement.quad}
                         onClick={(e) => {
                           e.preventDefault(); // 👈 запобігаємо переходу
                           const path = route.path || "/";
@@ -98,34 +83,49 @@ const RevealNavMenu = memo(() => {
                         }}
                         className={`${
                           route.path === firstPathName
-                            ? "bg-background rounded-sm"
-                            : "opacity-50 hover:scale-103 duration-300"
-                        } overflow-hidden flex gap-2 items-center select-none cursor-pointer`}
+                            ? "bg-background rounded-sm text-foreground cursor-default"
+                            : "hover:bg-muted-foreground/10 hover:text-foreground hover:opacity-100 text-muted-foreground cursor-pointer"
+                        } flex items-center gap-3 px-3 py-3 rounded-lg group`}
                       >
-                        <span className="ml-4 h-1 w-1 bg-foreground"></span>
-                        <motion.li
-                          variants={itemVariants}
-                          className="relative  w-full py-5 px-4 text-foreground text-lg font-thin hover:bg-main/5 rounded-md"
-                        >
+                        <div
+                          className={clsx(
+                            `group-hover:${route.classes?.linkCircle} w-1 h-1 bg-muted-foreground rounded-full transition-colors`
+                          )}
+                        ></div>
+                        <span className="font-mono font-thin text-sm">
                           {t(`pages.${route.id}`)}
-                        </motion.li>
-                      </a>
+                        </span>
+                      </SoundHoverElement>
                     ))}
                 </motion.ul>
-              </motion.nav>
-              {isMdSize && (
-                <div className="flex px-5 py-5 justify-between items-center text-foreground/55 border-t border-background">
-                  <div className="flex gap-5 items-center justify-center">
-                    <ToggleSound />
-                    <ThemeToggle />
-                    <LanguagePicker />
-                  </div>
+              </WrapperHoverElement>
+            </motion.nav>
+            <div className="p-4 border-t border-muted-foreground/20">
+              <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground uppercase">
+                <span>
+                  {t("login.status.title")}:{" "}
+                  {user ? t("login.status.online") : t("login.status.offline")}
+                </span>
+                <span
+                  className={clsx(
+                    "w-2 h-2 rounded-full",
+                    user ? "bg-emerald-500" : "bg-red-500"
+                  )}
+                ></span>
+              </div>
+            </div>
+            {isMdSize && (
+              <div className="flex px-4 justify-between bg-card/70 items-center text-foreground/55">
+                <div className="flex gap-5 items-center justify-center">
+                  <ToggleSound />
+                  <ThemeToggle />
+                  <LanguagePicker />
                 </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 });

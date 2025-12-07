@@ -8,7 +8,7 @@ type Props = {
 const SineToggleSound = ({ onClick, isEnabled }: Props) => {
   return (
     <div
-      className="cursor-pointer select-none flex items-center justify-center gap-1"
+      className="cursor-pointer select-none flex items-center justify-center font-mono text-xs gap-1"
       onClick={() => {
         onClick?.();
       }}
