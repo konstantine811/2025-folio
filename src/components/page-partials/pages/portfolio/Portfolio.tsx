@@ -1,4 +1,3 @@
-import { APP_VERSION } from "@/config/versions";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { Trans, useTranslation } from "react-i18next";
 import DialogContact from "./DialogContact/DialogContact";
@@ -9,6 +8,7 @@ import {
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
+const APP_VERSION = "1.0.1";
 const Portfolio = () => {
   const hs = useHeaderSizeStore((state) => state.size);
   const [t] = useTranslation();
