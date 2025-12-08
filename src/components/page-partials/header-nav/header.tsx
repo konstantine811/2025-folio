@@ -9,10 +9,12 @@ import { useTranslation } from "react-i18next";
 import NavMenu from "./nav-menu";
 import RevealNavMenu from "./reveal-nav-menu";
 import { BreakPoints } from "@/config/adaptive.config";
+import { useNavMenuStore } from "@/storage/navMenuStore";
 
 const Header = memo(() => {
   const headerRef = useRef<HTMLDivElement>(null!);
   const setHeaderSize = useHeaderSizeStore((state) => state.setHeaderSize);
+  const { isOpen, setOpen } = useNavMenuStore((state) => state);
   const { t } = useTranslation();
   const { isAdoptiveSize: isMdSize } = useIsAdoptive();
   const { isAdoptiveSize: isSmSize } = useIsAdoptive(BreakPoints.sm);
@@ -55,6 +57,13 @@ const Header = memo(() => {
           </div>
         </div>
       </header>
+      {isOpen && (
+        <div
+          id="nav-menu-overlay"
+          onClick={() => setOpen(false)}
+          className="fixed z-30 h-full bg-background/5 w-full translate-y-15 sm:translate-y-0 sm:min-w-80  backdrop-blur-xs border border-muted-foreground/20 rounded-sm shadow-[0_0_50px_-12px_rgba(0,0,0,1)] menu-enter"
+        ></div>
+      )}
       {isSmSize && <RevealNavMenu />}
     </>
   );

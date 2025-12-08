@@ -125,7 +125,30 @@
     "title": "DIGITAL <br /> ARCHITECT",
     "description": " I convert millions of data points into immersive 3D web experiences. Specialized in WebGL, React Three Fiber, and high-performance mapping systems.",
     "view_dossier": "View Dossier",
-    "contact": "Contact"
+    "contact": "Contact",
+    "status_work": {
+      "busy": "Busy with projects",
+      "available": "Available for projects"
+    },
+    "contact_modal": {
+      "title": "Get in touch",
+      "description": "Let's discuss your next project.",
+      "first_name": "First Name",
+      "first_name_placeholder": "John",
+      "last_name": "Last Name",
+      "last_name_placeholder": "Doe",
+      "email": "Email",
+      "email_placeholder": "example@example.com",
+      "message": "Message",
+      "message_placeholder": "Describe your project in detail",
+      "avg_response": "Avg. response: 24h",
+      "send": "Send",
+      "error": "Error",
+      "error_message": "There was an error sending your message. Please try again.",
+      "success": "Message sent successfully",
+      "success_message": "Your message has been sent successfully. I will get back to you as soon as possible.",
+      "close": "Close"
+    }
   },
   "login": {
     "status": {

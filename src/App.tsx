@@ -13,6 +13,7 @@ import useLogin from "./services/firebase/useLogin";
 import { isTouchDevice } from "./utils/touch-inspect";
 import { useResizeListener } from "./hooks/useResizeListener";
 import { isLocalhost } from "./utils/env-inspect";
+import { Toaster } from "sonner";
 
 function App() {
   subscribeToHoverSound();
@@ -51,6 +52,7 @@ function App() {
         {/* <Map /> */}
       </>
       <TransitionPage />
+      <Toaster className="border-foreground/10 font-mono" />
     </>
   );
 }

@@ -1,8 +1,17 @@
 const API_URL = "https://node-backend-ai-creact-objects-zoif.vercel.app";
-// const LOCAL_URL = "http://localhost:3001";
+const LOCAL_URL = "http://localhost:3001";
 
-export async function sendSceneCommand(userText: string) {
-  const resp = await fetch(`${API_URL}/api/scene-parse`, {
+export enum ApiEndpoints {
+  SCENE_PARSE = "scene-parse",
+  CONTACT = "contact",
+}
+
+export async function sendNodeBackendRequest(
+  userText: string,
+  endpoint: ApiEndpoints,
+  isLocal: boolean = false
+) {
+  const resp = await fetch(`${isLocal ? LOCAL_URL : API_URL}/api/${endpoint}`, {
     // 👈 важливо: повний бекенд URL
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -11,6 +20,7 @@ export async function sendSceneCommand(userText: string) {
 
   if (!resp.ok) {
     throw new Error("server error");
+    return "server error";
   }
 
   const data = await resp.json();
@@ -24,4 +34,23 @@ export async function sendSceneCommand(userText: string) {
   //   position:[10,5,0]
   // }
   return data;
+}
+
+export async function sendSceneCommand(userText: string) {
+  return sendNodeBackendRequest(userText, ApiEndpoints.SCENE_PARSE);
+}
+
+export async function sendContactRequest(
+  payload: {
+    name: string;
+    email: string;
+    message: string;
+  },
+  isLocal: boolean = false
+) {
+  return sendNodeBackendRequest(
+    JSON.stringify(payload),
+    ApiEndpoints.CONTACT,
+    isLocal
+  );
 }

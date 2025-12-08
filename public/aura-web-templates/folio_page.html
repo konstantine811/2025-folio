@@ -28,8 +28,25 @@ overflow-x: hidden;
 /* Smooth fade for menu */
 .menu-enter { opacity: 0; transform: scale(0.95) translateY(-10px); pointer-events: none; }
 .menu-enter-active { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; }
+
+/* Contact Modal Animation */
+.modal-enter { opacity: 0; pointer-events: none; }
+.modal-enter .modal-card { transform: scale(0.95) translateY(20px); }
+.modal-enter-active { opacity: 1; pointer-events: auto; }
+.modal-enter-active .modal-card { transform: scale(1) translateY(0); }
+
 /* Subtle glow for active elements */
 .glow-text { text-shadow: 0 0 20px rgba(255,255,255,0.3); }
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus {
+  -webkit-text-fill-color: white;
+  -webkit-box-shadow: 0 0 0px 1000px #18181b inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
 </style></head>
 <body class="antialiased selection:bg-white/20 selection:text-white relative">
 
@@ -110,6 +127,61 @@ overflow-x: hidden;
         </div>
     </div>
 
+    <!-- Contact Modal Overlay -->
+    <div id="contact-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 modal-enter transition-all duration-300">
+        <!-- Backdrop -->
+        <div id="contact-backdrop" class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+        
+        <!-- Modal Card -->
+        <div class="modal-card relative z-10 w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden transition-all duration-300">
+            <!-- Modal Header -->
+            <div class="px-8 pt-8 pb-6 border-b border-white/5 flex justify-between items-start">
+                <div>
+                    <h3 class="font-display text-2xl text-white tracking-tight">Get in touch</h3>
+                    <p class="font-mono text-xs text-zinc-500 mt-2">Let's discuss your next project.</p>
+                </div>
+                <button id="contact-modal-close" class="text-zinc-500 hover:text-white transition-colors p-1 hover:bg-white/5 rounded-md">
+                    <i data-lucide="x" class="w-5 h-5 stroke-[1.5]"></i>
+                </button>
+            </div>
+
+            <!-- Contact Form -->
+            <form class="p-8 space-y-6" onsubmit="event.preventDefault();">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="block font-mono text-[10px] uppercase tracking-widest text-zinc-500">First Name</label>
+                        <input type="text" placeholder="Іван" class="w-full bg-zinc-900/50 border border-white/10 text-white text-sm rounded-lg p-3 focus:border-white/30 focus:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-white/30 transition-all placeholder:text-zinc-700">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block font-mono text-[10px] uppercase tracking-widest text-zinc-500">Last Name</label>
+                        <input type="text" placeholder="Петренко" class="w-full bg-zinc-900/50 border border-white/10 text-white text-sm rounded-lg p-3 focus:border-white/30 focus:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-white/30 transition-all placeholder:text-zinc-700">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-zinc-500">Email Address</label>
+                    <div class="relative">
+                        <i data-lucide="mail" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600"></i>
+                        <input type="email" placeholder="ivan@example.com" class="w-full bg-zinc-900/50 border border-white/10 text-white text-sm rounded-lg py-3 pl-10 pr-3 focus:border-white/30 focus:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-white/30 transition-all placeholder:text-zinc-700">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-zinc-500">Message</label>
+                    <textarea rows="4" placeholder="Опишіть ваше завдання..." class="w-full bg-zinc-900/50 border border-white/10 text-white text-sm rounded-lg p-3 focus:border-white/30 focus:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-white/30 transition-all placeholder:text-zinc-700 resize-none"></textarea>
+                </div>
+
+                <div class="pt-2 flex items-center justify-between">
+                    <span class="font-mono text-[10px] text-zinc-600">Avg. response: 24h</span>
+                    <button class="bg-white text-black font-medium text-sm px-6 py-2.5 rounded-lg hover:bg-zinc-200 transition-colors flex items-center gap-2 group">
+                        <span>Send Message</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4 stroke-[1.5] group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Main Content Wrapper -->
     <main class="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-12 pt-40 pb-20">
         
@@ -121,7 +193,7 @@ overflow-x: hidden;
                 SYS.VER.2.0.4
             </div>
 
-            <!-- NAME BADGE (Added Here) -->
+            <!-- NAME BADGE -->
             <div class="relative z-10 mb-8 inline-flex items-center gap-3 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md w-fit">
                 <span class="relative flex h-2 w-2">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -148,7 +220,8 @@ overflow-x: hidden;
                 
                 <div class="mt-8 flex gap-8">
                      <a href="#projects" class="text-xs font-mono uppercase text-white border-b border-white pb-1 hover:opacity-70 transition-opacity">View Dossier</a>
-                     <a href="mailto:contact@dev.ua" class="text-xs font-mono uppercase text-zinc-500 hover:text-white transition-colors">Contact</a>
+                     <!-- Changed to trigger Contact Modal -->
+                     <button id="hero-contact-trigger" class="text-xs font-mono uppercase text-zinc-500 hover:text-white transition-colors cursor-pointer">Contact</button>
                 </div>
             </div>
         </header>
@@ -285,9 +358,10 @@ overflow-x: hidden;
                     <span class="font-mono text-xs uppercase mb-4 block text-zinc-500">
                         Status: Available
                     </span>
-                    <a href="mailto:email@example.com" class="font-display text-5xl md:text-7xl font-bold tracking-tight text-white hover:text-zinc-400 transition-colors">
+                    <!-- Also triggers contact modal -->
+                    <button id="footer-contact-trigger" class="font-display text-5xl md:text-7xl font-bold tracking-tight text-white hover:text-zinc-400 transition-colors text-left">
                         LET'S TALK
-                    </a>
+                    </button>
                 </div>
                 
                 <div class="flex flex-col items-end gap-8">
@@ -331,6 +405,40 @@ overflow-x: hidden;
 
         menuTrigger.addEventListener('click', toggleMenu);
         menuClose.addEventListener('click', toggleMenu);
+
+        // --- CONTACT MODAL INTERACTION ---
+        const modal = document.getElementById('contact-modal');
+        const heroTrigger = document.getElementById('hero-contact-trigger');
+        const footerTrigger = document.getElementById('footer-contact-trigger');
+        const modalClose = document.getElementById('contact-modal-close');
+        const modalBackdrop = document.getElementById('contact-backdrop');
+        let isModalOpen = false;
+
+        function toggleContact() {
+            isModalOpen = !isModalOpen;
+            if (isModalOpen) {
+                modal.classList.remove('modal-enter');
+                modal.classList.add('modal-enter-active');
+                // Close menu if open
+                if(isMenuOpen) toggleMenu();
+            } else {
+                modal.classList.add('modal-enter');
+                modal.classList.remove('modal-enter-active');
+            }
+        }
+
+        heroTrigger.addEventListener('click', toggleContact);
+        footerTrigger.addEventListener('click', toggleContact);
+        modalClose.addEventListener('click', toggleContact);
+        modalBackdrop.addEventListener('click', toggleContact);
+
+        // Escape key closes everything
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (isModalOpen) toggleContact();
+                if (isMenuOpen) toggleMenu();
+            }
+        });
 
         document.addEventListener('click', (e) => {
             if (isMenuOpen && !customMenu.contains(e.target) && !menuTrigger.contains(e.target)) {

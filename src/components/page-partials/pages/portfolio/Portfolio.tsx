@@ -1,13 +1,24 @@
 import { APP_VERSION } from "@/config/versions";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { Trans, useTranslation } from "react-i18next";
+import DialogContact from "./DialogContact/DialogContact";
+import {
+  StatusWorkData,
+  subscribeToStatusWork,
+} from "@/services/firebase/statusWork";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 const Portfolio = () => {
   const hs = useHeaderSizeStore((state) => state.size);
   const [t] = useTranslation();
+  const [statusWork, setStatusWork] = useState<StatusWorkData | null>(null);
+  subscribeToStatusWork((data) => {
+    setStatusWork(data);
+  });
   return (
     <div
-      className="container mx-auto flex flex-col justify-center py-10"
+      className="container flex flex-col py-10"
       style={{ minHeight: `calc(100vh - ${hs}px)` }}
     >
       <header className="relative w-full flex flex-col gap-5 justify-between grow">
@@ -20,10 +31,17 @@ const Portfolio = () => {
         <div className="relative z-10 mb-8 inline-flex items-center gap-3 px-4 py-2 rounded-full border border-foreground/10 bg-foreground/5 backdrop-blur-md w-fit">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            <span
+              className={cn(
+                "relative inline-flex rounded-full h-2 w-2",
+                statusWork?.status_work ? "bg-red-500" : "bg-emerald-500"
+              )}
+            ></span>
           </span>
           <span className="font-mono text-xs font-medium text-foreground/80 tracking-[0.2em] uppercase">
-            {t("portfolio.name")}
+            {statusWork?.status_work
+              ? t("portfolio.status_work.busy")
+              : t("portfolio.status_work.available")}
           </span>
         </div>
 
@@ -61,12 +79,7 @@ const Portfolio = () => {
             >
               {t("portfolio.view_dossier")}
             </a>
-            <a
-              href="mailto:contact@dev.ua"
-              className="text-xs font-mono uppercase text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {t("portfolio.contact")}
-            </a>
+            <DialogContact />
           </div>
         </div>
       </header>

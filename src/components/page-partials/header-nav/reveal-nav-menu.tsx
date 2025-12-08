@@ -44,7 +44,7 @@ const RevealNavMenu = memo(() => {
             exit={{ scale: 0.9, opacity: 0 }}
             transition={MOTION_FRAME_TRANSITION.spring2}
             layout="size"
-            className="z-30 fixed right-0 sm:right-14 w-full translate-y-1/2 sm:translate-y-0 sm:w-auto sm:min-w-80 bg-background backdrop-blur-xs border border-muted-foreground/20 rounded-sm shadow-[0_0_50px_-12px_rgba(0,0,0,1)] menu-enter flex flex-col container mx-auto"
+            className="z-30 fixed right-0 sm:right-14 w-full translate-y-15 sm:translate-y-0 sm:w-auto sm:min-w-80 bg-background backdrop-blur-xs border border-muted-foreground/20 rounded-sm shadow-[0_0_50px_-12px_rgba(0,0,0,1)] menu-enter flex flex-col"
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-foreground/5 bg-card">
               <Login />

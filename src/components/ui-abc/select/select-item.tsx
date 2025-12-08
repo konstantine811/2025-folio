@@ -43,7 +43,7 @@ const SelectItem = ({
     <>
       <div className="relative">
         <button
-          className="p-3 rounded-full relative z-[1000] select-none cursor-pointer text-sm"
+          className="p-3 rounded-full relative z-50 select-none cursor-pointer text-sm"
           onClick={() => {
             setIsOpen(!isOpen);
           }}

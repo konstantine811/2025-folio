@@ -33,6 +33,7 @@ export enum FirebaseCollection {
   plannedTasks = "planned-tasks",
   dailyAnalytics = "daily-analytics",
   cubicWorlds = "cubicWorlds",
+  statusWork = "status_work",
 }
 
 export const FirebaseCollectionProps = {
