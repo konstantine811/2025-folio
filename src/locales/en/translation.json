@@ -145,6 +145,8 @@
       "send": "Send",
       "error": "Error",
       "error_message": "There was an error sending your message. Please try again.",
+      "error_message_description": "There was an error sending your message. Please try again.",
+      "success_message_description": "Your message has been sent successfully. I will get back to you as soon as possible.",
       "success": "Message sent successfully",
       "success_message": "Your message has been sent successfully. I will get back to you as soon as possible.",
       "close": "Close"

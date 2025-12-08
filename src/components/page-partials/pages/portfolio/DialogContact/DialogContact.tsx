@@ -35,20 +35,14 @@ const DialogContact = () => {
     try {
       const data = await sendContactRequest(payload);
       if (data.ok) {
-        toast.success(t("portfolio.contact_modal.success_message"), {
-          description: t("portfolio.contact_modal.success_message_description"),
-        });
+        toast.success(t("portfolio.contact_modal.success_message"));
         form.reset();
         setOpen(false);
       } else {
-        toast.error(t("portfolio.contact_modal.error_message"), {
-          description: t("portfolio.contact_modal.error_message_description"),
-        });
+        toast.error(t("portfolio.contact_modal.error_message"));
       }
     } catch {
-      toast.error(t("portfolio.contact_modal.error_message"), {
-        description: t("portfolio.contact_modal.error_message_description"),
-      });
+      toast.error(t("portfolio.contact_modal.error_message"));
     }
     setIsLoading(false);
   }
