@@ -5,7 +5,7 @@ import {
   StatusWorkData,
   subscribeToStatusWork,
 } from "@/services/firebase/statusWork";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 const APP_VERSION = "1.0.1";
@@ -13,9 +13,16 @@ const Portfolio = () => {
   const hs = useHeaderSizeStore((state) => state.size);
   const [t] = useTranslation();
   const [statusWork, setStatusWork] = useState<StatusWorkData | null>(null);
-  subscribeToStatusWork((data) => {
-    setStatusWork(data);
-  });
+
+  useEffect(() => {
+    const unsubscribe = subscribeToStatusWork((data) => {
+      setStatusWork(data);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
   return (
     <div
       className="container flex flex-col py-10"

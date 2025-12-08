@@ -60,12 +60,20 @@ const CellReveal = ({
     setCells(cells);
   }, [columns, rows, offsetTop]);
 
+  // Ініціалізуємо cells при монтуванні
+  useEffect(() => {
+    onCanvasResize();
+  }, [onCanvasResize]);
+
   const [springs, api] = useSprings(cells.length, () => ({
     scale: show ? 1 : 0,
     opacity: show ? 1 : 0,
   }));
 
   useEffect(() => {
+    // Перевіряємо, чи є cells перед запуском анімації
+    if (cells.length === 0) return;
+
     const centerX = window.innerWidth / 2;
     const centerY = (window.innerHeight - offsetTop) / 2;
 
@@ -78,9 +86,14 @@ const CellReveal = ({
     });
 
     const maxDistance = Math.max(...distances);
+    
+    // Перевіряємо, чи maxDistance валідний
+    if (!isFinite(maxDistance) || maxDistance === 0) return;
 
     api.start((i) => {
       const cell = cells[i];
+      if (!cell) return;
+      
       const cx = cell.x + cell.width / 2;
       const cy = cell.y + cell.height / 2;
       const dx = cx - centerX;
@@ -95,7 +108,7 @@ const CellReveal = ({
         scale: show ? 1 : 0,
         opacity: show ? 1 : 0,
         config: { bounce: 10 },
-        delay,
+        delay: Math.max(0, delay),
       };
     });
   }, [show, api, cells, duration, delayPerPixel, offsetTop, invertRipple]);
@@ -103,7 +116,7 @@ const CellReveal = ({
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
-    if (!canvas || !ctx) return;
+    if (!canvas || !ctx || cells.length === 0) return;
 
     let frameId: number;
 
@@ -117,6 +130,8 @@ const CellReveal = ({
         if (o <= 0) return;
 
         const cell = cells[i];
+        if (!cell) return;
+        
         const w = cell.width * s;
         const h = cell.height * s;
         const cx = cell.x + cell.width / 2;
