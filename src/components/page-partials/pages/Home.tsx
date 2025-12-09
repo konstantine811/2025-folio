@@ -9,9 +9,9 @@ const Home = () => {
   return (
     <div className="relative" style={{ top: `${hs}px` }}>
       <Portfolio />
-      <HorizontalLine className="my-20 container mx-auto" />
+      <HorizontalLine className="my-5 lg:my-20 container mx-auto" />
       <TechStack />
-      <HorizontalLine className="my-20 container mx-auto" />
+      <HorizontalLine className="my-5 lg:my-20 container mx-auto" />
       <Experience />
     </div>
   );

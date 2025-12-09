@@ -22,7 +22,9 @@ const ExperienceCard = ({
       <div
         className={cn(
           "md:text-right",
-          isRight && "order-2 md:order-1 pl-8 md:pl-0 md:text-right"
+          isRight
+            ? "order-2 md:order-1 md:text-right"
+            : "order-2 md:order-0 pl-8 md:pl-0"
         )}
       >
         <div
@@ -48,12 +50,16 @@ const ExperienceCard = ({
       </div>
       <div
         className={cn(
-          "absolute left-0 md:left-1/2 w-3 h-3 rounded-full md:-translate-x-1/2 glow-point ring-4 ring-card",
+          "absolute -left-[5px] md:left-1/2 w-3 h-3 rounded-full md:-translate-x-1/2 glow-point ring-4 ring-card",
           circleClassName
         )}
       ></div>
 
-      <div className={cn(!isRight ? "order-1 md:order-2" : "pl-8 md:pl-0")}>
+      <div
+        className={cn(
+          !isRight ? "order-1 md:order-2 pl-8 md:pl-0" : "pl-8 md:pl-0"
+        )}
+      >
         <div
           className={cn(
             "flex flex-wrap gap-2",

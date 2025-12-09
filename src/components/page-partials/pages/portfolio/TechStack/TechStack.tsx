@@ -22,7 +22,7 @@ const TechStack = () => {
         </span>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-6 border-t border-l border-foreground/10">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 border-t border-l border-foreground/10">
         <TechCard
           icon={
             <CpuIcon className="w-6 h-6 text-muted-foreground group-hover:text-foreground transition-colors stroke-[1.5]" />
