@@ -25,7 +25,7 @@ const Portfolio = () => {
   }, []);
   return (
     <div
-      className="container flex flex-col py-10"
+      className="container mx-auto flex flex-col py-10"
       style={{ minHeight: `calc(100vh - ${hs}px)` }}
     >
       <header className="relative w-full flex flex-col gap-5 justify-between grow">

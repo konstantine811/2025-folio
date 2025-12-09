@@ -93,6 +93,7 @@ html {
 
 @utility container {
   padding-inline: 10px;
+  box-sizing: content-box;
 
   @variant sm {
     padding-inline: 20px;

@@ -1,0 +1,339 @@
+<html lang="uk" class="scroll-smooth"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio | GIS &amp; 3D Web Architect</title>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&amp;family=JetBrains+Mono:wght@300;400&amp;display=swap" rel="stylesheet">
+<style>
+body {
+font-family: 'Inter', sans-serif;
+background-color: #030304; /* Almost black */
+color: #e4e4e7;
+}
+.font-mono {
+font-family: 'JetBrains Mono', monospace;
+}
+/* Custom scrollbar */
+::-webkit-scrollbar {
+width: 6px;
+}
+::-webkit-scrollbar-track {
+background: #09090b;
+}
+::-webkit-scrollbar-thumb {
+background: #27272a;
+border-radius: 3px;
+}
+/* 3D Grid Animation */
+.terrain-grid {
+background-size: 40px 40px;
+background-image:
+linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px);
+animation: moveGrid 20s linear infinite;
+}
+@keyframes moveGrid {
+0% { background-position: 0 0; }
+100% { background-position: 0 40px; }
+}
+/* Glow effects */
+.glow-point {
+box-shadow: 0 0 15px 2px rgba(56, 189, 248, 0.4);
+}
+.text-glow {
+text-shadow: 0 0 20px rgba(255,255,255,0.2);
+}
+</style></head>
+<body class="antialiased selection:bg-cyan-500/30 selection:text-cyan-200 overflow-x-hidden">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full z-50 border-b border-white/5 bg-[#030304]/80 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-2 group cursor-pointer">
+                <div class="w-8 h-8 rounded border border-white/10 flex items-center justify-center bg-white/5 group-hover:bg-white/10 transition-colors">
+                    <span class="font-mono text-xs text-white tracking-tighter">DEV</span>
+                </div>
+                <span class="text-sm font-medium tracking-tight text-zinc-400 group-hover:text-white transition-colors">ARCHITECT</span>
+            </div>
+            <div class="hidden md:flex items-center gap-8">
+                <a href="#experience" class="text-xs font-medium text-zinc-500 hover:text-white transition-colors tracking-wide uppercase">Досвід</a>
+                <a href="#projects" class="text-xs font-medium text-zinc-500 hover:text-white transition-colors tracking-wide uppercase">Проєкти</a>
+                <a href="#stack" class="text-xs font-medium text-zinc-500 hover:text-white transition-colors tracking-wide uppercase">Технології</a>
+            </div>
+            <a href="mailto:contact@dev.ua" class="text-xs font-medium bg-white text-black px-4 py-2 rounded-full hover:bg-zinc-200 transition-colors tracking-tight">
+                Зв'язатися
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section with 3D Vibe -->
+    <header class="relative w-full min-h-screen flex flex-col justify-center items-center pt-20 overflow-hidden">
+        <!-- Background 3D Grid Simulation -->
+        <div class="absolute inset-0 z-0 pointer-events-none flex items-center justify-center opacity-30">
+            <div class="w-[200%] h-[200%] terrain-grid"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-[#030304] via-[#030304]/80 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-[#030304] via-transparent to-transparent"></div>
+        </div>
+
+        <!-- Content -->
+        <div class="relative z-10 max-w-5xl mx-auto px-6 text-center">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/20 bg-cyan-500/5 mb-8">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                </span>
+                <span class="text-xs font-mono text-cyan-400 tracking-tight uppercase">Доступний для проєктів</span>
+            </div>
+
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-zinc-500 mb-6 text-glow">
+                Цифрова<br>Картографія
+            </h1>
+            
+            <p class="text-lg md:text-xl text-zinc-400 font-light max-w-2xl mx-auto tracking-tight leading-relaxed mb-10">
+                Full-stack архітектор з фокусом на <span class="text-zinc-100">WebGL, GIS</span> та візуалізації великих даних. 
+                Перетворюю 8000+ полігонів та мільйони дата-поїнтів у імерсивний 3D досвід.
+            </p>
+
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+                <button class="group relative px-6 py-3 rounded-lg bg-zinc-100 text-black text-sm font-medium tracking-tight overflow-hidden">
+                    <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                    <span class="relative flex items-center gap-2">
+                        Переглянути Шоуріл <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+                    </span>
+                </button>
+                <div class="flex items-center gap-4 px-6 py-3 rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm">
+                    <div class="flex -space-x-2">
+                        <!-- Tech Icons -->
+                        <div class="w-6 h-6 rounded-full bg-[#030304] border border-white/20 flex items-center justify-center text-[10px] text-zinc-400">Ts</div>
+                        <div class="w-6 h-6 rounded-full bg-[#030304] border border-white/20 flex items-center justify-center text-[10px] text-zinc-400">Gl</div>
+                        <div class="w-6 h-6 rounded-full bg-[#030304] border border-white/20 flex items-center justify-center text-[10px] text-zinc-400">R3f</div>
+                    </div>
+                    <span class="text-xs text-zinc-400 font-mono">3D / GIS / ALGO</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Abstract UI Elements to simulate HUD -->
+        <div class="absolute bottom-10 left-10 hidden md:block">
+            <div class="flex flex-col gap-2">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="globe" class="w-4 h-4 text-zinc-600"></i>
+                    <span class="font-mono text-xs text-zinc-600">LAT: 50.4501 N</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="compass" class="w-4 h-4 text-zinc-600"></i>
+                    <span class="font-mono text-xs text-zinc-600">LON: 30.5234 E</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tech Stack (Grid) -->
+    <section id="stack" class="py-24 border-t border-white/5 bg-zinc-900/20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="mb-12">
+                <h2 class="text-sm font-mono text-zinc-500 uppercase tracking-widest mb-2">Технічний Арсенал</h2>
+                <p class="text-2xl text-white font-medium tracking-tight">Інструменти для створення світів</p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <!-- Stack Items -->
+                <div class="p-4 rounded border border-white/5 bg-white/5 hover:bg-white/10 transition-all group">
+                    <i data-lucide="box" class="w-6 h-6 text-zinc-400 mb-3 group-hover:text-cyan-400 transition-colors"></i>
+                    <h3 class="text-sm text-zinc-200 font-medium">Three.js / R3F</h3>
+                    <p class="text-xs text-zinc-500 mt-1">Shaders, Physics</p>
+                </div>
+                <div class="p-4 rounded border border-white/5 bg-white/5 hover:bg-white/10 transition-all group">
+                    <i data-lucide="map" class="w-6 h-6 text-zinc-400 mb-3 group-hover:text-cyan-400 transition-colors"></i>
+                    <h3 class="text-sm text-zinc-200 font-medium">Mapbox / ArcGIS</h3>
+                    <p class="text-xs text-zinc-500 mt-1">D3.js Visualization</p>
+                </div>
+                <div class="p-4 rounded border border-white/5 bg-white/5 hover:bg-white/10 transition-all group">
+                    <i data-lucide="cpu" class="w-6 h-6 text-zinc-400 mb-3 group-hover:text-cyan-400 transition-colors"></i>
+                    <h3 class="text-sm text-zinc-200 font-medium">Angular / React</h3>
+                    <p class="text-xs text-zinc-500 mt-1">RxJS, Zustand</p>
+                </div>
+                <div class="p-4 rounded border border-white/5 bg-white/5 hover:bg-white/10 transition-all group">
+                    <i data-lucide="server" class="w-6 h-6 text-zinc-400 mb-3 group-hover:text-cyan-400 transition-colors"></i>
+                    <h3 class="text-sm text-zinc-200 font-medium">Backend</h3>
+                    <p class="text-xs text-zinc-500 mt-1">Next.js, MongoDB</p>
+                </div>
+                <div class="p-4 rounded border border-white/5 bg-white/5 hover:bg-white/10 transition-all group">
+                    <i data-lucide="database" class="w-6 h-6 text-zinc-400 mb-3 group-hover:text-cyan-400 transition-colors"></i>
+                    <h3 class="text-sm text-zinc-200 font-medium">Data</h3>
+                    <p class="text-xs text-zinc-500 mt-1">IndexedDB, Redux</p>
+                </div>
+                <div class="p-4 rounded border border-white/5 bg-white/5 hover:bg-white/10 transition-all group">
+                    <i data-lucide="zap" class="w-6 h-6 text-zinc-400 mb-3 group-hover:text-cyan-400 transition-colors"></i>
+                    <h3 class="text-sm text-zinc-200 font-medium">Animation</h3>
+                    <p class="text-xs text-zinc-500 mt-1">GSAP, Framer</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience "Timeline" / Node Map -->
+    <section id="experience" class="py-32 relative overflow-hidden">
+        <!-- Connecting Line -->
+        <div class="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-zinc-800 to-transparent md:-translate-x-1/2"></div>
+
+        <div class="max-w-5xl mx-auto px-6 relative">
+            <h2 class="text-center text-sm font-mono text-zinc-500 uppercase tracking-widest mb-16 relative z-10 bg-[#030304] inline-block px-4 left-1/2 -translate-x-1/2">
+                Шлях Розробника (8 Років)
+            </h2>
+
+            <!-- Experience Node 1 -->
+            <div class="relative grid md:grid-cols-2 gap-8 mb-24 items-center">
+                <div class="md:text-right">
+                    <span class="font-mono text-xs text-cyan-500 mb-2 block">Поточний проект</span>
+                    <h3 class="text-2xl font-medium text-white tracking-tight">Dream.gov.ua</h3>
+                    <p class="text-sm text-zinc-400 mt-2 leading-relaxed">
+                        Розробка національної платформи відновлення. Візуалізація зруйнованих об'єктів на мапі, інтеграція даних інвесторів. 
+                        Складні дашборди з Angular.
+                    </p>
+                </div>
+                <!-- Center Node -->
+                <div class="absolute left-0 md:left-1/2 w-3 h-3 bg-cyan-500 rounded-full md:-translate-x-1/2 glow-point ring-4 ring-[#030304]"></div>
+                
+                <div class="pl-8 md:pl-0">
+                    <div class="flex flex-wrap gap-2 md:justify-start">
+                        <span class="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-400 uppercase tracking-wider">Angular</span>
+                        <span class="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-400 uppercase tracking-wider">Mapbox</span>
+                        <span class="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-400 uppercase tracking-wider">Big Data</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Experience Node 2 -->
+            <div class="relative grid md:grid-cols-2 gap-8 mb-24 items-center">
+                <div class="order-2 md:order-1 pl-8 md:pl-0 md:text-right">
+                    <div class="flex flex-wrap gap-2 md:justify-end">
+                        <span class="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-400 uppercase tracking-wider">ArcGIS</span>
+                        <span class="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-400 uppercase tracking-wider">D3.js</span>
+                        <span class="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-400 uppercase tracking-wider">Canvas API</span>
+                    </div>
+                </div>
+                <!-- Center Node -->
+                <div class="absolute left-0 md:left-1/2 w-3 h-3 bg-zinc-700 rounded-full md:-translate-x-1/2 ring-4 ring-[#030304]"></div>
+
+                <div class="order-1 md:order-2">
+                    <span class="font-mono text-xs text-zinc-500 mb-2 block">AgroTech Digitalization</span>
+                    <h3 class="text-2xl font-medium text-white tracking-tight">Агро-аналітика</h3>
+                    <p class="text-sm text-zinc-400 mt-2 leading-relaxed">
+                        Діджиталізація полів: 8000+ полігонів, аналіз ґрунтів та трекінг техніки. 
+                        Розробка високонавантажених карт з TableGrid та кастомних шарів.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Experience Node 3 -->
+            <div class="relative grid md:grid-cols-2 gap-8 items-center">
+                <div class="md:text-right">
+                     <span class="font-mono text-xs text-zinc-500 mb-2 block">GameDev &amp; R&amp;D</span>
+                    <h3 class="text-2xl font-medium text-white tracking-tight">RPG / WebGL Експерименти</h3>
+                    <p class="text-sm text-zinc-400 mt-2 leading-relaxed">
+                        Створення власної RPG гри у браузері. React Three Fiber, фізичні двіжки, шейдери. 
+                        Кешування ассетів через IndexedDB для performance.
+                    </p>
+                </div>
+                <!-- Center Node -->
+                <div class="absolute left-0 md:left-1/2 w-3 h-3 bg-violet-500 rounded-full md:-translate-x-1/2 ring-4 ring-[#030304]"></div>
+
+                <div class="pl-8 md:pl-0">
+                    <div class="flex flex-wrap gap-2 md:justify-start">
+                        <span class="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-400 uppercase tracking-wider">Three.js</span>
+                        <span class="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-400 uppercase tracking-wider">Shaders</span>
+                        <span class="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-400 uppercase tracking-wider">R3F</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects (Holographic Cards) -->
+    <section id="projects" class="py-24 bg-zinc-950">
+        <div class="max-w-7xl mx-auto px-6">
+            <h2 class="text-3xl font-medium text-white tracking-tighter mb-12">Вибрані Кейси</h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Project 1 -->
+                <div class="group relative aspect-video rounded-xl bg-zinc-900 border border-white/5 overflow-hidden hover:border-white/20 transition-all cursor-pointer">
+                    <!-- Image Placeholder (Gradient used to simulate map) -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-zinc-800 to-black opacity-50 group-hover:scale-105 transition-transform duration-700"></div>
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(6,182,212,0.1),transparent_50%)]"></div>
+                    
+                    <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black via-black/80 to-transparent">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-medium text-white">Dream.gov.ua Dashboard</h3>
+                            <i data-lucide="arrow-up-right" class="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </div>
+                        <p class="text-xs text-zinc-400 line-clamp-2">Інтерактивна мапа відновлення. Кластеризація об'єктів, фільтрація в реальному часі.</p>
+                        <div class="mt-4 flex gap-2">
+                            <span class="text-[10px] font-mono text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">Angular</span>
+                            <span class="text-[10px] font-mono text-zinc-400 border border-white/10 px-2 py-1 rounded">Mapbox</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 2 -->
+                <div class="group relative aspect-video rounded-xl bg-zinc-900 border border-white/5 overflow-hidden hover:border-white/20 transition-all cursor-pointer">
+                    <div class="absolute inset-0 bg-gradient-to-bl from-zinc-800 to-black opacity-50 group-hover:scale-105 transition-transform duration-700"></div>
+                     <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(139,92,246,0.1),transparent_50%)]"></div>
+                    
+                    <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black via-black/80 to-transparent">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-medium text-white">RPG Web World</h3>
+                            <i data-lucide="arrow-up-right" class="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </div>
+                        <p class="text-xs text-zinc-400 line-clamp-2">Процедурна генерація ландшафту, фізика персонажа та кастомні шейдери води.</p>
+                        <div class="mt-4 flex gap-2">
+                            <span class="text-[10px] font-mono text-violet-400 bg-violet-400/10 px-2 py-1 rounded">Three.js</span>
+                            <span class="text-[10px] font-mono text-zinc-400 border border-white/10 px-2 py-1 rounded">WebGL</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer / Rate -->
+    <footer class="py-24 border-t border-white/5 relative bg-[#030304]">
+        <div class="max-w-3xl mx-auto px-6 text-center">
+            <h2 class="text-4xl md:text-5xl font-medium text-white tracking-tighter mb-6">Готові до масштабування?</h2>
+            <p class="text-zinc-400 text-sm md:text-base mb-10 leading-relaxed font-light">
+                Я допомагаю бізнесам будувати складні візуальні інтерфейси, які продають. 
+                <br>Від архітектури даних до фінального пікселя на Canvas.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mx-auto mb-12">
+                <div class="p-6 rounded border border-white/10 bg-white/5 flex flex-col items-center">
+                    <span class="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-2">Hourly Rate</span>
+                    <span class="text-3xl font-medium text-white tracking-tight">$70+</span>
+                </div>
+                <div class="p-6 rounded border border-white/10 bg-white/5 flex flex-col items-center">
+                    <span class="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-2">Availability</span>
+                    <span class="text-3xl font-medium text-cyan-400 tracking-tight">Open</span>
+                </div>
+            </div>
+
+            <a href="mailto:email@example.com" class="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-medium hover:bg-zinc-200 transition-colors tracking-tight text-sm">
+                Почати співпрацю <i data-lucide="mail" class="w-4 h-4"></i>
+            </a>
+            
+            <div class="mt-20 flex justify-center gap-8 text-zinc-600">
+                <a href="#" class="hover:text-white transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+                <a href="#" class="hover:text-white transition-colors"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                <a href="#" class="hover:text-white transition-colors"><i data-lucide="twitter" class="w-5 h-5"></i></a>
+            </div>
+            <p class="mt-8 text-[10px] text-zinc-700 font-mono">© 2024 DEV. MAPS &amp; 3D.</p>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+
+</body></html>

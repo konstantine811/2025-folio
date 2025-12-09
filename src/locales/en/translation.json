@@ -150,6 +150,34 @@
       "success": "Message sent successfully",
       "success_message": "Your message has been sent successfully. I will get back to you as soon as possible.",
       "close": "Close"
+    },
+    "tech_stack": {
+      "title": "Arsenal"
+    },
+    "experience": {
+      "title": "Path of a Developer (8 Years)",
+      "u_studio": {
+        "status": "Current Project",
+        "description": "Development of a national platform for restoration. Visualization of destroyed objects on the map, integration of investor data. Complex dashboards with React and Mapbox."
+      },
+      "cubic_worlds_game": {
+        "status": "GameDev & R&D",
+        "description": "Creation of a self-developed RPG game in the browser. React Three Fiber, physical bodies, shaders. Caching assets through IndexedDB for performance."
+      },
+      "kernel": {
+        "status": "AgroTech Digitalization",
+        "title": "Kernel - AgroTech Digitalization",
+        "description": "Digitalization of fields: 8000+ polygons, analysis of soil and tracking of machinery. Development of high-load maps with TableGrid and custom layers."
+      },
+      "ixlayer": {
+        "status": "HealthTech",
+        "title": "ixLayer - DNA Testing Platform",
+        "description": "Development of interfaces for DNA testing. Vue.js components, integration of medical APIs. Visualization of test results and optimization of medical work processes."
+      },
+      "computools": {
+        "status": "Frontend Engineering",
+        "description": "Development of web interfaces on HTML, CSS, JS. Transition to creating SPAs on Angular and TypeScript. Optimization of UI/UX, work in an Agile team."
+      }
     }
   },
   "login": {
