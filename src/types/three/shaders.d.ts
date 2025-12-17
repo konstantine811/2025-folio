@@ -59,6 +59,10 @@ declare module "@react-three/fiber" {
       typeof GlibliGrassMaterial,
       typeof GlibliGrassMaterial
     >;
+    particleMaterial: Object3DNode<
+      typeof ParticleMaterial,
+      typeof ParticleMaterial
+    >;
     // Додайте інші шейдерні матеріали, якщо потрібно
   }
 }

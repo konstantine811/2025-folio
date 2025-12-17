@@ -225,6 +225,20 @@ const ThreePhysicsSimulation = lazyPage(
     )
 );
 
+const ThreeParticleEarth = lazyPage(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/particle-earth/init"
+    )
+);
+
+const ThreeParticleCursorAnimation = lazyPage(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/particle-cursor-animation/init"
+    )
+);
+
 const LoginPage = lazyPage(
   () => import("../components/page-partials/pages/Login")
 );
@@ -266,6 +280,8 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_HOME_3D = "three-home-3d",
   EXPERIMENTAL_THREE_AI = "three-ai",
   EXPERIMENTAL_THREE_PHYSICS_SIMULATION = "three-physics-simulation",
+  EXPERIMENTAL_THREE_PARTICLE_EARTH = "three-particle-earth",
+  EXPERIMENTAL_THREE_PARTICLE_CURSOR_ANIMATION = "three-particle-cursor-animation",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -522,6 +538,22 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🌌",
     description: "A physics simulation scene created with Three.js.",
     imageUrl: imagePath("three-physics-simulation"),
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_PARTICLE_EARTH,
+    Component: ThreeParticleEarth,
+    id: "experimental-three-particle-earth",
+    icon: "🌍",
+    description: "A particle earth scene created with Three.js.",
+    imageUrl: imagePath("earth-particle"),
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_PARTICLE_CURSOR_ANIMATION,
+    Component: ThreeParticleCursorAnimation,
+    id: "experimental-three-particle-cursor-animation",
+    icon: "🌍",
+    description: "A particle cursor animation scene created with Three.js.",
+    imageUrl: imagePath("particle-cursor-animation"),
   },
 ];
 
