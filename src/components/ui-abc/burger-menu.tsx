@@ -5,12 +5,15 @@ import { forwardRef } from "react";
 interface Props {
   isOpen: boolean;
   props?: React.HTMLProps<HTMLDivElement>;
+  isEqualWidth?: boolean;
+  width?: number;
 }
 
 const BurgerMenu = forwardRef<HTMLDivElement, Props>(
   ({ isOpen, ...props }, ref) => {
     const duration: Transition = MOTION_FRAME_TRANSITION.spring;
-
+    const isEqualWidth = props?.isEqualWidth ?? false;
+    const width = props?.width ?? 15;
     return (
       <div
         ref={ref}
@@ -21,7 +24,7 @@ const BurgerMenu = forwardRef<HTMLDivElement, Props>(
           animate={{
             rotate: isOpen ? 45 : 0,
             y: isOpen ? 4 : 0,
-            width: isOpen ? 15 : 15,
+            width,
           }}
           className="block h-px bg-muted-foreground"
           transition={duration}
@@ -29,8 +32,8 @@ const BurgerMenu = forwardRef<HTMLDivElement, Props>(
         <motion.span
           animate={{
             rotate: isOpen ? -45 : 0,
-            y: isOpen ? 3 : 5,
-            width: isOpen ? 15 : 8,
+            y: isOpen ? 3 : width / 3,
+            width: isOpen ? width : !isEqualWidth ? width - 7 : width,
           }}
           className="block h-px bg-muted-foreground"
           transition={duration}
@@ -38,8 +41,8 @@ const BurgerMenu = forwardRef<HTMLDivElement, Props>(
         <motion.span
           animate={{
             rotate: isOpen ? -45 : 0,
-            y: isOpen ? 2 : 10,
-            width: isOpen ? 15 : 11,
+            y: isOpen ? 2 : width / 1.5,
+            width: isOpen ? width : !isEqualWidth ? width - 4 : width,
           }}
           className="block h-px bg-muted-foreground"
           transition={duration}

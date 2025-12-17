@@ -239,6 +239,13 @@ const ThreeParticleCursorAnimation = lazyPage(
     )
 );
 
+const SphereMatTest = lazyPage(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/maps/sphere-mat-test"
+    )
+);
+
 const LoginPage = lazyPage(
   () => import("../components/page-partials/pages/Login")
 );
@@ -282,6 +289,7 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_PHYSICS_SIMULATION = "three-physics-simulation",
   EXPERIMENTAL_THREE_PARTICLE_EARTH = "three-particle-earth",
   EXPERIMENTAL_THREE_PARTICLE_CURSOR_ANIMATION = "three-particle-cursor-animation",
+  EXPERIMENTAL_MAPS_SPHERE_MAT_TEST = "sphere-mat-test",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -554,6 +562,14 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🌍",
     description: "A particle cursor animation scene created with Three.js.",
     imageUrl: imagePath("particle-cursor-animation"),
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_MAPS_SPHERE_MAT_TEST,
+    Component: SphereMatTest,
+    id: "experimental-maps-sphere-mat-test",
+    icon: "🌍",
+    description: "A sphere material test scene created with Three.js.",
+    imageUrl: imagePath("sphere-mat-test"),
   },
 ];
 
