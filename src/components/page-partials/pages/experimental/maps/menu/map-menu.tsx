@@ -1,16 +1,46 @@
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "motion/react";
 import { useNavMenuScope } from "@/storage/scoped-nav-menu-store";
-import { Map } from "mapbox-gl";
+import { Map, MapMouseEvent } from "mapbox-gl";
+import AddPointModal from "./add-point-modal";
+import {
+  subscribeToSphereAgentPoints,
+  saveSphereAgentPoint,
+  updateSphereAgentPoint,
+  deleteSphereAgentPoint,
+  SphereAgentPoint,
+} from "@/services/firebase/sphere-agents-points";
 
 type MapMenuProps = {
-  mapRef: React.MutableRefObject<Map | null>;
+  mapRef: React.RefObject<Map | null>;
+  onAddModeChange: (isAddMode: boolean) => void;
+  onMapClick?: (e: mapboxgl.MapMouseEvent) => void;
 };
 
 const MENU_WIDTH = 712;
 
-const MapMenu = ({ mapRef }: MapMenuProps) => {
+const MapMenu = ({ mapRef, onAddModeChange }: MapMenuProps) => {
   const { isOpen } = useNavMenuScope("map");
+  const [isAddMode, setIsAddMode] = useState(false);
+  const [points, setPoints] = useState<SphereAgentPoint[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [clickedCoords, setClickedCoords] = useState<{
+    lng: number;
+    lat: number;
+  } | null>(null);
+  const [editingPoint, setEditingPoint] = useState<SphereAgentPoint | null>(
+    null
+  );
+  const mapClickHandlerRef = useRef<((e: MapMouseEvent) => void) | null>(null);
+
+  // Subscribe to points
+  useEffect(() => {
+    const unsubscribe = subscribeToSphereAgentPoints((updatedPoints) => {
+      setPoints(updatedPoints);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Update map padding when menu opens/closes
   useEffect(() => {
@@ -25,6 +55,91 @@ const MapMenu = ({ mapRef }: MapMenuProps) => {
       duration: 1000, // Match CSS transition duration
     });
   }, [isOpen, mapRef]);
+
+  // Notify parent about add mode change
+  useEffect(() => {
+    onAddModeChange(isAddMode);
+  }, [isAddMode, onAddModeChange]);
+
+  // Handle map clicks in add mode
+  useEffect(() => {
+    if (!mapRef.current || !isAddMode) return;
+
+    const map = mapRef.current;
+    const handleMapClick = (e: MapMouseEvent) => {
+      setClickedCoords({
+        lng: e.lngLat.lng,
+        lat: e.lngLat.lat,
+      });
+      setModalOpen(true);
+    };
+
+    map.on("click", handleMapClick);
+    mapClickHandlerRef.current = handleMapClick;
+
+    return () => {
+      if (map && mapClickHandlerRef.current) {
+        map.off("click", mapClickHandlerRef.current);
+        mapClickHandlerRef.current = null;
+      }
+    };
+  }, [isAddMode, mapRef]);
+
+  const handleAddPoint = async (count: number) => {
+    if (!clickedCoords) return;
+
+    try {
+      await saveSphereAgentPoint({
+        lng: clickedCoords.lng,
+        lat: clickedCoords.lat,
+        count,
+      });
+      setClickedCoords(null);
+    } catch (error) {
+      console.error("Error adding point:", error);
+    }
+  };
+
+  const handleEditPoint = async (pointId: string, count: number) => {
+    try {
+      await updateSphereAgentPoint(pointId, { count });
+      setEditingPoint(null);
+    } catch (error) {
+      console.error("Error updating point:", error);
+    }
+  };
+
+  const handleDeletePoint = async (pointId: string) => {
+    if (!confirm("Ви впевнені, що хочете видалити цю точку?")) return;
+
+    try {
+      await deleteSphereAgentPoint(pointId);
+    } catch (error) {
+      console.error("Error deleting point:", error);
+    }
+  };
+
+  const toggleAddMode = () => {
+    setIsAddMode(!isAddMode);
+  };
+
+  const handleExportToJson = () => {
+    if (points.length === 0) {
+      alert("Немає точок для експорту");
+      return;
+    }
+
+    const jsonData = JSON.stringify(points, null, 2);
+    const blob = new Blob([jsonData], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `sphere-agents-points-${
+      new Date().toISOString().split("T")[0]
+    }.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <motion.div
@@ -46,7 +161,7 @@ const MapMenu = ({ mapRef }: MapMenuProps) => {
           },
         },
       }}
-      className="absolute h-full left-0 top-0 bg-background/95 backdrop-blur-sm border-r border-border shadow-2xl z-40 overflow-hidden pointer-events-auto"
+      className="absolute h-full left-0 top-0 bg-background/95 backdrop-blur-sm border-r border-border border-r-muted-foreground/20 shadow-2xl z-40 overflow-hidden pointer-events-auto"
       style={{
         width: MENU_WIDTH,
       }}
@@ -80,6 +195,87 @@ const MapMenu = ({ mapRef }: MapMenuProps) => {
 
         {/* Content */}
         <div className="space-y-4">
+          {/* Add Point Button */}
+          <button
+            onClick={toggleAddMode}
+            className={`w-full px-4 py-3 rounded-lg border transition-colors ${
+              isAddMode
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-card border-border hover:bg-muted/50"
+            }`}
+          >
+            {isAddMode ? "Режим додавання активний" : "Додати точку на мапу"}
+          </button>
+
+          {/* Export to JSON Button */}
+          <button
+            onClick={handleExportToJson}
+            disabled={points.length === 0}
+            className="w-full px-4 py-3 rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              className="text-muted-foreground"
+            >
+              <path
+                d="M8 2V10M8 10L5 7M8 10L11 7M3 12H13"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span>Експортувати точки у JSON</span>
+            {points.length > 0 && (
+              <span className="text-xs text-muted-foreground">
+                ({points.length})
+              </span>
+            )}
+          </button>
+
+          {/* Points List */}
+          {points.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold">Точки на мапі:</h3>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {points.map((point) => (
+                  <div
+                    key={point.id}
+                    className="p-3 border border-border rounded-lg bg-card/50"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <div className="text-sm font-medium">
+                          Кількість: {point.count}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {point.lat.toFixed(4)}, {point.lng.toFixed(4)}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setEditingPoint(point)}
+                          className="px-2 py-1 text-xs border border-border rounded hover:bg-muted/50"
+                        >
+                          Редагувати
+                        </button>
+                        <button
+                          onClick={() => handleDeletePoint(point.id)}
+                          className="px-2 py-1 text-xs border border-destructive rounded hover:bg-destructive/10 text-destructive"
+                        >
+                          Видалити
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <p className="text-sm text-muted-foreground leading-relaxed">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
             eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
@@ -153,6 +349,33 @@ const MapMenu = ({ mapRef }: MapMenuProps) => {
           </div>
         </div>
       </div>
+
+      {/* Add Point Modal */}
+      {clickedCoords && (
+        <AddPointModal
+          isOpen={modalOpen}
+          onClose={() => {
+            setModalOpen(false);
+            setClickedCoords(null);
+          }}
+          onConfirm={handleAddPoint}
+          lng={clickedCoords.lng}
+          lat={clickedCoords.lat}
+        />
+      )}
+
+      {/* Edit Point Modal */}
+      {editingPoint && (
+        <AddPointModal
+          isOpen={!!editingPoint}
+          onClose={() => setEditingPoint(null)}
+          onConfirm={(count) => handleEditPoint(editingPoint.id, count)}
+          lng={editingPoint.lng}
+          lat={editingPoint.lat}
+          initialCount={editingPoint.count}
+          isEdit={true}
+        />
+      )}
     </motion.div>
   );
 };

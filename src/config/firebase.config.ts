@@ -34,6 +34,7 @@ export enum FirebaseCollection {
   dailyAnalytics = "daily-analytics",
   cubicWorlds = "cubicWorlds",
   statusWork = "status_work",
+  sphereAgentsPoints = "sphere-agents-points",
 }
 
 export const FirebaseCollectionProps = {
