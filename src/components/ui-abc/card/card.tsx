@@ -62,6 +62,15 @@ const Card = forwardRef<HTMLDivElement, Props>(
         ref={ref}
         onClick={onClick}
         className="group relative rounded-xl cursor-pointer bg-foreground/10 card p-[1px] hover:scale-99 duration-300 flex flex-col"
+        onMouseMove={(e) => {
+          const card = e.currentTarget;
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+
+          card.style.setProperty("--mouse-x", `${x}px`);
+          card.style.setProperty("--mouse-y", `${y}px`);
+        }}
       >
         <div className="flex bg-card aspect-square relative rounded-t-md">
           <div className="absolute inset-0 bg-gradient-to-t from-background/50 via-transparent to-transparent opacity-90"></div>
@@ -103,7 +112,7 @@ const Card = forwardRef<HTMLDivElement, Props>(
         </div>
 
         <div
-          className="absolute top-0 left-0 w-full h-full transition-opacity duration-500 rounded-md opacity-0 group-hover:opacity-100 z-1"
+          className="absolute top-0 left-0 w-full h-full transition-opacity duration-500 rounded-md opacity-0 group-hover:opacity-100 z-[-1]"
           style={{
             background: `radial-gradient(400px circle at var(--mouse-x) var(--mouse-y),${ThemePalette[theme]["muted-foreground"]},transparent 40%)`,
           }}
