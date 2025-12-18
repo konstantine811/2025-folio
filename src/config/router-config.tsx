@@ -252,7 +252,7 @@ const LoginPage = lazyPage(
 
 export enum RoutPath {
   HOME = "/",
-  EXPERIMENTAL = "/experimental",
+  EXPERIMENTAL = "/labs",
   BLOG = "/blog",
   ARTICLE = "/blog/:id",
   TASK_MANAGER = "/task-manager",

@@ -41,6 +41,7 @@ const Header = memo(() => {
                 WEB ARCHITECT
               </span>
             </div>
+            <div className="tracking-widest text-muted-foreground">//</div>
           </div>
           <div className="flex justify-end items-center font-mono text-xs text-muted-foreground">
             {!isMdSize && (

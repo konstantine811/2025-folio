@@ -1,7 +1,7 @@
 import Header from "@components/page-partials/header-nav/header";
 import StickyCursor from "@components/mouse/sticky-cursor";
 import { subscribeToHoverSound } from "@services/subscribeHoverAudio";
-import MouseTrail from "@components/mouse/mouse-trail";
+// import MouseTrail from "@components/mouse/mouse-trail";
 import { Suspense, useEffect, useState } from "react";
 import { Routes, Route } from "react-router";
 import { router } from "@config/router-config";
@@ -39,7 +39,7 @@ function App() {
       {!isTouch && (
         <>
           <StickyCursor />
-          <MouseTrail />
+          {/* <MouseTrail /> */}
         </>
       )}
       <>
