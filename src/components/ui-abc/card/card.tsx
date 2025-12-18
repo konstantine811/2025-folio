@@ -107,7 +107,9 @@ const Card = forwardRef<HTMLDivElement, Props>(
         </div>
         <div className="relative flex items-center mt-[1px] justify-between  w-full px-4 py-2 bg-card rounded-b-md grow">
           <span className="w-1 h-1 rounded-full bg-foreground/20"></span>
-          <span className="">{title}</span>
+          <span className="font-mono text-xs text-muted-foreground">
+            {title}
+          </span>
           <span className="w-1 h-1 rounded-full bg-foreground/20"></span>
         </div>
 
