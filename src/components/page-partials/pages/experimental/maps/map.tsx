@@ -4,6 +4,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemeType } from "@/config/theme-colors.config";
+import MapMenu from "./menu/map-menu";
 
 const MapComponent = () => {
   const hS = useHeaderSizeStore((state) => state.size);
@@ -42,6 +43,25 @@ const MapComponent = () => {
     };
   }, []);
 
+  // Initialize map padding after load
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    const handleLoad = () => {
+      // Initial padding setup
+      mapRef.current?.easeTo({
+        padding: { left: 0 },
+        duration: 0,
+      });
+    };
+
+    if (mapRef.current.loaded()) {
+      handleLoad();
+    } else {
+      mapRef.current.once("load", handleLoad);
+    }
+  }, [mapRef]);
+
   // Update map style when theme changes
   useEffect(() => {
     if (!mapRef.current) return;
@@ -59,7 +79,9 @@ const MapComponent = () => {
       ref={mapContainerRef}
       className="relative w-full"
       style={{ height: `calc(100vh - ${hS}px)`, top: hS }}
-    />
+    >
+      <MapMenu mapRef={mapRef} />
+    </div>
   );
 };
 

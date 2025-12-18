@@ -22,7 +22,7 @@ const RevealButton = () => {
   return (
     <>
       <div
-        className="h-14 select-none pointer-events-auto flex relative bottom-3 left-5"
+        className="h-14 select-none pointer-events-auto flex relative bottom-3 left-5 cursor-pointer"
         onClick={() => {
           setOpen(!isOpen);
         }}
