@@ -34,9 +34,9 @@ const Header = memo(() => {
     <>
       <header
         ref={headerRef}
-        className="fixed top-0 z-50 w-full md:px-12 px-6 left-0 right-0 bg-background/80 shadow-2xl shadow-background"
+        className="fixed top-0 z-50 w-full md:px-12 px-6 left-0 right-0 mix-blend-difference border-b border-b-foreground/10 backdrop-blur-md"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 items-center container mx-auto">
           <div className="flex items-center gap-3">
             <LogoHomeNav />
             <div className="flex flex-col">
@@ -63,13 +63,12 @@ const Header = memo(() => {
                 <ToggleSound />
               </>
             )}
-
-            <div className="fixed right-4 md:right-8 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-card/50 backdrop-blur-md border border-muted-foreground/10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-all duration-300 shadow-2xl p-0 m-0 outline-0">
-              <NavMenu />
-            </div>
           </div>
         </div>
       </header>
+      <div className="fixed right-4 md:right-8 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-card/50 backdrop-blur-md border border-muted-foreground/10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-all duration-300 shadow-2xl p-0 m-0 outline-0">
+        <NavMenu />
+      </div>
       {isOpen && (
         <div
           id="nav-menu-overlay"

@@ -61,9 +61,10 @@ const Card = forwardRef<HTMLDivElement, Props>(
       <div
         ref={ref}
         onClick={onClick}
-        className="group relative rounded-md cursor-pointer bg-foreground/10 card p-[1px] hover:scale-99 duration-300 flex flex-col"
+        className="group relative rounded-xl cursor-pointer bg-foreground/10 card p-[1px] hover:scale-99 duration-300 flex flex-col"
       >
         <div className="flex bg-card aspect-square relative rounded-t-md">
+          <div className="absolute inset-0 bg-gradient-to-t from-background/50 via-transparent to-transparent opacity-90"></div>
           {srcImage && !isImageError ? (
             <>
               {isImageLoading && (
