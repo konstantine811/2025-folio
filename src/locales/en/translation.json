@@ -15,6 +15,12 @@
   "hobbies": "Hobbies",
   "leisure": "Leisure",
   "pickDate": "Pick a date",
+  "labs": {
+    "title": "R&D Protocols",
+    "system_status": "System Status: Experimental",
+    "system_status_description": "A collection of WebGL experiments, performance tests, and shader interactions.",
+    "system_status_description_bold": "Caution: Heavy GPU usage expected."
+  },
   "cubic_worlds_game": {
     "pause": {
       "title": "Pause",
@@ -111,7 +117,7 @@
     "home": "Home",
     "blog": "Blog",
     "task-manager": "Task Manager",
-    "experimental": "Labs",
+    "labs": "Labs",
     "task": {
       "template": "Task Template",
       "daily": "Daily Tasks",

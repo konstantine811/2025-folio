@@ -1,4 +1,5 @@
 import { memo, useEffect, useRef } from "react";
+import { useLocation } from "react-router";
 import { useHeaderSizeStore } from "@storage/headerSizeStore";
 import LanguagePicker from "../page-setting/lange-picker/language-picker";
 import ToggleSound from "../page-setting/toggle-sound";
@@ -13,11 +14,16 @@ import { useNavMenuStore } from "@/storage/navMenuStore";
 
 const Header = memo(() => {
   const headerRef = useRef<HTMLDivElement>(null!);
+  const location = useLocation();
   const setHeaderSize = useHeaderSizeStore((state) => state.setHeaderSize);
   const { isOpen, setOpen } = useNavMenuStore((state) => state);
   const { t } = useTranslation();
   const { isAdoptiveSize: isMdSize } = useIsAdoptive();
   const { isAdoptiveSize: isSmSize } = useIsAdoptive(BreakPoints.sm);
+
+  // Get first path segment (parent route)
+  const pathName = location.pathname.split("/")[1] || "home";
+  const pageName = t(`pages.${pathName}`, { defaultValue: pathName });
   useEffect(() => {
     if (headerRef.current) {
       const headerHeight = headerRef.current.getBoundingClientRect().height;
@@ -37,11 +43,17 @@ const Header = memo(() => {
               <span className="font-mono text-xs font-bold tracking-widest text-foreground uppercase">
                 {t("cubic_worlds_game.portfolio.main_section.name")}
               </span>
-              <span className="hidden md:block font-mono text-[10px] tracking-widest text-muted-foreground">
-                WEB ARCHITECT
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="hidden md:block font-mono text-[10px] tracking-widest text-muted-foreground">
+                  WEB ARCHITECT
+                </span>
+                {pathName && (
+                  <div className="font-mono text-xs tracking-widest text-foreground/50">
+                    // {pageName}
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="tracking-widest text-muted-foreground">//</div>
           </div>
           <div className="flex justify-end items-center font-mono text-xs text-muted-foreground">
             {!isMdSize && (

@@ -588,7 +588,7 @@ export const router: AppRoute[] = [
     path: RoutPath.EXPERIMENTAL,
     Component: ExperimentalPage,
     isNav: true,
-    id: "experimental",
+    id: "labs",
     isDev: false, // Set to true for development purposes
     classes: {
       linkCircle: "bg-purple-500",
