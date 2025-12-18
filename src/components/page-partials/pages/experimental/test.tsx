@@ -28,7 +28,7 @@ const Test = () => {
   return (
     <div className="container mx-auto mt-10" style={{ paddingTop: hs }}>
       <LabsHeader />
-      <div className="pt-10 pb-6">
+      <div className="pt-5 pb-6 sticky z-10" style={{ top: `${hs}px` }}>
         <ExperimentalFilters
           items={EXPERIMENTAL_ROUTERS}
           selectedType={selectedType}
