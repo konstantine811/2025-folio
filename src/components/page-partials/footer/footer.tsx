@@ -1,0 +1,45 @@
+import LogoHomeNav from "../header-nav/logo-home-nav";
+
+const Footer = () => {
+  return (
+    <footer className="border-t border-white/10 bg-[#050505]">
+      <div className="max-w-[1600px] mx-auto px-6 md:px-12 py-12 flex flex-col md:flex-row justify-between items-center gap-8">
+        <div className="flex items-center gap-3">
+          <LogoHomeNav />
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <span className="hidden md:block font-mono text-[10px] tracking-widest text-muted-foreground">
+                WEB ARCHITECT © 2025
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-6 font-mono text-xs text-zinc-500">
+          <a
+            href="https://github.com/konstantine811?tab=repositories"
+            target="_blank"
+            className="hover:text-white transition-colors"
+          >
+            GITHUB
+          </a>
+          <a
+            href="https://www.facebook.com/constaine.abrams"
+            target="_blank"
+            className="hover:text-white transition-colors"
+          >
+            FACEBOOK
+          </a>
+          <a
+            href="https://www.linkedin.com/in/kostiantyn-abramkin-959584142/"
+            target="_blank"
+            className="hover:text-white transition-colors"
+          >
+            LINKEDIN
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;

@@ -14,6 +14,7 @@ import { isTouchDevice } from "./utils/touch-inspect";
 import { useResizeListener } from "./hooks/useResizeListener";
 import { isLocalhost } from "./utils/env-inspect";
 import { Toaster } from "sonner";
+import Footer from "./components/page-partials/footer/footer";
 
 function App() {
   subscribeToHoverSound();
@@ -50,6 +51,7 @@ function App() {
           </RouteWrapper>
         </Suspense>
         {/* <Map /> */}
+        <Footer />
       </>
       <TransitionPage />
       <Toaster className="border-foreground/10 font-mono" />
