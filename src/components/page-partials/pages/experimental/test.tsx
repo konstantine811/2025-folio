@@ -1,21 +1,43 @@
+import { useState, useMemo } from "react";
 import Card from "@/components/ui-abc/card/card";
-import { EXPERIMENTAL_ROUTERS } from "@/config/router-config";
+import {
+  EXPERIMENTAL_ROUTERS,
+  ExperimentalTypes,
+} from "@/config/router-config";
 import useTransitionRouteTo from "@/hooks/useRouteTransitionTo";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import LabsHeader from "./main/header";
 import { Pagination } from "@/components/ui-abc/pagination";
+import { ExperimentalFilters } from "@/components/ui-abc/experimental-filters";
 
 const Test = () => {
   const hs = useHeaderSizeStore((s) => s.size);
   const navigateTo = useTransitionRouteTo();
+  const [selectedType, setSelectedType] = useState<
+    ExperimentalTypes | "ALL" | null
+  >("ALL");
+
+  // Filter items based on selected type
+  const filteredItems = useMemo(() => {
+    if (selectedType === "ALL" || selectedType === null) {
+      return EXPERIMENTAL_ROUTERS;
+    }
+    return EXPERIMENTAL_ROUTERS.filter((item) => item.type === selectedType);
+  }, [selectedType]);
 
   return (
     <div className="container mx-auto mt-10" style={{ paddingTop: hs }}>
       <LabsHeader />
+      <div className="pt-10 pb-6">
+        <ExperimentalFilters
+          items={EXPERIMENTAL_ROUTERS}
+          selectedType={selectedType}
+          onTypeChange={setSelectedType}
+        />
+      </div>
       <Pagination
-        items={EXPERIMENTAL_ROUTERS}
+        items={filteredItems}
         itemsPerPage={8}
-        className="pt-10"
         renderItem={(item) => (
           <Card
             onClick={() => {

@@ -116,7 +116,7 @@ const Card = forwardRef<HTMLDivElement, Props>(
         <div
           className="absolute top-0 left-0 w-full h-full transition-opacity duration-500 rounded-md opacity-0 group-hover:opacity-100 z-[-1]"
           style={{
-            background: `radial-gradient(400px circle at var(--mouse-x) var(--mouse-y),${ThemePalette[theme]["muted-foreground"]},transparent 40%)`,
+            background: `radial-gradient(400px circle at var(--mouse-x) var(--mouse-y),${ThemePalette[theme]["accent"]},transparent 30%)`,
           }}
         ></div>
       </div>

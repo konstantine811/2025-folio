@@ -1,5 +1,7 @@
-import { useState, useMemo, ReactNode } from "react";
+import { useState, useMemo, ReactNode, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import SoundHoverElement from "./sound-hover-element";
+import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 
 interface PaginationProps<T> {
   items: T[];
@@ -17,6 +19,11 @@ export function Pagination<T>({
   gridClassName,
 }: PaginationProps<T>) {
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset to page 1 when items change (e.g., when filter changes)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [items]);
 
   const totalPages = Math.ceil(items.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -134,7 +141,7 @@ export function Pagination<T>({
               onClick={handlePreviousPage}
               disabled={currentPage === 1}
               className={cn(
-                "transition-colors cursor-pointer",
+                "transition-colors cursor-pointer select-none",
                 currentPage === 1
                   ? "text-muted-foreground/50 cursor-not-allowed"
                   : "text-muted-foreground hover:text-foreground cursor-pointer"
@@ -144,7 +151,7 @@ export function Pagination<T>({
             </button>
 
             {/* Page Numbers */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center">
               {getPageNumbers().map((page, index) => {
                 if (page === "...") {
                   return (
@@ -161,18 +168,20 @@ export function Pagination<T>({
                 const isActive = pageNum === currentPage;
 
                 return (
-                  <button
+                  <SoundHoverElement
+                    hoverTypeElement={SoundTypeElement.BUTTON}
+                    hoverStyleElement={HoverStyleElement.circle}
                     key={pageNum}
                     onClick={() => handlePageClick(pageNum)}
                     className={cn(
-                      "transition-all duration-300 cursor-pointer",
+                      "transition-all duration-300 cursor-pointer px-3 py-1 select-none",
                       isActive
                         ? "text-foreground scale-101 text-base"
                         : "text-muted-foreground hover:text-foreground text-sm"
                     )}
                   >
                     {pageNum}
-                  </button>
+                  </SoundHoverElement>
                 );
               })}
             </div>
@@ -185,7 +194,7 @@ export function Pagination<T>({
                 "transition-colors",
                 currentPage === totalPages
                   ? "text-muted-foreground/50 cursor-not-allowed"
-                  : "text-muted-foreground hover:text-foreground cursor-pointer"
+                  : "text-muted-foreground hover:text-foreground cursor-pointer select-none"
               )}
             >
               NEXT
