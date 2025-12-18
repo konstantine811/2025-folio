@@ -1,8 +1,18 @@
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import LogoHomeNav from "../header-nav/logo-home-nav";
+import { useEffect, useRef } from "react";
 
 const Footer = () => {
+  const setFooterSize = useHeaderSizeStore((state) => state.setFooterSize);
+  const footerRef = useRef<HTMLDivElement>(null!);
+  useEffect(() => {
+    if (footerRef.current) {
+      const footerHeight = footerRef.current.getBoundingClientRect().height;
+      setFooterSize(footerHeight);
+    }
+  }, [footerRef, setFooterSize]);
   return (
-    <footer className="border-t border-white/10 bg-[#050505]">
+    <footer ref={footerRef} className="border-t border-white/10 bg-[#050505]">
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 py-12 flex flex-col md:flex-row justify-between items-center gap-8">
         <div className="flex items-center gap-3">
           <LogoHomeNav />
