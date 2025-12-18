@@ -1,3 +1,4 @@
+import { ExperimentalTypes } from "@/config/router-config";
 import { ComponentType, LazyExoticComponent, ReactNode } from "react";
 
 type Routable = ComponentType<object>; // ✅ будь-які об’єктні пропси (без any)
@@ -12,6 +13,7 @@ export type AppRoute = {
   isDev?: boolean;
   imageUrl?: string;
   description?: string;
+  type?: ExperimentalTypes;
   classes?: {
     linkCircle?: string;
   };

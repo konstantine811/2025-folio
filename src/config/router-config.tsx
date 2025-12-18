@@ -325,6 +325,21 @@ const imagePath = (imageName: string, format = "jpg") => {
   return `images/three-views-scene/page_images/${imageName}.${format}`;
 };
 
+export enum ExperimentalTypes {
+  physics = "physics",
+  shaders = "shaders",
+  camera = "camera",
+  games = "games",
+  webgpu = "webgpu",
+  ai = "ai",
+  particle = "particle",
+  maps = "maps",
+  canvas2d = "2d-canvas",
+  vfx = "vfx",
+  particles = "particles",
+  optimization = "optimization",
+}
+
 export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
   // {
   //   path: RoutPath.EXPERIMENTAL_TEST,
@@ -346,6 +361,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     description:
       "A simple physics engine simulation using Three.js and Rapier.js.",
     icon: "🌌",
+    type: ExperimentalTypes.physics,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_STAGING,
@@ -355,6 +371,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     description:
       "Demonstration of scene staging and management in Three.js applications.",
     imageUrl: imagePath("three-staging"),
+    type: ExperimentalTypes.camera,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_VIEWS,
@@ -364,6 +381,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     description:
       "A Three.js scene showcasing multiple camera views and perspectives.",
     imageUrl: imagePath("three-views"),
+    type: ExperimentalTypes.camera,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_CAMERA_CONTROLS,
@@ -373,6 +391,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     description:
       "Exploring various camera controls and interactions in Three.js.",
     imageUrl: imagePath("three-camera-controls"),
+    type: ExperimentalTypes.camera,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_RENDER_TARGET,
@@ -390,6 +409,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🖼️",
     description: "Post-processing effects and techniques in Three.js.",
     imageUrl: imagePath("three-post-processing"),
+    type: ExperimentalTypes.shaders,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_THEATRE_JS,
@@ -399,6 +419,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     description:
       "Integrating Theatre.js for animation and scene management in Three.js.",
     imageUrl: imagePath("three-theatre-js"),
+    type: ExperimentalTypes.camera,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_OPTIMIZATION,
@@ -408,6 +429,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     description:
       "Techniques and strategies for optimizing Three.js applications.",
     imageUrl: imagePath("three-optimization"),
+    type: ExperimentalTypes.optimization,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_SHADER_INTRO,
@@ -416,6 +438,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🎨",
     description: "An introduction to shaders and GLSL in Three.js.",
     imageUrl: imagePath("three-shader-intro"),
+    type: ExperimentalTypes.shaders,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_SHADER_SHAPING_FUNCTIONS,
@@ -424,6 +447,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🖌️",
     description: "Exploring shaping functions in GLSL shaders with Three.js.",
     imageUrl: imagePath("three-shader-shaping-functions"),
+    type: ExperimentalTypes.shaders,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_SHADER_IMAGE_SLIDER,
@@ -432,6 +456,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🖼️",
     description: "Creating an image slider using shaders in Three.js.",
     imageUrl: imagePath("three-shader-image-slider"),
+    type: ExperimentalTypes.shaders,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_SHADER_WATER,
@@ -440,6 +465,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "💧",
     description: "A realistic water shader implementation in Three.js.",
     imageUrl: imagePath("three-shader-water"),
+    type: ExperimentalTypes.shaders,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_SHADER_TRANSITION,
@@ -448,6 +474,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🔄",
     description: "Shader-based transitions and effects in Three.js.",
     imageUrl: imagePath("three-shader-transition"),
+    type: ExperimentalTypes.shaders,
   },
   {
     path: RoutPath.EXPERIMENTAL_VFX_PARTICLES,
@@ -456,6 +483,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "✨",
     description: "Creating stunning particle effects using Three.js.",
     imageUrl: imagePath("three-vfx-particles"),
+    type: ExperimentalTypes.vfx,
   },
   {
     path: RoutPath.EXPERIMENTAL_VFX_TRAIL,
@@ -464,6 +492,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🌠",
     description: "Implementing trail effects in Three.js for dynamic visuals.",
     imageUrl: imagePath("three-vfx-trail"),
+    type: ExperimentalTypes.vfx,
   },
   {
     path: RoutPath.EXPERIMENTAL_CUBIC_WORLDS_GAME,
@@ -472,6 +501,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🕹️",
     description: "A simple cubic worlds game built with Three.js.",
     imageUrl: imagePath("three-cubic-worlds-game"),
+    type: ExperimentalTypes.games,
   },
   {
     path: RoutPath.EXPERIMENTAL_VFX_ENGINE,
@@ -481,6 +511,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     description:
       "A visual effects engine using Three.js for real-time graphics.",
     imageUrl: imagePath("three-vfx-engine"),
+    type: ExperimentalTypes.vfx,
   },
   {
     path: RoutPath.EXPERIMENTAL_2D_CANVAS_FIRST_SIMPLE_BALL,
@@ -489,6 +520,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🎨",
     description: "A simple 2D canvas example drawing and animating a ball.",
     imageUrl: imagePath("two-canvas-first-simple-ball"),
+    type: ExperimentalTypes.canvas2d,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_VFX_FIREWORKS,
@@ -497,6 +529,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🎆",
     description: "Creating fireworks effects using Three.js for celebrations.",
     imageUrl: imagePath("three-vfx-fireworks"),
+    type: ExperimentalTypes.vfx,
   },
   {
     path: RoutPath.EXPERIMENTAL_2D_CANVAS_PHYSICS_TRAIN,
@@ -505,6 +538,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🚂",
     description: "A 2D canvas simulation of a physics-based train system.",
     imageUrl: imagePath("two-canvas-physics-train"),
+    type: ExperimentalTypes.canvas2d,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_WIZARD_GAME,
@@ -513,6 +547,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🧙‍♂️",
     description: "A magical wizard game created with Three.js.",
     imageUrl: imagePath("three-wizard-game"),
+    type: ExperimentalTypes.games,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_WEB_GPU,
@@ -522,6 +557,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     description:
       "Exploring WebGPU capabilities with Three.js for next-gen graphics.",
     imageUrl: imagePath("three-web-gpu"),
+    type: ExperimentalTypes.webgpu,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_HOME_3D,
@@ -530,6 +566,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🏠",
     description: "A 3D home scene created with Three.js.",
     imageUrl: imagePath("home_earth"),
+    type: ExperimentalTypes.camera,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_AI,
@@ -538,6 +575,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🤖",
     description: "A 3D AI scene created with Three.js.",
     imageUrl: imagePath("three-ai"),
+    type: ExperimentalTypes.ai,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_PHYSICS_SIMULATION,
@@ -546,6 +584,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🌌",
     description: "A physics simulation scene created with Three.js.",
     imageUrl: imagePath("three-physics-simulation"),
+    type: ExperimentalTypes.physics,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_PARTICLE_EARTH,
@@ -554,6 +593,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🌍",
     description: "A particle earth scene created with Three.js.",
     imageUrl: imagePath("earth-particle"),
+    type: ExperimentalTypes.particle,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_PARTICLE_CURSOR_ANIMATION,
@@ -562,6 +602,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🌍",
     description: "A particle cursor animation scene created with Three.js.",
     imageUrl: imagePath("particle-cursor-animation"),
+    type: ExperimentalTypes.particle,
   },
   {
     path: RoutPath.EXPERIMENTAL_MAPS_SPHERE_MAT_TEST,
@@ -570,6 +611,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🌍",
     description: "A sphere material test scene created with Three.js.",
     imageUrl: imagePath("sphere-mat-test"),
+    type: ExperimentalTypes.maps,
   },
 ];
 
