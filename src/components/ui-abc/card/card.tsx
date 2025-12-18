@@ -61,7 +61,7 @@ const Card = forwardRef<HTMLDivElement, Props>(
       <div
         ref={ref}
         onClick={onClick}
-        className="group relative rounded-xl cursor-pointer bg-foreground/10 card p-[1px] hover:scale-99 duration-300 flex flex-col"
+        className="group relative rounded-xl cursor-pointer bg-foreground/10 card p-[1px] flex flex-col"
         onMouseMove={(e) => {
           const card = e.currentTarget;
           const rect = card.getBoundingClientRect();
@@ -72,7 +72,7 @@ const Card = forwardRef<HTMLDivElement, Props>(
           card.style.setProperty("--mouse-y", `${y}px`);
         }}
       >
-        <div className="flex bg-card aspect-square relative rounded-t-md">
+        <div className="flex bg-card aspect-square relative rounded-t-md overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-t from-background/50 via-transparent to-transparent opacity-90"></div>
           {srcImage && !isImageError ? (
             <>
@@ -87,7 +87,7 @@ const Card = forwardRef<HTMLDivElement, Props>(
               )}
               <img
                 ref={setImgRef}
-                className="object-cover w-full p-5"
+                className="object-cover w-full inset-0 bg-cover bg-center opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-700"
                 src={srcImage}
                 alt={title}
                 onLoad={() => setIsImageLoading(false)}
@@ -106,11 +106,11 @@ const Card = forwardRef<HTMLDivElement, Props>(
           )}
         </div>
         <div className="relative flex items-center mt-[1px] justify-between  w-full px-4 py-2 bg-card rounded-b-md grow">
-          <span className="w-1 h-1 rounded-full bg-foreground/20"></span>
-          <span className="font-mono text-xs text-muted-foreground">
+          <span className="w-1 h-1 rounded-full bg-foreground/20 group-hover:bg-accent transition-colors"></span>
+          <span className="font-mono text-xs text-muted-foreground group-hover:text-foreground transition-colors">
             {title}
           </span>
-          <span className="w-1 h-1 rounded-full bg-foreground/20"></span>
+          <span className="w-1 h-1 rounded-full bg-foreground/20 group-hover:bg-accent transition-colors"></span>
         </div>
 
         <div
