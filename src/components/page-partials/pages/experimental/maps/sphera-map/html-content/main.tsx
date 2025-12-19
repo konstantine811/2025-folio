@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
-import { Layers, BarChart3, Globe2 } from "lucide-react";
+import { Layers, BarChart3, Globe2, LucideIcon } from "lucide-react";
 import NetworkVisualization from "./NetworkVisualization";
+import AppsSection from "./AppsSection";
+import TrustedUsersSection from "./TrustedUsersSection";
 
 const Main = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -33,7 +35,7 @@ const Main = ({ children }: { children: React.ReactNode }) => {
       `}</style>
 
       {/* Main Content */}
-      <main className="relative w-full flex flex-col items-center pt-32 pb-24 isolate">
+      <main className="relative w-full flex flex-col items-center pt-32 isolate overflow-hidden">
         {/* Background Ambient Light */}
         <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[80vw] h-[50vh] bg-blue-900/10 blur-[120px] rounded-full pointer-events-none z-[-1]" />
 
@@ -53,6 +55,12 @@ const Main = ({ children }: { children: React.ReactNode }) => {
           <div className="w-full">{children}</div>
         </div>
       </main>
+
+      {/* Apps Section */}
+      <AppsSection />
+
+      {/* Trusted Users Section */}
+      <TrustedUsersSection />
     </div>
   );
 };
@@ -151,7 +159,7 @@ const Card = ({
   delay,
   highlight = false,
 }: {
-  icon: any;
+  icon: LucideIcon;
   title: string;
   description: string;
   delay: number;

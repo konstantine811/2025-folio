@@ -7,12 +7,13 @@ import {
   Landmark,
   Globe,
   Hexagon,
+  LucideIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface Node {
   id: string;
-  icon: any;
+  icon: LucideIcon;
   label: string;
   color: string;
   position: { top: string; left: string };
