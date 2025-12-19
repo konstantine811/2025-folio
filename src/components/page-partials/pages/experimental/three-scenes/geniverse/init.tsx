@@ -6,10 +6,12 @@ import ThreeLoader from "../common/three-loader";
 import Experience from "./Experience";
 import { RotateCcw } from "lucide-react";
 import { CameraControls } from "@react-three/drei";
+import GeniverseText from "./GeniverseText";
 
 const Init = () => {
   const [animationProgress, setAnimationProgress] = useState(0);
   const [captionOpacity, setCaptionOpacity] = useState(0);
+  const [showGeniverse, setShowGeniverse] = useState(false);
   const startTimeRef = useRef<number | null>(null);
   const isAnimatingRef = useRef(true);
   const duration = 2800; // ms
@@ -20,6 +22,7 @@ const Init = () => {
     isAnimatingRef.current = true;
     setAnimationProgress(0);
     setCaptionOpacity(0);
+    setShowGeniverse(false);
   };
 
   useEffect(() => {
@@ -43,6 +46,11 @@ const Init = () => {
           setCaptionOpacity(1);
         }
 
+        // Reveal geniverse text at the end
+        if (progress > 0.65) {
+          setShowGeniverse(true);
+        }
+
         if (progress >= 1) {
           isAnimatingRef.current = false;
         }
@@ -58,9 +66,9 @@ const Init = () => {
   return (
     <MainWrapperOffset isFullHeight>
       <ThreeLoader />
-      <div className="w-full flex flex-col bg-black text-white overflow-hidden">
+      <div className="w-full flex flex-col bg-background text-foreground overflow-hidden">
         {/* Navbar */}
-        <nav className="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-black z-10">
+        <nav className="h-16 border-b border-foreground/10 flex items-center justify-between px-6 bg-black z-10">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-black font-semibold text-sm shadow-[0_0_15px_rgba(16,185,129,0.4)]">
               <svg
@@ -71,7 +79,7 @@ const Init = () => {
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
               </svg>
             </div>
-            <span className="font-medium tracking-tight text-base text-zinc-200">
+            <span className="font-medium tracking-tight text-base text-muted-foreground">
               Pythagoras Visualization
             </span>
           </div>
@@ -118,6 +126,8 @@ const Init = () => {
               Visual Proof • a² + b² = c²
             </p>
           </div>
+          <GeniverseText show={showGeniverse} />
+          {/* Geniverse Text Animation */}
         </main>
       </div>
     </MainWrapperOffset>
