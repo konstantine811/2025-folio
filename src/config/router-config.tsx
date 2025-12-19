@@ -242,7 +242,14 @@ const ThreeParticleCursorAnimation = lazyPage(
 const SphereMatTest = lazyPage(
   () =>
     import(
-      "../components/page-partials/pages/experimental/maps/sphere-mat-test"
+      "../components/page-partials/pages/experimental/three-scenes/geniverse/init"
+    )
+);
+
+const Geniverse = lazyPage(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/geniverse/init"
     )
 );
 
@@ -290,6 +297,7 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_PARTICLE_EARTH = "three-particle-earth",
   EXPERIMENTAL_THREE_PARTICLE_CURSOR_ANIMATION = "three-particle-cursor-animation",
   EXPERIMENTAL_MAPS_SPHERE_MAT_TEST = "sphere-mat-test",
+  EXPERIMENTAL_THREE_GENIVERSE = "three-geniverse",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -612,6 +620,14 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     description: "A sphere material test scene created with Three.js.",
     imageUrl: imagePath("sphere-mat-test"),
     type: ExperimentalTypes.maps,
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_GENIVERSE,
+    Component: Geniverse,
+    id: "experimental-three-geniverse",
+    icon: "🌍",
+    description: "A geniverse scene created with Three.js.",
+    imageUrl: imagePath("geniverse"),
   },
 ];
 

@@ -6,16 +6,20 @@ import { forwardRef, ReactNode } from "react";
 type Props = {
   children: ReactNode;
   className?: string;
+  isFullHeight?: boolean;
 };
 
 const MainWrapperOffset = forwardRef<HTMLDivElement, Props>(
-  ({ children, className = "" }, ref) => {
+  ({ children, className = "", isFullHeight = false }, ref) => {
     const fs = useHeaderSizeStore((s) => s.footerSize);
-    // const hs = useHeaderSizeStore((s) => s.size);
+    const hs = useHeaderSizeStore((s) => s.size);
+    const height = isFullHeight
+      ? `calc(100vh - ${fs}px)`
+      : `calc(100vh - ${hs + fs}px)`;
     return (
       <div
-        className={clsx(className, "h-screen")}
-        style={{ height: `calc(100vh - ${fs}px)` }}
+        className={clsx(className, "relative")}
+        style={{ height, top: isFullHeight ? hs : 0 }}
         ref={ref}
       >
         {children}

@@ -43,7 +43,7 @@ function App() {
           {/* <MouseTrail /> */}
         </>
       )}
-      <>
+      <div className="min-h-screen w-full flex flex-col justify-between">
         <Header />
         <Suspense fallback={<Preloader />}>
           <RouteWrapper>
@@ -52,7 +52,7 @@ function App() {
         </Suspense>
         {/* <Map /> */}
         <Footer />
-      </>
+      </div>
       <TransitionPage />
       <Toaster className="border-foreground/10 font-mono" />
     </>

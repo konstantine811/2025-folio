@@ -1,0 +1,209 @@
+<html lang="en" class="dark"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometric Proof Animation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+<body class="bg-black text-white h-screen flex flex-col overflow-hidden selection:bg-emerald-500/30">
+
+    <!-- Navbar -->
+    <nav class="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-black z-10">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-black font-semibold text-sm shadow-[0_0_15px_rgba(16,185,129,0.4)]">
+                <i data-lucide="triangle" class="w-4 h-4 fill-black" stroke-width="2"></i>
+            </div>
+            <span class="font-medium tracking-tight text-base text-zinc-200">Pythagoras Visualization</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <button onclick="resetAnimation()" class="group flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-all text-sm font-medium text-zinc-400 hover:text-white hover:border-white/20">
+                <i data-lucide="rotate-ccw" class="w-4 h-4 group-hover:-rotate-180 transition-transform duration-700 ease-out" stroke-width="1.5"></i>
+                Replay Animation
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Scene Container -->
+    <main class="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
+        <!-- Radial Gradient for subtle depth -->
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-900/40 via-black to-black pointer-events-none"></div>
+        
+        <div id="canvas-container" class="w-full h-full absolute inset-0 z-0"></div>
+        
+        <!-- Overlay Text -->
+        <div class="absolute bottom-12 left-0 right-0 text-center pointer-events-none opacity-0 delay-1000 transition-opacity duration-1000" id="caption">
+            <p class="text-zinc-500 text-sm font-mono tracking-[0.2em] uppercase">Visual Proof • a² + b² = c²</p>
+        </div>
+    </main>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Three.js Scene Setup
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+
+        // Perspective Camera - Adjusted for best view of the fold
+        const aspect = container.clientWidth / container.clientHeight;
+        const camera = new THREE.PerspectiveCamera(35, aspect, 0.1, 1000);
+        
+        // Position camera to look slightly up at the geometry
+        camera.position.set(0, -14, 34); 
+        camera.lookAt(0, 1.5, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        // Colors - Updated for Modern/Linear aesthetic
+        const colorTriangle = 0x059669; // Emerald 600
+        const colorLeft = 0x34d399;     // Emerald 400
+        const colorBottom = 0xf8fafc;   // Slate 50 (White-ish)
+        const colorHypot = 0x6ee7b7;    // Emerald 300
+
+        // Materials
+        const materialTriangle = new THREE.MeshBasicMaterial({ color: colorTriangle, side: THREE.DoubleSide });
+        
+        // 1. Central Triangle
+        const triangleShape = new THREE.Shape();
+        triangleShape.moveTo(0, 0);
+        triangleShape.lineTo(3, 0);
+        triangleShape.lineTo(0, 4);
+        triangleShape.lineTo(0, 0);
+        const triangleGeom = new THREE.ShapeGeometry(triangleShape);
+        const triangleMesh = new THREE.Mesh(triangleGeom, materialTriangle);
+        
+        // Group to hold everything and center it
+        const globalGroup = new THREE.Group();
+        globalGroup.add(triangleMesh);
+        scene.add(globalGroup);
+
+        // Helper to create hinged squares
+        function createHingedSquare(w, h, color, x, y, rotationZ, alignX, alignY) {
+            const wrapper = new THREE.Object3D();
+            wrapper.position.set(x, y, 0);
+            wrapper.rotation.z = rotationZ;
+
+            const hinge = new THREE.Object3D();
+            wrapper.add(hinge);
+
+            const geometry = new THREE.PlaneGeometry(w, h);
+            const material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
+            const mesh = new THREE.Mesh(geometry, material);
+            
+            // Align mesh so one edge lies on the hinge (local x-axis)
+            mesh.position.set(w/2 * alignX, h/2 * alignY, 0);
+            
+            hinge.add(mesh);
+            return { wrapper, hinge, mesh };
+        }
+
+        // 2. Left Square (4x4) - Side 'b'
+        // Attached to (0,0)->(0,4)
+        const leftSquare = createHingedSquare(4, 4, colorLeft, 0, 0, Math.PI / 2, 1, 1);
+        globalGroup.add(leftSquare.wrapper);
+
+        // 3. Bottom Square (3x3) - Side 'a'
+        // Attached to (0,0)->(3,0)
+        const bottomSquare = createHingedSquare(3, 3, colorBottom, 0, 0, 0, 1, -1);
+        globalGroup.add(bottomSquare.wrapper);
+
+        // 4. Hypotenuse Square (5x5) - Side 'c'
+        // Attached to (0,4)->(3,0)
+        // Angle of hypotenuse vector (3, -4) relative to x-axis
+        const angle = Math.atan2(-4, 3); 
+        const hypotSquare = createHingedSquare(5, 5, colorHypot, 0, 4, angle, 1, 1);
+        globalGroup.add(hypotSquare.wrapper);
+
+        // Center visual in the 3D space
+        globalGroup.position.set(-1.0, -1.0, 0);
+
+        // Animation State
+        let startTime = null;
+        const duration = 2800; // Slightly longer for elegance
+        const startDelay = 500; 
+        let isAnimating = true;
+
+        // Easing function (easeInOutQuart for smooth premium feel)
+        function easeInOutQuart(x) {
+            return x < 0.5 ? 8 * x * x * x * x : 1 - Math.pow(-2 * x + 2, 4) / 2;
+        }
+
+        // Animation Loop
+        function animate(time) {
+            requestAnimationFrame(animate);
+
+            if (!startTime) startTime = time;
+            const elapsed = time - startTime;
+
+            if (isAnimating) {
+                // FIXED: Start from -90 degrees (-Math.PI/2) instead of -120.
+                // This prevents the squares from intersecting behind the triangle.
+                const startAngle = -Math.PI / 2; 
+                const endAngle = 0;
+
+                let progress = Math.max(0, Math.min(1, (elapsed - startDelay) / duration));
+                progress = easeInOutQuart(progress);
+
+                const currentAngle = startAngle + (endAngle - startAngle) * progress;
+
+                // Apply rotations
+                leftSquare.hinge.rotation.x = currentAngle;
+                bottomSquare.hinge.rotation.x = currentAngle;
+                hypotSquare.hinge.rotation.x = currentAngle;
+
+                // Reveal caption with opacity
+                const caption = document.getElementById('caption');
+                if (progress > 0.6) {
+                    caption.style.opacity = '1';
+                    caption.style.transform = 'translateY(0)';
+                } else {
+                     caption.style.transform = 'translateY(10px)';
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Start Loop
+        requestAnimationFrame(animate);
+
+        // Reset Function
+        window.resetAnimation = function() {
+            startTime = null;
+            const caption = document.getElementById('caption');
+            caption.style.opacity = '0';
+            caption.style.transform = 'translateY(10px)';
+            
+            // Reset to folded state instantly (90 degrees back)
+            const resetAngle = -Math.PI / 2;
+            leftSquare.hinge.rotation.x = resetAngle;
+            bottomSquare.hinge.rotation.x = resetAngle;
+            hypotSquare.hinge.rotation.x = resetAngle;
+        };
+
+        // Resize Handler
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+    </script>
+
+</body></html>
