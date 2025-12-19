@@ -1,13 +1,30 @@
 import { motion } from "framer-motion";
 import { Layers, BarChart3, Globe2, LucideIcon } from "lucide-react";
+import { useEffect } from "react";
 import NetworkVisualization from "./NetworkVisualization";
 import AppsSection from "./AppsSection";
 import TrustedUsersSection from "./TrustedUsersSection";
 
 const Main = ({ children }: { children: React.ReactNode }) => {
+  useEffect(() => {
+    // Ensure smooth scrolling is enabled
+    document.documentElement.style.scrollBehavior = "smooth";
+    document.body.style.scrollBehavior = "smooth";
+
+    return () => {
+      // Cleanup if needed
+    };
+  }, []);
+
   return (
     <div className="bg-[#020408] text-slate-300 font-['Inter'] antialiased w-full overflow-hidden">
       <style>{`
+        html {
+          scroll-behavior: smooth;
+        }
+        * {
+          scroll-behavior: smooth;
+        }
         @keyframes flow {
           0% {
             offset-distance: 0%;
