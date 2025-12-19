@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import mapboxgl, { Map, Marker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemePalette } from "@/config/theme-colors.config";
 import MapMenu from "./menu/map-menu";
+import MapLockOverlay from "./MapLockOverlay";
 import {
   subscribeToSphereAgentPoints,
   SphereAgentPoint,
@@ -18,6 +19,7 @@ const MapComponent = () => {
   const [isAddMode, setIsAddMode] = useState(false);
   const [points, setPoints] = useState<SphereAgentPoint[]>([]);
   const markersRef = useRef<Marker[]>([]);
+  const [isMapLocked, setIsMapLocked] = useState(true);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -37,7 +39,18 @@ const MapComponent = () => {
       pitch: 57.382643073655935,
       attributionControl: false,
       bearing: 0,
+      // Disable scroll zoom by default
+      scrollZoom: false,
     });
+
+    mapRef.current = map;
+
+    // Disable other interactions by default
+    map.dragPan.disable();
+    map.dragRotate.disable();
+    map.touchZoomRotate.disable();
+    map.doubleClickZoom.disable();
+    map.touchPitch.disable();
 
     // Customize map background color after load
     map.on("load", () => {
@@ -51,8 +64,6 @@ const MapComponent = () => {
         canvas.style.backgroundColor = "#0f172a";
       }
     });
-
-    mapRef.current = map;
 
     // Subscribe to points
     const unsubscribe = subscribeToSphereAgentPoints((updatedPoints) => {
@@ -108,6 +119,57 @@ const MapComponent = () => {
       map.once("load", updateBackground);
     }
   }, [selectedTheme]);
+
+  // Handle map lock/unlock
+  const activateMap = useCallback(() => {
+    if (!mapRef.current) return;
+    mapRef.current.scrollZoom.enable();
+    mapRef.current.dragPan.enable();
+    mapRef.current.dragRotate.enable();
+    mapRef.current.touchZoomRotate.enable();
+    mapRef.current.doubleClickZoom.enable();
+    mapRef.current.touchPitch.enable();
+    setIsMapLocked(false);
+  }, []);
+
+  const deactivateMap = useCallback(() => {
+    if (!mapRef.current) return;
+    mapRef.current.scrollZoom.disable();
+    mapRef.current.dragPan.disable();
+    mapRef.current.dragRotate.disable();
+    mapRef.current.touchZoomRotate.disable();
+    mapRef.current.doubleClickZoom.disable();
+    mapRef.current.touchPitch.disable();
+    setIsMapLocked(true);
+  }, []);
+
+  // Handle Esc key to deactivate map
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !isMapLocked) {
+        deactivateMap();
+      }
+    };
+
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [isMapLocked, deactivateMap]);
+
+  // Handle mouse leave to deactivate (optional)
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
+
+    const handleMouseLeave = () => {
+      if (!isMapLocked) {
+        // Optional: uncomment to auto-deactivate on mouse leave
+        // deactivateMap();
+      }
+    };
+
+    const container = mapContainerRef.current;
+    container.addEventListener("mouseleave", handleMouseLeave);
+    return () => container.removeEventListener("mouseleave", handleMouseLeave);
+  }, [isMapLocked]);
 
   // Handle add mode - change cursor
   useEffect(() => {
@@ -196,6 +258,11 @@ const MapComponent = () => {
       style={{ height: `calc(100vh - ${hS}px)`, top: hS }}
     >
       <MapMenu mapRef={mapRef} onAddModeChange={setIsAddMode} />
+      <MapLockOverlay
+        isLocked={isMapLocked}
+        onActivate={activateMap}
+        onDeactivate={deactivateMap}
+      />
     </div>
   );
 };
