@@ -10,7 +10,9 @@ const MapOverlay = () => {
         style={{ top: hs }}
       >
         <div className="col-span-1 row-span-1 pt-5">
-          <RevealButton />
+          <div className="relative">
+            <RevealButton />
+          </div>
         </div>
       </div>
     </>

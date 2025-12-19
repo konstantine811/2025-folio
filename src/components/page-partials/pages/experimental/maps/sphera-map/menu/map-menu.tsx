@@ -161,19 +161,21 @@ const MapMenu = ({ mapRef, onAddModeChange }: MapMenuProps) => {
           },
         },
       }}
-      className="absolute h-full left-0 top-0 bg-background/95 backdrop-blur-sm border-r border-border border-r-muted-foreground/20 shadow-2xl z-40 overflow-hidden pointer-events-auto"
+      className="absolute h-full left-0 top-0 bg-[#0f172a]/95 backdrop-blur-sm border-r border-white/10 shadow-2xl z-40 overflow-hidden pointer-events-auto"
       style={{
         width: MENU_WIDTH,
       }}
     >
       <div className="h-full pl-24 overflow-y-auto p-6 space-y-6 w-full">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border pb-4">
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold">SPHERA OF DEUTSCHLAND</h1>
+            <h1 className="text-2xl font-bold text-white">
+              SPHERA OF DEUTSCHLAND
+            </h1>
             <span className="text-2xl">🇩🇪</span>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 border border-border rounded-md cursor-pointer hover:bg-muted/50 transition-colors">
+          <div className="flex items-center gap-2 px-3 py-1.5 border border-white/10 rounded-md cursor-pointer hover:bg-white/5 transition-colors text-slate-300">
             <span className="text-sm font-mono">2025</span>
             <svg
               width="12"
@@ -198,10 +200,10 @@ const MapMenu = ({ mapRef, onAddModeChange }: MapMenuProps) => {
           {/* Add Point Button */}
           <button
             onClick={toggleAddMode}
-            className={`w-full px-4 py-3 rounded-lg border transition-colors ${
+            className={`w-full px-4 py-3 rounded-lg border transition-all ${
               isAddMode
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-card border-border hover:bg-muted/50"
+                ? "bg-blue-500/20 text-blue-400 border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+                : "bg-white/[0.02] border-white/10 text-slate-300 hover:bg-white/[0.05] hover:border-white/20"
             }`}
           >
             {isAddMode ? "Режим додавання активний" : "Додати точку на мапу"}
@@ -211,7 +213,7 @@ const MapMenu = ({ mapRef, onAddModeChange }: MapMenuProps) => {
           <button
             onClick={handleExportToJson}
             disabled={points.length === 0}
-            className="w-full px-4 py-3 rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full px-4 py-3 rounded-lg border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-slate-300"
           >
             <svg
               width="16"
@@ -239,32 +241,34 @@ const MapMenu = ({ mapRef, onAddModeChange }: MapMenuProps) => {
           {/* Points List */}
           {points.length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold">Точки на мапі:</h3>
+              <h3 className="text-sm font-semibold text-slate-200">
+                Точки на мапі:
+              </h3>
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {points.map((point) => (
                   <div
                     key={point.id}
-                    className="p-3 border border-border rounded-lg bg-card/50"
+                    className="p-3 border border-white/10 rounded-lg bg-white/[0.02] hover:bg-white/[0.05] transition-colors"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div>
-                        <div className="text-sm font-medium">
+                        <div className="text-sm font-medium text-slate-200">
                           Кількість: {point.count}
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs text-slate-500">
                           {point.lat.toFixed(4)}, {point.lng.toFixed(4)}
                         </div>
                       </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => setEditingPoint(point)}
-                          className="px-2 py-1 text-xs border border-border rounded hover:bg-muted/50"
+                          className="px-2 py-1 text-xs border border-white/10 rounded hover:bg-white/5 text-slate-300 transition-colors"
                         >
                           Редагувати
                         </button>
                         <button
                           onClick={() => handleDeletePoint(point.id)}
-                          className="px-2 py-1 text-xs border border-destructive rounded hover:bg-destructive/10 text-destructive"
+                          className="px-2 py-1 text-xs border border-red-500/50 rounded hover:bg-red-500/10 text-red-400 transition-colors"
                         >
                           Видалити
                         </button>
@@ -276,7 +280,7 @@ const MapMenu = ({ mapRef, onAddModeChange }: MapMenuProps) => {
             </div>
           )}
 
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className="text-sm text-slate-400 leading-relaxed">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
             eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
             ad minim veniam, quis nostrud exercitation ullamco laboris.
@@ -285,33 +289,34 @@ const MapMenu = ({ mapRef, onAddModeChange }: MapMenuProps) => {
           {/* Data Cards */}
           <div className="grid grid-cols-3 gap-3">
             {/* Card 1 */}
-            <div className="p-4 border border-border rounded-lg bg-card/50">
-              <div className="text-xs text-muted-foreground mb-1">
+            <div className="p-4 border border-white/10 rounded-lg bg-white/[0.02] hover:bg-white/[0.05] transition-colors group">
+              <div className="text-xs text-slate-500 mb-1">
                 GDP, total current
               </div>
-              <div className="text-lg font-bold">$4.7T</div>
+              <div className="text-lg font-bold text-white">$4.7T</div>
             </div>
 
             {/* Card 2 */}
-            <div className="p-4 border border-border rounded-lg bg-card/50">
-              <div className="text-xs text-muted-foreground mb-1">
+            <div className="p-4 border border-white/10 rounded-lg bg-white/[0.02] hover:bg-white/[0.05] transition-colors group">
+              <div className="text-xs text-slate-500 mb-1">
                 Volume of import, 2025
               </div>
-              <div className="text-lg font-bold">$2.4T</div>
+              <div className="text-lg font-bold text-white">$2.4T</div>
             </div>
 
             {/* Card 3 - Highlighted */}
-            <div className="p-4 border border-border rounded-lg bg-foreground text-background relative group cursor-pointer hover:scale-105 transition-transform">
-              <div className="text-xs opacity-80 mb-1">
+            <div className="p-4 border border-white/[0.06] rounded-lg bg-white/[0.02] relative group cursor-pointer hover:bg-white/[0.04] hover:border-white/[0.1] transition-all shadow-2xl">
+              <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+              <div className="text-xs text-slate-400 mb-1">
                 Total amount contracted, 2024
               </div>
-              <div className="text-lg font-bold">$2.4T</div>
+              <div className="text-lg font-bold text-white">$2.4T</div>
               <svg
                 width="16"
                 height="16"
                 viewBox="0 0 16 16"
                 fill="none"
-                className="absolute top-4 right-4 opacity-60 group-hover:opacity-100 transition-opacity"
+                className="absolute top-4 right-4 opacity-60 group-hover:opacity-100 transition-opacity text-white"
               >
                 <path
                   d="M6 12L10 8L6 4"
@@ -324,27 +329,27 @@ const MapMenu = ({ mapRef, onAddModeChange }: MapMenuProps) => {
             </div>
 
             {/* Card 4 */}
-            <div className="p-4 border border-border rounded-lg bg-card/50">
-              <div className="text-xs text-muted-foreground mb-1">
+            <div className="p-4 border border-white/10 rounded-lg bg-white/[0.02] hover:bg-white/[0.05] transition-colors group">
+              <div className="text-xs text-slate-500 mb-1">
                 Public contracts volume, 2025
               </div>
-              <div className="text-lg font-bold">$2.4T</div>
+              <div className="text-lg font-bold text-white">$2.4T</div>
             </div>
 
             {/* Card 5 */}
-            <div className="p-4 border border-border rounded-lg bg-card/50">
-              <div className="text-xs text-muted-foreground mb-1">
+            <div className="p-4 border border-white/10 rounded-lg bg-white/[0.02] hover:bg-white/[0.05] transition-colors group">
+              <div className="text-xs text-slate-500 mb-1">
                 International investment, 2025
               </div>
-              <div className="text-lg font-bold">$0.4T</div>
+              <div className="text-lg font-bold text-white">$0.4T</div>
             </div>
 
             {/* Card 6 */}
-            <div className="p-4 border border-border rounded-lg bg-card/50">
-              <div className="text-xs text-muted-foreground mb-1">
+            <div className="p-4 border border-white/10 rounded-lg bg-white/[0.02] hover:bg-white/[0.05] transition-colors group">
+              <div className="text-xs text-slate-500 mb-1">
                 Total active opportunities
               </div>
-              <div className="text-lg font-bold">$2.4K</div>
+              <div className="text-lg font-bold text-white">$2.4K</div>
             </div>
           </div>
         </div>

@@ -3,7 +3,7 @@ import mapboxgl, { Map, Marker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { useThemeStore } from "@/storage/themeStore";
-import { ThemeType, ThemePalette } from "@/config/theme-colors.config";
+import { ThemePalette } from "@/config/theme-colors.config";
 import MapMenu from "./menu/map-menu";
 import {
   subscribeToSphereAgentPoints,
@@ -25,11 +25,8 @@ const MapComponent = () => {
     // Set your Mapbox access token
     mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-    // Get map style based on theme
-    const mapStyle =
-      selectedTheme === ThemeType.DARK
-        ? "mapbox://styles/mapbox/dark-v11"
-        : "mapbox://styles/mapbox/light-v11";
+    // Use dark style with custom background
+    const mapStyle = "mapbox://styles/konstantine811/cmjd0bpnv002v01sacnnfdha7";
 
     // Initialize map
     const map = new mapboxgl.Map({
@@ -40,6 +37,19 @@ const MapComponent = () => {
       pitch: 57.382643073655935,
       attributionControl: false,
       bearing: 0,
+    });
+
+    // Customize map background color after load
+    map.on("load", () => {
+      // Set background color to match the blue theme
+      if (map.getLayer("background")) {
+        map.setPaintProperty("background", "background-color", "#0f172a");
+      }
+      // Also set canvas background
+      const canvas = map.getCanvasContainer();
+      if (canvas) {
+        canvas.style.backgroundColor = "#0f172a";
+      }
     });
 
     mapRef.current = map;
@@ -76,16 +86,27 @@ const MapComponent = () => {
     }
   }, [mapRef]);
 
-  // Update map style when theme changes
+  // Update map background color when theme changes
   useEffect(() => {
     if (!mapRef.current) return;
 
-    const mapStyle =
-      selectedTheme === ThemeType.DARK
-        ? "mapbox://styles/mapbox/dark-v11"
-        : "mapbox://styles/mapbox/light-v11";
+    const map = mapRef.current;
 
-    mapRef.current.setStyle(mapStyle);
+    const updateBackground = () => {
+      if (map.getLayer("background")) {
+        map.setPaintProperty("background", "background-color", "#0f172a");
+      }
+      const canvas = map.getCanvasContainer();
+      if (canvas) {
+        canvas.style.backgroundColor = "#0f172a";
+      }
+    };
+
+    if (map.loaded()) {
+      updateBackground();
+    } else {
+      map.once("load", updateBackground);
+    }
   }, [selectedTheme]);
 
   // Handle add mode - change cursor
@@ -171,7 +192,7 @@ const MapComponent = () => {
   return (
     <div
       ref={mapContainerRef}
-      className="relative w-full"
+      className="relative w-full bg-[#0f172a]"
       style={{ height: `calc(100vh - ${hS}px)`, top: hS }}
     >
       <MapMenu mapRef={mapRef} onAddModeChange={setIsAddMode} />
