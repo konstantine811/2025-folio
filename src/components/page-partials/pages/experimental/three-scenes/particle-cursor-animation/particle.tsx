@@ -1,6 +1,6 @@
 import { shaderMaterial, useTexture } from "@react-three/drei";
 import { extend } from "@react-three/fiber";
-import { Texture, BufferAttribute, AdditiveBlending } from "three";
+import { Texture, BufferAttribute } from "three";
 import { useMemo } from "react";
 import { useParticleStore } from "./storage/particle-storage";
 
@@ -59,7 +59,6 @@ const ParticleMaterial = shaderMaterial(
     uResolution: [window.innerWidth, window.innerHeight],
     uTexture: null as Texture | null,
     uDisplacementTexture: null as Texture | null,
-    blending: AdditiveBlending,
   },
   vertexShader,
   fragmentShader
@@ -92,6 +91,13 @@ const Particle = () => {
       <planeGeometry
         args={[10, 10, widthSegments, heightSegments]}
         onUpdate={(geometry) => {
+          // Remove indices (convert to non-indexed geometry)
+          geometry.setIndex(null);
+
+          // Delete normal attribute
+          geometry.deleteAttribute("normal");
+
+          // Add custom attributes
           if (!geometry.attributes.aIntensity) {
             geometry.setAttribute(
               "aIntensity",

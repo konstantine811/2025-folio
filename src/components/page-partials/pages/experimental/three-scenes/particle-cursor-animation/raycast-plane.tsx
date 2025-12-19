@@ -1,7 +1,7 @@
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
-import { CanvasTexture, Mesh, Raycaster, Vector2 } from "three";
+import { CanvasTexture, DoubleSide, Mesh, Raycaster, Vector2 } from "three";
 import { useParticleStore } from "./storage/particle-storage";
 
 interface Displacement {
@@ -12,6 +12,7 @@ interface Displacement {
   context: CanvasRenderingContext2D | null;
   screenCursor: Vector2;
   canvasCursor: Vector2;
+  canvasCursorPrevious: Vector2;
   glowImagePath: string;
   glowImage: HTMLImageElement | null;
   interactivePlane: {
@@ -36,6 +37,7 @@ const RaycastPlane = () => {
       context: null,
       screenCursor: new Vector2(9999, 9999),
       canvasCursor: new Vector2(9999, 9999),
+      canvasCursorPrevious: new Vector2(9999, 9999),
       glowImagePath: "/images/textures/glow.png",
       interactivePlane: {
         visible: false,
@@ -97,6 +99,12 @@ const RaycastPlane = () => {
         }
       }
     }
+    // Speed alpha
+    const cursorDistance = displacement.canvasCursorPrevious.distanceTo(
+      displacement.canvasCursor
+    );
+    displacement.canvasCursorPrevious.copy(displacement.canvasCursor);
+    const alpha = Math.min(cursorDistance * 0.1, 1);
     if (displacement.context && displacement.glowImage) {
       const glowSize = displacement.canvas.width * 0.25;
 
@@ -109,7 +117,7 @@ const RaycastPlane = () => {
         displacement.canvas.height
       );
       displacement.context.globalCompositeOperation = "lighten";
-      displacement.context.globalAlpha = 1;
+      displacement.context.globalAlpha = alpha;
       displacement.context.drawImage(
         displacement.glowImage,
         displacement.canvasCursor.x - glowSize / 2,
@@ -129,7 +137,7 @@ const RaycastPlane = () => {
       ref={interactivePlaneRef}
     >
       <planeGeometry args={[10, 10]} />
-      <meshBasicMaterial color="red" />
+      <meshBasicMaterial color="red" side={DoubleSide} />
     </mesh>
   );
 };
