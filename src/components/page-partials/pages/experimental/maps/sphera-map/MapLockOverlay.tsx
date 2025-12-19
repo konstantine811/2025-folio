@@ -21,28 +21,25 @@ const MapLockOverlay = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-[#020408]/5 z-50 flex items-center justify-center cursor-pointer"
+            className="absolute inset-0 bg-[#020408]/55 z-50 flex items-center justify-center cursor-pointer"
             onClick={onActivate}
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-white/[0.02] border border-white/10 rounded-xl p-8 max-w-md text-center backdrop-blur-md"
+              className="bg-white/[0.02] border border-white/10 rounded-xl p-3 max-w-md text-center backdrop-blur-md"
             >
               <div className="mb-4 flex justify-center">
-                <div className="w-16 h-16 rounded-full bg-blue-500/20 border border-blue-500/50 flex items-center justify-center">
-                  <MapPin className="w-8 h-8 text-blue-400" />
+                <div className="w-8 h-8 rounded-full bg-blue-500/20 border border-blue-500/50 flex items-center justify-center">
+                  <MapPin className="w-5 h-5 text-blue-400" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">
+              <h3 className="text-xl font-bold text-white mb-1">
                 Мапа заблокована
               </h3>
-              <p className="text-slate-400 mb-4">
+              <p className="text-slate-400 mb-2">
                 Натисніть, щоб активувати взаємодію з мапою
-              </p>
-              <p className="text-xs text-slate-500">
-                Scroll щоб зумити, перетягуйте щоб рухати
               </p>
             </motion.div>
           </motion.div>
