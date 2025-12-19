@@ -1,16 +1,25 @@
 import { shaderMaterial, useTexture } from "@react-three/drei";
 import { extend } from "@react-three/fiber";
 import { Texture } from "three";
+import { useParticleStore } from "./storage/particle-storage";
 
 const vertexShader = /* glsl */ `
     uniform vec2 uResolution;
     uniform sampler2D uTexture;
+    uniform sampler2D uDisplacementTexture;
     varying vec3 vColor;
 
     void main()
     {
+        // Displacement
+        vec3 newPosition = position;
+        float displacementIntensity = texture2D(uDisplacementTexture, uv).r;
+        vec3 displacement = vec3(0.0, 0.0, 1.0);
+        displacement *= displacementIntensity;
+        displacement *= 3.0;
+        newPosition += displacement;
         // Final position
-        vec4 modelPosition = modelMatrix * vec4(position, 1.0);
+        vec4 modelPosition = modelMatrix * vec4(newPosition, 1.0);
         vec4 viewPosition = viewMatrix * modelPosition;
         vec4 projectedPosition = projectionMatrix * viewPosition;
         gl_Position = projectedPosition;
@@ -43,6 +52,7 @@ const ParticleMaterial = shaderMaterial(
   {
     uResolution: [window.innerWidth, window.innerHeight],
     uTexture: null as Texture | null,
+    uDisplacementTexture: null as Texture | null,
   },
   vertexShader,
   fragmentShader
@@ -52,10 +62,15 @@ extend({ ParticleMaterial });
 
 const Particle = () => {
   const texture = useTexture("/images/textures/picture-2.png");
+  const displacementTexture = useParticleStore((s) => s.displacementTexture);
   return (
     <points>
       <planeGeometry args={[10, 10, 128, 128]} />
-      <particleMaterial wireframe uTexture={texture} />
+      <particleMaterial
+        wireframe
+        uTexture={texture}
+        uDisplacementTexture={displacementTexture}
+      />
     </points>
   );
 };

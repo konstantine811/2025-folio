@@ -1,7 +1,8 @@
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
-import { Mesh, Raycaster, Vector2 } from "three";
+import { CanvasTexture, Mesh, Raycaster, Vector2 } from "three";
+import { useParticleStore } from "./storage/particle-storage";
 
 interface Displacement {
   canvas: {
@@ -21,6 +22,10 @@ interface Displacement {
 const RaycastPlane = () => {
   const raycast = useMemo(() => new Raycaster(), []);
   const interactivePlaneRef = useRef<Mesh>(null);
+  const setDisplacementTexture = useParticleStore(
+    (s) => s.setDisplacementTexture
+  );
+  const displacementTexture = useParticleStore((s) => s.displacementTexture);
   const hs = useHeaderSizeStore((s) => s.size);
   const displacement = useMemo(() => {
     return {
@@ -55,6 +60,7 @@ const RaycastPlane = () => {
     canvas.style.zIndex = "10";
     document.body.appendChild(canvas);
     const ctx = canvas.getContext("2d");
+    setDisplacementTexture(new CanvasTexture(canvas));
     displacement.context = ctx;
     if (!ctx) return;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -73,7 +79,7 @@ const RaycastPlane = () => {
     return () => {
       document.body.removeChild(canvas);
     };
-  }, [displacement]);
+  }, [displacement, hs, setDisplacementTexture]);
 
   useFrame(({ camera }) => {
     raycast.setFromCamera(displacement.screenCursor, camera);
@@ -95,7 +101,7 @@ const RaycastPlane = () => {
       const glowSize = displacement.canvas.width * 0.25;
 
       displacement.context.globalCompositeOperation = "source-over";
-      displacement.context.globalAlpha = 0.1;
+      displacement.context.globalAlpha = 0.02;
       displacement.context.fillRect(
         0,
         0,
@@ -111,6 +117,9 @@ const RaycastPlane = () => {
         glowSize,
         glowSize
       );
+    }
+    if (displacementTexture) {
+      displacementTexture.needsUpdate = true;
     }
   });
   return (
