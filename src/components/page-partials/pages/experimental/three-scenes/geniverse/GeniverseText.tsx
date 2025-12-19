@@ -16,7 +16,7 @@ const GeniverseText = ({ show }: GeniverseTextProps) => {
       transition={{ duration: 0.9 }}
     >
       <motion.div
-        className="text-white text-6xl md:text-8xl font-bold tracking-tight"
+        className="text-foreground text-6xl md:text-8xl font-bold tracking-tight"
         style={{
           fontFamily: "system-ui, -apple-system, sans-serif",
           textTransform: "lowercase",
