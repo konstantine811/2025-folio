@@ -1,6 +1,7 @@
 import { shaderMaterial, useTexture } from "@react-three/drei";
 import { extend } from "@react-three/fiber";
-import { Texture } from "three";
+import { Texture, BufferAttribute, AdditiveBlending } from "three";
+import { useMemo } from "react";
 import { useParticleStore } from "./storage/particle-storage";
 
 const vertexShader = /* glsl */ `
@@ -8,15 +9,20 @@ const vertexShader = /* glsl */ `
     uniform sampler2D uTexture;
     uniform sampler2D uDisplacementTexture;
     varying vec3 vColor;
+    attribute float aIntensity;
+    attribute float aAngle;
 
     void main()
     {
         // Displacement
         vec3 newPosition = position;
         float displacementIntensity = texture2D(uDisplacementTexture, uv).r;
-        vec3 displacement = vec3(0.0, 0.0, 1.0);
+        displacementIntensity = smoothstep(0.1, 1.0, displacementIntensity);
+        vec3 displacement = vec3(cos(aAngle) * 0.2, sin(aAngle) * 0.2, 1.0);
+        displacement = normalize(displacement);
         displacement *= displacementIntensity;
         displacement *= 3.0;
+        displacement *= aIntensity;
         newPosition += displacement;
         // Final position
         vec4 modelPosition = modelMatrix * vec4(newPosition, 1.0);
@@ -53,6 +59,7 @@ const ParticleMaterial = shaderMaterial(
     uResolution: [window.innerWidth, window.innerHeight],
     uTexture: null as Texture | null,
     uDisplacementTexture: null as Texture | null,
+    blending: AdditiveBlending,
   },
   vertexShader,
   fragmentShader
@@ -63,9 +70,42 @@ extend({ ParticleMaterial });
 const Particle = () => {
   const texture = useTexture("/images/textures/picture-2.png");
   const displacementTexture = useParticleStore((s) => s.displacementTexture);
+
+  // Calculate vertex count: (widthSegments + 1) * (heightSegments + 1)
+  const widthSegments = 1128;
+  const heightSegments = 1128;
+  const vertexCount = (widthSegments + 1) * (heightSegments + 1);
+
+  // Create intensity array for the geometry
+  const { intensities: intensitiesArray, angles: anglesArray } = useMemo(() => {
+    const intensities = new Float32Array(vertexCount);
+    const angles = new Float32Array(vertexCount);
+    for (let i = 0; i < vertexCount; i++) {
+      intensities[i] = Math.random();
+      angles[i] = Math.random() * Math.PI * 2;
+    }
+    return { intensities, angles };
+  }, [vertexCount]);
+
   return (
     <points>
-      <planeGeometry args={[10, 10, 128, 128]} />
+      <planeGeometry
+        args={[10, 10, widthSegments, heightSegments]}
+        onUpdate={(geometry) => {
+          if (!geometry.attributes.aIntensity) {
+            geometry.setAttribute(
+              "aIntensity",
+              new BufferAttribute(intensitiesArray, 1)
+            );
+          }
+          if (!geometry.attributes.aAngle) {
+            geometry.setAttribute(
+              "aAngle",
+              new BufferAttribute(anglesArray, 1)
+            );
+          }
+        }}
+      />
       <particleMaterial
         wireframe
         uTexture={texture}
