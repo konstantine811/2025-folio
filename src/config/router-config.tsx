@@ -242,7 +242,7 @@ const ThreeParticleCursorAnimation = lazyPage(
 const SphereMatTest = lazyPage(
   () =>
     import(
-      "../components/page-partials/pages/experimental/three-scenes/geniverse/init"
+      "../components/page-partials/pages/experimental/maps/sphera-map/sphere-mat-test"
     )
 );
 

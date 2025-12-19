@@ -1,16 +1,19 @@
+import Main from "./html-content/main";
 import MapComponent from "./map";
 import MapOverlay from "./map-overlay";
 
 const SphereMatTest = () => {
   return (
-    <>
-      <div className="relative bg-background">
-        <div className="flex">
-          <MapComponent />
+    <Main>
+      <div className="relative w-full">
+        <div className="relative w-full h-full">
+          <div className="flex">
+            <MapComponent />
+          </div>
+          <MapOverlay />
         </div>
-        <MapOverlay />
       </div>
-    </>
+    </Main>
   );
 };
 
