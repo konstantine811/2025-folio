@@ -123,7 +123,7 @@ const Experience = ({ animationProgress }: ExperienceProps) => {
         rotationZ={0}
         alignX={1}
         alignY={-1}
-        hingeRotation={currentAngle}
+        hingeRotation={-currentAngle}
       />
 
       {/* Hypotenuse Square (5x5) - Side 'c' */}
