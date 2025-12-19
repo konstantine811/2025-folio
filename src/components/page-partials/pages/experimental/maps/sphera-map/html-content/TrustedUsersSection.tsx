@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import Phone3D from "./Phone3D";
 
 const TrustedUsersSection = () => {
   return (
@@ -26,48 +27,58 @@ const TrustedUsersSection = () => {
           </p>
         </motion.div>
 
-        {/* Right Content - Trusted Users Badge */}
+        {/* Right Content - Phone with UI Elements */}
         <motion.div
           className="flex flex-col items-end lg:items-start"
           initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <div className="relative inline-flex items-center gap-4 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg px-6 py-4 shadow-lg">
-            {/* Profile Pictures */}
-            <div className="flex -space-x-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 border-2 border-slate-800" />
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-red-500 border-2 border-slate-800" />
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-teal-500 border-2 border-slate-800" />
+          {/* Main Container with Phone */}
+          <div className="relative w-full max-w-md">
+            {/* 3D Phone Model Container */}
+            <div className="absolute w-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[900px] rounded-[2rem]">
+              <Phone3D />
             </div>
 
-            {/* Text */}
-            <div className="flex flex-col">
-              <span className="text-2xl font-bold text-white">19,580k+</span>
-              <span className="text-sm text-slate-400">Trusted Users</span>
+            {/* UI Elements around Phone */}
+            {/* Top-Left Badge */}
+            <div className="absolute top-8 left-8 w-12 h-12 rounded-full bg-blue-500/80 backdrop-blur-sm border border-blue-400/50 shadow-lg flex items-center justify-center z-10">
+              <span className="text-white font-bold text-lg">1</span>
             </div>
-          </div>
 
-          {/* Smartphone Illustration Placeholder */}
-          <div className="mt-8 w-64 h-96 bg-slate-700/30 rounded-[2rem] border border-slate-600/50 shadow-2xl relative overflow-hidden">
-            <div className="absolute inset-4 bg-slate-800 rounded-[1.5rem] flex items-center justify-center">
-              <div className="text-center text-slate-500 text-sm">
-                <div className="w-16 h-16 mx-auto mb-4 bg-slate-700 rounded-lg flex items-center justify-center">
-                  <svg
-                    className="w-8 h-8 text-slate-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    />
-                  </svg>
+            {/* Bottom-Right Badge */}
+            <div className="absolute bottom-8 right-8 w-12 h-12 rounded-full bg-blue-500/80 backdrop-blur-sm border border-blue-400/50 shadow-lg flex items-center justify-center z-10">
+              <span className="text-white font-bold text-lg">2</span>
+            </div>
+
+            {/* Left Text - Total Income */}
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+              <p className="text-white text-sm mb-1">Total income</p>
+              <p className="text-blue-400 text-2xl font-bold">$ 5,200</p>
+            </div>
+
+            {/* Right Text - Apps Connected */}
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-right">
+              <p className="text-white text-sm mb-1">Apps Connected</p>
+              <p className="text-blue-400 text-2xl font-bold">12</p>
+            </div>
+
+            {/* Trusted Users Badge - Bottom Left */}
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
+              <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg px-4 py-3 shadow-lg">
+                {/* Profile Pictures */}
+                <div className="flex -space-x-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 border-2 border-white/20" />
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-red-500 border-2 border-white/20" />
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-teal-500 border-2 border-white/20" />
                 </div>
-                <p>Dashboard UI</p>
+
+                {/* Text */}
+                <div className="flex flex-col">
+                  <span className="text-lg font-bold text-white">19,580k+</span>
+                  <span className="text-xs text-slate-300">Trusted Users</span>
+                </div>
               </div>
             </div>
           </div>

@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { ArrowRight } from "lucide-react";
 
 const AppsSection = () => {
   const [activeTab, setActiveTab] = useState("PUBLIC INVESTMENT");

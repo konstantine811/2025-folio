@@ -60,7 +60,9 @@ const Main = ({ children }: { children: React.ReactNode }) => {
       <AppsSection />
 
       {/* Trusted Users Section */}
-      <TrustedUsersSection />
+      <div className="bg-white pt-[200px] pb-[400px]">
+        <TrustedUsersSection />
+      </div>
     </div>
   );
 };
