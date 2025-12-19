@@ -1,22 +1,10 @@
 import { motion } from "framer-motion";
-import {
-  Menu,
-  Globe,
-  Layers,
-  BarChart3,
-  Globe2,
-  CreditCard,
-  SmartphoneNfc,
-  Wallet,
-  Bitcoin,
-  Landmark,
-} from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Layers, BarChart3, Globe2 } from "lucide-react";
 import NetworkVisualization from "./NetworkVisualization";
 
 const Main = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="bg-[#020408] text-slate-300 font-['Inter'] antialiased w-full">
+    <div className="bg-[#020408] text-slate-300 font-['Inter'] antialiased w-full overflow-hidden">
       <style>{`
         @keyframes flow {
           0% {
@@ -43,8 +31,6 @@ const Main = ({ children }: { children: React.ReactNode }) => {
           to { transform: rotate(360deg); }
         }
       `}</style>
-      {/* Navbar */}
-      <Navbar />
 
       {/* Main Content */}
       <main className="relative w-full flex flex-col items-center pt-32 pb-24 isolate">
@@ -68,29 +54,6 @@ const Main = ({ children }: { children: React.ReactNode }) => {
         </div>
       </main>
     </div>
-  );
-};
-
-const Navbar = () => {
-  return (
-    <motion.nav
-      className="fixed top-0 left-0 w-full z-50 px-6 py-8 flex justify-between items-center mix-blend-difference"
-      initial={{ opacity: 0, filter: "blur(12px)", y: -15 }}
-      animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
-      transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <button className="text-white/80 hover:text-white transition-colors">
-        <Menu className="w-6 h-6" strokeWidth={1.5} />
-      </button>
-      <div className="flex gap-6 items-center">
-        <span className="text-xs font-medium tracking-widest uppercase text-white/50">
-          System V.2.0
-        </span>
-        <button className="text-white/80 hover:text-white transition-colors">
-          <Globe className="w-5 h-5" strokeWidth={1.5} />
-        </button>
-      </div>
-    </motion.nav>
   );
 };
 
@@ -127,7 +90,7 @@ const TypographySection = () => {
 const Sphere = () => {
   return (
     <motion.div
-      className="absolute top-[60px] left-1/2 w-[250vw] h-[250vw] md:w-[140vw] md:h-[140vw] rounded-full sphere-surface z-0"
+      className="absolute top-[60px] w-[250vw] h-[250vw] md:w-[140vw] md:h-[140vw] rounded-full sphere-surface z-0"
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{
