@@ -6,8 +6,9 @@ import {
   Vector2,
   Float32BufferAttribute,
   BufferGeometry,
+  SphereGeometry,
 } from "three";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const sizes = {
   width: window.innerWidth,
@@ -62,7 +63,11 @@ extend({ ShaderCustomMaterial });
 
 const ParticleMorphing = () => {
   const { scene } = useGLTF("/3d-models/models.glb");
+  const geometryRef = useRef<BufferGeometry | null>(null);
   useEffect(() => {
+    if (!geometryRef.current) {
+      geometryRef.current = new SphereGeometry(30, 64, 64);
+    }
     if (scene) {
       const particles = {
         maxCount: 0,
@@ -104,13 +109,7 @@ const ParticleMorphing = () => {
   }, [scene]);
   return (
     <>
-      <points>
-        <sphereGeometry
-          args={[30]}
-          onUpdate={(geometry) => {
-            geometry.setIndex(null);
-          }}
-        />
+      <points geometry={geometryRef.current}>
         <shaderCustomMaterial />
       </points>
     </>
