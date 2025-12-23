@@ -12,6 +12,11 @@ import {
 import { useEffect, useMemo, useRef } from "react";
 import { button, useControls } from "leva";
 import simplexNoise3dShader from "./shaders/simplexNoise3d.glsl?raw";
+import {
+  animate,
+  AnimationPlaybackControls,
+  useMotionValue,
+} from "framer-motion";
 
 const sizes = {
   width: window.innerWidth,
@@ -87,6 +92,11 @@ const ParticleMorphing = () => {
   const geometryRef = useRef<BufferGeometry>(new SphereGeometry(30, 64, 64));
   const shaderCustomMaterialRef = useRef<ShaderMaterial>(null);
   const particleIndex = useRef(0);
+  // 1) MotionValue для прогресу
+  const uProgressMV = useMotionValue(0);
+
+  // 2) Контролер анімації (щоб зупиняти попередню)
+  const animRef = useRef<AnimationPlaybackControls | null>(null);
   useControls({
     particleMorphFirst: button(() => {
       onMorphing(particleIndex.current, 0);
@@ -113,16 +123,36 @@ const ParticleMorphing = () => {
     };
   }, []);
 
+  const startProgressAnim = () => {
+    animRef.current?.stop();
+    uProgressMV.set(0);
+
+    animRef.current = animate(uProgressMV, 1, {
+      duration: 5,
+      ease: [0.22, 1, 0.36, 1], // приємний ease-out (можеш змінити)
+    });
+  };
+
   const onMorphing = (prevIndex: number, nextIndex: number) => {
     geometryRef.current.setAttribute(
       "position",
       particles.positions[prevIndex]
-    );
+    ); // старт
     geometryRef.current.setAttribute(
       "aPositionTarget",
       particles.positions[nextIndex]
     );
+    startProgressAnim();
   };
+
+  useEffect(() => {
+    return uProgressMV.on("change", (v) => {
+      const mat = shaderCustomMaterialRef.current;
+      if (!mat) return;
+      mat.uniforms.uProgress.value = v;
+      console.log(v);
+    });
+  }, [uProgressMV]);
 
   useEffect(() => {
     geometryRef.current.setIndex(null);
