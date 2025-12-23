@@ -1,4 +1,5 @@
 import AuthGuard from "@/components/auth/auth-guard";
+import NodeWriterPage from "@/components/page-partials/pages/node-writer/NodeWriter";
 import { AppRoute } from "@/types/route";
 import { ChartSpline, LayoutDashboard } from "lucide-react";
 import { lazy, type ComponentType, type LazyExoticComponent } from "react";
@@ -269,6 +270,7 @@ export enum RoutPath {
   EXPERIMENTAL = "/labs",
   BLOG = "/blog",
   ARTICLE = "/blog/:id",
+  NODE_WRITER = "/node-writer",
   TASK_MANAGER = "/task-manager",
   TASK_MANAGER_TEMPLATE = "template",
   TASK_MANAGER_DAILY = "daily/:id",
@@ -686,6 +688,19 @@ export const router: AppRoute[] = [
     id: "article",
     classes: {
       linkCircle: "bg-yellow-500",
+    },
+  },
+  {
+    path: RoutPath.NODE_WRITER,
+    Component: () => (
+      <AuthGuard>
+        <NodeWriterPage />
+      </AuthGuard>
+    ),
+    isNav: true,
+    id: "node-writer",
+    classes: {
+      linkCircle: "bg-red-500",
     },
   },
   {

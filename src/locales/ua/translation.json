@@ -115,6 +115,7 @@
   },
   "pages": {
     "home": "Головна",
+    "node-writer": "Node Writer",
     "blog": "Блог",
     "task-manager": "Менеджер завдань",
     "labs": "Майстерня",

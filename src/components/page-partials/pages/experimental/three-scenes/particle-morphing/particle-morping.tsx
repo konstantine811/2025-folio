@@ -47,7 +47,7 @@ const fragmentShader = /* glsl */ `
 
 const ShaderCustomMaterial = shaderMaterial(
   {
-    uSize: 0.4,
+    uSize: 0.1,
     uResolution: new Vector2(
       sizes.width * sizes.pixelRatio,
       sizes.height * sizes.pixelRatio
@@ -63,11 +63,9 @@ extend({ ShaderCustomMaterial });
 
 const ParticleMorphing = () => {
   const { scene } = useGLTF("/3d-models/models.glb");
-  const geometryRef = useRef<BufferGeometry | null>(null);
+  const geometryRef = useRef<BufferGeometry>(new SphereGeometry(30, 64, 64));
   useEffect(() => {
-    if (!geometryRef.current) {
-      geometryRef.current = new SphereGeometry(30, 64, 64);
-    }
+    geometryRef.current.setIndex(null);
     if (scene) {
       const particles = {
         maxCount: 0,
@@ -95,15 +93,16 @@ const ParticleMorphing = () => {
             newArray[i3 + 1] = originalArray[i3 + 1];
             newArray[i3 + 2] = originalArray[i3 + 2];
           } else {
-            newArray[i3] = 0;
-            newArray[i3 + 1] = 0;
-            newArray[i3 + 2] = 0;
+            const randomIndex = Math.floor(position.count * Math.random()) * 3;
+            newArray[i3 + 0] = originalArray[randomIndex + 0];
+            newArray[i3 + 1] = originalArray[randomIndex + 1];
+            newArray[i3 + 2] = originalArray[randomIndex + 2];
           }
         }
         particles.positions.push(new Float32BufferAttribute(newArray, 3));
       });
       particles.geometry.setAttribute("position", particles.positions[0]);
-      console.log("positions", positions);
+      geometryRef.current.setAttribute("position", particles.positions[1]);
       console.log("particles", particles);
     }
   }, [scene]);

@@ -116,6 +116,7 @@
   "pages": {
     "home": "Home",
     "blog": "Blog",
+    "node-writer": "Node Writer",
     "task-manager": "Task Manager",
     "labs": "Labs",
     "task": {
