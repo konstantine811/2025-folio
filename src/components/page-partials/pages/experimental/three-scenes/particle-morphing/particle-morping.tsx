@@ -1,5 +1,5 @@
 import { shaderMaterial, useGLTF } from "@react-three/drei";
-import { extend } from "@react-three/fiber";
+import { extend, useFrame } from "@react-three/fiber";
 import {
   AdditiveBlending,
   Mesh,
@@ -8,6 +8,7 @@ import {
   BufferGeometry,
   SphereGeometry,
   ShaderMaterial,
+  Color,
 } from "three";
 import { useEffect, useMemo, useRef } from "react";
 import { button, useControls } from "leva";
@@ -31,11 +32,20 @@ const vertexShader = /* glsl */ `
     uniform float uProgress;
     attribute vec3 aPositionTarget;
     varying vec3 vColor;
+    attribute float aSize;
+    uniform vec3 uColorA;
+    uniform vec3 uColorB;
+
+    uniform float uTime;
+    uniform float uJitterAmp;
+    uniform float uJitterFreq;
+    attribute vec3 aRandom;
     void main()
     {
+       
         // Mixed position
-        float noiseOrigin = simplexNoise3d(position * 0.2);
-        float noiseTarget = simplexNoise3d(aPositionTarget * 0.2);
+        float noiseOrigin = snoise(position * 0.2);
+        float noiseTarget = snoise(aPositionTarget * 0.2);
         float noise = mix(noiseOrigin, noiseTarget, uProgress);
         noise = smoothstep(-1.0, 1.0, noiseOrigin);
 
@@ -44,8 +54,19 @@ const vertexShader = /* glsl */ `
         float end = delay + duration;
         float progress = smoothstep(delay, end, uProgress);
         // Varyings
-        vColor = vec3(noise);
+        vColor = mix(uColorA, uColorB, noise);
         vec3 mixedPosition = mix(position, aPositionTarget, progress);
+
+        float t = uTime * uJitterFreq;
+
+        // м’яке тремтіння через шум (стабільніше ніж "рандомні" стрибки)
+        float n = snoise(mixedPosition * 10.1 + vec3(t * 0.01));
+        float wobble = sin(t + n * 6.2831); // 2π
+
+        vec3 jitter = aRandom * uJitterAmp * wobble;
+
+
+        mixedPosition += jitter ;
         // Final position
         vec4 modelPosition = modelMatrix * vec4(mixedPosition, 1.0);
         vec4 viewPosition = viewMatrix * modelPosition;
@@ -53,7 +74,7 @@ const vertexShader = /* glsl */ `
         gl_Position = projectedPosition;
 
         // Point size
-        gl_PointSize = uSize * uResolution.y;
+        gl_PointSize = aSize *uSize * uResolution.y;
         gl_PointSize *= (1.0 / - viewPosition.z);
     }`;
 
@@ -72,7 +93,7 @@ const fragmentShader = /* glsl */ `
 
 const ShaderCustomMaterial = shaderMaterial(
   {
-    uSize: 0.1,
+    uSize: 0.8,
     uResolution: new Vector2(
       sizes.width * sizes.pixelRatio,
       sizes.height * sizes.pixelRatio
@@ -80,6 +101,12 @@ const ShaderCustomMaterial = shaderMaterial(
     blending: AdditiveBlending,
     depthWrite: false,
     uProgress: 0,
+
+    uTime: 0,
+    uJitterAmp: 10.05, // амплітуда дрібного тремтіння (підбирай)
+    uJitterFreq: 100.0, // частота (підбирай)
+    uColorA: new Color("#00c3ff"),
+    uColorB: new Color("#ff8a00"),
   },
   vertexShader,
   fragmentShader
@@ -89,32 +116,43 @@ extend({ ShaderCustomMaterial });
 
 const ParticleMorphing = () => {
   const { scene } = useGLTF("/3d-models/models.glb");
-  const geometryRef = useRef<BufferGeometry>(new SphereGeometry(30, 64, 64));
+  const geometryRef = useRef<BufferGeometry>(new SphereGeometry(200, 64, 64));
   const shaderCustomMaterialRef = useRef<ShaderMaterial>(null);
   const particleIndex = useRef(0);
   // 1) MotionValue для прогресу
   const uProgressMV = useMotionValue(0);
+  const uJitterAmpMV = useMotionValue(10.05);
+  const uJitterFreqMV = useMotionValue(10.0);
 
   // 2) Контролер анімації (щоб зупиняти попередню)
   const animRef = useRef<AnimationPlaybackControls | null>(null);
-  useControls({
-    particleMorphFirst: button(() => {
+  const { colorA, colorB } = useControls({
+    Torus: button(() => {
       onMorphing(particleIndex.current, 0);
       particleIndex.current = 0;
     }),
-    particleMorphSecond: button(() => {
+    Monkey: button(() => {
       onMorphing(particleIndex.current, 1);
       particleIndex.current = 1;
     }),
-    particleMorphThird: button(() => {
+    Sphere: button(() => {
       onMorphing(particleIndex.current, 2);
       particleIndex.current = 2;
     }),
-    particleMorphFourth: button(() => {
+    ThreeJS: button(() => {
       onMorphing(particleIndex.current, 3);
       particleIndex.current = 3;
     }),
+    colorA: "#00c3ff",
+    colorB: "#ff8a00",
   });
+
+  useEffect(() => {
+    const mat = shaderCustomMaterialRef.current;
+    if (!mat) return;
+    mat.uniforms.uColorA.value = new Color(colorA);
+    mat.uniforms.uColorB.value = new Color(colorB);
+  }, [colorA, colorB]);
   const particles = useMemo(() => {
     return {
       maxCount: 0,
@@ -133,6 +171,27 @@ const ParticleMorphing = () => {
     });
   };
 
+  useEffect(() => {
+    animate(uJitterAmpMV, 0.07, {
+      duration: 5,
+      ease: [0.22, 1, 0.36, 1], // приємний ease-out (можеш змінити)
+    });
+    animate(uJitterFreqMV, 4.3, {
+      duration: 7,
+      ease: [0.22, 1, 0.36, 1], // приємний ease-out (можеш змінити)
+    });
+    uJitterAmpMV.on("change", (v) => {
+      const mat = shaderCustomMaterialRef.current;
+      if (!mat) return;
+      mat.uniforms.uJitterAmp.value = v;
+    });
+    uJitterFreqMV.on("change", (v) => {
+      const mat = shaderCustomMaterialRef.current;
+      if (!mat) return;
+      mat.uniforms.uJitterFreq.value = v;
+    });
+  }, [uJitterAmpMV, uJitterFreqMV]);
+
   const onMorphing = (prevIndex: number, nextIndex: number) => {
     geometryRef.current.setAttribute(
       "position",
@@ -146,11 +205,10 @@ const ParticleMorphing = () => {
   };
 
   useEffect(() => {
-    return uProgressMV.on("change", (v) => {
+    uProgressMV.on("change", (v) => {
       const mat = shaderCustomMaterialRef.current;
       if (!mat) return;
       mat.uniforms.uProgress.value = v;
-      console.log(v);
     });
   }, [uProgressMV]);
 
@@ -186,15 +244,42 @@ const ParticleMorphing = () => {
         }
         particles.positions.push(new Float32BufferAttribute(newArray, 3));
       });
+
+      const randomArray = new Float32Array(particles.maxCount * 3);
+      const sizesArray = new Float32Array(particles.maxCount);
+      for (let i = 0; i < particles.maxCount; i++) {
+        const i3 = i * 3;
+        // випадковий напрямок (можна нормалізувати, але не обов'язково)
+        randomArray[i3 + 0] = Math.random() * 2 - 1;
+        randomArray[i3 + 1] = Math.random() * 2 - 1;
+        randomArray[i3 + 2] = Math.random() * 2 - 1;
+        sizesArray[i] = Math.random();
+      }
+
+      geometryRef.current.setAttribute(
+        "aRandom",
+        new Float32BufferAttribute(randomArray, 3)
+      );
+      geometryRef.current.setAttribute(
+        "aSize",
+        new Float32BufferAttribute(sizesArray, 1)
+      );
+
       geometryRef.current.setAttribute(
         "position",
         particles.positions[particleIndex.current]
       );
     }
   }, [scene, particles]);
+
+  useFrame((state) => {
+    const mat = shaderCustomMaterialRef.current;
+    if (!mat) return;
+    mat.uniforms.uTime.value = state.clock.elapsedTime;
+  });
   return (
     <>
-      <points geometry={geometryRef.current}>
+      <points frustumCulled={false} geometry={geometryRef.current} scale={10}>
         <shaderCustomMaterial ref={shaderCustomMaterialRef} />
       </points>
     </>
