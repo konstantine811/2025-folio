@@ -45,11 +45,13 @@ function App() {
       )}
       <div className="min-h-screen w-full flex flex-col justify-between">
         <Header />
-        <Suspense fallback={<Preloader />}>
-          <RouteWrapper>
-            <Routes>{renderRoutes(router)}</Routes>
-          </RouteWrapper>
-        </Suspense>
+        <div className="grow">
+          <Suspense fallback={<Preloader />}>
+            <RouteWrapper>
+              <Routes>{renderRoutes(router)}</Routes>
+            </RouteWrapper>
+          </Suspense>
+        </div>
         {/* <Map /> */}
         <Footer />
       </div>
