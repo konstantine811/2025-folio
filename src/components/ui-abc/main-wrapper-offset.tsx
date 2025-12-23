@@ -14,8 +14,8 @@ const MainWrapperOffset = forwardRef<HTMLDivElement, Props>(
     const fs = useHeaderSizeStore((s) => s.footerSize);
     const hs = useHeaderSizeStore((s) => s.size);
     const height = isFullHeight
-      ? `calc(100vh - ${fs}px)`
-      : `calc(100vh - ${hs + fs}px)`;
+      ? `calc(100vh - ${hs + fs}px)`
+      : `calc(100vh - ${fs}px)`;
     return (
       <div
         className={clsx(className, "relative")}
