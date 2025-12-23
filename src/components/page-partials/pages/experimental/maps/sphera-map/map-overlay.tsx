@@ -11,7 +11,7 @@ const MapOverlay = () => {
       >
         <div className="col-span-1 row-span-1 pt-5">
           <div className="relative">
-            <RevealButton />
+          <RevealButton />
           </div>
         </div>
       </div>

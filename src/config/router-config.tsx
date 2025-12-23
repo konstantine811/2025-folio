@@ -226,13 +226,6 @@ const ThreePhysicsSimulation = lazyPage(
     )
 );
 
-const ThreeParticleEarth = lazyPage(
-  () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/particle-earth/init"
-    )
-);
-
 const ThreeParticleCursorAnimation = lazyPage(
   () =>
     import(
@@ -303,7 +296,6 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_HOME_3D = "three-home-3d",
   EXPERIMENTAL_THREE_AI = "three-ai",
   EXPERIMENTAL_THREE_PHYSICS_SIMULATION = "three-physics-simulation",
-  EXPERIMENTAL_THREE_PARTICLE_EARTH = "three-particle-earth",
   EXPERIMENTAL_THREE_PARTICLE_CURSOR_ANIMATION = "three-particle-cursor-animation",
   EXPERIMENTAL_MAPS_SPHERE_MAT_TEST = "sphere-mat-test",
   EXPERIMENTAL_THREE_GENIVERSE = "three-geniverse",
@@ -603,15 +595,6 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     description: "A physics simulation scene created with Three.js.",
     imageUrl: imagePath("three-physics-simulation"),
     type: ExperimentalTypes.physics,
-  },
-  {
-    path: RoutPath.EXPERIMENTAL_THREE_PARTICLE_EARTH,
-    Component: ThreeParticleEarth,
-    id: "experimental-three-particle-earth",
-    icon: "🌍",
-    description: "A particle earth scene created with Three.js.",
-    imageUrl: imagePath("earth-particle"),
-    type: ExperimentalTypes.particle,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_PARTICLE_CURSOR_ANIMATION,

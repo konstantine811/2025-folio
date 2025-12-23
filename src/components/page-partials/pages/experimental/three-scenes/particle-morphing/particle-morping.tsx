@@ -9,16 +9,61 @@ import {
   SphereGeometry,
   ShaderMaterial,
 } from "three";
-import { useEffect, useRef } from "react";
-import { useControls } from "leva";
-import vertexShader from "./shaders/vertex.glsl?raw";
-import fragmentShader from "./shaders/fragment.glsl?raw";
+import { useEffect, useMemo, useRef } from "react";
+import { button, useControls } from "leva";
+import simplexNoise3dShader from "./shaders/simplexNoise3d.glsl?raw";
 
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
   pixelRatio: Math.min(window.devicePixelRatio, 2),
 };
+
+const vertexShader = /* glsl */ `
+    ${simplexNoise3dShader}
+    uniform vec2 uResolution;
+    uniform float uSize;
+    uniform float uProgress;
+    attribute vec3 aPositionTarget;
+    varying vec3 vColor;
+    void main()
+    {
+        // Mixed position
+        float noiseOrigin = simplexNoise3d(position * 0.2);
+        float noiseTarget = simplexNoise3d(aPositionTarget * 0.2);
+        float noise = mix(noiseOrigin, noiseTarget, uProgress);
+        noise = smoothstep(-1.0, 1.0, noiseOrigin);
+
+        float duration = 0.4;
+        float delay = (1.0 - duration) * noise;
+        float end = delay + duration;
+        float progress = smoothstep(delay, end, uProgress);
+        // Varyings
+        vColor = vec3(noise);
+        vec3 mixedPosition = mix(position, aPositionTarget, progress);
+        // Final position
+        vec4 modelPosition = modelMatrix * vec4(mixedPosition, 1.0);
+        vec4 viewPosition = viewMatrix * modelPosition;
+        vec4 projectedPosition = projectionMatrix * viewPosition;
+        gl_Position = projectedPosition;
+
+        // Point size
+        gl_PointSize = uSize * uResolution.y;
+        gl_PointSize *= (1.0 / - viewPosition.z);
+    }`;
+
+const fragmentShader = /* glsl */ `
+    varying vec3 vColor;
+    void main()
+        {
+            vec2 uv = gl_PointCoord;
+            float distanceToCenter = length(uv - 0.5);
+            float alpha = 0.05 / distanceToCenter - 0.1;
+            gl_FragColor = vec4(vColor, alpha);
+            #include <tonemapping_fragment>
+            #include <colorspace_fragment>
+        }
+    `;
 
 const ShaderCustomMaterial = shaderMaterial(
   {
@@ -29,7 +74,7 @@ const ShaderCustomMaterial = shaderMaterial(
     ),
     blending: AdditiveBlending,
     depthWrite: false,
-    uProgress: 0.5,
+    uProgress: 0,
   },
   vertexShader,
   fragmentShader
@@ -41,28 +86,47 @@ const ParticleMorphing = () => {
   const { scene } = useGLTF("/3d-models/models.glb");
   const geometryRef = useRef<BufferGeometry>(new SphereGeometry(30, 64, 64));
   const shaderCustomMaterialRef = useRef<ShaderMaterial>(null);
+  const particleIndex = useRef(0);
   useControls({
-    progress: {
-      value: 0.5,
-      min: 0,
-      max: 1,
-      step: 0.01,
-      onChange: (value) => {
-        if (shaderCustomMaterialRef.current) {
-          shaderCustomMaterialRef.current.uniforms.uProgress.value = value;
-        }
-      },
-    },
+    particleMorphFirst: button(() => {
+      onMorphing(particleIndex.current, 0);
+      particleIndex.current = 0;
+    }),
+    particleMorphSecond: button(() => {
+      onMorphing(particleIndex.current, 1);
+      particleIndex.current = 1;
+    }),
+    particleMorphThird: button(() => {
+      onMorphing(particleIndex.current, 2);
+      particleIndex.current = 2;
+    }),
+    particleMorphFourth: button(() => {
+      onMorphing(particleIndex.current, 3);
+      particleIndex.current = 3;
+    }),
   });
+  const particles = useMemo(() => {
+    return {
+      maxCount: 0,
+      positions: [] as Float32BufferAttribute[],
+      geometry: new BufferGeometry(),
+    };
+  }, []);
+
+  const onMorphing = (prevIndex: number, nextIndex: number) => {
+    geometryRef.current.setAttribute(
+      "position",
+      particles.positions[prevIndex]
+    );
+    geometryRef.current.setAttribute(
+      "aPositionTarget",
+      particles.positions[nextIndex]
+    );
+  };
 
   useEffect(() => {
     geometryRef.current.setIndex(null);
     if (scene) {
-      const particles = {
-        maxCount: 0,
-        positions: [] as Float32BufferAttribute[],
-        geometry: new BufferGeometry(),
-      };
       const positions = scene.children
         .map((child) => {
           if (child instanceof Mesh) {
@@ -92,14 +156,12 @@ const ParticleMorphing = () => {
         }
         particles.positions.push(new Float32BufferAttribute(newArray, 3));
       });
-      particles.geometry.setAttribute("position", particles.positions[0]);
-      geometryRef.current.setAttribute("position", particles.positions[1]);
       geometryRef.current.setAttribute(
-        "aPositionTarget",
-        particles.positions[3]
+        "position",
+        particles.positions[particleIndex.current]
       );
     }
-  }, [scene]);
+  }, [scene, particles]);
   return (
     <>
       <points geometry={geometryRef.current}>
