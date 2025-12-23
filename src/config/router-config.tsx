@@ -698,6 +698,7 @@ export const router: AppRoute[] = [
       </AuthGuard>
     ),
     isNav: true,
+    isDev: true,
     id: "node-writer",
     classes: {
       linkCircle: "bg-red-500",

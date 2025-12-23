@@ -69,7 +69,7 @@ const Main = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row bg-black text-white font-sans">
+    <div className="flex flex-col md:flex-row bg-black text-white font-sans grow">
       <Sidebar
         view={view}
         currentProject={currentProject}

@@ -8,7 +8,7 @@ const Init = () => {
   return (
     <MainWrapperOffset>
       <ThreeLoader />
-      <Canvas camera={{ position: [0, 20, 105], fov: 70 }}>
+      <Canvas camera={{ position: [0, 2, 5], fov: 70 }}>
         <Suspense fallback={null}>
           <Experience />
         </Suspense>

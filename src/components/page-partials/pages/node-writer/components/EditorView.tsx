@@ -19,7 +19,7 @@ const EditorView = ({ project, onContentChange }: EditorViewProps) => {
       <textarea
         value={project.content}
         onChange={(e) => onContentChange(e.target.value)}
-        className="flex-1 w-full p-12 bg-black border-l border-white/10 outline-none resize-none text-white/50 text-base leading-relaxed mono focus:text-white transition-all"
+        className="flex-1 w-full h-full p-12 bg-black border-l border-white/10 outline-none resize-none text-white/50 text-base leading-relaxed mono focus:text-white transition-all"
         placeholder="Введіть дані дослідження..."
       />
     </div>

@@ -7,43 +7,18 @@ import {
   Float32BufferAttribute,
   BufferGeometry,
   SphereGeometry,
+  ShaderMaterial,
 } from "three";
 import { useEffect, useRef } from "react";
+import { useControls } from "leva";
+import vertexShader from "./shaders/vertex.glsl?raw";
+import fragmentShader from "./shaders/fragment.glsl?raw";
 
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
   pixelRatio: Math.min(window.devicePixelRatio, 2),
 };
-
-const vertexShader = /* glsl */ `
-    uniform vec2 uResolution;
-    uniform float uSize;
-
-    void main()
-    {
-        // Final position
-        vec4 modelPosition = modelMatrix * vec4(position, 1.0);
-        vec4 viewPosition = viewMatrix * modelPosition;
-        vec4 projectedPosition = projectionMatrix * viewPosition;
-        gl_Position = projectedPosition;
-
-        // Point size
-        gl_PointSize = uSize * uResolution.y;
-        gl_PointSize *= (1.0 / - viewPosition.z);
-    }`;
-
-const fragmentShader = /* glsl */ `
-    void main()
-        {
-            vec2 uv = gl_PointCoord;
-            float distanceToCenter = length(uv - 0.5);
-            float alpha = 0.05 / distanceToCenter - 0.1;
-            gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
-            #include <tonemapping_fragment>
-            #include <colorspace_fragment>
-        }
-    `;
 
 const ShaderCustomMaterial = shaderMaterial(
   {
@@ -54,6 +29,7 @@ const ShaderCustomMaterial = shaderMaterial(
     ),
     blending: AdditiveBlending,
     depthWrite: false,
+    uProgress: 0.5,
   },
   vertexShader,
   fragmentShader
@@ -64,6 +40,21 @@ extend({ ShaderCustomMaterial });
 const ParticleMorphing = () => {
   const { scene } = useGLTF("/3d-models/models.glb");
   const geometryRef = useRef<BufferGeometry>(new SphereGeometry(30, 64, 64));
+  const shaderCustomMaterialRef = useRef<ShaderMaterial>(null);
+  useControls({
+    progress: {
+      value: 0.5,
+      min: 0,
+      max: 1,
+      step: 0.01,
+      onChange: (value) => {
+        if (shaderCustomMaterialRef.current) {
+          shaderCustomMaterialRef.current.uniforms.uProgress.value = value;
+        }
+      },
+    },
+  });
+
   useEffect(() => {
     geometryRef.current.setIndex(null);
     if (scene) {
@@ -103,13 +94,16 @@ const ParticleMorphing = () => {
       });
       particles.geometry.setAttribute("position", particles.positions[0]);
       geometryRef.current.setAttribute("position", particles.positions[1]);
-      console.log("particles", particles);
+      geometryRef.current.setAttribute(
+        "aPositionTarget",
+        particles.positions[3]
+      );
     }
   }, [scene]);
   return (
     <>
       <points geometry={geometryRef.current}>
-        <shaderCustomMaterial />
+        <shaderCustomMaterial ref={shaderCustomMaterialRef} />
       </points>
     </>
   );

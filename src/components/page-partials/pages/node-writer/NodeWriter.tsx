@@ -4,7 +4,7 @@ import Main from "./components/main";
 const NodeWriterPage = () => {
   return (
     <>
-      <MainWrapperOffset isFullHeight>
+      <MainWrapperOffset isFullHeight className="flex flex-col">
         <Main />
       </MainWrapperOffset>
     </>
