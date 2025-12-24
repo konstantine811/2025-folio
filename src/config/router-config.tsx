@@ -254,6 +254,13 @@ const ThreeParticleMorphing = lazyPage(
     )
 );
 
+const ThreeScrollParticleMorphing = lazyPage(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/scroll-particle-morphing/init"
+    )
+);
+
 const LoginPage = lazyPage(
   () => import("../components/page-partials/pages/Login")
 );
@@ -300,6 +307,7 @@ export enum RoutPath {
   EXPERIMENTAL_MAPS_SPHERE_MAT_TEST = "sphere-mat-test",
   EXPERIMENTAL_THREE_GENIVERSE = "three-geniverse",
   EXPERIMENTAL_THREE_PARTICLE_MORPHING = "three-particle-morphing",
+  EXPERIMENTAL_THREE_SCROLL_PARTICLE_MORPHING = "three-scroll-particle-morphing",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -629,6 +637,15 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🌍",
     description: "A particle morphing scene created with Three.js.",
     imageUrl: imagePath("particle-morphing"),
+    type: ExperimentalTypes.particle,
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_SCROLL_PARTICLE_MORPHING,
+    Component: ThreeScrollParticleMorphing,
+    id: "experimental-three-scroll-particle-morphing",
+    icon: "🌍",
+    description: "A scroll particle morphing scene created with Three.js.",
+    imageUrl: imagePath("scroll-particle-morphing"),
     type: ExperimentalTypes.particle,
   },
 ];
