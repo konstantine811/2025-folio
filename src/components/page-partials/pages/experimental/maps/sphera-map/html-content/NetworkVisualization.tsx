@@ -144,8 +144,8 @@ const NetworkVisualization = () => {
   return (
     <motion.div
       className="w-full max-w-6xl mt-32 relative z-20 px-6"
-      initial={{ opacity: 0, filter: "blur(12px)", y: 15 }}
-      animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ duration: 1.4, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="text-center mb-16">

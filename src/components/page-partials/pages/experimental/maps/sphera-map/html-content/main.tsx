@@ -52,7 +52,10 @@ const Main = ({ children }: { children: React.ReactNode }) => {
       `}</style>
 
       {/* Main Content */}
-      <main className="relative w-full flex flex-col items-center pt-32 isolate overflow-hidden">
+      <main
+        className="relative w-full flex flex-col items-center pt-32 isolate overflow-hidden"
+        style={{ willChange: "transform" }}
+      >
         {/* Background Ambient Light */}
         <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[80vw] h-[50vh] bg-blue-900/10 blur-[120px] rounded-full pointer-events-none z-[-1]" />
 
@@ -85,32 +88,69 @@ const Main = ({ children }: { children: React.ReactNode }) => {
 };
 
 const TypographySection = () => {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.4,
+        delayChildren: 0.3,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: {
+      opacity: 0,
+    },
+    visible: {
+      opacity: 1,
+    },
+  };
+
   return (
-    <div className="text-center px-6 max-w-4xl mx-auto z-20 flex flex-col items-center">
+    <motion.div
+      className="text-center px-6 max-w-4xl mx-auto z-20 flex flex-col items-center"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       <motion.h1
         className="text-7xl md:text-9xl font-semibold tracking-tight mb-8 text-gradient leading-[0.9]"
-        initial={{ opacity: 0, filter: "blur(12px)", y: 15 }}
-        animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
-        transition={{ duration: 1.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+        variants={itemVariants}
+        transition={{
+          type: "spring",
+          stiffness: 100,
+          damping: 20,
+          mass: 1,
+        }}
         style={{
           background: "linear-gradient(to bottom, #ffffff 0%, #94a3b8 100%)",
           WebkitBackgroundClip: "text",
           WebkitTextFillColor: "transparent",
           backgroundClip: "text",
+          transform: "translateZ(0)",
         }}
       >
         SPHERA
       </motion.h1>
       <motion.p
         className="text-base md:text-lg text-slate-400 font-light leading-relaxed max-w-2xl mx-auto"
-        initial={{ opacity: 0, filter: "blur(12px)", y: 15 }}
-        animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
-        transition={{ duration: 1.4, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        variants={itemVariants}
+        transition={{
+          type: "spring",
+          stiffness: 100,
+          damping: 20,
+          mass: 1,
+        }}
+        style={{
+          transform: "translateZ(0)",
+        }}
       >
         Seamlessly integrating on-premise infrastructure with cloud environments
         through a unified, intelligent management interface.
       </motion.p>
-    </div>
+    </motion.div>
   );
 };
 
@@ -118,12 +158,12 @@ const Sphere = () => {
   return (
     <motion.div
       className="absolute top-[60px] w-[250vw] h-[250vw] md:w-[140vw] md:h-[140vw] rounded-full sphere-surface z-0"
-      initial={{ y: 100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{
-        duration: 1.8,
-        delay: 0.2,
-        ease: [0.19, 1, 0.22, 1],
+        duration: 1.2,
+        delay: 0.6,
+        ease: "easeOut",
       }}
       style={{
         background:
@@ -131,6 +171,8 @@ const Sphere = () => {
         borderTop: "1px solid rgba(255,255,255,0.08)",
         boxShadow:
           "0 -60px 150px -20px rgba(37,99,235,0.45), inset 0 4px 20px rgba(100, 200, 255, 0.1)",
+        transform: "translateZ(0)",
+        willChange: "transform, opacity",
       }}
     />
   );
@@ -143,31 +185,47 @@ const CardsGrid = () => {
       title: "Procurement",
       description:
         "Integrated hyper-converged solutions for public sector scalability and unified management control.",
-      delay: 0.3,
+      delay: 0.6,
     },
     {
       icon: BarChart3,
       title: "Investment",
       description:
         "Analyzing infrastructure ROI with real-time telemetry and predictive cost modeling.",
-      delay: 0.3,
+      delay: 0.8,
     },
     {
       icon: Globe2,
       title: "Global Reach",
       description:
         "Connecting international project nodes via secure, encrypted tunnels for seamless data replication.",
-      delay: 0.5,
+      delay: 1.0,
       highlight: true,
     },
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.25,
+        delayChildren: 0.8,
+      },
+    },
+  };
+
   return (
-    <div className="relative w-full max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6 mt-32 md:mt-48 z-10">
+    <motion.div
+      className="relative w-full max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6 mt-32 md:mt-48 z-10"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {cards.map((card, index) => (
         <Card key={index} {...card} />
       ))}
-    </div>
+    </motion.div>
   );
 };
 
@@ -191,9 +249,17 @@ const Card = ({
           ? "bg-white/[0.02] border border-white/[0.06] backdrop-blur-md shadow-2xl hover:bg-white/[0.04] hover:border-white/[0.1]"
           : "border border-transparent hover:bg-white/[0.03] hover:border-white/[0.05]"
       }`}
-      initial={{ opacity: 0, filter: "blur(12px)", y: 15 }}
-      animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
-      transition={{ duration: 1.4, delay, ease: [0.16, 1, 0.3, 1] }}
+      initial={{
+        opacity: 0,
+      }}
+      animate={{
+        opacity: 1,
+      }}
+      transition={{
+        duration: 1.2,
+        delay,
+        ease: "easeOut",
+      }}
     >
       {highlight && (
         <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
