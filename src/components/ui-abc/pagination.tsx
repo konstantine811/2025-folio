@@ -123,7 +123,7 @@ export function Pagination<T>({
       </ul>
 
       {/* Footer with INDEX and Pagination */}
-      <div className="sticky bottom-0 left-0 right-0 flex items-center justify-between p-8 bg-background/80 backdrop-blur-sm border-t border-foreground/10 mt-20 font-mono text-xs">
+      <div className="sticky z-50 bottom-0 left-0 right-0 flex items-center justify-between p-8 bg-background/80 backdrop-blur-sm border-t border-foreground/10 mt-20 font-mono text-xs">
         {/* INDEX: X-Y/Z or X/Z - Bottom Left */}
         <div className="text-muted-foreground">
           INDEX:{" "}

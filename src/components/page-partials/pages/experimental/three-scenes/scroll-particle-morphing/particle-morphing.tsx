@@ -10,8 +10,7 @@ import {
   ShaderMaterial,
   Color,
 } from "three";
-import { useEffect, useMemo, useRef } from "react";
-import { button, useControls } from "leva";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import simplexNoise3dShader from "../particle-morphing/shaders/simplexNoise3d.glsl?raw";
 import {
   animate,
@@ -114,11 +113,17 @@ const ShaderCustomMaterial = shaderMaterial(
 
 extend({ ShaderCustomMaterial });
 
-const ParticleMorphing = () => {
-  const { scene } = useGLTF("/3d-models/models.glb");
+const ParticleMorphing = ({
+  showIndexModel = 0,
+  pathModel = "/3d-models/models.glb",
+}: {
+  showIndexModel: number;
+  pathModel: string;
+}) => {
+  const { scene } = useGLTF(pathModel);
   const geometryRef = useRef<BufferGeometry>(new SphereGeometry(200, 64, 64));
   const shaderCustomMaterialRef = useRef<ShaderMaterial>(null);
-  const particleIndex = useRef(0);
+  const particleIndex = useRef(showIndexModel);
   // 1) MotionValue для прогресу
   const uProgressMV = useMotionValue(0);
   const uJitterAmpMV = useMotionValue(10.05);
@@ -126,33 +131,7 @@ const ParticleMorphing = () => {
 
   // 2) Контролер анімації (щоб зупиняти попередню)
   const animRef = useRef<AnimationPlaybackControls | null>(null);
-  const { colorA, colorB } = useControls({
-    Torus: button(() => {
-      onMorphing(particleIndex.current, 0);
-      particleIndex.current = 0;
-    }),
-    Monkey: button(() => {
-      onMorphing(particleIndex.current, 1);
-      particleIndex.current = 1;
-    }),
-    Sphere: button(() => {
-      onMorphing(particleIndex.current, 2);
-      particleIndex.current = 2;
-    }),
-    ThreeJS: button(() => {
-      onMorphing(particleIndex.current, 3);
-      particleIndex.current = 3;
-    }),
-    colorA: "#00c3ff",
-    colorB: "#ff8a00",
-  });
 
-  useEffect(() => {
-    const mat = shaderCustomMaterialRef.current;
-    if (!mat) return;
-    mat.uniforms.uColorA.value = new Color(colorA);
-    mat.uniforms.uColorB.value = new Color(colorB);
-  }, [colorA, colorB]);
   const particles = useMemo(() => {
     return {
       maxCount: 0,
@@ -161,7 +140,7 @@ const ParticleMorphing = () => {
     };
   }, []);
 
-  const startProgressAnim = () => {
+  const startProgressAnim = useCallback(() => {
     animRef.current?.stop();
     uProgressMV.set(0);
 
@@ -169,7 +148,27 @@ const ParticleMorphing = () => {
       duration: 5,
       ease: [0.22, 1, 0.36, 1], // приємний ease-out (можеш змінити)
     });
-  };
+  }, [uProgressMV]);
+
+  const onMorphing = useCallback(
+    (prevIndex: number, nextIndex: number) => {
+      geometryRef.current.setAttribute(
+        "position",
+        particles.positions[prevIndex]
+      ); // старт
+      geometryRef.current.setAttribute(
+        "aPositionTarget",
+        particles.positions[nextIndex]
+      );
+      startProgressAnim();
+    },
+    [particles, startProgressAnim]
+  );
+
+  useEffect(() => {
+    onMorphing(particleIndex.current, showIndexModel);
+    particleIndex.current = showIndexModel;
+  }, [showIndexModel, onMorphing]);
 
   useEffect(() => {
     animate(uJitterAmpMV, 0.07, {
@@ -191,18 +190,6 @@ const ParticleMorphing = () => {
       mat.uniforms.uJitterFreq.value = v;
     });
   }, [uJitterAmpMV, uJitterFreqMV]);
-
-  const onMorphing = (prevIndex: number, nextIndex: number) => {
-    geometryRef.current.setAttribute(
-      "position",
-      particles.positions[prevIndex]
-    ); // старт
-    geometryRef.current.setAttribute(
-      "aPositionTarget",
-      particles.positions[nextIndex]
-    );
-    startProgressAnim();
-  };
 
   useEffect(() => {
     uProgressMV.on("change", (v) => {
