@@ -145,7 +145,7 @@ const ParticleMorphing = ({
     uProgressMV.set(0);
 
     animRef.current = animate(uProgressMV, 1, {
-      duration: 5,
+      duration: 10,
       ease: [0.22, 1, 0.36, 1], // приємний ease-out (можеш змінити)
     });
   }, [uProgressMV]);

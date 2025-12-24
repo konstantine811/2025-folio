@@ -11,7 +11,7 @@ const Init = () => {
       {/* Fixed Canvas Background */}
       <Canvas camera={{ position: [0, 10, 85], fov: 70 }}>
         <Suspense fallback={null}>
-          <ScrollControls pages={4} damping={0.2}>
+          <ScrollControls pages={3} damping={0.2}>
             <Experience pathModel={"/3d-models/models.glb"} />
             <Scroll html>
               <UI />
