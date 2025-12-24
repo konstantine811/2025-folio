@@ -1,5 +1,5 @@
 import { shaderMaterial, useGLTF } from "@react-three/drei";
-import { extend, useFrame, useThree } from "@react-three/fiber";
+import { extend, useFrame } from "@react-three/fiber";
 import {
   AdditiveBlending,
   Mesh,
@@ -121,7 +121,6 @@ const ParticleMorphing = ({
   pathModel: string;
 }) => {
   const { scene } = useGLTF(pathModel);
-  const viewport = useThree((state) => state.viewport);
   const geometryRef = useRef<BufferGeometry>(new SphereGeometry(200, 64, 64));
   const shaderCustomMaterialRef = useRef<ShaderMaterial>(null);
   const particleIndex = useRef(showIndexModel);
@@ -132,10 +131,6 @@ const ParticleMorphing = ({
 
   // 2) Контролер анімації (щоб зупиняти попередню)
   const animRef = useRef<AnimationPlaybackControls | null>(null);
-
-  useEffect(() => {
-    console.log("viewport", viewport);
-  }, [viewport]);
 
   const particles = useMemo(() => {
     return {
