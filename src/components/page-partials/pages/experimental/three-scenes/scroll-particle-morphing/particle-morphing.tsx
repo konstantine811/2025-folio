@@ -137,23 +137,65 @@ const ParticleMorphing = ({
 
   const onMorphing = useCallback(
     (prevIndex: number, nextIndex: number) => {
-      // console.log("onMorphing", prevIndex, nextIndex);
-      geometryRef.current.setAttribute(
-        "position",
-        particles.positions[prevIndex]
-      ); // старт
-      geometryRef.current.setAttribute(
-        "aPositionTarget",
-        particles.positions[nextIndex]
-      );
+      // Перевірка, чи geometryRef готовий
+      if (!geometryRef.current) {
+        console.warn("onMorphing: geometryRef.current is null");
+        return;
+      }
+
+      // Перевірка, чи particles.positions заповнений і чи індекси в межах масиву
+      if (
+        !particles.positions ||
+        particles.positions.length === 0 ||
+        prevIndex < 0 ||
+        nextIndex < 0 ||
+        prevIndex >= particles.positions.length ||
+        nextIndex >= particles.positions.length
+      ) {
+        console.warn(
+          "onMorphing: particles.positions not ready or invalid indices",
+          {
+            prevIndex,
+            nextIndex,
+            positionsLength: particles.positions?.length || 0,
+          }
+        );
+        return;
+      }
+
+      const prevPosition = particles.positions[prevIndex];
+      const nextPosition = particles.positions[nextIndex];
+
+      // Перевірка, чи атрибути не undefined
+      if (!prevPosition || !nextPosition) {
+        console.warn("onMorphing: position attributes are undefined", {
+          prevPosition: !!prevPosition,
+          nextPosition: !!nextPosition,
+        });
+        return;
+      }
+
+      console.log("onMorphing", prevIndex, nextIndex);
+      geometryRef.current.setAttribute("position", prevPosition);
+      geometryRef.current.setAttribute("aPositionTarget", nextPosition);
       particleIndex.current = nextIndex;
     },
     [particles]
   );
 
   useEffect(() => {
-    onMorphing(particleIndex.current, showIndexModel);
-  }, [showIndexModel, onMorphing]);
+    // Перевірка, чи particles.positions заповнений перед викликом onMorphing
+    if (
+      particles.positions &&
+      particles.positions.length > 0 &&
+      showIndexModel >= 0 &&
+      showIndexModel < particles.positions.length &&
+      particleIndex.current >= 0 &&
+      particleIndex.current < particles.positions.length
+    ) {
+      onMorphing(particleIndex.current, showIndexModel);
+    }
+  }, [showIndexModel, onMorphing, particles.positions]);
 
   useEffect(() => {
     animate(uJitterAmpMV, 0.07, {
@@ -247,7 +289,7 @@ const ParticleMorphing = ({
   useFrame((state) => {
     const mat = shaderCustomMaterialRef.current;
     if (!mat) return;
-    console.log("uSectionProgressRef", uSectionProgressRef);
+    // console.log("uSectionProgressRef", uSectionProgressRef);
     mat.uniforms.uTime.value = state.clock.elapsedTime;
     mat.uniforms.uProgress.value = uSectionProgressRef;
   });
