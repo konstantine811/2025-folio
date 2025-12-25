@@ -2,7 +2,7 @@ import { Environment, useScroll } from "@react-three/drei";
 import ParticleMorphing from "./particle-morphing";
 import { useFrame } from "@react-three/fiber";
 import { useState, useRef } from "react";
-import { Group } from "three";
+import { Group, MathUtils } from "three";
 
 const Experience = ({
   pathModel = "/3d-models/models.glb",
@@ -10,30 +10,43 @@ const Experience = ({
   pathModel?: string;
 }) => {
   const data = useScroll();
+
+  const totalPages = 4;
+
   const [showIndexModel, setShowIndexModel] = useState(0);
   const lastIndexRef = useRef(0);
+
   const groupRef = useRef<Group>(null);
 
-  useFrame(() => {
-    // Calculate current section index based on scroll offset (0-1) for 4 pages
-    // 0-0.25 = section 0, 0.25-0.5 = section 1, 0.5-0.75 = section 2, 0.75-1.0 = section 3
-    const newIndex = Math.min(3, Math.floor(data.offset * 4));
+  // <-- ОЦЕ і є прогрес секції (0..1) без setState
+  const [sectionProgress, setSectionProgress] = useState(0);
 
-    // Only update state if index actually changed to avoid unnecessary re-renders
+  useFrame(() => {
+    const offset = MathUtils.clamp(data.offset, 0, 1);
+
+    // t: 0..totalPages
+    const t = offset * totalPages;
+
+    // index: 0..totalPages-1
+    const newIndex = offset >= 1 ? totalPages - 1 : Math.floor(t);
+
+    // progress: 0..1 (всередині секції)
+    const localProgress = offset >= 1 ? 1 : t - newIndex;
+
+    setSectionProgress(MathUtils.clamp(localProgress, 0, 1));
+
+    // оновлюємо індекс тільки коли реально змінився
     if (newIndex !== lastIndexRef.current) {
       lastIndexRef.current = newIndex;
       setShowIndexModel(newIndex);
     }
 
-    // Animate Y position based on scroll progress (from top to bottom)
-    // Scroll offset 0 = top position, 1 = bottom position
-    // Adjust the range (e.g., -5 to 5) based on your scene scale
+    // Приклад твоєї вертикальної анімації (глобальний прогрес)
     if (groupRef.current) {
-      const scrollProgress = data.offset; // 0 to 1
-      const verticalRange = 10; // Total vertical movement range
-      const startY = -verticalRange / 2; // Start position (top)
-      const endY = verticalRange / 2; // End position (bottom)
-      groupRef.current.position.y = startY + (endY - startY) * scrollProgress;
+      const verticalRange = 10;
+      const startY = -verticalRange / 2;
+      const endY = verticalRange / 2;
+      groupRef.current.position.y = startY + (endY - startY) * offset;
     }
   });
 
@@ -42,10 +55,15 @@ const Experience = ({
       <Environment preset="sunset" />
       <color attach="background" args={["#151515"]} />
       <directionalLight position={[1, 1, 1]} intensity={1} />
+
       <group ref={groupRef}>
         <ParticleMorphing
           showIndexModel={showIndexModel}
           pathModel={pathModel}
+          // глобальний прогрес (0..1) якщо теж треба
+
+          // локальний прогрес секції (0..1) без ререндерів
+          uSectionProgressRef={sectionProgress}
         />
       </group>
     </>

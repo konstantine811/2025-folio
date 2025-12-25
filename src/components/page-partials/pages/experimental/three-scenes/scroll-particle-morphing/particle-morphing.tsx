@@ -12,11 +12,7 @@ import {
 } from "three";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import simplexNoise3dShader from "../particle-morphing/shaders/simplexNoise3d.glsl?raw";
-import {
-  animate,
-  AnimationPlaybackControls,
-  useMotionValue,
-} from "framer-motion";
+import { animate, useMotionValue } from "framer-motion";
 
 const sizes = {
   width: window.innerWidth,
@@ -116,8 +112,10 @@ extend({ ShaderCustomMaterial });
 const ParticleMorphing = ({
   showIndexModel = 0,
   pathModel = "/3d-models/models.glb",
+  uSectionProgressRef = 0,
 }: {
   showIndexModel: number;
+  uSectionProgressRef: number;
   pathModel: string;
 }) => {
   const { scene } = useGLTF(pathModel);
@@ -129,9 +127,6 @@ const ParticleMorphing = ({
   const uJitterAmpMV = useMotionValue(10.05);
   const uJitterFreqMV = useMotionValue(10.0);
 
-  // 2) Контролер анімації (щоб зупиняти попередню)
-  const animRef = useRef<AnimationPlaybackControls | null>(null);
-
   const particles = useMemo(() => {
     return {
       maxCount: 0,
@@ -139,16 +134,6 @@ const ParticleMorphing = ({
       geometry: new BufferGeometry(),
     };
   }, []);
-
-  const startProgressAnim = useCallback(() => {
-    animRef.current?.stop();
-    uProgressMV.set(0);
-
-    animRef.current = animate(uProgressMV, 1, {
-      duration: 10,
-      ease: [0.22, 1, 0.36, 1], // приємний ease-out (можеш змінити)
-    });
-  }, [uProgressMV]);
 
   const onMorphing = useCallback(
     (prevIndex: number, nextIndex: number) => {
@@ -161,10 +146,9 @@ const ParticleMorphing = ({
         "aPositionTarget",
         particles.positions[nextIndex]
       );
-      startProgressAnim();
       particleIndex.current = nextIndex;
     },
-    [particles, startProgressAnim]
+    [particles]
   );
 
   useEffect(() => {
@@ -263,12 +247,17 @@ const ParticleMorphing = ({
   useFrame((state) => {
     const mat = shaderCustomMaterialRef.current;
     if (!mat) return;
+    console.log("uSectionProgressRef", uSectionProgressRef);
     mat.uniforms.uTime.value = state.clock.elapsedTime;
+    mat.uniforms.uProgress.value = uSectionProgressRef;
   });
   return (
     <>
       <points frustumCulled={false} geometry={geometryRef.current} scale={10}>
-        <shaderCustomMaterial ref={shaderCustomMaterialRef} />
+        <shaderCustomMaterial
+          ref={shaderCustomMaterialRef}
+          uProgress={uSectionProgressRef}
+        />
       </points>
     </>
   );
