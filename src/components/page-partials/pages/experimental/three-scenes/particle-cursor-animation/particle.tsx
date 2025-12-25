@@ -2,7 +2,7 @@ import { shaderMaterial, useTexture } from "@react-three/drei";
 import { extend } from "@react-three/fiber";
 import { Texture, BufferAttribute } from "three";
 import { useMemo } from "react";
-import { useParticleStore } from "./storage/particle-storage";
+import { useRaycastGeometryStore } from "@/components/common/three/raycast-geometry/storage/raycast-storage";
 
 const vertexShader = /* glsl */ `
     uniform vec2 uResolution;
@@ -68,7 +68,9 @@ extend({ ParticleMaterial });
 
 const Particle = () => {
   const texture = useTexture("/images/textures/picture-2.png");
-  const displacementTexture = useParticleStore((s) => s.displacementTexture);
+  const displacementTexture = useRaycastGeometryStore(
+    (s) => s.displacementTexture
+  );
 
   // Calculate vertex count: (widthSegments + 1) * (heightSegments + 1)
   const widthSegments = 1128;

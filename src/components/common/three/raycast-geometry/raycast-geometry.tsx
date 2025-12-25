@@ -1,8 +1,15 @@
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
-import { CanvasTexture, DoubleSide, Mesh, Raycaster, Vector2 } from "three";
-import { useParticleStore } from "./storage/particle-storage";
+import {
+  CanvasTexture,
+  DoubleSide,
+  Mesh,
+  PlaneGeometry,
+  Raycaster,
+  Vector2,
+} from "three";
+import { useRaycastGeometryStore } from "./storage/raycast-storage";
 
 interface Displacement {
   canvas: {
@@ -20,13 +27,23 @@ interface Displacement {
   };
 }
 
-const RaycastPlane = () => {
+const RaycastGeometry = ({
+  raycasterGeometry = new PlaneGeometry(10, 10, 1, 1),
+  isGeometryVisible = false,
+  isDebug = false,
+}: {
+  raycasterGeometry?: PlaneGeometry;
+  isGeometryVisible?: boolean;
+  isDebug?: boolean;
+}) => {
   const raycast = useMemo(() => new Raycaster(), []);
   const interactivePlaneRef = useRef<Mesh>(null);
-  const setDisplacementTexture = useParticleStore(
+  const setDisplacementTexture = useRaycastGeometryStore(
     (s) => s.setDisplacementTexture
   );
-  const displacementTexture = useParticleStore((s) => s.displacementTexture);
+  const displacementTexture = useRaycastGeometryStore(
+    (s) => s.displacementTexture
+  );
   const hs = useHeaderSizeStore((s) => s.size);
   const displacement = useMemo(() => {
     return {
@@ -40,10 +57,10 @@ const RaycastPlane = () => {
       canvasCursorPrevious: new Vector2(9999, 9999),
       glowImagePath: "/images/textures/glow.png",
       interactivePlane: {
-        visible: false,
+        visible: isGeometryVisible,
       },
     } as Displacement;
-  }, []);
+  }, [isGeometryVisible]);
 
   const onPointerMove = (event: PointerEvent) => {
     displacement.screenCursor.set(
@@ -60,7 +77,9 @@ const RaycastPlane = () => {
     canvas.style.top = `${hs + 2}px`;
     canvas.style.left = "2px";
     canvas.style.zIndex = "10";
-    document.body.appendChild(canvas);
+    if (isDebug) {
+      document.body.appendChild(canvas);
+    }
     const ctx = canvas.getContext("2d");
     setDisplacementTexture(new CanvasTexture(canvas));
     displacement.context = ctx;
@@ -79,9 +98,11 @@ const RaycastPlane = () => {
       );
     };
     return () => {
-      document.body.removeChild(canvas);
+      if (isDebug) {
+        document.body.removeChild(canvas);
+      }
     };
-  }, [displacement, hs, setDisplacementTexture]);
+  }, [displacement, hs, setDisplacementTexture, isDebug]);
 
   useFrame(({ camera }) => {
     raycast.setFromCamera(displacement.screenCursor, camera);
@@ -136,10 +157,10 @@ const RaycastPlane = () => {
       onPointerMove={onPointerMove}
       ref={interactivePlaneRef}
     >
-      <planeGeometry args={[10, 10]} />
+      <bufferGeometry attach="geometry" {...raycasterGeometry} />
       <meshBasicMaterial color="red" side={DoubleSide} />
     </mesh>
   );
 };
 
-export default RaycastPlane;
+export default RaycastGeometry;

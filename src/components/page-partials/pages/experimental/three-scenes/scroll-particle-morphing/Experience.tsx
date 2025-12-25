@@ -2,7 +2,8 @@ import { Environment, useScroll } from "@react-three/drei";
 import ParticleMorphing from "./particle-morphing";
 import { useFrame } from "@react-three/fiber";
 import { useState, useRef } from "react";
-import { Group, MathUtils } from "three";
+import { Group, MathUtils, PlaneGeometry } from "three";
+import RaycastGeometry from "@/components/common/three/raycast-geometry/raycast-geometry";
 
 const Experience = ({
   pathModel = "/3d-models/models.glb",
@@ -50,6 +51,13 @@ const Experience = ({
       <directionalLight position={[1, 1, 1]} intensity={1} />
 
       <group ref={groupRef}>
+        <group position-y={-10}>
+          <RaycastGeometry
+            raycasterGeometry={new PlaneGeometry(300, 100, 1, 1)}
+            isGeometryVisible={false}
+            isDebug={false}
+          />
+        </group>
         <ParticleMorphing
           showIndexModel={showIndexModel}
           pathModel={pathModel}

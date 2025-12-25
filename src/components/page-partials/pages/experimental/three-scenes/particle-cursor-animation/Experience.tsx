@@ -1,13 +1,13 @@
 import { CameraControls } from "@react-three/drei";
 import Particle from "./particle";
-import RaycastPlane from "./raycast-plane";
+import RaycastGeometry from "@/components/common/three/raycast-geometry/raycast-geometry";
 
 function Experience() {
   return (
     <>
       <color attach="background" args={["#121512"]} />
       <CameraControls makeDefault />
-      <RaycastPlane />
+      <RaycastGeometry />
       <Particle />
     </>
   );
