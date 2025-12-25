@@ -86,7 +86,7 @@ const vertexShader = /* glsl */ `
         vec2 texUv = vec2(vScreenUv.x, vScreenUv.y);
         float displacementIntensity = texture2D(uDisplacementTexture, texUv).r;
         displacementIntensity = smoothstep(0.1, 1.0, displacementIntensity);
-        vec3 displacement = vec3(cos(aAngle) * 0.3, sin(aAngle) * 0.4, 0.3);
+        vec3 displacement = vec3(sin(aAngle), cos(aAngle), 0.0);
         displacement = normalize(displacement);
         displacement *= displacementIntensity;
         displacement *= 1.2;
@@ -267,7 +267,7 @@ const ParticleMorphing = ({
         randomArray[i3 + 1] = Math.random() * 2 - 1;
         randomArray[i3 + 2] = Math.random() * 2 - 1;
         sizesArray[i] = Math.random();
-        intensities[i] = Math.random();
+        intensities[i] = Math.random() + 1.5;
         angles[i] = Math.random() * Math.PI * 2;
       }
 
@@ -299,7 +299,7 @@ const ParticleMorphing = ({
   });
   return (
     <>
-      <points frustumCulled={false} geometry={geometryRef.current} scale={10}>
+      <points frustumCulled={false} geometry={geometryRef.current} scale={15}>
         <shaderCustomMaterial
           ref={shaderCustomMaterialRef}
           uDisplacementTexture={displacementTexture}

@@ -128,7 +128,7 @@ const RaycastGeometry = ({
       displacement.canvasCursor
     );
     displacement.canvasCursorPrevious.copy(displacement.canvasCursor);
-    const alpha = Math.min(cursorDistance * 0.1, 1);
+    const alpha = Math.min(cursorDistance * 0.3, 1);
     if (displacement.context && displacement.glowImage) {
       const glowSize = displacement.canvas.width * cursorSize;
 
