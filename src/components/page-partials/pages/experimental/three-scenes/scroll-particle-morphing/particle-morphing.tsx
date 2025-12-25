@@ -10,7 +10,7 @@ import {
   ShaderMaterial,
   Color,
 } from "three";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { RefObject, useCallback, useEffect, useMemo, useRef } from "react";
 import simplexNoise3dShader from "../particle-morphing/shaders/simplexNoise3d.glsl?raw";
 import { animate, useMotionValue } from "framer-motion";
 
@@ -112,10 +112,10 @@ extend({ ShaderCustomMaterial });
 const ParticleMorphing = ({
   showIndexModel = 0,
   pathModel = "/3d-models/models.glb",
-  uSectionProgressRef = 0,
+  uSectionProgressRef,
 }: {
   showIndexModel: number;
-  uSectionProgressRef: number;
+  uSectionProgressRef: RefObject<number>;
   pathModel: string;
 }) => {
   const { scene } = useGLTF(pathModel);
@@ -143,39 +143,9 @@ const ParticleMorphing = ({
         return;
       }
 
-      // Перевірка, чи particles.positions заповнений і чи індекси в межах масиву
-      if (
-        !particles.positions ||
-        particles.positions.length === 0 ||
-        prevIndex < 0 ||
-        nextIndex < 0 ||
-        prevIndex >= particles.positions.length ||
-        nextIndex >= particles.positions.length
-      ) {
-        console.warn(
-          "onMorphing: particles.positions not ready or invalid indices",
-          {
-            prevIndex,
-            nextIndex,
-            positionsLength: particles.positions?.length || 0,
-          }
-        );
-        return;
-      }
-
       const prevPosition = particles.positions[prevIndex];
       const nextPosition = particles.positions[nextIndex];
 
-      // Перевірка, чи атрибути не undefined
-      if (!prevPosition || !nextPosition) {
-        console.warn("onMorphing: position attributes are undefined", {
-          prevPosition: !!prevPosition,
-          nextPosition: !!nextPosition,
-        });
-        return;
-      }
-
-      console.log("onMorphing", prevIndex, nextIndex);
       geometryRef.current.setAttribute("position", prevPosition);
       geometryRef.current.setAttribute("aPositionTarget", nextPosition);
       particleIndex.current = nextIndex;
@@ -184,18 +154,17 @@ const ParticleMorphing = ({
   );
 
   useEffect(() => {
-    // Перевірка, чи particles.positions заповнений перед викликом onMorphing
-    if (
-      particles.positions &&
-      particles.positions.length > 0 &&
-      showIndexModel >= 0 &&
-      showIndexModel < particles.positions.length &&
-      particleIndex.current >= 0 &&
-      particleIndex.current < particles.positions.length
-    ) {
-      onMorphing(particleIndex.current, showIndexModel);
-    }
-  }, [showIndexModel, onMorphing, particles.positions]);
+    const len = particles.positions.length;
+    if (!len) return;
+
+    // секція для морфу максимум len-2, бо ми морфимо i -> i+1
+    const morphSection = Math.min(showIndexModel, Math.max(0, len - 2));
+
+    const from = morphSection;
+    const to = morphSection + 1;
+
+    onMorphing(from, to);
+  }, [showIndexModel, onMorphing, particles.positions.length]);
 
   useEffect(() => {
     animate(uJitterAmpMV, 0.07, {
@@ -278,11 +247,6 @@ const ParticleMorphing = ({
         "aSize",
         new Float32BufferAttribute(sizesArray, 1)
       );
-
-      geometryRef.current.setAttribute(
-        "position",
-        particles.positions[particleIndex.current]
-      );
     }
   }, [scene, particles]);
 
@@ -291,15 +255,12 @@ const ParticleMorphing = ({
     if (!mat) return;
     // console.log("uSectionProgressRef", uSectionProgressRef);
     mat.uniforms.uTime.value = state.clock.elapsedTime;
-    mat.uniforms.uProgress.value = uSectionProgressRef;
+    mat.uniforms.uProgress.value = uSectionProgressRef.current;
   });
   return (
     <>
       <points frustumCulled={false} geometry={geometryRef.current} scale={10}>
-        <shaderCustomMaterial
-          ref={shaderCustomMaterialRef}
-          uProgress={uSectionProgressRef}
-        />
+        <shaderCustomMaterial ref={shaderCustomMaterialRef} />
       </points>
     </>
   );
