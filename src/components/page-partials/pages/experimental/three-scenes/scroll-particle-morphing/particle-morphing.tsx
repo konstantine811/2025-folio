@@ -86,7 +86,7 @@ const vertexShader = /* glsl */ `
         vec2 texUv = vec2(vScreenUv.x, vScreenUv.y);
         float displacementIntensity = texture2D(uDisplacementTexture, texUv).r;
         displacementIntensity = smoothstep(0.1, 1.0, displacementIntensity);
-        vec3 displacement = vec3(cos(aAngle) * 1.002, sin(aAngle) * 0.4, 0.2);
+        vec3 displacement = vec3(cos(aAngle) * 0.3, sin(aAngle) * 0.4, 0.3);
         displacement = normalize(displacement);
         displacement *= displacementIntensity;
         displacement *= 1.2;
@@ -129,8 +129,8 @@ const ShaderCustomMaterial = shaderMaterial(
     uProgress: 0,
 
     uTime: 0,
-    uJitterAmp: 10.05, // амплітуда дрібного тремтіння (підбирай)
-    uJitterFreq: 100.0, // частота (підбирай)
+    uJitterAmp: 1.05, // амплітуда дрібного тремтіння (підбирай)
+    uJitterFreq: 10.0, // частота (підбирай)
     uColorA: new Color("#00c3ff"),
     uColorB: new Color("#ff8a00"),
   },
@@ -157,7 +157,6 @@ const ParticleMorphing = ({
   );
   const particleIndex = useRef(showIndexModel);
   // 1) MotionValue для прогресу
-  const uProgressMV = useMotionValue(0);
   const uJitterAmpMV = useMotionValue(10.05);
   const uJitterFreqMV = useMotionValue(10.0);
 
@@ -224,16 +223,8 @@ const ParticleMorphing = ({
   }, [uJitterAmpMV, uJitterFreqMV]);
 
   useEffect(() => {
-    uProgressMV.on("change", (v) => {
-      const mat = shaderCustomMaterialRef.current;
-      if (!mat) return;
-      mat.uniforms.uProgress.value = v;
-    });
-  }, [uProgressMV]);
-
-  useEffect(() => {
     geometryRef.current.setIndex(null);
-    // geometryRef.current.deleteAttribute("normal");
+    geometryRef.current.deleteAttribute("normal");
     if (scene) {
       const positions = scene.children
         .map((child) => {

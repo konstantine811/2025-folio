@@ -32,10 +32,12 @@ const RaycastGeometry = ({
   raycasterGeometry = new PlaneGeometry(10, 10, 1, 1),
   isGeometryVisible = false,
   isDebug = false,
+  cursorSize = 0.3,
 }: {
   raycasterGeometry?: BufferGeometry;
   isGeometryVisible?: boolean;
   isDebug?: boolean;
+  cursorSize?: number;
 }) => {
   const raycast = useMemo(() => new Raycaster(), []);
   const interactivePlaneRef = useRef<Mesh>(null);
@@ -128,7 +130,7 @@ const RaycastGeometry = ({
     displacement.canvasCursorPrevious.copy(displacement.canvasCursor);
     const alpha = Math.min(cursorDistance * 0.1, 1);
     if (displacement.context && displacement.glowImage) {
-      const glowSize = displacement.canvas.width * 0.25;
+      const glowSize = displacement.canvas.width * cursorSize;
 
       displacement.context.globalCompositeOperation = "source-over";
       displacement.context.globalAlpha = 0.02;

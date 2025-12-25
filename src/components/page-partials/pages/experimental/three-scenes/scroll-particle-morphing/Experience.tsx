@@ -53,6 +53,7 @@ const Experience = ({
         raycasterGeometry={new PlaneGeometry(250, 130)}
         isGeometryVisible={false}
         isDebug={false}
+        cursorSize={0.08}
       />
       <group ref={groupRef}>
         <ParticleMorphing
