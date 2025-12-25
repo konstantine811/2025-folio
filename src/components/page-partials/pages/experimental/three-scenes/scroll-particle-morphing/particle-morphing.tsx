@@ -35,6 +35,7 @@ const vertexShader = /* glsl */ `
     attribute float aSize;
     uniform vec3 uColorA;
     uniform vec3 uColorB;
+    varying vec2 vScreenUv;
 
     uniform float uTime;
     uniform float uJitterAmp;
@@ -67,22 +68,35 @@ const vertexShader = /* glsl */ `
 
 
         mixedPosition += jitter ;
-
-         // Displacement
-         float displacementIntensity = texture2D(uDisplacementTexture, uv).r;
-         displacementIntensity = smoothstep(0.1, 1.0, displacementIntensity);
-        //  vec3 displacement = vec3(cos(aAngle) * 0.2, sin(aAngle) * 0.2, 1.0);
-        //  displacement = normalize(displacement);
-        //  displacement *= displacementIntensity;
-        //  displacement *= 3.0;
-        //  displacement *= aIntensity;
-        //  mixedPosition += displacement;
+     
 
         // Final position
         vec4 modelPosition = modelMatrix * vec4(mixedPosition, 1.0);
         vec4 viewPosition = viewMatrix * modelPosition;
         vec4 projectedPosition = projectionMatrix * viewPosition;
         gl_Position = projectedPosition;
+
+        vec4 clipPosition  = projectionMatrix * viewPosition;
+
+        // NDC -> 0..1
+        vec2 ndc = clipPosition.xy / clipPosition.w;
+        vScreenUv = ndc * 0.5 + 0.5;
+      
+        // семпл по екрану
+        vec2 texUv = vec2(vScreenUv.x, vScreenUv.y);
+        float displacementIntensity = texture2D(uDisplacementTexture, texUv).r;
+        displacementIntensity = smoothstep(0.1, 1.0, displacementIntensity);
+        vec3 displacement = vec3(cos(aAngle) * 1.002, sin(aAngle) * 0.4, 0.2);
+        displacement = normalize(displacement);
+        displacement *= displacementIntensity;
+        displacement *= 1.2;
+        displacement *= aIntensity;
+        mixedPosition += displacement;
+      
+        // фінальна позиція
+        modelPosition = modelMatrix * vec4(mixedPosition, 1.0);
+        viewPosition  = viewMatrix * modelPosition;
+        gl_Position   = projectionMatrix * viewPosition;
 
         // Point size
         gl_PointSize = aSize *uSize * uResolution.y;

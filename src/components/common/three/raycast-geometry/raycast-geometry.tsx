@@ -2,6 +2,7 @@ import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import {
+  BufferGeometry,
   CanvasTexture,
   DoubleSide,
   Mesh,
@@ -32,7 +33,7 @@ const RaycastGeometry = ({
   isGeometryVisible = false,
   isDebug = false,
 }: {
-  raycasterGeometry?: PlaneGeometry;
+  raycasterGeometry?: BufferGeometry;
   isGeometryVisible?: boolean;
   isDebug?: boolean;
 }) => {

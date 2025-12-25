@@ -49,15 +49,12 @@ const Experience = ({
       <Environment preset="sunset" />
       <color attach="background" args={["#151515"]} />
       <directionalLight position={[1, 1, 1]} intensity={1} />
-
+      <RaycastGeometry
+        raycasterGeometry={new PlaneGeometry(250, 130)}
+        isGeometryVisible={false}
+        isDebug={false}
+      />
       <group ref={groupRef}>
-        <group position-y={-10}>
-          <RaycastGeometry
-            raycasterGeometry={new PlaneGeometry(300, 100, 1, 1)}
-            isGeometryVisible={false}
-            isDebug={false}
-          />
-        </group>
         <ParticleMorphing
           showIndexModel={showIndexModel}
           pathModel={pathModel}

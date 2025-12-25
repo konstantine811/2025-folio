@@ -115,7 +115,6 @@ const Particle = () => {
         }}
       />
       <particleMaterial
-        wireframe
         uTexture={texture}
         uDisplacementTexture={displacementTexture}
       />
