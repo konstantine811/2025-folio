@@ -9,10 +9,12 @@ import {
   SphereGeometry,
   ShaderMaterial,
   Color,
+  Texture,
 } from "three";
 import { RefObject, useCallback, useEffect, useMemo, useRef } from "react";
 import simplexNoise3dShader from "../particle-morphing/shaders/simplexNoise3d.glsl?raw";
 import { animate, useMotionValue } from "framer-motion";
+import { useRaycastGeometryStore } from "@/components/common/three/raycast-geometry/storage/raycast-storage";
 
 const sizes = {
   width: window.innerWidth,
@@ -27,6 +29,9 @@ const vertexShader = /* glsl */ `
     uniform float uProgress;
     attribute vec3 aPositionTarget;
     varying vec3 vColor;
+    attribute float aIntensity;
+    attribute float aAngle;
+    uniform sampler2D uDisplacementTexture;
     attribute float aSize;
     uniform vec3 uColorA;
     uniform vec3 uColorB;
@@ -62,6 +67,17 @@ const vertexShader = /* glsl */ `
 
 
         mixedPosition += jitter ;
+
+         // Displacement
+         float displacementIntensity = texture2D(uDisplacementTexture, uv).r;
+         displacementIntensity = smoothstep(0.1, 1.0, displacementIntensity);
+        //  vec3 displacement = vec3(cos(aAngle) * 0.2, sin(aAngle) * 0.2, 1.0);
+        //  displacement = normalize(displacement);
+        //  displacement *= displacementIntensity;
+        //  displacement *= 3.0;
+        //  displacement *= aIntensity;
+        //  mixedPosition += displacement;
+
         // Final position
         vec4 modelPosition = modelMatrix * vec4(mixedPosition, 1.0);
         vec4 viewPosition = viewMatrix * modelPosition;
@@ -95,6 +111,7 @@ const ShaderCustomMaterial = shaderMaterial(
     ),
     blending: AdditiveBlending,
     depthWrite: false,
+    uDisplacementTexture: null as Texture | null,
     uProgress: 0,
 
     uTime: 0,
@@ -121,6 +138,9 @@ const ParticleMorphing = ({
   const { scene } = useGLTF(pathModel);
   const geometryRef = useRef<BufferGeometry>(new SphereGeometry(200, 64, 64));
   const shaderCustomMaterialRef = useRef<ShaderMaterial>(null);
+  const displacementTexture = useRaycastGeometryStore(
+    (s) => s.displacementTexture
+  );
   const particleIndex = useRef(showIndexModel);
   // 1) MotionValue для прогресу
   const uProgressMV = useMotionValue(0);
@@ -132,6 +152,8 @@ const ParticleMorphing = ({
       maxCount: 0,
       positions: [] as Float32BufferAttribute[],
       geometry: new BufferGeometry(),
+      intensities: [] as Float32BufferAttribute[],
+      angles: [] as Float32BufferAttribute[],
     };
   }, []);
 
@@ -197,6 +219,7 @@ const ParticleMorphing = ({
 
   useEffect(() => {
     geometryRef.current.setIndex(null);
+    // geometryRef.current.deleteAttribute("normal");
     if (scene) {
       const positions = scene.children
         .map((child) => {
@@ -230,6 +253,8 @@ const ParticleMorphing = ({
 
       const randomArray = new Float32Array(particles.maxCount * 3);
       const sizesArray = new Float32Array(particles.maxCount);
+      const intensities = new Float32Array(particles.maxCount);
+      const angles = new Float32Array(particles.maxCount);
       for (let i = 0; i < particles.maxCount; i++) {
         const i3 = i * 3;
         // випадковий напрямок (можна нормалізувати, але не обов'язково)
@@ -237,6 +262,8 @@ const ParticleMorphing = ({
         randomArray[i3 + 1] = Math.random() * 2 - 1;
         randomArray[i3 + 2] = Math.random() * 2 - 1;
         sizesArray[i] = Math.random();
+        intensities[i] = Math.random();
+        angles[i] = Math.random() * Math.PI * 2;
       }
 
       geometryRef.current.setAttribute(
@@ -247,8 +274,16 @@ const ParticleMorphing = ({
         "aSize",
         new Float32BufferAttribute(sizesArray, 1)
       );
+      geometryRef.current.setAttribute(
+        "aIntensity",
+        new Float32BufferAttribute(intensities, 1)
+      );
+      geometryRef.current.setAttribute(
+        "aAngle",
+        new Float32BufferAttribute(angles, 1)
+      );
     }
-  }, [scene, particles]);
+  }, [scene, particles, displacementTexture]);
 
   useFrame((state) => {
     const mat = shaderCustomMaterialRef.current;
@@ -260,7 +295,10 @@ const ParticleMorphing = ({
   return (
     <>
       <points frustumCulled={false} geometry={geometryRef.current} scale={10}>
-        <shaderCustomMaterial ref={shaderCustomMaterialRef} />
+        <shaderCustomMaterial
+          ref={shaderCustomMaterialRef}
+          uDisplacementTexture={displacementTexture}
+        />
       </points>
     </>
   );
