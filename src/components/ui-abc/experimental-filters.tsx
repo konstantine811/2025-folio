@@ -56,7 +56,7 @@ export function ExperimentalFilters({
           "px-4 py-1.5 rounded-md border font-mono text-[10px] uppercase font-bold tracking-wide transition-all duration-200 cursor-pointer",
           selectedType === "ALL" || selectedType === null
             ? "border-foreground/20 bg-foreground text-background"
-            : "border-foreground/10 bg-transparent text-muted-foreground hover:border-foreground/20 hover:text-foreground bg-background"
+            : "border-foreground/10  text-muted-foreground hover:border-foreground/20 hover:text-foreground bg-background"
         )}
       >
         ALL
@@ -75,7 +75,7 @@ export function ExperimentalFilters({
               "px-4 py-1.5 rounded-md border font-mono text-[10px] uppercase font-bold tracking-wide transition-all duration-200 cursor-pointer",
               isActive
                 ? "border-foreground/20 bg-foreground/70 text-background"
-                : "border-foreground/10 bg-transparent text-muted-foreground hover:border-foreground/20 hover:text-foreground bg-background"
+                : "border-foreground/10 text-muted-foreground hover:border-foreground/20 hover:text-foreground bg-background"
             )}
           >
             {formatTypeLabel(type)}
