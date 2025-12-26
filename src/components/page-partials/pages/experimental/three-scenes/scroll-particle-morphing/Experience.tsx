@@ -4,6 +4,8 @@ import { useFrame } from "@react-three/fiber";
 import { useState, useRef } from "react";
 import { Group, MathUtils, PlaneGeometry } from "three";
 import RaycastGeometry from "@/components/common/three/raycast-geometry/raycast-geometry";
+import { useThemeStore } from "@/storage/themeStore";
+import { ThemePalette } from "@/config/theme-colors.config";
 
 const Experience = ({
   pathModel = "/3d-models/models.glb",
@@ -13,6 +15,7 @@ const Experience = ({
   totalPages?: number;
 }) => {
   const data = useScroll();
+  const theme = useThemeStore((state) => state.selectedTheme);
 
   const [showIndexModel, setShowIndexModel] = useState(0);
 
@@ -47,7 +50,7 @@ const Experience = ({
   return (
     <>
       <Environment preset="sunset" />
-      <color attach="background" args={["#151515"]} />
+      <color attach="background" args={[ThemePalette[theme].background]} />
       <directionalLight position={[1, 1, 1]} intensity={1} />
       <RaycastGeometry
         raycasterGeometry={new PlaneGeometry(250, 130)}

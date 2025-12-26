@@ -15,6 +15,8 @@ import { RefObject, useCallback, useEffect, useMemo, useRef } from "react";
 import simplexNoise3dShader from "../particle-morphing/shaders/simplexNoise3d.glsl?raw";
 import { animate, useMotionValue } from "framer-motion";
 import { useRaycastGeometryStore } from "@/components/common/three/raycast-geometry/storage/raycast-storage";
+import { useThemeStore } from "@/storage/themeStore";
+import { ThemePalette } from "@/config/theme-colors.config";
 
 const sizes = {
   width: window.innerWidth,
@@ -110,7 +112,7 @@ const fragmentShader = /* glsl */ `
             vec2 uv = gl_PointCoord;
             float distanceToCenter = length(uv - 0.5);
             float alpha = 0.05 / distanceToCenter - 0.1;
-            gl_FragColor = vec4(vColor, alpha);
+            gl_FragColor = vec4(vColor, 1.0);
             #include <tonemapping_fragment>
             #include <colorspace_fragment>
         }
@@ -151,6 +153,7 @@ const ParticleMorphing = ({
 }) => {
   const { scene } = useGLTF(pathModel);
   const geometryRef = useRef<BufferGeometry>(new SphereGeometry(200, 64, 64));
+  const theme = useThemeStore((state) => state.selectedTheme);
   const shaderCustomMaterialRef = useRef<ShaderMaterial>(null);
   const displacementTexture = useRaycastGeometryStore(
     (s) => s.displacementTexture
@@ -298,12 +301,20 @@ const ParticleMorphing = ({
     mat.uniforms.uTime.value = state.clock.elapsedTime;
     mat.uniforms.uProgress.value = uSectionProgressRef.current;
   });
+
+  // useEffect(() => {
+  //   const mat = shaderCustomMaterialRef.current;
+  //   if (!mat) return;
+  //   mat.uniforms.uColorA.value = ThemePalette[theme].accent;
+  //   mat.uniforms.uColorB.value = ThemePalette[theme].secondary;
+  // }, [theme]);
   return (
     <>
       <points frustumCulled={false} geometry={geometryRef.current} scale={15}>
         <shaderCustomMaterial
           ref={shaderCustomMaterialRef}
           uDisplacementTexture={displacementTexture}
+          uColorA={ThemePalette[theme].accent}
         />
       </points>
     </>
