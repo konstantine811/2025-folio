@@ -15,6 +15,7 @@ import { useResizeListener } from "./hooks/useResizeListener";
 import { isLocalhost } from "./utils/env-inspect";
 import { Toaster } from "sonner";
 import Footer from "./components/page-partials/footer/footer";
+import { useSmoothScroll } from "./hooks/useSmoothScroll";
 
 function App() {
   subscribeToHoverSound();
@@ -25,6 +26,7 @@ function App() {
   useEffect(() => {
     setIsTouch(isTouchDevice);
   }, []);
+  useSmoothScroll(!isTouch); // Увімкнути smooth scroll тільки для non-touch пристроїв
 
   const renderRoutes = (routes: typeof router) =>
     routes.map(({ path, Component, children, id, isDev }) => {
