@@ -1,37 +1,44 @@
 import { Canvas } from "@react-three/fiber";
 import Experience from "./Experience";
-import { Suspense } from "react";
-import MainWrapperOffset from "@/components/ui-abc/main-wrapper-offset";
-import { Scroll, ScrollControls } from "@react-three/drei";
+import { Suspense, useRef } from "react";
 import UI from "./ui";
+import { useScroll } from "framer-motion";
 
 const ScollParticleMorphing = ({
   children,
-  totalPages = 3,
+  totalPages = 4,
   pathModel = "/3d-models/folio-scene/morphScene.glb",
 }: {
   children: React.ReactNode;
   totalPages?: number;
   pathModel?: string;
 }) => {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["end end", "start start"],
+  });
+
   return (
-    <MainWrapperOffset>
+    <div>
       {/* Fixed Canvas Background */}
-      <Canvas camera={{ position: [0, 10, 85], fov: 70 }}>
-        <Suspense fallback={null}>
-          <ScrollControls pages={totalPages} damping={0.2}>
-            <Experience totalPages={totalPages - 1} pathModel={pathModel} />
-            <Scroll html>
-              <div style={{ minHeight: "100%" }}>
-                {children ? children : <UI />}
-              </div>
-            </Scroll>
-          </ScrollControls>
-        </Suspense>
-      </Canvas>
+      <div className="fixed inset-0 top-0 w-full h-full z-0 pointer-events-auto">
+        <Canvas camera={{ position: [0, 10, 85], fov: 70 }}>
+          <Suspense fallback={null}>
+            <Experience
+              totalPages={totalPages}
+              pathModel={pathModel}
+              scrollYProgress={scrollYProgress}
+            />
+          </Suspense>
+        </Canvas>
+      </div>
 
       {/* Scrollable Content */}
-    </MainWrapperOffset>
+      <div ref={ref} className="relative top-0 z-10">
+        {children ? children : <UI />}
+      </div>
+    </div>
   );
 };
 

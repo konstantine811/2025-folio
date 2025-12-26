@@ -1,6 +1,6 @@
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   BufferGeometry,
   CanvasTexture,
@@ -65,12 +65,15 @@ const RaycastGeometry = ({
     } as Displacement;
   }, [isGeometryVisible]);
 
-  const onPointerMove = (event: PointerEvent) => {
-    displacement.screenCursor.set(
-      (event.clientX / window.innerWidth) * 2 - 1,
-      -(event.clientY / window.innerHeight) * 2 + 1
-    );
-  };
+  const onPointerMove = useCallback(
+    (event: PointerEvent) => {
+      displacement.screenCursor.set(
+        (event.clientX / window.innerWidth) * 2 - 1,
+        -(event.clientY / window.innerHeight) * 2 + 1
+      );
+    },
+    [displacement]
+  );
 
   useEffect(() => {
     const canvas = document.createElement("canvas");
@@ -154,10 +157,16 @@ const RaycastGeometry = ({
       displacementTexture.needsUpdate = true;
     }
   });
+
+  useEffect(() => {
+    window.addEventListener("pointermove", onPointerMove);
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+    };
+  }, [onPointerMove]);
   return (
     <mesh
       visible={displacement.interactivePlane.visible}
-      onPointerMove={onPointerMove}
       ref={interactivePlaneRef}
     >
       <bufferGeometry attach="geometry" {...raycasterGeometry} />

@@ -1,51 +1,34 @@
-import { Environment, useScroll } from "@react-three/drei";
+import { Environment } from "@react-three/drei";
 import ParticleMorphing from "./particle-morphing";
 import { useFrame } from "@react-three/fiber";
-import { useState, useRef } from "react";
-import { Group, MathUtils, PlaneGeometry } from "three";
+import { useState, useRef, useEffect } from "react";
+import { MathUtils, PlaneGeometry } from "three";
 import RaycastGeometry from "@/components/common/three/raycast-geometry/raycast-geometry";
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemePalette } from "@/config/theme-colors.config";
+import { MotionValue } from "framer-motion";
 
 const Experience = ({
   pathModel = "/3d-models/models.glb",
   totalPages = 3,
+  scrollYProgress,
 }: {
   pathModel?: string;
   totalPages?: number;
+  scrollYProgress: MotionValue<number>;
 }) => {
-  const data = useScroll();
   const theme = useThemeStore((state) => state.selectedTheme);
 
   const [showIndexModel, setShowIndexModel] = useState(0);
 
-  const groupRef = useRef<Group>(null);
-
   // <-- ОЦЕ і є прогрес секції (0..1) без setState
   const sectionProgressRef = useRef(0);
 
-  useFrame(() => {
-    const offset = MathUtils.clamp(data.offset, 0, 1);
-    // t: 0..totalPages
-    const t = offset * totalPages;
-    // index: 0..totalPages-1
-    const newIndex = offset >= 1 ? totalPages - 1 : Math.floor(t);
-
-    // progress: 0..1 (всередині секції)
-    const localProgress = offset >= 1 ? 1 : t - newIndex;
-
-    sectionProgressRef.current = MathUtils.clamp(localProgress, 0, 1);
-
-    setShowIndexModel(newIndex);
-
-    // Приклад твоєї вертикальної анімації (глобальний прогрес)
-    if (groupRef.current) {
-      const verticalRange = 10;
-      const startY = -verticalRange / 2;
-      const endY = verticalRange / 2;
-      groupRef.current.position.y = startY + (endY - startY) * offset;
-    }
-  });
+  useEffect(() => {
+    scrollYProgress.on("change", (value) => {
+      console.log("scrollYProgress", value);
+    });
+  }, [scrollYProgress]);
 
   return (
     <>
@@ -56,9 +39,9 @@ const Experience = ({
         raycasterGeometry={new PlaneGeometry(250, 130)}
         isGeometryVisible={false}
         isDebug={false}
-        cursorSize={0.08}
+        cursorSize={0.06}
       />
-      <group ref={groupRef}>
+      <group>
         <ParticleMorphing
           showIndexModel={showIndexModel}
           pathModel={pathModel}

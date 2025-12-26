@@ -226,7 +226,7 @@ const ParticleMorphing = ({
 
     const from = morphSection;
     const to = morphSection + 1;
-
+    console.log("onMorphing", showIndexModel);
     onMorphing(from, to);
   }, [showIndexModel, onMorphing, particles.positions.length]);
 
