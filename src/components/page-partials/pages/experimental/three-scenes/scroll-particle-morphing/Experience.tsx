@@ -1,6 +1,6 @@
 import { Environment } from "@react-three/drei";
 import ParticleMorphing from "./particle-morphing";
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { PlaneGeometry } from "three";
 import RaycastGeometry from "@/components/common/three/raycast-geometry/raycast-geometry";
 import { useThemeStore } from "@/storage/themeStore";
@@ -17,35 +17,24 @@ const Experience = ({
   scrollYProgress: MotionValue<number>;
 }) => {
   const theme = useThemeStore((state) => state.selectedTheme);
-  const pageIndexRef = useRef(0);
-  const [showIndexModel, setShowIndexModel] = useState(0);
 
-  // <-- ОЦЕ і є прогрес секції (0..1) без setState
+  const pageIndexRef = useRef(0);
   const sectionProgressRef = useRef(0);
 
   useEffect(() => {
     const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+    const pages = Math.max(1, totalPages - 1);
 
-    const pages = Math.max(1, totalPages - 1); // safety
     const unsubscribe = scrollYProgress.on("change", (value) => {
-      // 1) інверт 1..0 -> 0..1
-      const global = 1 - clamp01(value);
-
-      // 2) активна сторінка
+      const global = 1 - clamp01(value); // 0..1
       const raw = global * pages; // 0..pages
-      const pageIndex = Math.min(pages - 1, Math.floor(raw));
 
-      // 3) локальний прогрес всередині сторінки (0..1)
-      const sectionT = raw - pageIndex;
+      // маленький epsilon щоб не скакало на границі через float
+      const idx = Math.min(pages - 1, Math.floor(raw + 1e-6));
+      const t = raw - idx; // 0..1
 
-      // без ререндерів — для шейдера/юніформа
-      sectionProgressRef.current = sectionT;
-
-      // setState тільки коли сторінка змінилась
-      if (pageIndexRef.current !== pageIndex) {
-        pageIndexRef.current = pageIndex;
-        setShowIndexModel(pageIndex);
-      }
+      pageIndexRef.current = idx;
+      sectionProgressRef.current = t;
     });
 
     return () => unsubscribe();
@@ -64,12 +53,12 @@ const Experience = ({
       />
       <group>
         <ParticleMorphing
-          showIndexModel={showIndexModel}
           pathModel={pathModel}
+          uSectionProgressRef={sectionProgressRef}
+          uPageIndexRef={pageIndexRef}
           // глобальний прогрес (0..1) якщо теж треба
 
           // локальний прогрес секції (0..1) без ререндерів
-          uSectionProgressRef={sectionProgressRef}
         />
       </group>
     </>

@@ -4,7 +4,7 @@ import ExperienceCard from "./ExperienceCard";
 const Experience = () => {
   const { t } = useTranslation();
   return (
-    <section id="experience" className="lg:py-32 relative overflow-hidden">
+    <section id="experience" className="lg:pt-32 relative overflow-hidden">
       <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-muted-foreground to-transparent md:-translate-x-1/2"></div>
 
       <div className="max-w-5xl mx-auto px-6 relative">

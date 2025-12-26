@@ -1,7 +1,6 @@
 import { shaderMaterial, useGLTF } from "@react-three/drei";
 import { extend, useFrame } from "@react-three/fiber";
 import {
-  NormalBlending,
   Mesh,
   Vector2,
   Float32BufferAttribute,
@@ -10,7 +9,6 @@ import {
   ShaderMaterial,
   Color,
   Texture,
-  AdditiveBlending,
 } from "three";
 import { RefObject, useCallback, useEffect, useMemo, useRef } from "react";
 import simplexNoise3dShader from "../particle-morphing/shaders/simplexNoise3d.glsl?raw";
@@ -131,7 +129,6 @@ const ShaderCustomMaterial = shaderMaterial(
     depthWrite: false,
     uDisplacementTexture: null as Texture | null,
     uProgress: 0,
-    blending: AdditiveBlending,
 
     uTime: 0,
     uJitterAmp: 1.05, // амплітуда дрібного тремтіння (підбирай)
@@ -146,13 +143,13 @@ const ShaderCustomMaterial = shaderMaterial(
 extend({ ShaderCustomMaterial });
 
 const ParticleMorphing = ({
-  showIndexModel = 0,
   pathModel = "/3d-models/models.glb",
   uSectionProgressRef,
+  uPageIndexRef,
 }: {
-  showIndexModel: number;
   uSectionProgressRef: RefObject<number>;
   pathModel: string;
+  uPageIndexRef: RefObject<number>;
 }) => {
   const { scene } = useGLTF(pathModel);
   const geometryRef = useRef<BufferGeometry>(new SphereGeometry(200, 64, 64));
@@ -161,7 +158,7 @@ const ParticleMorphing = ({
   const displacementTexture = useRaycastGeometryStore(
     (s) => s.displacementTexture
   );
-  const particleIndex = useRef(showIndexModel);
+  const currentSectionRef = useRef(0);
   // 1) MotionValue для прогресу
   const uJitterAmpMV = useMotionValue(5.05);
   const uJitterFreqMV = useMotionValue(5.0);
@@ -212,22 +209,21 @@ const ParticleMorphing = ({
 
       geometryRef.current.setAttribute("position", prevPosition);
       geometryRef.current.setAttribute("aPositionTarget", nextPosition);
-      particleIndex.current = nextIndex;
     },
     [particles]
   );
 
-  useEffect(() => {
-    const len = particles.positions.length;
-    if (!len) return;
+  // useEffect(() => {
+  //   const len = particles.positions.length;
+  //   if (!len) return;
 
-    // секція для морфу максимум len-2, бо ми морфимо i -> i+1
-    const morphSection = Math.min(showIndexModel, Math.max(0, len - 2));
-
-    const from = morphSection;
-    const to = morphSection + 1;
-    onMorphing(from, to);
-  }, [showIndexModel, onMorphing, particles.positions.length]);
+  //   // секція для морфу максимум len-2, бо ми морфимо i -> i+1
+  //   const morphSection = showIndexModel;
+  //   console.log("morphSection", morphSection);
+  //   const from = morphSection;
+  //   const to = morphSection + 1;
+  //   onMorphing(from, to);
+  // }, [showIndexModel, onMorphing, particles.positions.length]);
 
   useEffect(() => {
     animate(uJitterAmpMV, 0.1, {
@@ -335,18 +331,27 @@ const ParticleMorphing = ({
     }
   }, [scene, particles, displacementTexture]);
 
-  useEffect(() => {
-    const mat = shaderCustomMaterialRef.current;
-    if (!mat) return;
-    // Встановлюємо blending для видимості на білому фоні
-    mat.blending = NormalBlending;
-    mat.transparent = true;
-  }, []);
-
   useFrame((state) => {
     const mat = shaderCustomMaterialRef.current;
     if (!mat) return;
+
     mat.uniforms.uTime.value = state.clock.elapsedTime;
+
+    const nextSection = uPageIndexRef.current ?? 0;
+
+    // якщо змінилась секція — СИНХРОННО міняємо атрибути геометрії
+    if (nextSection !== currentSectionRef.current) {
+      const from = nextSection;
+      const to = Math.min(from + 1, particles.positions.length - 1);
+
+      // важливо: тільки якщо є позиції
+      if (particles.positions.length > 0 && to >= 0) {
+        onMorphing(from, to);
+        currentSectionRef.current = nextSection;
+      }
+    }
+
+    // тепер progress точно відповідає активному морфу в цьому ж кадрі
     mat.uniforms.uProgress.value = uSectionProgressRef.current;
   });
 
