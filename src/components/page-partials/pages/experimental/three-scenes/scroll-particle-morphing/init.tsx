@@ -14,7 +14,10 @@ const Init = () => {
       <Canvas camera={{ position: [0, 10, 85], fov: 70 }}>
         <Suspense fallback={null}>
           <ScrollControls pages={4} damping={0.2}>
-            <Experience totalPages={3} pathModel={"/3d-models/models.glb"} />
+            <Experience
+              totalPages={3}
+              pathModel={"/3d-models/folio-scene/morphScene.glb"}
+            />
             <Scroll html>
               <UI />
             </Scroll>

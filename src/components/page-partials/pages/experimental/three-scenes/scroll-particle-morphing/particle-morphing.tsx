@@ -157,8 +157,8 @@ const ParticleMorphing = ({
   );
   const particleIndex = useRef(showIndexModel);
   // 1) MotionValue для прогресу
-  const uJitterAmpMV = useMotionValue(10.05);
-  const uJitterFreqMV = useMotionValue(10.0);
+  const uJitterAmpMV = useMotionValue(1.05);
+  const uJitterFreqMV = useMotionValue(1.0);
 
   const particles = useMemo(() => {
     return {
@@ -202,11 +202,11 @@ const ParticleMorphing = ({
   }, [showIndexModel, onMorphing, particles.positions.length]);
 
   useEffect(() => {
-    animate(uJitterAmpMV, 0.07, {
+    animate(uJitterAmpMV, 0.1, {
       duration: 5,
       ease: [0.22, 1, 0.36, 1], // приємний ease-out (можеш змінити)
     });
-    animate(uJitterFreqMV, 4.3, {
+    animate(uJitterFreqMV, 0.1, {
       duration: 7,
       ease: [0.22, 1, 0.36, 1], // приємний ease-out (можеш змінити)
     });
@@ -225,6 +225,7 @@ const ParticleMorphing = ({
   useEffect(() => {
     geometryRef.current.setIndex(null);
     geometryRef.current.deleteAttribute("normal");
+    console.log("scene", scene);
     if (scene) {
       const positions = scene.children
         .map((child) => {
