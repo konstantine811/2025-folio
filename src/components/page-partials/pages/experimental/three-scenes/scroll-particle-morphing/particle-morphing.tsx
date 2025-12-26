@@ -50,7 +50,7 @@ const vertexShader = /* glsl */ `
         float noise = mix(noiseOrigin, noiseTarget, uProgress);
         noise = smoothstep(-1.0, 1.0, noiseOrigin);
 
-        float duration = 0.4;
+        float duration = 0.8;
         float delay = (1.0 - duration) * noise;
         float end = delay + duration;
         float progress = smoothstep(delay, end, uProgress);
@@ -89,7 +89,7 @@ const vertexShader = /* glsl */ `
         vec3 displacement = vec3(sin(aAngle), cos(aAngle), 0.0);
         displacement = normalize(displacement);
         displacement *= displacementIntensity;
-        displacement *= 1.2;
+        displacement *= 0.8;
         displacement *= aIntensity;
         mixedPosition += displacement;
       
