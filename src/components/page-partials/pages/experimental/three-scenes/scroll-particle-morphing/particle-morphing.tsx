@@ -122,7 +122,7 @@ const fragmentShader = /* glsl */ `
 
 const ShaderCustomMaterial = shaderMaterial(
   {
-    uSize: 0.5,
+    uSize: 0.2,
     uResolution: new Vector2(
       sizes.width * sizes.pixelRatio,
       sizes.height * sizes.pixelRatio
