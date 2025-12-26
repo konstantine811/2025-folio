@@ -46,7 +46,7 @@ const Experience = ({
       <color attach="background" args={[ThemePalette[theme].card]} />
       <directionalLight position={[1, 1, 1]} intensity={1} />
       <RaycastGeometry
-        raycasterGeometry={new PlaneGeometry(250, 130)}
+        raycasterGeometry={new PlaneGeometry(220, 130)}
         isGeometryVisible={false}
         isDebug={false}
         cursorSize={0.06}

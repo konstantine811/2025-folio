@@ -20,7 +20,7 @@ const ScollParticleMorphing = ({
   });
 
   return (
-    <div>
+    <>
       {/* Fixed Canvas Background */}
       <div className="fixed inset-0 top-0 w-full h-full z-0 pointer-events-auto">
         <Canvas camera={{ position: [0, 10, 85], fov: 70 }}>
@@ -38,7 +38,7 @@ const ScollParticleMorphing = ({
       <div ref={ref} className="relative top-0 z-10">
         {children ? children : <UI />}
       </div>
-    </div>
+    </>
   );
 };
 

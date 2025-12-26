@@ -28,7 +28,7 @@ const Portfolio = () => {
       className="container mx-auto flex flex-col py-10"
       style={{ minHeight: `calc(100vh - ${hs}px)` }}
     >
-      <header className="relative w-full flex flex-col gap-5 justify-between grow">
+      <header className="relative w-full flex flex-col gap-5 justify-between grow px-10">
         <div className="font-mono text-xs text-muted-foreground tracking-widest border-l border-muted-foreground/40 pl-4">
           {t("portfolio.coord")}
           <br />
@@ -74,7 +74,7 @@ const Portfolio = () => {
           </h1>
         </div>
 
-        <div className="mt-12 max-w-xl border-l border-card pl-8">
+        <div className="mt-12 max-w-xl border-l border-card md:pl-8">
           <p className="font-mono text-xs md:text-sm text-muted-foreground leading-relaxed uppercase tracking-wide">
             {t("portfolio.description")}
           </p>

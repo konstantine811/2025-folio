@@ -34,7 +34,7 @@ const Header = memo(() => {
     <>
       <header
         ref={headerRef}
-        className="fixed top-0 z-50 w-full md:px-12 px-6 left-0 right-0 mix-blend-difference border-b border-b-foreground/10 backdrop-blur-md"
+        className="fixed top-0 z-50 w-full left-0 right-0 mix-blend-difference border-b border-b-foreground/10 backdrop-blur-md"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 items-center container mx-auto">
           <div className="flex items-center gap-3">

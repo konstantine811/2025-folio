@@ -14,10 +14,10 @@ const Footer = () => {
   return (
     <footer
       ref={footerRef}
-      className="border-t border-foreground/10 bg-background relative z-50"
+      className="border-t border-foreground/10 bg-background relative z-50 px-6 md:px-12 py-2"
     >
-      <div className="container mx-auto px-6 md:px-12 py-2 flex justify-between items-center gap-8">
-        <div className="flex items-center gap-3">
+      <div className="container mx-auto  flex justify-between items-center gap-8">
+        <div className="flex items-center gap-3 ">
           <LogoHomeNav />
           <div className="flex flex-col">
             <div className="flex items-center gap-2">

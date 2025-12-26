@@ -16,6 +16,7 @@ import { animate, useMotionValue } from "framer-motion";
 import { useRaycastGeometryStore } from "@/components/common/three/raycast-geometry/storage/raycast-storage";
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemePalette } from "@/config/theme-colors.config";
+import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 
 const sizes = {
   width: window.innerWidth,
@@ -152,6 +153,7 @@ const ParticleMorphing = ({
   uPageIndexRef: RefObject<number>;
 }) => {
   const { scene } = useGLTF(pathModel);
+  const { isAdoptiveSize: isMdSize } = useIsAdoptive();
   const geometryRef = useRef<BufferGeometry>(new SphereGeometry(200, 64, 64));
   const theme = useThemeStore((state) => state.selectedTheme);
   const shaderCustomMaterialRef = useRef<ShaderMaterial>(null);
@@ -371,7 +373,11 @@ const ParticleMorphing = ({
 
   return (
     <>
-      <points frustumCulled={false} geometry={geometryRef.current} scale={15}>
+      <points
+        frustumCulled={false}
+        geometry={geometryRef.current}
+        scale={isMdSize ? 9 : 18}
+      >
         <shaderCustomMaterial
           ref={shaderCustomMaterialRef}
           uDisplacementTexture={displacementTexture}
