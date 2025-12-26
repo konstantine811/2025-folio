@@ -16,7 +16,7 @@ const Footer = () => {
       ref={footerRef}
       className="border-t border-foreground/10 bg-background relative z-50"
     >
-      <div className="container mx-auto px-6 md:px-12 py-2 flex flex-col md:flex-row justify-between items-center gap-8">
+      <div className="container mx-auto px-6 md:px-12 py-2 flex justify-between items-center gap-8">
         <div className="flex items-center gap-3">
           <LogoHomeNav />
           <div className="flex flex-col">

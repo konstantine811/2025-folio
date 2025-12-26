@@ -9,12 +9,12 @@ const Home = () => {
   // const uid = import.meta.env.VITE_CONSTANTINE_UID;
   return (
     <ScollParticleMorphing
-      totalPages={3.2}
+      totalPages={3}
       pathModel="/3d-models/folio-scene/morphScene.glb"
     >
       <div
         className="relative w-screen bg-background/30 backdrop-blur-xs"
-        style={{ top: `${hs}px` }}
+        style={{ top: `${hs}px`, paddingBottom: "20vh" }}
       >
         <div>
           <Portfolio />

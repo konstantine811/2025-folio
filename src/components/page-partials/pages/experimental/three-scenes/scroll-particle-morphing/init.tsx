@@ -21,7 +21,11 @@ const ScollParticleMorphing = ({
         <Suspense fallback={null}>
           <ScrollControls pages={totalPages} damping={0.2}>
             <Experience totalPages={totalPages - 1} pathModel={pathModel} />
-            <Scroll html>{children ? children : <UI />}</Scroll>
+            <Scroll html>
+              <div style={{ minHeight: "100%" }}>
+                {children ? children : <UI />}
+              </div>
+            </Scroll>
           </ScrollControls>
         </Suspense>
       </Canvas>
