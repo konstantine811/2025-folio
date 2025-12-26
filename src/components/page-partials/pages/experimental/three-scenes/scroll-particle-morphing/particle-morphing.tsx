@@ -118,7 +118,7 @@ const fragmentShader = /* glsl */ `
 
 const ShaderCustomMaterial = shaderMaterial(
   {
-    uSize: 0.8,
+    uSize: 0.5,
     uResolution: new Vector2(
       sizes.width * sizes.pixelRatio,
       sizes.height * sizes.pixelRatio
@@ -157,8 +157,8 @@ const ParticleMorphing = ({
   );
   const particleIndex = useRef(showIndexModel);
   // 1) MotionValue для прогресу
-  const uJitterAmpMV = useMotionValue(1.05);
-  const uJitterFreqMV = useMotionValue(1.0);
+  const uJitterAmpMV = useMotionValue(5.05);
+  const uJitterFreqMV = useMotionValue(5.0);
 
   const particles = useMemo(() => {
     return {

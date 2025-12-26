@@ -21,8 +21,8 @@ const ScollParticleMorphing = ({
       <ThreeLoader />
       <Canvas camera={{ position: [0, 10, 85], fov: 70 }}>
         <Suspense fallback={null}>
-          <ScrollControls pages={totalPages + 1} damping={0.2}>
-            <Experience totalPages={totalPages} pathModel={pathModel} />
+          <ScrollControls pages={totalPages} damping={0.2}>
+            <Experience totalPages={totalPages - 1} pathModel={pathModel} />
             <Scroll html>{children ? children : <UI />}</Scroll>
           </ScrollControls>
         </Suspense>
