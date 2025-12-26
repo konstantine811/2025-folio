@@ -6,21 +6,24 @@ import { Scroll, ScrollControls } from "@react-three/drei";
 import UI from "./ui";
 import ThreeLoader from "../common/three-loader";
 
-const Init = () => {
+const ScollParticleMorphing = ({
+  children,
+  totalPages = 3,
+  pathModel = "/3d-models/folio-scene/morphScene.glb",
+}: {
+  children: React.ReactNode;
+  totalPages?: number;
+  pathModel?: string;
+}) => {
   return (
     <MainWrapperOffset>
       {/* Fixed Canvas Background */}
       <ThreeLoader />
       <Canvas camera={{ position: [0, 10, 85], fov: 70 }}>
         <Suspense fallback={null}>
-          <ScrollControls pages={4} damping={0.2}>
-            <Experience
-              totalPages={3}
-              pathModel={"/3d-models/folio-scene/morphScene.glb"}
-            />
-            <Scroll html>
-              <UI />
-            </Scroll>
+          <ScrollControls pages={totalPages + 1} damping={0.2}>
+            <Experience totalPages={totalPages} pathModel={pathModel} />
+            <Scroll html>{children ? children : <UI />}</Scroll>
           </ScrollControls>
         </Suspense>
       </Canvas>
@@ -30,4 +33,4 @@ const Init = () => {
   );
 };
 
-export default Init;
+export default ScollParticleMorphing;
