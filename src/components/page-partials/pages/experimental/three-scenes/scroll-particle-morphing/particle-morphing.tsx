@@ -1,7 +1,7 @@
 import { shaderMaterial, useGLTF } from "@react-three/drei";
 import { extend, useFrame } from "@react-three/fiber";
 import {
-  AdditiveBlending,
+  NormalBlending,
   Mesh,
   Vector2,
   Float32BufferAttribute,
@@ -10,6 +10,7 @@ import {
   ShaderMaterial,
   Color,
   Texture,
+  AdditiveBlending,
 } from "three";
 import { RefObject, useCallback, useEffect, useMemo, useRef } from "react";
 import simplexNoise3dShader from "../particle-morphing/shaders/simplexNoise3d.glsl?raw";
@@ -111,8 +112,10 @@ const fragmentShader = /* glsl */ `
         {
             vec2 uv = gl_PointCoord;
             float distanceToCenter = length(uv - 0.5);
-            float alpha = 0.05 / distanceToCenter - 0.1;
-            gl_FragColor = vec4(vColor, 1.0);
+            // Збільшуємо альфа для кращої видимості на білому фоні
+            float alpha = 0.3 / (distanceToCenter + 0.1) - 0.5;
+            alpha = clamp(alpha, 0.0, 1.0);
+            gl_FragColor = vec4(vColor, alpha);
             #include <tonemapping_fragment>
             #include <colorspace_fragment>
         }
@@ -125,10 +128,10 @@ const ShaderCustomMaterial = shaderMaterial(
       sizes.width * sizes.pixelRatio,
       sizes.height * sizes.pixelRatio
     ),
-    blending: AdditiveBlending,
     depthWrite: false,
     uDisplacementTexture: null as Texture | null,
     uProgress: 0,
+    blending: AdditiveBlending,
 
     uTime: 0,
     uJitterAmp: 1.05, // амплітуда дрібного тремтіння (підбирай)
@@ -294,6 +297,14 @@ const ParticleMorphing = ({
     }
   }, [scene, particles, displacementTexture]);
 
+  useEffect(() => {
+    const mat = shaderCustomMaterialRef.current;
+    if (!mat) return;
+    // Встановлюємо blending для видимості на білому фоні
+    mat.blending = NormalBlending;
+    mat.transparent = true;
+  }, []);
+
   useFrame((state) => {
     const mat = shaderCustomMaterialRef.current;
     if (!mat) return;
@@ -302,12 +313,6 @@ const ParticleMorphing = ({
     mat.uniforms.uProgress.value = uSectionProgressRef.current;
   });
 
-  // useEffect(() => {
-  //   const mat = shaderCustomMaterialRef.current;
-  //   if (!mat) return;
-  //   mat.uniforms.uColorA.value = ThemePalette[theme].accent;
-  //   mat.uniforms.uColorB.value = ThemePalette[theme].secondary;
-  // }, [theme]);
   return (
     <>
       <points frustumCulled={false} geometry={geometryRef.current} scale={15}>
@@ -315,6 +320,7 @@ const ParticleMorphing = ({
           ref={shaderCustomMaterialRef}
           uDisplacementTexture={displacementTexture}
           uColorA={ThemePalette[theme].accent}
+          uColorB={ThemePalette[theme].foreground}
         />
       </points>
     </>

@@ -50,7 +50,7 @@ const Experience = ({
   return (
     <>
       <Environment preset="sunset" />
-      <color attach="background" args={[ThemePalette[theme].background]} />
+      <color attach="background" args={[ThemePalette[theme].card]} />
       <directionalLight position={[1, 1, 1]} intensity={1} />
       <RaycastGeometry
         raycasterGeometry={new PlaneGeometry(250, 130)}
