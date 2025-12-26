@@ -9,7 +9,7 @@ const Home = () => {
   return (
     <ScollParticleMorphing totalPages={3}>
       <div
-        className="relative z-10"
+        className="relative z-10 bg-background/50 backdrop-blur-xs"
         style={{ top: `${hs}px`, paddingBottom: "20vh" }}
       >
         <Portfolio />
