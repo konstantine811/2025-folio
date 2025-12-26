@@ -254,7 +254,6 @@ const ParticleMorphing = ({
   useEffect(() => {
     geometryRef.current.setIndex(null);
     geometryRef.current.deleteAttribute("normal");
-    console.log("scene", scene);
     if (scene) {
       const positions = scene.children
         .map((child) => {
@@ -348,7 +347,6 @@ const ParticleMorphing = ({
   useFrame((state) => {
     const mat = shaderCustomMaterialRef.current;
     if (!mat) return;
-    // console.log("uSectionProgressRef", uSectionProgressRef);
     mat.uniforms.uTime.value = state.clock.elapsedTime;
     mat.uniforms.uProgress.value = uSectionProgressRef.current;
   });
