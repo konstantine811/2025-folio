@@ -184,8 +184,31 @@ const ParticleMorphing = ({
         return;
       }
 
+      // Перевірка, чи індекси в межах масиву
+      if (
+        !particles.positions ||
+        particles.positions.length === 0 ||
+        prevIndex < 0 ||
+        nextIndex < 0 ||
+        prevIndex >= particles.positions.length ||
+        nextIndex >= particles.positions.length
+      ) {
+        console.warn("onMorphing: invalid indices", {
+          prevIndex,
+          nextIndex,
+          positionsLength: particles.positions?.length || 0,
+        });
+        return;
+      }
+
       const prevPosition = particles.positions[prevIndex];
       const nextPosition = particles.positions[nextIndex];
+
+      // Перевірка, чи атрибути не undefined
+      if (!prevPosition || !nextPosition) {
+        console.warn("onMorphing: position attributes are undefined");
+        return;
+      }
 
       geometryRef.current.setAttribute("position", prevPosition);
       geometryRef.current.setAttribute("aPositionTarget", nextPosition);
@@ -294,6 +317,23 @@ const ParticleMorphing = ({
         "aAngle",
         new Float32BufferAttribute(angles, 1)
       );
+
+      // Встановлюємо початкову позицію після створення всіх атрибутів
+      if (particles.positions.length > 0) {
+        geometryRef.current.setAttribute("position", particles.positions[0]);
+        // Встановлюємо aPositionTarget на першу позицію як початкову
+        if (particles.positions.length > 1) {
+          geometryRef.current.setAttribute(
+            "aPositionTarget",
+            particles.positions[1]
+          );
+        } else {
+          geometryRef.current.setAttribute(
+            "aPositionTarget",
+            particles.positions[0]
+          );
+        }
+      }
     }
   }, [scene, particles, displacementTexture]);
 
@@ -312,6 +352,20 @@ const ParticleMorphing = ({
     mat.uniforms.uTime.value = state.clock.elapsedTime;
     mat.uniforms.uProgress.value = uSectionProgressRef.current;
   });
+
+  // Перевірка, чи всі необхідні атрибути встановлені перед рендерингом
+  const isGeometryReady =
+    geometryRef.current &&
+    geometryRef.current.attributes.position &&
+    geometryRef.current.attributes.aPositionTarget &&
+    geometryRef.current.attributes.aRandom &&
+    geometryRef.current.attributes.aSize &&
+    geometryRef.current.attributes.aIntensity &&
+    geometryRef.current.attributes.aAngle;
+
+  if (!isGeometryReady) {
+    return null;
+  }
 
   return (
     <>
