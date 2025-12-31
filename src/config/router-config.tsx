@@ -261,6 +261,13 @@ const ThreeScrollParticleMorphing = lazyPage(
     )
 );
 
+const ThreeYukaFirstConusAgent = lazyPage(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/yuka/first-conus-agent/init"
+    )
+);
+
 const LoginPage = lazyPage(
   () => import("../components/page-partials/pages/Login")
 );
@@ -308,6 +315,7 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_GENIVERSE = "three-geniverse",
   EXPERIMENTAL_THREE_PARTICLE_MORPHING = "three-particle-morphing",
   EXPERIMENTAL_THREE_SCROLL_PARTICLE_MORPHING = "three-scroll-particle-morphing",
+  EXPERIMENTAL_THREE_YUKA_FIRST_CONUS_AGENT = "three-yuka-first-conus-agent",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -356,6 +364,7 @@ export enum ExperimentalTypes {
   vfx = "vfx",
   particles = "particles",
   optimization = "optimization",
+  yuka = "yuka",
 }
 
 export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
@@ -647,6 +656,15 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     description: "A scroll particle morphing scene created with Three.js.",
     imageUrl: imagePath("scroll-particle-morphing"),
     type: ExperimentalTypes.particle,
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_YUKA_FIRST_CONUS_AGENT,
+    Component: ThreeYukaFirstConusAgent,
+    id: "experimental-three-yuka-first-conus-agent",
+    icon: "🌍",
+    description: "A yuka first conus agent scene created with Three.js.",
+    imageUrl: imagePath("yuka-first-conus-agent"),
+    type: ExperimentalTypes.yuka,
   },
 ];
 
