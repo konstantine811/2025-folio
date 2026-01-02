@@ -154,13 +154,15 @@ const ParticleMorphing = ({
 }) => {
   const { scene } = useGLTF(pathModel);
   const { isAdoptiveSize: isMdSize } = useIsAdoptive();
-  const geometryRef = useRef<BufferGeometry>(new SphereGeometry(200, 64, 64));
+  const sphereGeometry = useMemo(() => new SphereGeometry(200, 64, 64), []);
+  const geometryRef = useRef<BufferGeometry>(sphereGeometry.clone());
   const theme = useThemeStore((state) => state.selectedTheme);
   const shaderCustomMaterialRef = useRef<ShaderMaterial>(null);
   const displacementTexture = useRaycastGeometryStore(
     (s) => s.displacementTexture
   );
   const currentSectionRef = useRef(0);
+  const isModelLoadedRef = useRef(false);
   // 1) MotionValue для прогресу
   const uJitterAmpMV = useMotionValue(5.05);
   const uJitterFreqMV = useMotionValue(5.0);
@@ -248,90 +250,144 @@ const ParticleMorphing = ({
     });
   }, [uJitterAmpMV, uJitterFreqMV]);
 
+  // Ініціалізація сфери з частинками (показується поки модель завантажується)
   useEffect(() => {
+    const spherePos = sphereGeometry.attributes.position;
+    const sphereCount = spherePos.count;
+    
+    // Ініціалізуємо атрибути для сфери
+    const randomArray = new Float32Array(sphereCount * 3);
+    const sizesArray = new Float32Array(sphereCount);
+    const intensities = new Float32Array(sphereCount);
+    const angles = new Float32Array(sphereCount);
+    
+    for (let i = 0; i < sphereCount; i++) {
+      const i3 = i * 3;
+      randomArray[i3 + 0] = Math.random() * 2 - 1;
+      randomArray[i3 + 1] = Math.random() * 2 - 1;
+      randomArray[i3 + 2] = Math.random() * 2 - 1;
+      sizesArray[i] = Math.random();
+      intensities[i] = Math.random() + 1.5;
+      angles[i] = Math.random() * Math.PI * 2;
+    }
+
     geometryRef.current.setIndex(null);
     geometryRef.current.deleteAttribute("normal");
-    if (scene) {
-      const positions = scene.children
-        .map((child) => {
-          if (child instanceof Mesh) {
-            return child.geometry.attributes.position;
-          }
-        })
-        .filter((position) => position !== undefined);
-      particles.maxCount = Math.max(
-        ...positions.map((position) => position.count)
-      );
-      positions.forEach((position) => {
-        const originalArray = position.array;
-        const newArray = new Float32Array(particles.maxCount * 3);
+    geometryRef.current.setAttribute("position", spherePos);
+    geometryRef.current.setAttribute("aPositionTarget", spherePos.clone());
+    geometryRef.current.setAttribute(
+      "aRandom",
+      new Float32BufferAttribute(randomArray, 3)
+    );
+    geometryRef.current.setAttribute(
+      "aSize",
+      new Float32BufferAttribute(sizesArray, 1)
+    );
+    geometryRef.current.setAttribute(
+      "aIntensity",
+      new Float32BufferAttribute(intensities, 1)
+    );
+    geometryRef.current.setAttribute(
+      "aAngle",
+      new Float32BufferAttribute(angles, 1)
+    );
+  }, [sphereGeometry]);
 
-        for (let i = 0; i < particles.maxCount; i++) {
-          const i3 = i * 3;
-          if (i3 < originalArray.length) {
-            newArray[i3] = originalArray[i3 + 0];
-            newArray[i3 + 1] = originalArray[i3 + 1];
-            newArray[i3 + 2] = originalArray[i3 + 2];
-          } else {
-            const randomIndex = Math.floor(position.count * Math.random()) * 3;
-            newArray[i3 + 0] = originalArray[randomIndex + 0];
-            newArray[i3 + 1] = originalArray[randomIndex + 1];
-            newArray[i3 + 2] = originalArray[randomIndex + 2];
-          }
+  // Оновлення геометрії коли модель завантажиться
+  useEffect(() => {
+    if (!scene || scene.children.length === 0) {
+      return;
+    }
+
+    const positions = scene.children
+      .map((child) => {
+        if (child instanceof Mesh) {
+          return child.geometry.attributes.position;
         }
-        particles.positions.push(new Float32BufferAttribute(newArray, 3));
-      });
+      })
+      .filter((position) => position !== undefined);
 
-      const randomArray = new Float32Array(particles.maxCount * 3);
-      const sizesArray = new Float32Array(particles.maxCount);
-      const intensities = new Float32Array(particles.maxCount);
-      const angles = new Float32Array(particles.maxCount);
+    if (positions.length === 0) {
+      return;
+    }
+
+    particles.maxCount = Math.max(
+      ...positions.map((position) => position.count)
+    );
+    
+    // Очищаємо попередні позиції
+    particles.positions = [];
+    
+    positions.forEach((position) => {
+      const originalArray = position.array;
+      const newArray = new Float32Array(particles.maxCount * 3);
+
       for (let i = 0; i < particles.maxCount; i++) {
         const i3 = i * 3;
-        // випадковий напрямок (можна нормалізувати, але не обов'язково)
-        randomArray[i3 + 0] = Math.random() * 2 - 1;
-        randomArray[i3 + 1] = Math.random() * 2 - 1;
-        randomArray[i3 + 2] = Math.random() * 2 - 1;
-        sizesArray[i] = Math.random();
-        intensities[i] = Math.random() + 1.5;
-        angles[i] = Math.random() * Math.PI * 2;
-      }
-
-      geometryRef.current.setAttribute(
-        "aRandom",
-        new Float32BufferAttribute(randomArray, 3)
-      );
-      geometryRef.current.setAttribute(
-        "aSize",
-        new Float32BufferAttribute(sizesArray, 1)
-      );
-      geometryRef.current.setAttribute(
-        "aIntensity",
-        new Float32BufferAttribute(intensities, 1)
-      );
-      geometryRef.current.setAttribute(
-        "aAngle",
-        new Float32BufferAttribute(angles, 1)
-      );
-
-      // Встановлюємо початкову позицію після створення всіх атрибутів
-      if (particles.positions.length > 0) {
-        geometryRef.current.setAttribute("position", particles.positions[0]);
-        // Встановлюємо aPositionTarget на першу позицію як початкову
-        if (particles.positions.length > 1) {
-          geometryRef.current.setAttribute(
-            "aPositionTarget",
-            particles.positions[1]
-          );
+        if (i3 < originalArray.length) {
+          newArray[i3] = originalArray[i3 + 0];
+          newArray[i3 + 1] = originalArray[i3 + 1];
+          newArray[i3 + 2] = originalArray[i3 + 2];
         } else {
-          geometryRef.current.setAttribute(
-            "aPositionTarget",
-            particles.positions[0]
-          );
+          const randomIndex = Math.floor(position.count * Math.random()) * 3;
+          newArray[i3 + 0] = originalArray[randomIndex + 0];
+          newArray[i3 + 1] = originalArray[randomIndex + 1];
+          newArray[i3 + 2] = originalArray[randomIndex + 2];
         }
       }
+      particles.positions.push(new Float32BufferAttribute(newArray, 3));
+    });
+
+    const randomArray = new Float32Array(particles.maxCount * 3);
+    const sizesArray = new Float32Array(particles.maxCount);
+    const intensities = new Float32Array(particles.maxCount);
+    const angles = new Float32Array(particles.maxCount);
+    for (let i = 0; i < particles.maxCount; i++) {
+      const i3 = i * 3;
+      randomArray[i3 + 0] = Math.random() * 2 - 1;
+      randomArray[i3 + 1] = Math.random() * 2 - 1;
+      randomArray[i3 + 2] = Math.random() * 2 - 1;
+      sizesArray[i] = Math.random();
+      intensities[i] = Math.random() + 1.5;
+      angles[i] = Math.random() * Math.PI * 2;
     }
-  }, [scene, particles, displacementTexture]);
+
+    geometryRef.current.setIndex(null);
+    geometryRef.current.deleteAttribute("normal");
+    geometryRef.current.setAttribute(
+      "aRandom",
+      new Float32BufferAttribute(randomArray, 3)
+    );
+    geometryRef.current.setAttribute(
+      "aSize",
+      new Float32BufferAttribute(sizesArray, 1)
+    );
+    geometryRef.current.setAttribute(
+      "aIntensity",
+      new Float32BufferAttribute(intensities, 1)
+    );
+    geometryRef.current.setAttribute(
+      "aAngle",
+      new Float32BufferAttribute(angles, 1)
+    );
+
+    // Встановлюємо позиції з моделі
+    if (particles.positions.length > 0) {
+      geometryRef.current.setAttribute("position", particles.positions[0]);
+      if (particles.positions.length > 1) {
+        geometryRef.current.setAttribute(
+          "aPositionTarget",
+          particles.positions[1]
+        );
+      } else {
+        geometryRef.current.setAttribute(
+          "aPositionTarget",
+          particles.positions[0]
+        );
+      }
+      isModelLoadedRef.current = true;
+    }
+  }, [scene, particles, sphereGeometry]);
 
   useFrame((state) => {
     const mat = shaderCustomMaterialRef.current;
@@ -339,22 +395,28 @@ const ParticleMorphing = ({
 
     mat.uniforms.uTime.value = state.clock.elapsedTime;
 
-    const nextSection = uPageIndexRef.current ?? 0;
+    // Морфінг тільки після завантаження моделі
+    if (isModelLoadedRef.current && particles.positions.length > 0) {
+      const nextSection = uPageIndexRef.current ?? 0;
 
-    // якщо змінилась секція — СИНХРОННО міняємо атрибути геометрії
-    if (nextSection !== currentSectionRef.current) {
-      const from = nextSection;
-      const to = Math.min(from + 1, particles.positions.length - 1);
+      // якщо змінилась секція — СИНХРОННО міняємо атрибути геометрії
+      if (nextSection !== currentSectionRef.current) {
+        const from = nextSection;
+        const to = Math.min(from + 1, particles.positions.length - 1);
 
-      // важливо: тільки якщо є позиції
-      if (particles.positions.length > 0 && to >= 0) {
-        onMorphing(from, to);
-        currentSectionRef.current = nextSection;
+        // важливо: тільки якщо є позиції
+        if (to >= 0) {
+          onMorphing(from, to);
+          currentSectionRef.current = nextSection;
+        }
       }
-    }
 
-    // тепер progress точно відповідає активному морфу в цьому ж кадрі
-    mat.uniforms.uProgress.value = uSectionProgressRef.current;
+      // тепер progress точно відповідає активному морфу в цьому ж кадрі
+      mat.uniforms.uProgress.value = uSectionProgressRef.current;
+    } else {
+      // Поки модель завантажується, progress = 0 (показуємо сферу)
+      mat.uniforms.uProgress.value = 0;
+    }
   });
 
   // Перевірка, чи всі необхідні атрибути встановлені перед рендерингом

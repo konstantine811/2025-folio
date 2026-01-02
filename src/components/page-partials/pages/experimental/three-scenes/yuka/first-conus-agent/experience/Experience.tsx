@@ -14,7 +14,7 @@ const points = [
 const Experience = () => {
   const vehicleMeshRef = useRef<Mesh>(null);
 
-  const { entityManager, vehicle } = useMemo(() => {
+  const { entityManager, vehicle, yDelta } = useMemo(() => {
     const entityManager = new Yuka.EntityManager();
 
     const vehicle = new Yuka.Vehicle();
@@ -36,7 +36,9 @@ const Experience = () => {
 
     entityManager.add(vehicle);
 
-    return { entityManager, vehicle };
+    const yDelta = new Yuka.Time();
+
+    return { entityManager, vehicle, yDelta };
   }, []);
 
   // Sync-функція: копіюємо worldMatrix Yuka → matrix Three
@@ -60,9 +62,10 @@ const Experience = () => {
     }
   }, [sync, vehicle, entityManager]);
 
-  useFrame((_, delta) => {
+  useFrame(() => {
     if (entityManager) {
-      entityManager.update(delta);
+      const yukaDelta = yDelta.update().getDelta();
+      entityManager.update(yukaDelta);
     }
   });
   return (
