@@ -10,7 +10,7 @@ import {
   Color,
   Texture,
 } from "three";
-import { RefObject, useCallback, useEffect, useMemo, useRef } from "react";
+import { RefObject, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import simplexNoise3dShader from "../particle-morphing/shaders/simplexNoise3d.glsl?raw";
 import { animate, useMotionValue } from "framer-motion";
 import { useRaycastGeometryStore } from "@/components/common/three/raycast-geometry/storage/raycast-storage";
@@ -155,7 +155,53 @@ const ParticleMorphing = ({
   const { scene } = useGLTF(pathModel);
   const { isAdoptiveSize: isMdSize } = useIsAdoptive();
   const sphereGeometry = useMemo(() => new SphereGeometry(200, 64, 64), []);
-  const geometryRef = useRef<BufferGeometry>(sphereGeometry.clone());
+  
+  // Ініціалізуємо геометрію сфери з усіма атрибутами синхронно
+  const initialGeometry = useMemo(() => {
+    const geom = sphereGeometry.clone();
+    const spherePos = sphereGeometry.attributes.position;
+    const sphereCount = spherePos.count;
+    
+    const randomArray = new Float32Array(sphereCount * 3);
+    const sizesArray = new Float32Array(sphereCount);
+    const intensities = new Float32Array(sphereCount);
+    const angles = new Float32Array(sphereCount);
+    
+    for (let i = 0; i < sphereCount; i++) {
+      const i3 = i * 3;
+      randomArray[i3 + 0] = Math.random() * 2 - 1;
+      randomArray[i3 + 1] = Math.random() * 2 - 1;
+      randomArray[i3 + 2] = Math.random() * 2 - 1;
+      sizesArray[i] = Math.random();
+      intensities[i] = Math.random() + 1.5;
+      angles[i] = Math.random() * Math.PI * 2;
+    }
+
+    geom.setIndex(null);
+    geom.deleteAttribute("normal");
+    geom.setAttribute("position", spherePos);
+    geom.setAttribute("aPositionTarget", spherePos.clone());
+    geom.setAttribute(
+      "aRandom",
+      new Float32BufferAttribute(randomArray, 3)
+    );
+    geom.setAttribute(
+      "aSize",
+      new Float32BufferAttribute(sizesArray, 1)
+    );
+    geom.setAttribute(
+      "aIntensity",
+      new Float32BufferAttribute(intensities, 1)
+    );
+    geom.setAttribute(
+      "aAngle",
+      new Float32BufferAttribute(angles, 1)
+    );
+    
+    return geom;
+  }, [sphereGeometry]);
+  
+  const geometryRef = useRef<BufferGeometry>(initialGeometry);
   const theme = useThemeStore((state) => state.selectedTheme);
   const shaderCustomMaterialRef = useRef<ShaderMaterial>(null);
   const displacementTexture = useRaycastGeometryStore(
@@ -250,48 +296,12 @@ const ParticleMorphing = ({
     });
   }, [uJitterAmpMV, uJitterFreqMV]);
 
-  // Ініціалізація сфери з частинками (показується поки модель завантажується)
-  useEffect(() => {
-    const spherePos = sphereGeometry.attributes.position;
-    const sphereCount = spherePos.count;
-    
-    // Ініціалізуємо атрибути для сфери
-    const randomArray = new Float32Array(sphereCount * 3);
-    const sizesArray = new Float32Array(sphereCount);
-    const intensities = new Float32Array(sphereCount);
-    const angles = new Float32Array(sphereCount);
-    
-    for (let i = 0; i < sphereCount; i++) {
-      const i3 = i * 3;
-      randomArray[i3 + 0] = Math.random() * 2 - 1;
-      randomArray[i3 + 1] = Math.random() * 2 - 1;
-      randomArray[i3 + 2] = Math.random() * 2 - 1;
-      sizesArray[i] = Math.random();
-      intensities[i] = Math.random() + 1.5;
-      angles[i] = Math.random() * Math.PI * 2;
+  // Оновлюємо geometryRef при зміні initialGeometry
+  useLayoutEffect(() => {
+    if (geometryRef.current !== initialGeometry) {
+      geometryRef.current = initialGeometry;
     }
-
-    geometryRef.current.setIndex(null);
-    geometryRef.current.deleteAttribute("normal");
-    geometryRef.current.setAttribute("position", spherePos);
-    geometryRef.current.setAttribute("aPositionTarget", spherePos.clone());
-    geometryRef.current.setAttribute(
-      "aRandom",
-      new Float32BufferAttribute(randomArray, 3)
-    );
-    geometryRef.current.setAttribute(
-      "aSize",
-      new Float32BufferAttribute(sizesArray, 1)
-    );
-    geometryRef.current.setAttribute(
-      "aIntensity",
-      new Float32BufferAttribute(intensities, 1)
-    );
-    geometryRef.current.setAttribute(
-      "aAngle",
-      new Float32BufferAttribute(angles, 1)
-    );
-  }, [sphereGeometry]);
+  }, [initialGeometry]);
 
   // Оновлення геометрії коли модель завантажиться
   useEffect(() => {

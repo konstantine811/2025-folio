@@ -16,6 +16,7 @@ import { isLocalhost } from "./utils/env-inspect";
 import { Toaster } from "sonner";
 import Footer from "./components/page-partials/footer/footer";
 import { useSmoothScroll } from "./hooks/useSmoothScroll";
+import { preloadSounds } from "./config/sounds";
 
 function App() {
   subscribeToHoverSound();
@@ -26,6 +27,27 @@ function App() {
   useEffect(() => {
     setIsTouch(isTouchDevice);
   }, []);
+
+  // Завантажуємо звуки асинхронно після завантаження сторінки
+  useEffect(() => {
+    const handleLoad = () => {
+      preloadSounds().catch((error) => {
+        console.warn("Помилка завантаження звуків:", error);
+      });
+    };
+
+    if (document.readyState === "complete") {
+      // Сторінка вже завантажена
+      handleLoad();
+    } else {
+      // Чекаємо на завантаження сторінки
+      window.addEventListener("load", handleLoad);
+      return () => {
+        window.removeEventListener("load", handleLoad);
+      };
+    }
+  }, []);
+
   useSmoothScroll(!isTouch); // Увімкнути smooth scroll тільки для non-touch пристроїв
 
   const renderRoutes = (routes: typeof router) =>
