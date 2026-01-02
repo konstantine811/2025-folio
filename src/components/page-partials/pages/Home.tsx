@@ -13,7 +13,7 @@ const Home = () => {
   const sectionProgressRef = useRef(0);
   return (
     <>
-      <div className="fixed inset-0 top-0 w-full h-full z-0 pointer-events-auto">
+      <div className="fixed inset-0 top-0 w-full h-full z-0 pointer-events-auto pb-20">
         <Canvas camera={{ position: [0, 10, 85], fov: 70 }}>
           <ExperienceCanvas
             uSectionProgressRef={sectionProgressRef}
