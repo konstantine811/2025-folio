@@ -7,6 +7,9 @@ const useEnvSoundToPath = () => {
   const path = location.pathname;
   const isSoundEnabled = useSoundEnabledStore((state) => state.isSoundEnabled);
   useEffect(() => {
+    // Не граємо звук, поки сторінка не завантажена
+    if (document.readyState !== "complete") return;
+    
     if (!envSound.playing()) {
       envSound.play();
     }

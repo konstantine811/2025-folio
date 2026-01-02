@@ -33,11 +33,13 @@ const RaycastGeometry = ({
   isGeometryVisible = false,
   isDebug = false,
   cursorSize = 0.3,
+  useScreenPosition = false,
 }: {
   raycasterGeometry?: BufferGeometry;
   isGeometryVisible?: boolean;
   isDebug?: boolean;
   cursorSize?: number;
+  useScreenPosition?: boolean;
 }) => {
   const raycast = useMemo(() => new Raycaster(), []);
   const interactivePlaneRef = useRef<Mesh>(null);
@@ -111,18 +113,28 @@ const RaycastGeometry = ({
   }, [displacement, hs, setDisplacementTexture, isDebug]);
 
   useFrame(({ camera }) => {
-    raycast.setFromCamera(displacement.screenCursor, camera);
-    if (interactivePlaneRef.current) {
-      const intersections = raycast.intersectObject(
-        interactivePlaneRef.current
+    if (useScreenPosition) {
+      // Використовуємо позицію курсора на екрані напряму
+      // Перетворюємо з NDC координат (-1 до 1) в координати canvas (0 до width/height)
+      displacement.canvasCursor.set(
+        ((displacement.screenCursor.x + 1) / 2) * displacement.canvas.width,
+        ((1 - displacement.screenCursor.y) / 2) * displacement.canvas.height
       );
-      if (intersections.length) {
-        const uv = intersections[0].uv;
-        if (uv) {
-          displacement.canvasCursor.set(
-            uv.x * displacement.canvas.width,
-            (1 - uv.y) * displacement.canvas.height
-          );
+    } else {
+      // Використовуємо raycast для відстеження позиції на геометрії
+      raycast.setFromCamera(displacement.screenCursor, camera);
+      if (interactivePlaneRef.current) {
+        const intersections = raycast.intersectObject(
+          interactivePlaneRef.current
+        );
+        if (intersections.length) {
+          const uv = intersections[0].uv;
+          if (uv) {
+            displacement.canvasCursor.set(
+              uv.x * displacement.canvas.width,
+              (1 - uv.y) * displacement.canvas.height
+            );
+          }
         }
       }
     }
@@ -166,7 +178,7 @@ const RaycastGeometry = ({
   }, [onPointerMove]);
   return (
     <mesh
-      visible={displacement.interactivePlane.visible}
+      visible={useScreenPosition ? false : displacement.interactivePlane.visible}
       ref={interactivePlaneRef}
     >
       <bufferGeometry attach="geometry" {...raycasterGeometry} />

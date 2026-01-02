@@ -2,7 +2,7 @@ import Header from "@components/page-partials/header-nav/header";
 import StickyCursor from "@components/mouse/sticky-cursor";
 import { subscribeToHoverSound } from "@services/subscribeHoverAudio";
 // import MouseTrail from "@components/mouse/mouse-trail";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useLayoutEffect, useState } from "react";
 import { Routes, Route } from "react-router";
 import { router } from "@config/router-config";
 import TransitionPage from "@components/page-partials/page-setting/transition-page";
@@ -17,6 +17,7 @@ import { Toaster } from "sonner";
 import Footer from "./components/page-partials/footer/footer";
 import { useSmoothScroll } from "./hooks/useSmoothScroll";
 import { preloadSounds } from "./config/sounds";
+import { setSoundsReady } from "./services/subscribeHoverAudio";
 
 function App() {
   subscribeToHoverSound();
@@ -28,24 +29,45 @@ function App() {
     setIsTouch(isTouchDevice);
   }, []);
 
-  // Завантажуємо звуки асинхронно після завантаження сторінки
-  useEffect(() => {
-    const handleLoad = () => {
-      preloadSounds().catch((error) => {
-        console.warn("Помилка завантаження звуків:", error);
-      });
+  // Завантажуємо звуки тільки після першої взаємодії користувача
+  useLayoutEffect(() => {
+    let soundsLoaded = false;
+
+    const loadSoundsOnInteraction = () => {
+      if (soundsLoaded) return;
+      soundsLoaded = true;
+
+      preloadSounds()
+        .then(() => {
+          setSoundsReady(true);
+        })
+        .catch((error) => {
+          console.warn("Помилка завантаження звуків:", error);
+        });
+
+      // Видаляємо слухачі після першого завантаження
+      window.removeEventListener("click", loadSoundsOnInteraction);
+      window.removeEventListener("pointerdown", loadSoundsOnInteraction);
+      window.removeEventListener("keydown", loadSoundsOnInteraction);
+      window.removeEventListener("touchstart", loadSoundsOnInteraction);
     };
 
-    if (document.readyState === "complete") {
-      // Сторінка вже завантажена
-      handleLoad();
-    } else {
-      // Чекаємо на завантаження сторінки
-      window.addEventListener("load", handleLoad);
-      return () => {
-        window.removeEventListener("load", handleLoad);
-      };
-    }
+    // Додаємо слухачі для першої взаємодії
+    window.addEventListener("click", loadSoundsOnInteraction, { once: true });
+    window.addEventListener("pointerdown", loadSoundsOnInteraction, {
+      once: true,
+    });
+    window.addEventListener("keydown", loadSoundsOnInteraction, { once: true });
+    window.addEventListener("touchstart", loadSoundsOnInteraction, {
+      once: true,
+    });
+
+    return () => {
+      window.removeEventListener("click", loadSoundsOnInteraction);
+      window.removeEventListener("pointerdown", loadSoundsOnInteraction);
+      window.removeEventListener("keydown", loadSoundsOnInteraction);
+      window.removeEventListener("touchstart", loadSoundsOnInteraction);
+    };
   }, []);
 
   useSmoothScroll(!isTouch); // Увімкнути smooth scroll тільки для non-touch пристроїв

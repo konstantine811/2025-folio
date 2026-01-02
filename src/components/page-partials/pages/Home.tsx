@@ -4,7 +4,7 @@ import HorizontalLine from "@/components/ui-abc/shapes/horizontal-line";
 import TechStack from "./portfolio/TechStack/TechStack";
 import Experience from "./portfolio/Experience/Experience";
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useRef } from "react";
+import { useRef } from "react";
 import ExperienceCanvas from "@/components/page-partials/pages/experimental/three-scenes/scroll-particle-morphing/Experience";
 import ScrollSectionProgress from "@/components/common/scroll/scroll-section-progress";
 const Home = () => {
@@ -15,13 +15,11 @@ const Home = () => {
     <>
       <div className="fixed inset-0 top-0 w-full h-full z-0 pointer-events-auto">
         <Canvas camera={{ position: [0, 10, 85], fov: 70 }}>
-          <Suspense fallback={null}>
-            <ExperienceCanvas
-              uSectionProgressRef={sectionProgressRef}
-              uPageIndexRef={pageIndexRef}
-              pathModel={"/3d-models/folio-scene/morphScene.glb"}
-            />
-          </Suspense>
+          <ExperienceCanvas
+            uSectionProgressRef={sectionProgressRef}
+            uPageIndexRef={pageIndexRef}
+            pathModel={"/3d-models/folio-scene/morphScene.glb"}
+          />
         </Canvas>
       </div>
       <ScrollSectionProgress

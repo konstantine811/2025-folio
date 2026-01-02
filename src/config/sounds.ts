@@ -294,24 +294,27 @@ export const preloadSounds = async (): Promise<void> => {
     envSound,
   ];
 
-  // Завантажуємо звуки асинхронно після завантаження сторінки
+  // Завантажуємо звуки асинхронно після взаємодії користувача
   return new Promise((resolve) => {
-    // Використовуємо requestIdleCallback або setTimeout для завантаження після рендеру
+    // Використовуємо requestIdleCallback з великим таймаутом або setTimeout для завантаження після рендеру
     const loadSounds = () => {
-      sounds.forEach((sound) => {
-        // Перевіряємо, чи звук ще не завантажений (state() повертає 'unloaded' або 'loading')
-        const state = sound.state();
-        if (state === "unloaded") {
-          sound.load();
-        }
-      });
-      resolve();
+      // Додаткова затримка, щоб не блокувати рендеринг
+      setTimeout(() => {
+        sounds.forEach((sound) => {
+          // Перевіряємо, чи звук ще не завантажений (state() повертає 'unloaded' або 'loading')
+          const state = sound.state();
+          if (state === "unloaded") {
+            sound.load();
+          }
+        });
+        resolve();
+      }, 500); // Додаткова затримка 500ms
     };
 
     if (typeof requestIdleCallback !== "undefined") {
-      requestIdleCallback(loadSounds, { timeout: 2000 });
+      requestIdleCallback(loadSounds, { timeout: 5000 }); // Збільшуємо таймаут до 5 секунд
     } else {
-      setTimeout(loadSounds, 100);
+      setTimeout(loadSounds, 1000); // Збільшуємо затримку до 1 секунди
     }
   });
 };

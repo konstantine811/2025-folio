@@ -20,13 +20,11 @@ const ScollParticleMorphing = ({
       {/* Fixed Canvas Background */}
       <div className="fixed inset-0 top-0 w-full h-full z-0 pointer-events-auto">
         <Canvas camera={{ position: [0, 10, 85], fov: 70 }}>
-          <Suspense fallback={null}>
-            <Experience
-              pathModel={pathModel}
-              uSectionProgressRef={sectionProgressRef}
-              uPageIndexRef={pageIndexRef}
-            />
-          </Suspense>
+          <Experience
+            pathModel={pathModel}
+            uSectionProgressRef={sectionProgressRef}
+            uPageIndexRef={pageIndexRef}
+          />
         </Canvas>
       </div>
 

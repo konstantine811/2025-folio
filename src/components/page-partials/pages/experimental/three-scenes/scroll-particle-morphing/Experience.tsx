@@ -1,6 +1,6 @@
-import { Environment } from "@react-three/drei";
 import ParticleMorphing from "./particle-morphing";
-import { RefObject } from "react";
+import ParticleMorphingSphere from "./particle-morphing-sphere";
+import { RefObject, Suspense, useState } from "react";
 import { PlaneGeometry } from "three";
 import RaycastGeometry from "@/components/common/three/raycast-geometry/raycast-geometry";
 import { useThemeStore } from "@/storage/themeStore";
@@ -16,10 +16,10 @@ const Experience = ({
   uPageIndexRef: RefObject<number>;
 }) => {
   const theme = useThemeStore((state) => state.selectedTheme);
+  const [isModelLoaded, setIsModelLoaded] = useState(false);
 
   return (
     <>
-      <Environment preset="sunset" />
       <color attach="background" args={[ThemePalette[theme].card]} />
       <directionalLight position={[1, 1, 1]} intensity={1} />
       <RaycastGeometry
@@ -27,17 +27,23 @@ const Experience = ({
         isGeometryVisible={false}
         isDebug={false}
         cursorSize={0.06}
+        useScreenPosition={true}
       />
-      <group>
+      {/* Сфера рендериться одразу, поза Suspense, приховується коли модель завантажиться */}
+      {!isModelLoaded && <ParticleMorphingSphere />}
+
+      {/* Модель завантажується в Suspense */}
+      <Suspense fallback={null}>
         <ParticleMorphing
           pathModel={pathModel}
           uSectionProgressRef={uSectionProgressRef}
           uPageIndexRef={uPageIndexRef}
+          onModelLoaded={() => setIsModelLoaded(true)}
           // глобальний прогрес (0..1) якщо теж треба
 
           // локальний прогрес секції (0..1) без ререндерів
         />
-      </group>
+      </Suspense>
     </>
   );
 };

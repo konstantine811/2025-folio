@@ -15,8 +15,24 @@ let lastType: SoundTypeElement | null = null;
 let lastTime = 0;
 const SOUND_THROTTLE_MS = 50;
 
+// Прапорець, що вказує, чи звуки можна використовувати
+let soundsReady = false;
+
+export function setSoundsReady(ready: boolean) {
+  soundsReady = ready;
+}
+
+// Перевіряємо, чи сторінка завантажена (для перевірки перед викликом звуків)
+function isPageLoaded(): boolean {
+  if (typeof window === "undefined") return false;
+  return document.readyState === "complete";
+}
+
 export function subscribeToHoverSound() {
   useHoverStore.subscribe((state) => {
+    // Не граємо звуки, поки сторінка не завантажена або звуки не готові
+    if (!isPageLoaded() || !soundsReady) return;
+    
     const isSoundEnabled = useSoundEnabledStore.getState().isSoundEnabled;
     if (!isSoundEnabled) return;
 

@@ -10,7 +10,7 @@ import {
   Color,
   Texture,
 } from "three";
-import { RefObject, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { RefObject, useCallback, useEffect, useMemo, useRef } from "react";
 import simplexNoise3dShader from "../particle-morphing/shaders/simplexNoise3d.glsl?raw";
 import { animate, useMotionValue } from "framer-motion";
 import { useRaycastGeometryStore } from "@/components/common/three/raycast-geometry/storage/raycast-storage";
@@ -147,26 +147,47 @@ const ParticleMorphing = ({
   pathModel = "/3d-models/models.glb",
   uSectionProgressRef,
   uPageIndexRef,
+  onModelLoaded,
 }: {
   uSectionProgressRef: RefObject<number>;
   pathModel: string;
   uPageIndexRef: RefObject<number>;
+  onModelLoaded?: () => void;
 }) => {
-  const { scene } = useGLTF(pathModel);
   const { isAdoptiveSize: isMdSize } = useIsAdoptive();
   const sphereGeometry = useMemo(() => new SphereGeometry(200, 64, 64), []);
-  
+
+  // Попереднє завантаження моделі
+  useEffect(() => {
+    useGLTF.preload(pathModel);
+  }, [pathModel]);
+
+  const { scene } = useGLTF(pathModel);
+
   // Ініціалізуємо геометрію сфери з усіма атрибутами синхронно
   const initialGeometry = useMemo(() => {
     const geom = sphereGeometry.clone();
     const spherePos = sphereGeometry.attributes.position;
     const sphereCount = spherePos.count;
-    
+
+    // Створюємо масив позицій для сфери (як в updateGeometry)
+    const spherePositions: Float32BufferAttribute[] = [];
+    const originalArray = spherePos.array;
+    const newArray = new Float32Array(sphereCount * 3);
+
+    for (let i = 0; i < sphereCount; i++) {
+      const i3 = i * 3;
+      newArray[i3] = originalArray[i3 + 0];
+      newArray[i3 + 1] = originalArray[i3 + 1];
+      newArray[i3 + 2] = originalArray[i3 + 2];
+    }
+    spherePositions.push(new Float32BufferAttribute(newArray, 3));
+
     const randomArray = new Float32Array(sphereCount * 3);
     const sizesArray = new Float32Array(sphereCount);
     const intensities = new Float32Array(sphereCount);
     const angles = new Float32Array(sphereCount);
-    
+
     for (let i = 0; i < sphereCount; i++) {
       const i3 = i * 3;
       randomArray[i3 + 0] = Math.random() * 2 - 1;
@@ -179,28 +200,24 @@ const ParticleMorphing = ({
 
     geom.setIndex(null);
     geom.deleteAttribute("normal");
-    geom.setAttribute("position", spherePos);
-    geom.setAttribute("aPositionTarget", spherePos.clone());
-    geom.setAttribute(
-      "aRandom",
-      new Float32BufferAttribute(randomArray, 3)
-    );
-    geom.setAttribute(
-      "aSize",
-      new Float32BufferAttribute(sizesArray, 1)
-    );
-    geom.setAttribute(
-      "aIntensity",
-      new Float32BufferAttribute(intensities, 1)
-    );
-    geom.setAttribute(
-      "aAngle",
-      new Float32BufferAttribute(angles, 1)
-    );
-    
+    geom.setAttribute("aRandom", new Float32BufferAttribute(randomArray, 3));
+    geom.setAttribute("aSize", new Float32BufferAttribute(sizesArray, 1));
+    geom.setAttribute("aIntensity", new Float32BufferAttribute(intensities, 1));
+    geom.setAttribute("aAngle", new Float32BufferAttribute(angles, 1));
+
+    // Встановлюємо позиції зі сфери
+    if (spherePositions.length > 0) {
+      geom.setAttribute("position", spherePositions[0]);
+      if (spherePositions.length > 1) {
+        geom.setAttribute("aPositionTarget", spherePositions[1]);
+      } else {
+        geom.setAttribute("aPositionTarget", spherePositions[0]);
+      }
+    }
+
     return geom;
   }, [sphereGeometry]);
-  
+
   const geometryRef = useRef<BufferGeometry>(initialGeometry);
   const theme = useThemeStore((state) => state.selectedTheme);
   const shaderCustomMaterialRef = useRef<ShaderMaterial>(null);
@@ -222,6 +239,24 @@ const ParticleMorphing = ({
       angles: [] as Float32BufferAttribute[],
     };
   }, []);
+
+  // Зберігаємо позиції сфери в particles (як в updateGeometry)
+  useEffect(() => {
+    const spherePos = sphereGeometry.attributes.position;
+    const sphereCount = spherePos.count;
+    const originalArray = spherePos.array;
+    const newArray = new Float32Array(sphereCount * 3);
+
+    for (let i = 0; i < sphereCount; i++) {
+      const i3 = i * 3;
+      newArray[i3] = originalArray[i3 + 0];
+      newArray[i3 + 1] = originalArray[i3 + 1];
+      newArray[i3 + 2] = originalArray[i3 + 2];
+    }
+
+    particles.maxCount = sphereCount;
+    particles.positions = [new Float32BufferAttribute(newArray, 3)];
+  }, [sphereGeometry, particles]);
 
   const onMorphing = useCallback(
     (prevIndex: number, nextIndex: number) => {
@@ -296,15 +331,9 @@ const ParticleMorphing = ({
     });
   }, [uJitterAmpMV, uJitterFreqMV]);
 
-  // Оновлюємо geometryRef при зміні initialGeometry
-  useLayoutEffect(() => {
-    if (geometryRef.current !== initialGeometry) {
-      geometryRef.current = initialGeometry;
-    }
-  }, [initialGeometry]);
-
   // Оновлення геометрії коли модель завантажиться
-  useEffect(() => {
+
+  const updateGeometry = useCallback(() => {
     if (!scene || scene.children.length === 0) {
       return;
     }
@@ -324,10 +353,10 @@ const ParticleMorphing = ({
     particles.maxCount = Math.max(
       ...positions.map((position) => position.count)
     );
-    
+
     // Очищаємо попередні позиції
     particles.positions = [];
-    
+
     positions.forEach((position) => {
       const originalArray = position.array;
       const newArray = new Float32Array(particles.maxCount * 3);
@@ -396,8 +425,12 @@ const ParticleMorphing = ({
         );
       }
       isModelLoadedRef.current = true;
+      onModelLoaded?.();
     }
-  }, [scene, particles, sphereGeometry]);
+  }, [scene, particles, onModelLoaded]);
+  useEffect(() => {
+    updateGeometry();
+  }, [updateGeometry]);
 
   useFrame((state) => {
     const mat = shaderCustomMaterialRef.current;
@@ -428,20 +461,6 @@ const ParticleMorphing = ({
       mat.uniforms.uProgress.value = 0;
     }
   });
-
-  // Перевірка, чи всі необхідні атрибути встановлені перед рендерингом
-  const isGeometryReady =
-    geometryRef.current &&
-    geometryRef.current.attributes.position &&
-    geometryRef.current.attributes.aPositionTarget &&
-    geometryRef.current.attributes.aRandom &&
-    geometryRef.current.attributes.aSize &&
-    geometryRef.current.attributes.aIntensity &&
-    geometryRef.current.attributes.aAngle;
-
-  if (!isGeometryReady) {
-    return null;
-  }
 
   return (
     <>
