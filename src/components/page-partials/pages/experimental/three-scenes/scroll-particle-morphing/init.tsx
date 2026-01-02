@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import Experience from "./Experience";
-import { Suspense, useRef } from "react";
+import { useRef } from "react";
 import ScrollSectionProgress from "@/components/common/scroll/scroll-section-progress";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 
