@@ -66,7 +66,7 @@ const Header = memo(() => {
           </div>
         </div>
       </header>
-      <div className="fixed right-4 md:right-8 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-card/50 backdrop-blur-md border border-muted-foreground/10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-all duration-300 shadow-2xl p-0 m-0 outline-0">
+      <div className="fixed right-4 md:right-8 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-card border border-muted-foreground/10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-all duration-300 shadow-2xl p-0 m-0 outline-0">
         <NavMenu />
       </div>
       {isOpen && (

@@ -70,7 +70,7 @@ const Experience = () => {
   });
   return (
     <group>
-      <group ref={vehicleMeshRef}>
+      <group ref={vehicleMeshRef} position={points[0]}>
         <mesh rotation-x={Math.PI / 2}>
           <coneGeometry args={[0.7, 1.5, 8]} />
           <meshNormalMaterial />

@@ -388,7 +388,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     description:
       "A simple physics engine simulation using Three.js and Rapier.js.",
     icon: "🌌",
-    type: ExperimentalTypes.physics,
+    type: ExperimentalTypes.games,
   },
   {
     path: RoutPath.EXPERIMENTAL_THREE_STAGING,

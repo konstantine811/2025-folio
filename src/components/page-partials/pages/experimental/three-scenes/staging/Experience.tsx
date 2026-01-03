@@ -6,7 +6,7 @@ import {
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemePalette } from "@/config/theme-colors.config";
 import Lights from "./Lights";
-import FerrariModel from "./FerrariModel";
+import FerrariModel from "@components/common/three/models/cars/FerrariModel";
 
 const Experience = () => {
   const theme = useThemeStore((s) => s.selectedTheme);
