@@ -1,7 +1,7 @@
 import { Line } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
-import { Matrix4, Mesh, Object3D, Vector3 } from "three";
+import { Group, Matrix4, Object3D, Vector3 } from "three";
 import * as Yuka from "yuka";
 
 const points = [
@@ -9,10 +9,17 @@ const points = [
   new Vector3(-10, 0, 10),
   new Vector3(0, 0, 2.5),
   new Vector3(20, 0, 20),
+  new Vector3(-5, 0, -5),
 ];
 
+const sync = (entity: Yuka.GameEntity, renderComponent: Object3D) => {
+  console.log(entity.worldMatrix);
+  renderComponent.matrix.copy(entity.worldMatrix as unknown as Matrix4);
+  renderComponent.matrixAutoUpdate = false;
+};
+
 const Experience = () => {
-  const vehicleMeshRef = useRef<Mesh>(null);
+  const vehicleMeshRef = useRef<Group>(null);
 
   const { entityManager, vehicle, yDelta } = useMemo(() => {
     const entityManager = new Yuka.EntityManager();
@@ -25,7 +32,6 @@ const Experience = () => {
       path.add(new Yuka.Vector3(point.x, point.y, point.z))
     );
     path.loop = true;
-
     vehicle.position.copy(path.current());
     const followBehavior = new Yuka.FollowPathBehavior(path, 5.5);
     vehicle.steering.add(followBehavior);
@@ -35,32 +41,17 @@ const Experience = () => {
     vehicle.steering.add(onPathBehavior);
 
     entityManager.add(vehicle);
-
     const yDelta = new Yuka.Time();
 
     return { entityManager, vehicle, yDelta };
   }, []);
 
-  // Sync-функція: копіюємо worldMatrix Yuka → matrix Three
-  const sync = useMemo(
-    () => (entity: Yuka.GameEntity, renderComponent: Object3D) => {
-      renderComponent.matrix.copy(entity.worldMatrix as unknown as Matrix4);
-      renderComponent.matrixAutoUpdate = false;
-    },
-    []
-  );
-
   // Привʼязуємо Mesh-и до Yuka-сутностей
   useEffect(() => {
     if (vehicleMeshRef.current) {
-      vehicleMeshRef.current.matrixAutoUpdate = true;
-
       vehicle.setRenderComponent(vehicleMeshRef.current, sync);
-      vehicle.position.copy(
-        new Yuka.Vector3(points[0].x, points[0].y, points[0].z)
-      );
     }
-  }, [sync, vehicle, entityManager]);
+  }, [vehicle, entityManager]);
 
   useFrame(() => {
     if (entityManager) {
