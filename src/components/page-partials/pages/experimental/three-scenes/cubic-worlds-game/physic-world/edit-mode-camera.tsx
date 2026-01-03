@@ -55,8 +55,8 @@ const EditModeCamera = () => {
         camMinDis={-0.2}
         camTargetPos={new Vector3(0, 0, 0)}
         camMaxDis={-7}
-        maxVelLimit={3}
         sprintMult={3}
+        maxVelLimit={3}
         animated
         characterPosition={characterPositionVec}
         characterRotation={characterRotationEuler}

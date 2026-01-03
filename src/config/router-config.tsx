@@ -268,6 +268,13 @@ const ThreeYukaFirstConusAgent = lazyPage(
     )
 );
 
+const ThreeYukaCarSelfDriving = lazyPage(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/yuka/car-self-driving/init"
+    )
+);
+
 const LoginPage = lazyPage(
   () => import("../components/page-partials/pages/Login")
 );
@@ -316,6 +323,7 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_PARTICLE_MORPHING = "three-particle-morphing",
   EXPERIMENTAL_THREE_SCROLL_PARTICLE_MORPHING = "three-scroll-particle-morphing",
   EXPERIMENTAL_THREE_YUKA_FIRST_CONUS_AGENT = "three-yuka-first-conus-agent",
+  EXPERIMENTAL_THREE_YUKA_CAR_SELF_DRIVING = "three-yuka-car-self-driving",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -664,6 +672,15 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     icon: "🌍",
     description: "A yuka first conus agent scene created with Three.js.",
     imageUrl: imagePath("yuka-first-conus-agent"),
+    type: ExperimentalTypes.yuka,
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_YUKA_CAR_SELF_DRIVING,
+    Component: ThreeYukaCarSelfDriving,
+    id: "experimental-three-yuka-car-self-driving",
+    icon: "🚗",
+    description: "A yuka car self driving scene created with Three.js.",
+    imageUrl: imagePath("yuka-car-self-driving"),
     type: ExperimentalTypes.yuka,
   },
 ];

@@ -12,6 +12,7 @@ import BreakableCrate from "./box-crash/box-crash";
 // import OwnHouse from "./own-house/own-house";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { BoxTool } from "./box";
+import OwnHouse from "./own-house/own-house";
 // import HighRiseBuild from "./high-rise-build/high-rise-build";
 // import GrassWrapper from "../../grass/grass-wrapper";
 
@@ -28,7 +29,7 @@ const Environment = () => {
       {/* <HouseModel position={[-20, 0, 40]} /> */}
       <Lights />
       <Scatters />
-      {/* <OwnHouse position={[37, 0, 16]} rotation={[0, Math.PI, 0]} /> */}
+      <OwnHouse position={[37, 0, 16]} rotation={[0, Math.PI, 0]} />
       <BoxTool />
       {/* <HighRiseBuild position={[60, 25, 10]} rotation={[0, -Math.PI / 2, 0]} /> */}
       <BreakableCrate idBox="box-first" position={[0, 1, 0]} scale={3} />
