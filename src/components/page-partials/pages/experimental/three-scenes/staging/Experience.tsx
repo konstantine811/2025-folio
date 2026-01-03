@@ -3,10 +3,10 @@ import {
   MeshReflectorMaterial,
   OrbitControls,
 } from "@react-three/drei";
-import TeslaModel3 from "./TeslaModel3";
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemePalette } from "@/config/theme-colors.config";
 import Lights from "./Lights";
+import FerrariModel from "./FerrariModel";
 
 const Experience = () => {
   const theme = useThemeStore((s) => s.selectedTheme);
@@ -21,12 +21,13 @@ const Experience = () => {
         minDistance={6}
       />
       <ambientLight intensity={0.4} />
-      <TeslaModel3
+      {/* <TeslaModel3
         props={{
           scale: 0.012,
           position: [0, 0, 0.6],
         }}
-      />
+      /> */}
+      <FerrariModel scale={100.012} position={[0, -0.76, 0.6]} />
       {/* <Environment>
         <Background />
       </Environment> */}
@@ -38,7 +39,7 @@ const Experience = () => {
       <mesh position={[0, -0.76, 0]} rotation-x={-Math.PI / 2}>
         <planeGeometry args={[100, 100]} />
         <MeshReflectorMaterial
-          color={ThemePalette[theme].muted}
+          color={ThemePalette[theme].foreground}
           resolution={1024}
           roughness={0.6}
           mixStrength={3}
