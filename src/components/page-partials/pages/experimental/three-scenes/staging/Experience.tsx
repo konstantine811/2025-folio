@@ -27,7 +27,7 @@ const Experience = () => {
           position: [0, 0, 0.6],
         }}
       /> */}
-      <FerrariModel scale={100.012} position={[0, -0.76, 0.6]} />
+      <FerrariModel position={[0, -0.76, 0.6]} />
       {/* <Environment>
         <Background />
       </Environment> */}

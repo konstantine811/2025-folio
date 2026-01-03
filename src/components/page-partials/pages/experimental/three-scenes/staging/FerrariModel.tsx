@@ -8,7 +8,7 @@ function FerrariModel(props: JSX.IntrinsicElements["group"]) {
   );
   return (
     <group {...props} dispose={null}>
-      <group scale={0.01}>
+      <group scale={1}>
         <primitive object={nodes._rootJoint} />
         <group position={[0, 0.118, 0]}>
           <mesh
