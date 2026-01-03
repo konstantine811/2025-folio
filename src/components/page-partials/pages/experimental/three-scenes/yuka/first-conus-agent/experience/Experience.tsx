@@ -13,7 +13,6 @@ const points = [
 ];
 
 const sync = (entity: Yuka.GameEntity, renderComponent: Object3D) => {
-  console.log(entity.worldMatrix);
   renderComponent.matrix.copy(entity.worldMatrix as unknown as Matrix4);
   renderComponent.matrixAutoUpdate = false;
 };
@@ -21,7 +20,7 @@ const sync = (entity: Yuka.GameEntity, renderComponent: Object3D) => {
 const Experience = () => {
   const vehicleMeshRef = useRef<Group>(null);
 
-  const { entityManager, vehicle, yDelta } = useMemo(() => {
+  const { entityManager, vehicle, yDelta, path } = useMemo(() => {
     const entityManager = new Yuka.EntityManager();
 
     const vehicle = new Yuka.Vehicle();
@@ -43,15 +42,17 @@ const Experience = () => {
     entityManager.add(vehicle);
     const yDelta = new Yuka.Time();
 
-    return { entityManager, vehicle, yDelta };
+    return { entityManager, vehicle, yDelta, path };
   }, []);
 
   // Привʼязуємо Mesh-и до Yuka-сутностей
   useEffect(() => {
     if (vehicleMeshRef.current) {
+      // Встановлюємо render component
       vehicle.setRenderComponent(vehicleMeshRef.current, sync);
+      yDelta.reset();
     }
-  }, [vehicle, entityManager]);
+  }, [vehicle, entityManager, path, yDelta]);
 
   useFrame(() => {
     if (entityManager) {
@@ -61,7 +62,7 @@ const Experience = () => {
   });
   return (
     <group>
-      <group ref={vehicleMeshRef} position={points[0]}>
+      <group ref={vehicleMeshRef}>
         <mesh rotation-x={Math.PI / 2}>
           <coneGeometry args={[0.7, 1.5, 8]} />
           <meshNormalMaterial />
