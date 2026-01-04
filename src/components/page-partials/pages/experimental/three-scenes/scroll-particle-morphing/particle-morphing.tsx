@@ -227,8 +227,8 @@ const ParticleMorphing = ({
   const currentSectionRef = useRef(0);
   const isModelLoadedRef = useRef(false);
   // 1) MotionValue для прогресу
-  const uJitterAmpMV = useMotionValue(5.05);
-  const uJitterFreqMV = useMotionValue(5.0);
+  const uJitterAmpMV = useMotionValue(0.5);
+  const uJitterFreqMV = useMotionValue(0.2);
 
   const particles = useMemo(() => {
     return {

@@ -8,8 +8,10 @@ import {
   ShaderMaterial,
   Color,
   Texture,
+  MeshStandardMaterial,
 } from "three";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useEffect } from "react";
+import type { MotionValue } from "framer-motion";
 import { useRaycastGeometryStore } from "@/components/common/three/raycast-geometry/storage/raycast-storage";
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemePalette } from "@/config/theme-colors.config";
@@ -104,6 +106,7 @@ const vertexShader = /* glsl */ `
 
 const fragmentShader = /* glsl */ `
     varying vec3 vColor;
+    uniform float uOpacity;
     void main()
         {
             vec2 uv = gl_PointCoord;
@@ -111,6 +114,7 @@ const fragmentShader = /* glsl */ `
             // Збільшуємо альфа для кращої видимості на білому фоні
             float alpha = 0.3 / (distanceToCenter + 0.1) - 0.5;
             alpha = clamp(alpha, 0.0, 1.0);
+            alpha *= uOpacity;
             gl_FragColor = vec4(vColor, alpha);
             #include <tonemapping_fragment>
             #include <colorspace_fragment>
@@ -127,7 +131,7 @@ const ShaderCustomMaterial = shaderMaterial(
     depthWrite: false,
     uDisplacementTexture: null as Texture | null,
     uProgress: 0,
-
+    uOpacity: 1.0,
     uTime: 0,
     uJitterAmp: 1.05,
     uJitterFreq: 10.0,
@@ -141,18 +145,33 @@ const ShaderCustomMaterial = shaderMaterial(
 extend({ ShaderCustomMaterial });
 
 // Компонент для сфери, який рендериться одразу
-const ParticleMorphingSphere = () => {
+const ParticleMorphingSphere = ({
+  opacityMV,
+}: {
+  opacityMV: MotionValue<number>;
+}) => {
   const sphereGeometry = useMemo(() => new SphereGeometry(40, 64, 64), []);
-  
+  const sphereMaterialRef = useRef<MeshStandardMaterial>(null);
+
+  useEffect(() => {
+    opacityMV.on("change", (value) => {
+      const mat = shaderCustomMaterialRef.current;
+      const sphereMaterial = sphereMaterialRef.current;
+      if (!mat || !sphereMaterial) return;
+      sphereMaterial.opacity = value;
+      mat.opacity = value;
+    });
+  }, [opacityMV]);
+
   const initialGeometry = useMemo(() => {
     const geom = sphereGeometry.clone();
     const spherePos = sphereGeometry.attributes.position;
     const sphereCount = spherePos.count;
-    
+
     const spherePositions: Float32BufferAttribute[] = [];
     const originalArray = spherePos.array;
     const newArray = new Float32Array(sphereCount * 3);
-    
+
     for (let i = 0; i < sphereCount; i++) {
       const i3 = i * 3;
       newArray[i3] = originalArray[i3 + 0];
@@ -160,12 +179,12 @@ const ParticleMorphingSphere = () => {
       newArray[i3 + 2] = originalArray[i3 + 2];
     }
     spherePositions.push(new Float32BufferAttribute(newArray, 3));
-    
+
     const randomArray = new Float32Array(sphereCount * 3);
     const sizesArray = new Float32Array(sphereCount);
     const intensities = new Float32Array(sphereCount);
     const angles = new Float32Array(sphereCount);
-    
+
     for (let i = 0; i < sphereCount; i++) {
       const i3 = i * 3;
       randomArray[i3 + 0] = Math.random() * 2 - 1;
@@ -178,34 +197,19 @@ const ParticleMorphingSphere = () => {
 
     geom.setIndex(null);
     geom.deleteAttribute("normal");
-    geom.setAttribute(
-      "aRandom",
-      new Float32BufferAttribute(randomArray, 3)
-    );
-    geom.setAttribute(
-      "aSize",
-      new Float32BufferAttribute(sizesArray, 1)
-    );
-    geom.setAttribute(
-      "aIntensity",
-      new Float32BufferAttribute(intensities, 1)
-    );
-    geom.setAttribute(
-      "aAngle",
-      new Float32BufferAttribute(angles, 1)
-    );
-    
+    geom.setAttribute("aRandom", new Float32BufferAttribute(randomArray, 3));
+    geom.setAttribute("aSize", new Float32BufferAttribute(sizesArray, 1));
+    geom.setAttribute("aIntensity", new Float32BufferAttribute(intensities, 1));
+    geom.setAttribute("aAngle", new Float32BufferAttribute(angles, 1));
+
     if (spherePositions.length > 0) {
       geom.setAttribute("position", spherePositions[0]);
-      geom.setAttribute(
-        "aPositionTarget",
-        spherePositions[0]
-      );
+      geom.setAttribute("aPositionTarget", spherePositions[0]);
     }
-    
+
     return geom;
   }, [sphereGeometry]);
-  
+
   const geometryRef = useRef<BufferGeometry>(initialGeometry);
   const theme = useThemeStore((state) => state.selectedTheme);
   const shaderCustomMaterialRef = useRef<ShaderMaterial>(null);
@@ -219,7 +223,7 @@ const ParticleMorphingSphere = () => {
     if (!mat) return;
     mat.uniforms.uTime.value = state.clock.elapsedTime;
     mat.uniforms.uProgress.value = 0; // Сфера завжди показується з progress = 0
-    
+
     // Оновлюємо uResolution
     const pixelRatio = gl.getPixelRatio();
     mat.uniforms.uResolution.value.set(
@@ -228,28 +232,33 @@ const ParticleMorphingSphere = () => {
     );
   });
 
-
   return (
     <>
-    <points
-      frustumCulled={false}
-      geometry={geometryRef.current}
-    //   scale={isMdSize ? 9 : 18}
-    >
-      <shaderCustomMaterial
-        ref={shaderCustomMaterialRef}
-        uDisplacementTexture={displacementTexture}
-        uColorA={ThemePalette[theme].accent}
-        uColorB={ThemePalette[theme].foreground}
-      />
-    </points>
-    <mesh>
-      <sphereGeometry args={[20, 64, 64]} />
-      <meshStandardMaterial color="white" wireframe />
-    </mesh>
+      <points
+        frustumCulled={false}
+        geometry={geometryRef.current}
+
+        //   scale={isMdSize ? 9 : 18}
+      >
+        <shaderCustomMaterial
+          ref={shaderCustomMaterialRef}
+          uDisplacementTexture={displacementTexture}
+          uColorA={ThemePalette[theme].accent}
+          uColorB={ThemePalette[theme].foreground}
+          transparent={true}
+        />
+      </points>
+      <mesh>
+        <sphereGeometry args={[20, 64, 64]} />
+        <meshStandardMaterial
+          color="white"
+          wireframe
+          ref={sphereMaterialRef}
+          transparent={true}
+        />
+      </mesh>
     </>
   );
 };
 
 export default ParticleMorphingSphere;
-
