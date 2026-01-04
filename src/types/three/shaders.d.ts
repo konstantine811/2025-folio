@@ -67,6 +67,10 @@ declare module "@react-three/fiber" {
       typeof CustomShaderMaterial,
       typeof CustomShaderMaterial
     >;
+    shaderParticleMorphingMaterial: Object3DNode<
+      typeof ShaderParticleMorphingMaterial,
+      typeof ShaderParticleMorphingMaterial
+    >;
     // Додайте інші шейдерні матеріали, якщо потрібно
   }
 }

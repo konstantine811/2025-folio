@@ -4,7 +4,7 @@ import { RefObject, Suspense, useState, useEffect } from "react";
 import { PlaneGeometry } from "three";
 import RaycastGeometry from "@/components/common/three/raycast-geometry/raycast-geometry";
 import { useThemeStore } from "@/storage/themeStore";
-import { ThemePalette } from "@/config/theme-colors.config";
+import { ThemePalette, ThemeType } from "@/config/theme-colors.config";
 import { animate, useMotionValue } from "framer-motion";
 
 const Experience = ({
@@ -28,9 +28,7 @@ const Experience = ({
         duration: 0.5,
         ease: "easeOut",
         onComplete: () => {
-          setTimeout(() => {
-            setShowSphere(false);
-          }, 3000);
+          setShowSphere(false);
         },
       });
     }
@@ -49,19 +47,24 @@ const Experience = ({
       />
       {/* Сфера рендериться одразу, поза Suspense, з анімованим зникненням коли модель завантажиться */}
       {showSphere && <ParticleMorphingSphere opacityMV={opacityMV} />}
+      {theme === ThemeType.LIGHT ? (
+        <mesh position-y={-3}>
+          <sphereGeometry args={[33, 100, 100]} />
+          <meshBasicMaterial color="red" />
+        </mesh>
+      ) : (
+        <Suspense fallback={null}>
+          <ParticleMorphing
+            pathModel={pathModel}
+            uSectionProgressRef={uSectionProgressRef}
+            uPageIndexRef={uPageIndexRef}
+            onModelLoaded={() => setIsModelLoaded(true)}
+            // глобальний прогрес (0..1) якщо теж треба
 
-      {/* Модель завантажується в Suspense */}
-      <Suspense fallback={null}>
-        <ParticleMorphing
-          pathModel={pathModel}
-          uSectionProgressRef={uSectionProgressRef}
-          uPageIndexRef={uPageIndexRef}
-          onModelLoaded={() => setIsModelLoaded(true)}
-          // глобальний прогрес (0..1) якщо теж треба
-
-          // локальний прогрес секції (0..1) без ререндерів
-        />
-      </Suspense>
+            // локальний прогрес секції (0..1) без ререндерів
+          />
+        </Suspense>
+      )}
     </>
   );
 };

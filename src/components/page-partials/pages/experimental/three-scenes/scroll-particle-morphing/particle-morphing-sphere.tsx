@@ -9,6 +9,8 @@ import {
   Color,
   Texture,
   MeshStandardMaterial,
+  Points,
+  Mesh,
 } from "three";
 import { useMemo, useRef, useEffect } from "react";
 import type { MotionValue } from "framer-motion";
@@ -152,15 +154,48 @@ const ParticleMorphingSphere = ({
 }) => {
   const sphereGeometry = useMemo(() => new SphereGeometry(40, 64, 64), []);
   const sphereMaterialRef = useRef<MeshStandardMaterial>(null);
+  const shaderCustomMaterialRef = useRef<ShaderMaterial>(null);
+  const pointsRef = useRef<Points>(null);
+  const meshRef = useRef<Mesh>(null);
 
+  // Синхронізуємо motion value з shader uniform та material opacity
   useEffect(() => {
-    opacityMV.on("change", (value) => {
+    const updateOpacity = (value: number) => {
       const mat = shaderCustomMaterialRef.current;
       const sphereMaterial = sphereMaterialRef.current;
-      if (!mat || !sphereMaterial) return;
-      sphereMaterial.opacity = value;
-      mat.opacity = value;
-    });
+
+      // Оновлюємо shader uniform
+      if (mat && mat.uniforms && mat.uniforms.uOpacity) {
+        mat.uniforms.uOpacity.value = value;
+        mat.transparent = value < 1;
+      }
+
+      // Оновлюємо wireframe material
+      if (sphereMaterial) {
+        sphereMaterial.opacity = value;
+        sphereMaterial.transparent = value < 1;
+      }
+
+      // Керуємо видимістю для повного приховування
+      const isVisible = value > 0.001;
+      if (pointsRef.current) {
+        pointsRef.current.visible = isVisible;
+      }
+      if (meshRef.current) {
+        meshRef.current.visible = isVisible;
+      }
+    };
+
+    // Встановлюємо початкове значення
+    const initialValue = opacityMV.get();
+    updateOpacity(initialValue);
+
+    // Підписуємося на зміни
+    const unsubscribe = opacityMV.on("change", updateOpacity);
+
+    return () => {
+      unsubscribe();
+    };
   }, [opacityMV]);
 
   const initialGeometry = useMemo(() => {
@@ -212,7 +247,6 @@ const ParticleMorphingSphere = ({
 
   const geometryRef = useRef<BufferGeometry>(initialGeometry);
   const theme = useThemeStore((state) => state.selectedTheme);
-  const shaderCustomMaterialRef = useRef<ShaderMaterial>(null);
   const displacementTexture = useRaycastGeometryStore(
     (s) => s.displacementTexture
   );
@@ -235,10 +269,9 @@ const ParticleMorphingSphere = ({
   return (
     <>
       <points
+        ref={pointsRef}
         frustumCulled={false}
         geometry={geometryRef.current}
-
-        //   scale={isMdSize ? 9 : 18}
       >
         <shaderCustomMaterial
           ref={shaderCustomMaterialRef}
@@ -248,7 +281,7 @@ const ParticleMorphingSphere = ({
           transparent={true}
         />
       </points>
-      <mesh>
+      <mesh ref={meshRef}>
         <sphereGeometry args={[20, 64, 64]} />
         <meshStandardMaterial
           color="white"

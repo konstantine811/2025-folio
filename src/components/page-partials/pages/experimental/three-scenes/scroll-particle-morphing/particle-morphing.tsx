@@ -157,68 +157,6 @@ const ParticleMorphing = ({
   const { isAdoptiveSize: isMdSize } = useIsAdoptive();
   const sphereGeometry = useMemo(() => new SphereGeometry(200, 64, 64), []);
 
-  // Попереднє завантаження моделі
-  useEffect(() => {
-    useGLTF.preload(pathModel);
-  }, [pathModel]);
-
-  const { scene } = useGLTF(pathModel);
-
-  // Ініціалізуємо геометрію сфери з усіма атрибутами синхронно
-  const initialGeometry = useMemo(() => {
-    const geom = sphereGeometry.clone();
-    const spherePos = sphereGeometry.attributes.position;
-    const sphereCount = spherePos.count;
-
-    // Створюємо масив позицій для сфери (як в updateGeometry)
-    const spherePositions: Float32BufferAttribute[] = [];
-    const originalArray = spherePos.array;
-    const newArray = new Float32Array(sphereCount * 3);
-
-    for (let i = 0; i < sphereCount; i++) {
-      const i3 = i * 3;
-      newArray[i3] = originalArray[i3 + 0];
-      newArray[i3 + 1] = originalArray[i3 + 1];
-      newArray[i3 + 2] = originalArray[i3 + 2];
-    }
-    spherePositions.push(new Float32BufferAttribute(newArray, 3));
-
-    const randomArray = new Float32Array(sphereCount * 3);
-    const sizesArray = new Float32Array(sphereCount);
-    const intensities = new Float32Array(sphereCount);
-    const angles = new Float32Array(sphereCount);
-
-    for (let i = 0; i < sphereCount; i++) {
-      const i3 = i * 3;
-      randomArray[i3 + 0] = Math.random() * 2 - 1;
-      randomArray[i3 + 1] = Math.random() * 2 - 1;
-      randomArray[i3 + 2] = Math.random() * 2 - 1;
-      sizesArray[i] = Math.random();
-      intensities[i] = Math.random() + 1.5;
-      angles[i] = Math.random() * Math.PI * 2;
-    }
-
-    geom.setIndex(null);
-    geom.deleteAttribute("normal");
-    geom.setAttribute("aRandom", new Float32BufferAttribute(randomArray, 3));
-    geom.setAttribute("aSize", new Float32BufferAttribute(sizesArray, 1));
-    geom.setAttribute("aIntensity", new Float32BufferAttribute(intensities, 1));
-    geom.setAttribute("aAngle", new Float32BufferAttribute(angles, 1));
-
-    // Встановлюємо позиції зі сфери
-    if (spherePositions.length > 0) {
-      geom.setAttribute("position", spherePositions[0]);
-      if (spherePositions.length > 1) {
-        geom.setAttribute("aPositionTarget", spherePositions[1]);
-      } else {
-        geom.setAttribute("aPositionTarget", spherePositions[0]);
-      }
-    }
-
-    return geom;
-  }, [sphereGeometry]);
-
-  const geometryRef = useRef<BufferGeometry>(initialGeometry);
   const theme = useThemeStore((state) => state.selectedTheme);
   const shaderCustomMaterialRef = useRef<ShaderMaterial>(null);
   const displacementTexture = useRaycastGeometryStore(
@@ -227,8 +165,16 @@ const ParticleMorphing = ({
   const currentSectionRef = useRef(0);
   const isModelLoadedRef = useRef(false);
   // 1) MotionValue для прогресу
-  const uJitterAmpMV = useMotionValue(0.5);
-  const uJitterFreqMV = useMotionValue(0.2);
+  const uJitterAmpMV = useMotionValue(1.05);
+  const uJitterFreqMV = useMotionValue(1.0);
+  const geometryRef = useRef<BufferGeometry>(new SphereGeometry(200, 64, 64));
+
+  // Попереднє завантаження моделі
+  useEffect(() => {
+    useGLTF.preload(pathModel);
+  }, [pathModel]);
+
+  const { scene } = useGLTF(pathModel);
 
   const particles = useMemo(() => {
     return {
