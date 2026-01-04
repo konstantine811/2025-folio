@@ -275,6 +275,13 @@ const ThreeYukaCarSelfDriving = lazyPage(
     )
 );
 
+const ThreeRaycastNavigation = lazyPage(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/raycast-navigation/hello-raycast/init"
+    )
+);
+
 const LoginPage = lazyPage(
   () => import("../components/page-partials/pages/Login")
 );
@@ -324,6 +331,7 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_SCROLL_PARTICLE_MORPHING = "three-scroll-particle-morphing",
   EXPERIMENTAL_THREE_YUKA_FIRST_CONUS_AGENT = "three-yuka-first-conus-agent",
   EXPERIMENTAL_THREE_YUKA_CAR_SELF_DRIVING = "three-yuka-car-self-driving",
+  EXPERIMENTAL_THREE_RAYCAST_NAVIGATION = "three-raycast-navigation",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -373,6 +381,7 @@ export enum ExperimentalTypes {
   particles = "particles",
   optimization = "optimization",
   yuka = "yuka",
+  raycast = "raycast-navigation",
 }
 
 export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
@@ -682,6 +691,15 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     description: "A yuka car self driving scene created with Three.js.",
     imageUrl: imagePath("yuka-car-self-driving"),
     type: ExperimentalTypes.yuka,
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_RAYCAST_NAVIGATION,
+    Component: ThreeRaycastNavigation,
+    id: "experimental-three-raycast-navigation",
+    icon: "🌍",
+    description: "A raycast navigation scene created with Three.js.",
+    imageUrl: imagePath("raycast-navigation"),
+    type: ExperimentalTypes.raycast,
   },
 ];
 
