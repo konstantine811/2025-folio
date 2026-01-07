@@ -46,7 +46,7 @@ const Home = () => {
   }, []);
   return (
     <>
-      <div className="fixed inset-0 top-0 w-full h-full z-0 pointer-events-auto pb-20">
+      <div className="fixed inset-0 top-0 w-full h-screen z-0 pointer-events-auto pb-20">
         <Canvas camera={{ position: [0, 10, 85], fov: 70 }}>
           <ExperienceCanvas
             uSectionProgressRef={
