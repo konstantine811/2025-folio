@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Share2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -16,6 +16,20 @@ const ProjectSlideOver: React.FC<ProjectSlideOverProps> = ({
   onClose,
 }) => {
   const { t } = useTranslation();
+
+  useEffect(() => {
+    if (isOpen) {
+      // Зберігаємо поточний overflow
+      const originalOverflow = document.body.style.overflow;
+      // Блокуємо скролл на body
+      document.body.style.overflow = "hidden";
+
+      return () => {
+        // Повертаємо скролл при закритті
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
   return (
     <AnimatePresence>
       {isOpen && project && (

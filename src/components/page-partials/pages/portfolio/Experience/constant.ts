@@ -188,7 +188,7 @@ export const getProjectsData = (t: TFunction): Record<string, Project> => ({
     `,
     images: [
       {
-        src: "/images/portfolio/kernel/telematics-diagram.jpg",
+        src: "/images/portfolio/kernel/telematics-diagram.png",
         alt: t(
           "portfolio.experience.projects.dashboard_fields.images.telematics.alt"
         ),
@@ -197,7 +197,7 @@ export const getProjectsData = (t: TFunction): Record<string, Project> => ({
         ),
       },
       {
-        src: "/images/portfolio/kernel/agricultural-mapping-interface.jpg",
+        src: "/images/portfolio/kernel/agricultural-mapping-interface.png",
         alt: t(
           "portfolio.experience.projects.dashboard_fields.images.mapping.alt"
         ),
@@ -206,7 +206,7 @@ export const getProjectsData = (t: TFunction): Record<string, Project> => ({
         ),
       },
       {
-        src: "/images/portfolio/kernel/crop-status-monitoring.jpg",
+        src: "/images/portfolio/kernel/crop-status-monitoring.png",
         alt: t(
           "portfolio.experience.projects.dashboard_fields.images.crop_status.alt"
         ),
@@ -215,7 +215,7 @@ export const getProjectsData = (t: TFunction): Record<string, Project> => ({
         ),
       },
       {
-        src: "/images/portfolio/kernel/ndvi-field-analysis.jpg",
+        src: "/images/portfolio/kernel/ndvi-field-analysis.png",
         alt: t(
           "portfolio.experience.projects.dashboard_fields.images.ndvi.alt"
         ),
