@@ -297,6 +297,69 @@ export const getProjectsData = (t: TFunction): Record<string, Project> => ({
           )}</li>
       </ul>
     `,
+    images: [
+      {
+        src: "/images/portfolio/kernel/passport-field/passport-field.jpg",
+        alt: t("portfolio.experience.projects.passport_field.images.main.alt"),
+        description: t(
+          "portfolio.experience.projects.passport_field.images.main.description"
+        ),
+      },
+      {
+        src: "/images/portfolio/kernel/passport-field/passport-field-2.jpg",
+        alt: t(
+          "portfolio.experience.projects.passport_field.images.graphs.alt"
+        ),
+        description: t(
+          "portfolio.experience.projects.passport_field.images.graphs.description"
+        ),
+      },
+      {
+        src: "/images/portfolio/kernel/passport-field/passport-field-4.jpg",
+        alt: t(
+          "portfolio.experience.projects.passport_field.images.comparison.alt"
+        ),
+        description: t(
+          "portfolio.experience.projects.passport_field.images.comparison.description"
+        ),
+      },
+      {
+        src: "/images/portfolio/kernel/passport-field/passport-field-5.png",
+        alt: t(
+          "portfolio.experience.projects.passport_field.images.analysis.alt"
+        ),
+        description: t(
+          "portfolio.experience.projects.passport_field.images.analysis.description"
+        ),
+      },
+      {
+        src: "/images/portfolio/kernel/passport-field/passport-field-7.jpg",
+        alt: t(
+          "portfolio.experience.projects.passport_field.images.data_types.alt"
+        ),
+        description: t(
+          "portfolio.experience.projects.passport_field.images.data_types.description"
+        ),
+      },
+      {
+        src: "/images/portfolio/kernel/passport-field/passport-field.jpeg",
+        alt: t(
+          "portfolio.experience.projects.passport_field.images.period.alt"
+        ),
+        description: t(
+          "portfolio.experience.projects.passport_field.images.period.description"
+        ),
+      },
+      {
+        src: "/images/portfolio/kernel/passport-field/passport-field.png",
+        alt: t(
+          "portfolio.experience.projects.passport_field.images.overview.alt"
+        ),
+        description: t(
+          "portfolio.experience.projects.passport_field.images.overview.description"
+        ),
+      },
+    ],
   },
   ixlayer_landing: {
     id: "ixlayer_landing",

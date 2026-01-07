@@ -313,6 +313,36 @@
           "features_list": {
             "1": "Agrochemical soil maps.",
             "2": "Visualization of raster tile overlays (ArcGIS)."
+          },
+          "images": {
+            "main": {
+              "alt": "Passport Field main page",
+              "description": "Main page of the field digital twin with a 10-year history. Displays comprehensive information about the field status and access to various types of analytics."
+            },
+            "graphs": {
+              "alt": "Synchronized interactive graphs",
+              "description": "Interactive graphs synchronized with each other, displaying different field states for the selected period. Graphs are interconnected and update simultaneously when parameters change."
+            },
+            "comparison": {
+              "alt": "Field comparison in 1, 2, or 4 windows",
+              "description": "Interface for comparing different data types on the field. Ability to display the field in one, two, or four windows simultaneously to compare NDVI, soil type, agrochemical indicators, and different periods."
+            },
+            "analysis": {
+              "alt": "Area selection and analysis",
+              "description": "Function for drawing and selecting a specific area on the field for detailed analysis. Allows selecting a specific plot and obtaining analytics specifically for that area."
+            },
+            "data_types": {
+              "alt": "Different data types and indicators",
+              "description": "Display of different data types: NDVI (vegetation index), soil type, agrochemical indicators. Ability to switch between different data layers for comprehensive field status analysis."
+            },
+            "period": {
+              "alt": "Period selection for analysis",
+              "description": "Interface for selecting a period to display field status. Allows viewing historical data and comparing field status across different time periods."
+            },
+            "overview": {
+              "alt": "Field passport overview",
+              "description": "General overview of the field passport with all available data, graphs, and analytics. Central interface for working with the field digital twin."
+            }
           }
         },
         "ixlayer_landing": {
