@@ -9,17 +9,24 @@ import ExperienceCanvas from "@/components/page-partials/pages/experimental/thre
 import ScrollSectionProgress from "@/components/common/scroll/scroll-section-progress";
 import SelectedWorks from "./portfolio/Experience/SelectedWorks";
 import ProjectSlideOver from "./portfolio/ProjectSlideOver";
-import { Project, PROJECTS_DATA } from "./portfolio/Experience/constant";
+import { Project, getProjectsData } from "./portfolio/Experience/constant";
+import { useTranslation } from "react-i18next";
+
 const Home = () => {
+  const { t } = useTranslation();
   const hs = useHeaderSizeStore((state) => state.size);
   const pageIndexRef = useRef(0);
   const sectionProgressRef = useRef(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
+  const projectsData = getProjectsData(t);
+
   const openProject = (id: string) => {
-    const project = PROJECTS_DATA[id];
+    const project = projectsData[id];
     if (project) {
       setSelectedProject(project);
     }

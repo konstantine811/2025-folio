@@ -184,6 +184,80 @@
       "computools": {
         "status": "Frontend Engineering",
         "description": "Development of web interfaces on HTML, CSS, JS. Transition to creating SPAs on Angular and TypeScript. Optimization of UI/UX, work in an Agile team."
+      },
+      "projects": {
+        "kernel": {
+          "intro": "At <em>Kernel</em>, I worked for 5 years, where I built two full-fledged web applications from scratch:",
+          "apps": {
+            "1": "a global interactive map of all fields by clusters (over 8,000 polygons);",
+            "2": "a detailed analytics system for a specific field."
+          },
+          "combined": "In these projects we combined:",
+          "technologies": {
+            "mapbox": "<strong>Mapbox</strong> — for rendering geometry and interactive graphics;",
+            "arcgis": "<strong>ArcGIS</strong> — for working with raster data: <em>NDVI imagery</em>, <em>soil tiles</em>, <em>work-order tracks</em>."
+          },
+          "tech_stack": "Technologies: <strong>Angular 2+</strong>, <strong>D3.js</strong>, <strong>Turf.js</strong>, <strong>ArcGIS</strong>, <strong>Mapbox</strong>, <strong>AG Grid</strong>, <strong>Material UI</strong>.",
+          "nda": "Unfortunately, I cannot share any visuals or links because the project was an internal solution (NDA)."
+        },
+        "u_studio": {
+          "intro": "I've been working at <em>Ustudio</em> for the past two years. I independently developed the frontend of an application from scratch to display destroyed and rebuilt assets during the war in Ukraine. Implemented a heat map of funding levels and needs, filters by asset types, analytical charts, and detailed cards for each asset.",
+          "technologies": "Technologies:",
+          "tech_list": {
+            "1": "React / Redux",
+            "2": "Mapbox GL",
+            "3": "Tailwind CSS / Framer Motion",
+            "4": "D3.js / IndexedDB"
+          },
+          "link": "Go to DREAM"
+        },
+        "ixlayer": {
+          "intro": "At <em>ixlayer</em>, I worked remotely for over two years.",
+          "work": {
+            "1": "Built websites with <strong>Vue.js</strong> for genetic DNA testing services.",
+            "2": "Primary focus — <em>landing pages</em>, <em>registration forms</em>, and <em>questionnaires/forms</em>."
+          },
+          "tech_stack": "Technologies: <strong>Vue.js</strong>, <strong>Storybook</strong>, <strong>Cypress</strong>."
+        },
+        "cubic_worlds": {
+          "intro": "<strong>Cubic Worlds Game</strong> is my first official game, which I plan to develop over the coming months. This is an entire world where you can defend villages, collect potions, and unlock magical abilities.",
+          "features": "Features:",
+          "features_list": {
+            "1": "Drawing 3D objects on surfaces",
+            "2": "World editing mode and physics",
+            "3": "Voxel world generation"
+          },
+          "tech_stack": "Technologies: <strong>React-Three-Fiber</strong>, <strong>Three.js</strong>, <strong>Cannon.js</strong>."
+        },
+        "map_dream": {
+          "intro": "The DREAM ecosystem is a digital platform for Ukraine's recovery. My role was to create the main module for displaying geodata.",
+          "features": "Key Features:",
+          "features_list": {
+            "1": "<strong>Clustering:</strong> Processing 10,000+ objects.",
+            "2": "<strong>Heat Map:</strong> Analytics layer for destruction."
+          }
+        },
+        "dashboard_fields": {
+          "intro": "Central control panel for the head agronomist of the holding.",
+          "features_list": {
+            "1": "Real-time machinery monitoring via GPS.",
+            "2": "Yield forecast based on NDVI."
+          }
+        },
+        "passport_field": {
+          "intro": "Digital twin of each company field with a 10-year history.",
+          "features_list": {
+            "1": "Agrochemical soil maps.",
+            "2": "Visualization of raster tile overlays (ArcGIS)."
+          }
+        },
+        "ixlayer_landing": {
+          "intro": "Series of high-load marketing pages for telemedicine in the USA.",
+          "features_list": {
+            "1": "Optimized conversion and A/B testing.",
+            "2": "Accessibility WCAG 2.1 compliance."
+          }
+        }
       }
     }
   },
