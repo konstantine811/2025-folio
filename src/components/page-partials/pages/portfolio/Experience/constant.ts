@@ -48,6 +48,9 @@ export const getProjectsData = (t: TFunction): Record<string, Project> => ({
         <h5 class="font-mono text-xs uppercase tracking-widest text-muted-foreground mt-8 mb-4 font-medium">${t(
           "portfolio.experience.projects.kernel.tech_stack"
         )}</h5>
+        <a href="https://www.kernel.ua/ua/" target="_blank" class="text-primary underline underline-offset-4 transition-colors duration-200 hover:text-primary/80 mb-6 inline-block">${t(
+          "portfolio.experience.projects.kernel.link"
+        )}</a>
         <div class="block border-l-2 border-accent bg-accent/5 p-4 my-6 text-xs text-accent font-mono">${t(
           "portfolio.experience.projects.kernel.nda"
         )}</div>
@@ -99,6 +102,9 @@ export const getProjectsData = (t: TFunction): Record<string, Project> => ({
       <h5 class="font-mono text-xs uppercase tracking-widest text-muted-foreground mt-8 mb-4 font-medium">${t(
         "portfolio.experience.projects.ixlayer.tech_stack"
       )}</h5>
+      <a href="https://ixlayer.com/" target="_blank" class="text-primary underline underline-offset-4 transition-colors duration-200 hover:text-primary/80">${t(
+        "portfolio.experience.projects.ixlayer.link"
+      )}</a>
     `,
   },
   cubic_worlds: {
@@ -211,6 +217,19 @@ export const getProjectsData = (t: TFunction): Record<string, Project> => ({
       </ul>
     `,
   },
+  computools: {
+    id: "computools",
+    title: "COMPUTOOLS",
+    subtitle: "Frontend Engineering / First Steps",
+    content: `
+      <p class="mb-6 leading-[1.7] text-foreground/80 text-sm">${t(
+        "portfolio.experience.projects.computools.intro"
+      )}</p>
+      <a href="https://careers.computools.ua/" target="_blank" class="text-primary underline underline-offset-4 transition-colors duration-200 hover:text-primary/80">${t(
+        "portfolio.experience.projects.computools.link"
+      )}</a>
+    `,
+  },
 });
 
 // Legacy export for backward compatibility - use getProjectsData(t) instead
@@ -219,6 +238,15 @@ export const PROJECTS_DATA: Record<string, Project> = getProjectsData(
 );
 
 export const getExperienceList = (t: TFunction): ExperienceItem[] => [
+  {
+    id: "u_studio",
+    number: "02",
+    category: t("portfolio.experience.experience_list.u_studio.category"),
+    title: "U-STUDIO",
+    description: t("portfolio.experience.experience_list.u_studio.description"),
+    tags: ["React", "Mapbox GL"],
+    colorClass: "group-hover:text-blue-400",
+  },
   {
     id: "kernel",
     number: "01",
@@ -229,13 +257,15 @@ export const getExperienceList = (t: TFunction): ExperienceItem[] => [
     colorClass: "group-hover:text-emerald-400",
   },
   {
-    id: "u_studio",
-    number: "02",
-    category: t("portfolio.experience.experience_list.u_studio.category"),
-    title: "U-STUDIO",
-    description: t("portfolio.experience.experience_list.u_studio.description"),
-    tags: ["React", "Mapbox GL"],
-    colorClass: "group-hover:text-blue-400",
+    id: "cubic_worlds",
+    number: "05",
+    category: t("portfolio.experience.experience_list.cubic_worlds.category"),
+    title: "CUBIC WORLDS",
+    description: t(
+      "portfolio.experience.experience_list.cubic_worlds.description"
+    ),
+    tags: ["Three.js", "WebGL"],
+    colorClass: "group-hover:text-pink-400",
   },
   {
     id: "ixlayer",
@@ -247,15 +277,15 @@ export const getExperienceList = (t: TFunction): ExperienceItem[] => [
     colorClass: "group-hover:text-purple-400",
   },
   {
-    id: "cubic_worlds",
+    id: "computools",
     number: "04",
-    category: t("portfolio.experience.experience_list.cubic_worlds.category"),
-    title: "CUBIC WORLDS",
+    category: t("portfolio.experience.experience_list.computools.category"),
+    title: "COMPUTOOLS",
     description: t(
-      "portfolio.experience.experience_list.cubic_worlds.description"
+      "portfolio.experience.experience_list.computools.description"
     ),
-    tags: ["Three.js", "WebGL"],
-    colorClass: "group-hover:text-pink-400",
+    tags: ["HTML", "CSS", "JavaScript"],
+    colorClass: "group-hover:text-green-400",
   },
 ];
 

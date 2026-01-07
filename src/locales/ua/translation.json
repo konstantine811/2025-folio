@@ -202,6 +202,7 @@
             "arcgis": "ArcGIS — для роботи з растровими даними: <em>NDVI-знімки</em>, <em>ґрунтові тайли</em>, <em>треки нарядів</em>."
           },
           "tech_stack": "Технології: <strong>Angular 2+</strong>, <strong>D3.js</strong>, <strong>Turf.js</strong>, <strong>ArcGIS</strong>, <strong>Mapbox</strong>, <strong>AgGrid</strong>, <strong>Material UI</strong>.",
+          "link": "Офіційний сайт Kernel",
           "nda": "На жаль, я не можу надати жодної візуальної інформації чи лінків, оскільки проєкт був закритим внутрішнім рішенням (NDA)."
         },
         "u_studio": {
@@ -221,7 +222,8 @@
             "1": "Розробляв веб-сайти на <strong>Vue.js</strong> для сервісів генетичного ДНК-тестування.",
             "2": "Основний фокус — <em>landing pages</em>, <em>форми реєстрації</em> та <em>анкети/бланки</em>."
           },
-          "tech_stack": "Технології: <strong>Vue.js</strong>, <strong>Storybook</strong>, <strong>Cypress</strong>."
+          "tech_stack": "Технології: <strong>Vue.js</strong>, <strong>Storybook</strong>, <strong>Cypress</strong>.",
+          "link": "Офіційний сайт ixlayer"
         },
         "cubic_worlds": {
           "intro": "<strong>Cubic Worlds Game</strong> — моя перша офіційна гра, яку планую розвивати найближчими місяцями. Це цілий світ, де можна захищати селища, збирати зілля та відкривати магічні здібності.",
@@ -261,6 +263,10 @@
             "1": "Оптимізована конверсія та A/B тести.",
             "2": "Accessibility WCAG 2.1 compliance."
           }
+        },
+        "computools": {
+          "intro": "Першою компанією, де я почав працювати розробником веб-сайтів, була <em>Computools</em>. Мої основні обов'язки — створення інтерактивних, анімованих сайтів із використанням <strong>HTML</strong>, <strong>SCSS</strong>, <strong>JavaScript</strong>, <strong>Bootstrap</strong>, а також перший практичний досвід з <strong>Angular 2</strong>.",
+          "link": "Офіційний сайт Computools"
         }
       },
       "experience_list": {
@@ -275,6 +281,10 @@
         "ixlayer": {
           "category": "HEALTH TECH",
           "description": "Платформа сервісів ДНК-тестування. Складні форми та процеси реєстрації."
+        },
+        "computools": {
+          "category": "FRONTEND ENGINEERING",
+          "description": "Розробка веб-інтерфейсів на HTML, CSS, JS. Перехід до створення SPA на Angular та TypeScript."
         },
         "cubic_worlds": {
           "category": "INDIE GAME",

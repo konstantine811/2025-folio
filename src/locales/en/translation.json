@@ -198,6 +198,7 @@
             "arcgis": "<strong>ArcGIS</strong> — for working with raster data: <em>NDVI imagery</em>, <em>soil tiles</em>, <em>work-order tracks</em>."
           },
           "tech_stack": "Technologies: <strong>Angular 2+</strong>, <strong>D3.js</strong>, <strong>Turf.js</strong>, <strong>ArcGIS</strong>, <strong>Mapbox</strong>, <strong>AG Grid</strong>, <strong>Material UI</strong>.",
+          "link": "Kernel Official Website",
           "nda": "Unfortunately, I cannot share any visuals or links because the project was an internal solution (NDA)."
         },
         "u_studio": {
@@ -217,7 +218,8 @@
             "1": "Built websites with <strong>Vue.js</strong> for genetic DNA testing services.",
             "2": "Primary focus — <em>landing pages</em>, <em>registration forms</em>, and <em>questionnaires/forms</em>."
           },
-          "tech_stack": "Technologies: <strong>Vue.js</strong>, <strong>Storybook</strong>, <strong>Cypress</strong>."
+          "tech_stack": "Technologies: <strong>Vue.js</strong>, <strong>Storybook</strong>, <strong>Cypress</strong>.",
+          "link": "ixlayer Official Website"
         },
         "cubic_worlds": {
           "intro": "<strong>Cubic Worlds Game</strong> is my first official game, which I plan to develop over the coming months. This is an entire world where you can defend villages, collect potions, and unlock magical abilities.",
@@ -257,6 +259,10 @@
             "1": "Optimized conversion and A/B testing.",
             "2": "Accessibility WCAG 2.1 compliance."
           }
+        },
+        "computools": {
+          "intro": "The first company where I began working as a web developer was <em>Computools</em>. My primary responsibilities included building interactive, animated websites using <strong>HTML</strong>, <strong>SCSS</strong>, <strong>JavaScript</strong>, and <strong>Bootstrap</strong>, as well as gaining my first hands-on experience with <strong>Angular 2</strong>.",
+          "link": "Computools Official Website"
         }
       },
       "experience_list": {
@@ -271,6 +277,10 @@
         "ixlayer": {
           "category": "HEALTH TECH",
           "description": "DNA testing services platform. Complex forms and registration flows."
+        },
+        "computools": {
+          "category": "FRONTEND ENGINEERING",
+          "description": "Development of web interfaces on HTML, CSS, JS. Transition to creating SPAs on Angular and TypeScript."
         },
         "cubic_worlds": {
           "category": "INDIE GAME",
