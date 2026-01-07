@@ -229,7 +229,8 @@
             "2": "World editing mode and physics",
             "3": "Voxel world generation"
           },
-          "tech_stack": "Technologies: <strong>React-Three-Fiber</strong>, <strong>Three.js</strong>, <strong>Cannon.js</strong>."
+          "tech_stack": "Technologies: <strong>React-Three-Fiber</strong>, <strong>Three.js</strong>, <strong>Cannon.js</strong>.",
+          "link": "Go to Game"
         },
         "map_dream": {
           "intro": "The DREAM ecosystem is a digital platform for Ukraine's recovery. My role was to create the main module for displaying geodata.",

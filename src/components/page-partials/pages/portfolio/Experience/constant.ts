@@ -132,6 +132,9 @@ export const getProjectsData = (t: TFunction): Record<string, Project> => ({
       <h5 class="font-mono text-xs uppercase tracking-widest text-muted-foreground mt-8 mb-4 font-medium">${t(
         "portfolio.experience.projects.cubic_worlds.tech_stack"
       )}</h5>
+      <a href="/three-cubic-worlds-game" class="text-primary underline underline-offset-4 transition-colors duration-200 hover:text-primary/80">${t(
+        "portfolio.experience.projects.cubic_worlds.link"
+      )}</a>
     `,
   },
   map_dream: {

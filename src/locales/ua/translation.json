@@ -233,7 +233,8 @@
             "2": "Режим редагування світу та фізика",
             "3": "Voxel-генерація світу"
           },
-          "tech_stack": "Технології: <strong>React-Three-Fiber</strong>, <strong>Three.js</strong>, <strong>Cannon.js</strong>."
+          "tech_stack": "Технології: <strong>React-Three-Fiber</strong>, <strong>Three.js</strong>, <strong>Cannon.js</strong>.",
+          "link": "Перейти до гри"
         },
         "map_dream": {
           "intro": "Екосистема DREAM — це цифрова платформа для відновлення України. Моя роль полягала у створенні головного модуля відображення геоданих.",
