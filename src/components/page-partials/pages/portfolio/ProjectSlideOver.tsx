@@ -23,7 +23,7 @@ const ProjectSlideOver: React.FC<ProjectSlideOverProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-background/60 backdrop-blur-sm"
           />
           <motion.div
             initial={{ x: "100%" }}
@@ -60,7 +60,7 @@ const ProjectSlideOver: React.FC<ProjectSlideOverProps> = ({
                   {project.subtitle}
                 </p>
                 <div
-                  className="project-content text-foreground"
+                  className="text-foreground"
                   dangerouslySetInnerHTML={{ __html: project.content }}
                 />
               </motion.div>
