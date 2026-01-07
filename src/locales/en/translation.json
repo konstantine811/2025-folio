@@ -251,6 +251,36 @@
           "features_list": {
             "1": "<strong>Clustering:</strong> Processing 2,000+ objects.",
             "2": "<strong>Heat Map:</strong> Analytics layer for destruction."
+          },
+          "images": {
+            "main": {
+              "alt": "DREAM platform main page",
+              "description": "Main page of the DREAM ecosystem with an interactive map of Ukraine displaying various objects and recovery projects."
+            },
+            "selected": {
+              "alt": "Selected objects on the map",
+              "description": "Interface displaying selected objects on the map with detailed information about each recovery project and the ability to view additional data."
+            },
+            "thermal_main": {
+              "alt": "Main destruction heat map",
+              "description": "Heat map visualizing the intensity of destruction across Ukrainian regions. Darker zones indicate greater damage."
+            },
+            "thermal": {
+              "alt": "Analytics heat map",
+              "description": "Detailed heat map with analytics of destruction and infrastructure damage. Allows visual assessment of damage scale."
+            },
+            "financing": {
+              "alt": "Financing heat map",
+              "description": "Heat map displaying the distribution of recovery project funding across Ukrainian regions."
+            },
+            "partner": {
+              "alt": "Partners and organizations map",
+              "description": "Interactive map showing the location of partners, organizations, and DREAM ecosystem participants across Ukraine."
+            },
+            "filters": {
+              "alt": "Filters and objects on the map",
+              "description": "Map object filtering interface with the ability to select categories, project types, and other parameters for detailed analysis."
+            }
           }
         },
         "dashboard_fields": {

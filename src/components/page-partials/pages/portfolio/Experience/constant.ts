@@ -166,6 +166,59 @@ export const getProjectsData = (t: TFunction): Record<string, Project> => ({
           )}</li>
       </ul>
     `,
+    images: [
+      {
+        src: "/images/portfolio/ustudio/mad-dream-main.jpg",
+        alt: t("portfolio.experience.projects.map_dream.images.main.alt"),
+        description: t(
+          "portfolio.experience.projects.map_dream.images.main.description"
+        ),
+      },
+      {
+        src: "/images/portfolio/ustudio/selected-objects.jpg",
+        alt: t("portfolio.experience.projects.map_dream.images.selected.alt"),
+        description: t(
+          "portfolio.experience.projects.map_dream.images.selected.description"
+        ),
+      },
+      {
+        src: "/images/portfolio/ustudio/thermal-map-main.jpg",
+        alt: t(
+          "portfolio.experience.projects.map_dream.images.thermal_main.alt"
+        ),
+        description: t(
+          "portfolio.experience.projects.map_dream.images.thermal_main.description"
+        ),
+      },
+      {
+        src: "/images/portfolio/ustudio/thermal-map.jpg",
+        alt: t("portfolio.experience.projects.map_dream.images.thermal.alt"),
+        description: t(
+          "portfolio.experience.projects.map_dream.images.thermal.description"
+        ),
+      },
+      {
+        src: "/images/portfolio/ustudio/financing-thermal-map.jpg",
+        alt: t("portfolio.experience.projects.map_dream.images.financing.alt"),
+        description: t(
+          "portfolio.experience.projects.map_dream.images.financing.description"
+        ),
+      },
+      {
+        src: "/images/portfolio/ustudio/partner-map.jpg",
+        alt: t("portfolio.experience.projects.map_dream.images.partner.alt"),
+        description: t(
+          "portfolio.experience.projects.map_dream.images.partner.description"
+        ),
+      },
+      {
+        src: "/images/portfolio/ustudio/filters-objects.jpg",
+        alt: t("portfolio.experience.projects.map_dream.images.filters.alt"),
+        description: t(
+          "portfolio.experience.projects.map_dream.images.filters.description"
+        ),
+      },
+    ],
   },
   dashboard_fields: {
     id: "dashboard_fields",
