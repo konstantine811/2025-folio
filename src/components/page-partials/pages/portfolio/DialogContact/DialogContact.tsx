@@ -18,10 +18,21 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 
-const DialogContact = () => {
+interface DialogContactProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+const DialogContact = ({
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
+}: DialogContactProps = {}) => {
   const [t] = useTranslation();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = externalOnOpenChange || setInternalOpen;
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
@@ -48,11 +59,13 @@ const DialogContact = () => {
   }
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <span className="cursor-pointer text-xs font-mono uppercase text-muted-foreground hover:text-foreground transition-colors">
-          {t("portfolio.contact")}
-        </span>
-      </DialogTrigger>
+      {externalOpen === undefined && (
+        <DialogTrigger asChild>
+          <span className="cursor-pointer text-xs font-mono uppercase text-muted-foreground hover:text-foreground transition-colors">
+            {t("portfolio.contact")}
+          </span>
+        </DialogTrigger>
+      )}
       <DialogOverlay className="backdrop-blur-xs" />
 
       {/* Form must live inside DialogContent (portal) so inputs are inside the form */}
