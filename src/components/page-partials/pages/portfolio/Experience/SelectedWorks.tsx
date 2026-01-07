@@ -14,10 +14,10 @@ const SelectedWorks = ({
     <section id="experience" className="py-12 container mx-auto">
       <div className="mb-16 border-b border-foreground/10 pb-4 flex justify-between items-baseline">
         <h2 className="font-display text-3xl md:text-4xl font-medium tracking-tight text-foreground uppercase">
-          Selected Works
+          {t("portfolio.selected_works.title")}
         </h2>
         <span className="font-mono text-xs uppercase text-muted-foreground">
-          [ CLICK FOR DETAILS ]
+          {t("portfolio.selected_works.subtitle")}
         </span>
       </div>
 

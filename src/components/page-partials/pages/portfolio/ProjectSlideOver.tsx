@@ -1,6 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Share2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Project } from "./Experience/constant";
 
 interface ProjectSlideOverProps {
@@ -14,6 +15,7 @@ const ProjectSlideOver: React.FC<ProjectSlideOverProps> = ({
   isOpen,
   onClose,
 }) => {
+  const { t } = useTranslation();
   return (
     <AnimatePresence>
       {isOpen && project && (
@@ -36,7 +38,7 @@ const ProjectSlideOver: React.FC<ProjectSlideOverProps> = ({
               <div className="flex items-center gap-3">
                 <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                 <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-                  Project Details
+                  {t("portfolio.project_slideover.project_details")}
                 </span>
               </div>
               <button
@@ -68,7 +70,7 @@ const ProjectSlideOver: React.FC<ProjectSlideOverProps> = ({
 
             <div className="px-8 py-6 border-t border-foreground/5 bg-card-background flex justify-between items-center">
               <span className="font-mono text-[10px] text-muted-foreground">
-                CONFIDENTIALITY: PUBLIC
+                {t("portfolio.project_slideover.confidentiality")}
               </span>
               <div className="flex gap-4">
                 <button className="text-muted-foreground hover:text-foreground transition-colors">

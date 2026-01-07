@@ -162,6 +162,18 @@
       "success_message": "Ваше повідомлення було відправлено успішно. Я зв'яжуся з вами як тільки зможу.",
       "close": "Закрити"
     },
+    "project_slideover": {
+      "project_details": "Деталі проєкту",
+      "confidentiality": "КОНФІДЕНЦІЙНІСТЬ: ПУБЛІЧНА"
+    },
+    "case_studies": {
+      "title": "Кейси",
+      "subtitle": "[ ПОГЛИБЛЕНИЙ ОГЛЯД ]"
+    },
+    "selected_works": {
+      "title": "Вибрані роботи",
+      "subtitle": "[ НАТИСНІТЬ ДЛЯ ДЕТАЛЕЙ ]"
+    },
     "tech_stack": {
       "title": "Арсенал"
     },

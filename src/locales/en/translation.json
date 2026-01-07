@@ -158,6 +158,18 @@
       "success_message": "Your message has been sent successfully. I will get back to you as soon as possible.",
       "close": "Close"
     },
+    "project_slideover": {
+      "project_details": "Project Details",
+      "confidentiality": "CONFIDENTIALITY: PUBLIC"
+    },
+    "case_studies": {
+      "title": "Case Studies",
+      "subtitle": "[ DEEP_DIVE ]"
+    },
+    "selected_works": {
+      "title": "Selected Works",
+      "subtitle": "[ CLICK FOR DETAILS ]"
+    },
     "tech_stack": {
       "title": "Arsenal"
     },

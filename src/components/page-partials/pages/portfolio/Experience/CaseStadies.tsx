@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { PROJECTS_DATA } from "./constant";
 import { ArrowUpRight } from "lucide-react";
 
@@ -7,14 +8,15 @@ const CaseStadies = ({
 }: {
   openProject: (id: string) => void;
 }) => {
+  const { t } = useTranslation();
   return (
     <section id="projects" className="py-20 container mx-auto">
       <div className="flex items-end justify-between mb-12">
         <h2 className="font-display text-4xl md:text-5xl font-medium tracking-tight text-foreground">
-          Case Studies
+          {t("portfolio.case_studies.title")}
         </h2>
         <span className="font-mono text-xs text-muted-foreground">
-          [ DEEP_DIVE ]
+          {t("portfolio.case_studies.subtitle")}
         </span>
       </div>
       <div className="grid md:grid-cols-2 gap-4">
