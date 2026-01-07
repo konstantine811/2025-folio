@@ -18,10 +18,9 @@ const Home = () => {
   const hs = useHeaderSizeStore((state) => state.size);
   const pageIndexRef = useRef(0);
   const sectionProgressRef = useRef(0);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isContactOpen, setIsContactOpen] = useState(false);
+  // Заморожені значення для Canvas під час відкриття модального вікна
+  const frozenPageIndexRef = useRef(0);
+  const frozenSectionProgressRef = useRef(0);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   const projectsData = getProjectsData(t);
@@ -29,6 +28,9 @@ const Home = () => {
   const openProject = (id: string) => {
     const project = projectsData[id];
     if (project) {
+      // Зберігаємо поточні значення перед відкриттям
+      frozenPageIndexRef.current = pageIndexRef.current;
+      frozenSectionProgressRef.current = sectionProgressRef.current;
       setSelectedProject(project);
     }
   };
@@ -36,8 +38,6 @@ const Home = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setIsMenuOpen(false);
-        setIsContactOpen(false);
         setSelectedProject(null);
       }
     };
@@ -49,8 +49,10 @@ const Home = () => {
       <div className="fixed inset-0 top-0 w-full h-full z-0 pointer-events-auto pb-20">
         <Canvas camera={{ position: [0, 10, 85], fov: 70 }}>
           <ExperienceCanvas
-            uSectionProgressRef={sectionProgressRef}
-            uPageIndexRef={pageIndexRef}
+            uSectionProgressRef={
+              selectedProject ? frozenSectionProgressRef : sectionProgressRef
+            }
+            uPageIndexRef={selectedProject ? frozenPageIndexRef : pageIndexRef}
             pathModel={"/3d-models/folio-scene/morphScene.glb"}
           />
         </Canvas>
