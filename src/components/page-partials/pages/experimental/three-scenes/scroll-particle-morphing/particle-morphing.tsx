@@ -155,7 +155,6 @@ const ParticleMorphing = ({
   onModelLoaded?: () => void;
 }) => {
   const { isAdoptiveSize: isMdSize } = useIsAdoptive();
-  const sphereGeometry = useMemo(() => new SphereGeometry(200, 64, 64), []);
 
   const theme = useThemeStore((state) => state.selectedTheme);
   const shaderCustomMaterialRef = useRef<ShaderMaterial>(null);
@@ -186,23 +185,6 @@ const ParticleMorphing = ({
     };
   }, []);
 
-  // Зберігаємо позиції сфери в particles (як в updateGeometry)
-  useEffect(() => {
-    const spherePos = sphereGeometry.attributes.position;
-    const sphereCount = spherePos.count;
-    const originalArray = spherePos.array;
-    const newArray = new Float32Array(sphereCount * 3);
-
-    for (let i = 0; i < sphereCount; i++) {
-      const i3 = i * 3;
-      newArray[i3] = originalArray[i3 + 0];
-      newArray[i3 + 1] = originalArray[i3 + 1];
-      newArray[i3 + 2] = originalArray[i3 + 2];
-    }
-
-    particles.maxCount = sphereCount;
-    particles.positions = [new Float32BufferAttribute(newArray, 3)];
-  }, [sphereGeometry, particles]);
 
   const onMorphing = useCallback(
     (prevIndex: number, nextIndex: number) => {
@@ -244,17 +226,6 @@ const ParticleMorphing = ({
     [particles]
   );
 
-  // useEffect(() => {
-  //   const len = particles.positions.length;
-  //   if (!len) return;
-
-  //   // секція для морфу максимум len-2, бо ми морфимо i -> i+1
-  //   const morphSection = showIndexModel;
-  //   console.log("morphSection", morphSection);
-  //   const from = morphSection;
-  //   const to = morphSection + 1;
-  //   onMorphing(from, to);
-  // }, [showIndexModel, onMorphing, particles.positions.length]);
 
   useEffect(() => {
     animate(uJitterAmpMV, 0.1, {

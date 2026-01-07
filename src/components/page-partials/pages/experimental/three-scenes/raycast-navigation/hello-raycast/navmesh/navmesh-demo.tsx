@@ -1,3 +1,4 @@
+import { Line } from "@react-three/drei";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   getNavMeshPositionsAndIndices,
@@ -134,7 +135,7 @@ const NavMeshDemo = () => {
     return g;
   }, [navMeshData]);
 
-  const pathLineGeometry = useMemo(() => {
+  const pointsLineGeometry = useMemo(() => {
     if (!navMeshData) return null;
 
     // Старт — фіксований (для уроку 1)
@@ -153,9 +154,8 @@ const NavMeshDemo = () => {
     );
     if (!res.success || !res.path?.length) return null;
 
-    const pts = res.path.map((p) => new Vector3(p.x, p.y + 0.05, p.z));
-    const g = new BufferGeometry().setFromPoints(pts);
-    return g;
+    const points = res.path.map((p) => new Vector3(p.x, p.y + 0.05, p.z));
+    return points;
   }, [navMeshData, target]);
 
   return (
@@ -191,10 +191,13 @@ const NavMeshDemo = () => {
       )}
 
       {/* Лінія шляху */}
-      {pathLineGeometry && (
-        <line geometry={pathLineGeometry}>
-          <lineBasicMaterial transparent opacity={0.95} />
-        </line>
+      {pointsLineGeometry && (
+        <Line
+          points={pointsLineGeometry}
+          lineWidth={2} // у більшості браузерів працює “як є”, інколи обмежено
+          dashed={false}
+          color="red"
+        />
       )}
     </>
   );
