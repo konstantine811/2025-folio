@@ -1,9 +1,9 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Share2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import Lenis from "lenis";
 import { Project } from "./Experience/constant";
+import { useModalScrollLock } from "@/hooks/useModalScrollLock";
 
 interface ProjectSlideOverProps {
   project: Project | null;
@@ -19,95 +19,13 @@ const ProjectSlideOver: React.FC<ProjectSlideOverProps> = ({
   const { t } = useTranslation();
   const slideOverRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const lenisRef = useRef<Lenis | null>(null);
-  const rafIdRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    if (isOpen && scrollContainerRef.current) {
-      // Зберігаємо поточну позицію скролу
-      const scrollY = window.scrollY;
-
-      // Зберігаємо поточний overflow
-      const originalOverflow = document.body.style.overflow;
-      const originalOverflowX = document.body.style.overflowX;
-      const originalOverflowY = document.body.style.overflowY;
-      const originalPosition = document.body.style.position;
-      const originalTop = document.body.style.top;
-      const originalWidth = document.body.style.width;
-
-      // Блокуємо скролл на body
-      document.body.style.overflow = "hidden";
-      document.body.style.overflowX = "hidden";
-      document.body.style.overflowY = "hidden";
-      document.body.style.position = "fixed";
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = "100%";
-
-      // Блокуємо події скролу для основного Lenis
-      const preventMainScroll = (e: WheelEvent | TouchEvent) => {
-        // Перевіряємо, чи подія відбулася всередині модального вікна
-        const target = e.target as HTMLElement;
-        if (slideOverRef.current?.contains(target)) {
-          return; // Дозволяємо скролл всередині модального вікна
-        }
-        e.preventDefault();
-        e.stopPropagation();
-      };
-
-      window.addEventListener("wheel", preventMainScroll, { passive: false });
-      window.addEventListener("touchmove", preventMainScroll, {
-        passive: false,
-      });
-
-      // Створюємо новий Lenis для модального вікна
-      const scrollContainer = scrollContainerRef.current;
-      const lenis = new Lenis({
-        wrapper: scrollContainer,
-        content: scrollContainer,
-        duration: 1.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        smoothWheel: true,
-        wheelMultiplier: 0.8,
-      });
-
-      lenisRef.current = lenis;
-
-      // Функція для оновлення Lenis
-      function raf(time: number) {
-        lenis.raf(time);
-        rafIdRef.current = requestAnimationFrame(raf);
-      }
-
-      rafIdRef.current = requestAnimationFrame(raf);
-
-      return () => {
-        // Видаляємо обробники подій
-        window.removeEventListener("wheel", preventMainScroll);
-        window.removeEventListener("touchmove", preventMainScroll);
-
-        // Зупиняємо та знищуємо локальний Lenis
-        if (rafIdRef.current !== null) {
-          cancelAnimationFrame(rafIdRef.current);
-          rafIdRef.current = null;
-        }
-        if (lenisRef.current) {
-          lenisRef.current.destroy();
-          lenisRef.current = null;
-        }
-
-        // Повертаємо стилі
-        document.body.style.overflow = originalOverflow;
-        document.body.style.overflowX = originalOverflowX;
-        document.body.style.overflowY = originalOverflowY;
-        document.body.style.position = originalPosition;
-        document.body.style.top = originalTop;
-        document.body.style.width = originalWidth;
-
-        // Повертаємо позицію скролу
-        window.scrollTo(0, scrollY);
-      };
-    }
-  }, [isOpen]);
+  // Використовуємо загальний хук для блокування скролу та створення Lenis
+  useModalScrollLock({
+    isOpen,
+    modalRef: slideOverRef,
+    scrollContainerRef,
+  });
   return (
     <AnimatePresence>
       {isOpen && project && (
