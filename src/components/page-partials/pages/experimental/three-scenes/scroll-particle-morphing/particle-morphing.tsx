@@ -230,7 +230,7 @@ const ParticleMorphing = ({
       duration: 5,
       ease: [0.22, 1, 0.36, 1], // приємний ease-out (можеш змінити)
     });
-    animate(uJitterFreqMV, 0.1, {
+    animate(uJitterFreqMV, 0.7, {
       duration: 7,
       ease: [0.22, 1, 0.36, 1], // приємний ease-out (можеш змінити)
     });

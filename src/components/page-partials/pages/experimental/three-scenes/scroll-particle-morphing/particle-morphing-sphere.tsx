@@ -167,22 +167,11 @@ const ParticleMorphingSphere = ({
       // Оновлюємо shader uniform
       if (mat && mat.uniforms && mat.uniforms.uOpacity) {
         mat.uniforms.uOpacity.value = value;
-        mat.transparent = value < 1;
       }
 
       // Оновлюємо wireframe material
       if (sphereMaterial) {
         sphereMaterial.opacity = value;
-        sphereMaterial.transparent = value < 1;
-      }
-
-      // Керуємо видимістю для повного приховування
-      const isVisible = value > 0.001;
-      if (pointsRef.current) {
-        pointsRef.current.visible = isVisible;
-      }
-      if (meshRef.current) {
-        meshRef.current.visible = isVisible;
       }
     };
 
