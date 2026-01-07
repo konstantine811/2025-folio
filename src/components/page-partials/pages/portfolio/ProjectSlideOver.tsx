@@ -65,6 +65,44 @@ const ProjectSlideOver: React.FC<ProjectSlideOverProps> = ({
                   className="text-foreground"
                   dangerouslySetInnerHTML={{ __html: project.content }}
                 />
+                {project.images && project.images.length > 0 && (
+                  <div className="mt-10 space-y-8">
+                    <h3 className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-6 font-medium">
+                      {t("portfolio.project_slideover.gallery_title")}
+                    </h3>
+                    <div className="space-y-8">
+                      {project.images.map((image, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 + index * 0.1 }}
+                          className="space-y-3"
+                        >
+                          <div className="relative w-full rounded-lg overflow-hidden border border-foreground/10 bg-background/50">
+                            <img
+                              src={image.src}
+                              alt={image.alt}
+                              className="w-full h-auto object-contain"
+                              loading="lazy"
+                              onError={(e) => {
+                                console.error(
+                                  "Failed to load image:",
+                                  image.src
+                                );
+                                (e.target as HTMLImageElement).style.display =
+                                  "none";
+                              }}
+                            />
+                          </div>
+                          <p className="font-mono text-xs text-muted-foreground leading-relaxed">
+                            {image.description}
+                          </p>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </motion.div>
             </div>
 

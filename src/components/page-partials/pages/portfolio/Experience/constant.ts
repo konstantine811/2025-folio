@@ -1,5 +1,11 @@
 import { TFunction } from "i18next";
 
+export interface ProjectImage {
+  src: string;
+  alt: string;
+  description: string;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -8,6 +14,7 @@ export interface Project {
   category?: string;
   tags?: string[];
   color?: string;
+  images?: ProjectImage[];
 }
 
 export interface ExperienceItem {
@@ -179,6 +186,44 @@ export const getProjectsData = (t: TFunction): Record<string, Project> => ({
           )}</li>
       </ul>
     `,
+    images: [
+      {
+        src: "/images/portfolio/kernel/telematics-diagram.jpg",
+        alt: t(
+          "portfolio.experience.projects.dashboard_fields.images.telematics.alt"
+        ),
+        description: t(
+          "portfolio.experience.projects.dashboard_fields.images.telematics.description"
+        ),
+      },
+      {
+        src: "/images/portfolio/kernel/agricultural-mapping-interface.jpg",
+        alt: t(
+          "portfolio.experience.projects.dashboard_fields.images.mapping.alt"
+        ),
+        description: t(
+          "portfolio.experience.projects.dashboard_fields.images.mapping.description"
+        ),
+      },
+      {
+        src: "/images/portfolio/kernel/crop-status-monitoring.jpg",
+        alt: t(
+          "portfolio.experience.projects.dashboard_fields.images.crop_status.alt"
+        ),
+        description: t(
+          "portfolio.experience.projects.dashboard_fields.images.crop_status.description"
+        ),
+      },
+      {
+        src: "/images/portfolio/kernel/ndvi-field-analysis.jpg",
+        alt: t(
+          "portfolio.experience.projects.dashboard_fields.images.ndvi.alt"
+        ),
+        description: t(
+          "portfolio.experience.projects.dashboard_fields.images.ndvi.description"
+        ),
+      },
+    ],
   },
   passport_field: {
     id: "passport_field",

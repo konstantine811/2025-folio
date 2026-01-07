@@ -160,7 +160,8 @@
     },
     "project_slideover": {
       "project_details": "Project Details",
-      "confidentiality": "CONFIDENTIALITY: PUBLIC"
+      "confidentiality": "CONFIDENTIALITY: PUBLIC",
+      "gallery_title": "Gallery"
     },
     "case_studies": {
       "title": "Case Studies",
@@ -257,6 +258,24 @@
           "features_list": {
             "1": "Real-time machinery monitoring via GPS.",
             "2": "Yield forecast based on NDVI."
+          },
+          "images": {
+            "telematics": {
+              "alt": "Telematics diagram in smart agriculture",
+              "description": "Isometric diagram demonstrating the concept of telematics in smart agriculture. Shows various agricultural operations and digital monitoring systems with connected machinery and control features."
+            },
+            "mapping": {
+              "alt": "Agricultural mapping software interface",
+              "description": "Software interface for monitoring agricultural machinery on a map. Displays machine tracks, different field types, and a timeline for analyzing operations."
+            },
+            "crop_status": {
+              "alt": "Crop status monitoring",
+              "description": "Interface for monitoring crop status with a data table and satellite map. Shows information about sown and harvested areas for different crops."
+            },
+            "ndvi": {
+              "alt": "NDVI field analysis",
+              "description": "Satellite map with color-coded overlay displaying NDVI (Normalized Difference Vegetation Index) for analyzing plant health and growth stages across the field."
+            }
           }
         },
         "passport_field": {
