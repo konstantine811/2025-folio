@@ -8,7 +8,7 @@ import {
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
-const APP_VERSION = "1.0.1";
+const APP_VERSION = "1.0.3";
 const Portfolio = () => {
   const hs = useHeaderSizeStore((state) => state.size);
   const [t] = useTranslation();
@@ -82,6 +82,40 @@ const Portfolio = () => {
           <div className="mt-8 flex gap-8">
             <a
               href="#projects"
+              onClick={(e) => {
+                e.preventDefault();
+                const target = document.getElementById("projects");
+                if (target) {
+                  // Використовуємо Lenis для плавного скролу, якщо він доступний
+                  // Спробуємо знайти Lenis instance через DOM
+                  const lenisRoot = document.querySelector("[data-lenis-root]");
+                  if (lenisRoot) {
+                    const lenisInstance = (
+                      window as unknown as {
+                        lenis?: {
+                          scrollTo: (
+                            target: HTMLElement,
+                            options?: { offset?: number; duration?: number }
+                          ) => void;
+                        };
+                      }
+                    ).lenis;
+                    if (lenisInstance && lenisInstance.scrollTo) {
+                      lenisInstance.scrollTo(target, {
+                        offset: -hs, // Враховуємо висоту header
+                        duration: 1.2,
+                      });
+                      return;
+                    }
+                  }
+                  // Fallback до стандартного smooth scroll
+                  const y =
+                    target.getBoundingClientRect().top +
+                    window.pageYOffset -
+                    hs;
+                  window.scrollTo({ top: y, behavior: "smooth" });
+                }
+              }}
               className="text-xs font-mono uppercase text-foreground border-b border-foreground pb-1 hover:opacity-70 transition-opacity"
             >
               {t("portfolio.view_dossier")}
