@@ -6,6 +6,8 @@ import RaycastGeometry from "@/components/common/three/raycast-geometry/raycast-
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemePalette, ThemeType } from "@/config/theme-colors.config";
 import { animate, useMotionValue } from "framer-motion";
+import { ModelLoadingContext } from "./model-loading-context";
+import DarkSimple from "./dark-simple";
 
 const Experience = ({
   pathModel = "/3d-models/models.glb",
@@ -25,7 +27,7 @@ const Experience = ({
     if (isModelLoaded && showSphere) {
       // Анімуємо opacity до 0
       animate(opacityMV, 0, {
-        duration: 0.5,
+        duration: 2.5,
         ease: "easeOut",
         onComplete: () => {
           setShowSphere(false);
@@ -35,7 +37,7 @@ const Experience = ({
   }, [isModelLoaded, showSphere, opacityMV]);
 
   return (
-    <>
+    <ModelLoadingContext.Provider value={{ isModelLoaded, setIsModelLoaded }}>
       <color attach="background" args={[ThemePalette[theme].card]} />
       <directionalLight position={[1, 1, 1]} intensity={1} />
       <RaycastGeometry
@@ -46,26 +48,25 @@ const Experience = ({
         useScreenPosition={true}
       />
       {/* Сфера рендериться одразу, поза Suspense, з анімованим зникненням коли модель завантажиться */}
-      {showSphere && <ParticleMorphingSphere opacityMV={opacityMV} />}
-      {theme === ThemeType.LIGHT ? (
-        <mesh position-y={-3}>
-          <sphereGeometry args={[33, 100, 100]} />
-          <meshBasicMaterial color="red" />
-        </mesh>
-      ) : (
-        <Suspense fallback={null}>
-          <ParticleMorphing
-            pathModel={pathModel}
-            uSectionProgressRef={uSectionProgressRef}
-            uPageIndexRef={uPageIndexRef}
-            onModelLoaded={() => setIsModelLoaded(true)}
-            // глобальний прогрес (0..1) якщо теж треба
 
-            // локальний прогрес секції (0..1) без ререндерів
-          />
-        </Suspense>
+      {theme === ThemeType.LIGHT ? (
+        <DarkSimple />
+      ) : (
+        <>
+          {showSphere && <ParticleMorphingSphere opacityMV={opacityMV} />}
+          <Suspense fallback={null}>
+            <ParticleMorphing
+              pathModel={pathModel}
+              uSectionProgressRef={uSectionProgressRef}
+              uPageIndexRef={uPageIndexRef}
+              // глобальний прогрес (0..1) якщо теж треба
+
+              // локальний прогрес секції (0..1) без ререндерів
+            />
+          </Suspense>
+        </>
       )}
-    </>
+    </ModelLoadingContext.Provider>
   );
 };
 

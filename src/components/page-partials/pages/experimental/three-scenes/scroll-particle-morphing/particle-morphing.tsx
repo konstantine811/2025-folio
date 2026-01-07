@@ -17,6 +17,7 @@ import { useRaycastGeometryStore } from "@/components/common/three/raycast-geome
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemePalette } from "@/config/theme-colors.config";
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
+import { useModelLoading } from "./useModelLoading";
 
 const sizes = {
   width: window.innerWidth,
@@ -133,7 +134,7 @@ const ShaderCustomMaterial = shaderMaterial(
 
     uTime: 0,
     uJitterAmp: 1.05, // амплітуда дрібного тремтіння (підбирай)
-    uJitterFreq: 10.0, // частота (підбирай)
+    uJitterFreq: 1.0, // частота (підбирай)
     uColorA: new Color("#00c3ff"),
     uColorB: new Color("#ff8a00"),
   },
@@ -147,13 +148,12 @@ const ParticleMorphing = ({
   pathModel = "/3d-models/models.glb",
   uSectionProgressRef,
   uPageIndexRef,
-  onModelLoaded,
 }: {
   uSectionProgressRef: RefObject<number>;
   pathModel: string;
   uPageIndexRef: RefObject<number>;
-  onModelLoaded?: () => void;
 }) => {
+  const { setIsModelLoaded } = useModelLoading();
   const { isAdoptiveSize: isMdSize } = useIsAdoptive();
 
   const theme = useThemeStore((state) => state.selectedTheme);
@@ -184,7 +184,6 @@ const ParticleMorphing = ({
       angles: [] as Float32BufferAttribute[],
     };
   }, []);
-
 
   const onMorphing = useCallback(
     (prevIndex: number, nextIndex: number) => {
@@ -225,7 +224,6 @@ const ParticleMorphing = ({
     },
     [particles]
   );
-
 
   useEffect(() => {
     animate(uJitterAmpMV, 0.1, {
@@ -342,9 +340,9 @@ const ParticleMorphing = ({
         );
       }
       isModelLoadedRef.current = true;
-      onModelLoaded?.();
+      setIsModelLoaded(true);
     }
-  }, [scene, particles, onModelLoaded]);
+  }, [scene, particles, setIsModelLoaded]);
   useEffect(() => {
     updateGeometry();
   }, [updateGeometry]);
