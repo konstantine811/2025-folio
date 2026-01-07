@@ -1,11 +1,15 @@
-import { EXPERIENCE_LIST } from "./constant";
+import { getExperienceList } from "./constant";
 import { ArrowRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const SelectedWorks = ({
   openProject,
 }: {
   openProject: (id: string) => void;
 }) => {
+  const { t } = useTranslation();
+  const experienceList = getExperienceList(t);
+
   return (
     <section id="experience" className="py-12 container mx-auto">
       <div className="mb-16 border-b border-foreground/10 pb-4 flex justify-between items-baseline">
@@ -18,7 +22,7 @@ const SelectedWorks = ({
       </div>
 
       <div className="space-y-0">
-        {EXPERIENCE_LIST.map((item) => (
+        {experienceList.map((item) => (
           <div
             key={item.id}
             onClick={() => openProject(item.id)}

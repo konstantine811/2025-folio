@@ -79,7 +79,7 @@ export const getProjectsData = (t: TFunction): Record<string, Project> => ({
           "portfolio.experience.projects.u_studio.tech_list.4"
         )}</strong></li>
       </ul>
-      <a href="https://dream.gov.ua" target="_blank" class="text-primary underline underline-offset-4 transition-colors duration-200 hover:text-primary/80">${t(
+      <a href="https://map.dream.gov.ua/" target="_blank" class="text-primary underline underline-offset-4 transition-colors duration-200 hover:text-primary/80">${t(
         "portfolio.experience.projects.u_studio.link"
       )}</a>
     `,
@@ -218,45 +218,48 @@ export const PROJECTS_DATA: Record<string, Project> = getProjectsData(
   ((key: string) => key) as unknown as TFunction
 );
 
-export const EXPERIENCE_LIST: ExperienceItem[] = [
+export const getExperienceList = (t: TFunction): ExperienceItem[] => [
   {
     id: "kernel",
     number: "01",
-    category: "AGRO TECH",
+    category: t("portfolio.experience.experience_list.kernel.category"),
     title: "KERNEL",
-    description:
-      "GIS ecosystem for field analytics. 8000+ polygons, soil analysis, and machinery tracking.",
+    description: t("portfolio.experience.experience_list.kernel.description"),
     tags: ["Angular", "ArcGIS"],
     colorClass: "group-hover:text-emerald-400",
   },
   {
     id: "u_studio",
     number: "02",
-    category: "GOVERNMENT",
+    category: t("portfolio.experience.experience_list.u_studio.category"),
     title: "U-STUDIO",
-    description:
-      "National restoration ecosystem (DREAM). Visualizing infrastructure and financial flows.",
+    description: t("portfolio.experience.experience_list.u_studio.description"),
     tags: ["React", "Mapbox GL"],
     colorClass: "group-hover:text-blue-400",
   },
   {
     id: "ixlayer",
     number: "03",
-    category: "HEALTH TECH",
+    category: t("portfolio.experience.experience_list.ixlayer.category"),
     title: "IXLAYER",
-    description:
-      "DNA testing services platform. Complex forms and registration flows.",
+    description: t("portfolio.experience.experience_list.ixlayer.description"),
     tags: ["Vue.js", "SaaS"],
     colorClass: "group-hover:text-purple-400",
   },
   {
     id: "cubic_worlds",
     number: "04",
-    category: "INDIE GAME",
+    category: t("portfolio.experience.experience_list.cubic_worlds.category"),
     title: "CUBIC WORLDS",
-    description:
-      "Personal 3D RPG game engine. Voxel world generation and physics.",
+    description: t(
+      "portfolio.experience.experience_list.cubic_worlds.description"
+    ),
     tags: ["Three.js", "WebGL"],
     colorClass: "group-hover:text-pink-400",
   },
 ];
+
+// Legacy export for backward compatibility - use getExperienceList(t) instead
+export const EXPERIENCE_LIST: ExperienceItem[] = getExperienceList(
+  ((key: string) => key) as unknown as TFunction
+);

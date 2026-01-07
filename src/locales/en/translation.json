@@ -258,6 +258,24 @@
             "2": "Accessibility WCAG 2.1 compliance."
           }
         }
+      },
+      "experience_list": {
+        "kernel": {
+          "category": "AGRO TECH",
+          "description": "GIS ecosystem for field analytics. 8000+ polygons, soil analysis, and machinery tracking."
+        },
+        "u_studio": {
+          "category": "GOVERNMENT",
+          "description": "National restoration ecosystem (DREAM). Visualizing infrastructure and financial flows."
+        },
+        "ixlayer": {
+          "category": "HEALTH TECH",
+          "description": "DNA testing services platform. Complex forms and registration flows."
+        },
+        "cubic_worlds": {
+          "category": "INDIE GAME",
+          "description": "Personal 3D RPG game engine. Voxel world generation and physics."
+        }
       }
     }
   },

@@ -262,6 +262,24 @@
             "2": "Accessibility WCAG 2.1 compliance."
           }
         }
+      },
+      "experience_list": {
+        "kernel": {
+          "category": "AGRO TECH",
+          "description": "GIS екосистема для аналітики полів. 8000+ полігонів, аналіз ґрунтів та відстеження техніки."
+        },
+        "u_studio": {
+          "category": "GOVERNMENT",
+          "description": "Національна екосистема відновлення (DREAM). Візуалізація інфраструктури та фінансових потоків."
+        },
+        "ixlayer": {
+          "category": "HEALTH TECH",
+          "description": "Платформа сервісів ДНК-тестування. Складні форми та процеси реєстрації."
+        },
+        "cubic_worlds": {
+          "category": "INDIE GAME",
+          "description": "Особистий 3D RPG ігровий рушій. Voxel-генерація світу та фізика."
+        }
       }
     }
   },
