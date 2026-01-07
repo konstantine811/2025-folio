@@ -7,9 +7,11 @@ import TopicBlogDrawerContent from "./TopicBlogDrawerContent";
 import { HoverStyleElement } from "@/types/sound";
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 
 const TopicBlogDrawer = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const hs = useHeaderSizeStore((state) => state.size);
   return (
     <Drawer
       direction="left"
@@ -19,7 +21,10 @@ const TopicBlogDrawer = () => {
       disablePreventScroll
       noBodyStyles
     >
-      <DrawerTrigger className="fixed left-0 z-50 mt-3">
+      <DrawerTrigger
+        className="fixed left-0 z-50 mt-3"
+        style={{ top: `${hs}px` }}
+      >
         <Button
           asChild
           className="bg-card hover:bg-background rounded-l-none text-foreground"
