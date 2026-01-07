@@ -11,6 +11,7 @@ import SelectedWorks from "./portfolio/Experience/SelectedWorks";
 import ProjectSlideOver from "./portfolio/ProjectSlideOver";
 import { Project, getProjectsData } from "./portfolio/Experience/constant";
 import { useTranslation } from "react-i18next";
+import CaseStadies from "./portfolio/Experience/CaseStadies";
 
 const Home = () => {
   const { t } = useTranslation();
@@ -75,6 +76,7 @@ const Home = () => {
           <div className="mt-10">
             <SelectedWorks openProject={openProject} />
           </div>,
+          <CaseStadies openProject={openProject} />,
         ]}
         className="relative z-10 bg-background/50 backdrop-blur-xs"
         style={{ top: `${hs}px`, paddingBottom: "20vh" }}
