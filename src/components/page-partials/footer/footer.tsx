@@ -34,19 +34,19 @@ const Footer = () => {
   return (
     <footer
       ref={footerRef}
-      className="border-t border-foreground/10 bg-background relative z-50 px-6 md:px-12 py-2"
+      className="border-t border-foreground/10 bg-background relative z-50 px-6 md:px-12 py-4"
     >
       <div className="container mx-auto  flex justify-between items-center gap-8">
         <div className="flex flex-col">
-          <span className="font-mono text-xs uppercase mb-4 block text-zinc-500">
-            Status:{" "}
+          <span className="font-mono text-xs uppercase mb-1 block text-muted-foreground">
+            Status:
             {statusWork?.status_work
               ? t("portfolio.status_work.busy")
               : t("portfolio.status_work.available")}
           </span>
           <button
             onClick={() => setIsContactOpen(true)}
-            className="font-display text-5xl md:text-7xl font-bold tracking-tight text-foreground hover:text-muted-foreground transition-colors text-left uppercase cursor-pointer"
+            className="font-display text-xl md:text-7xl font-bold tracking-tight text-foreground hover:text-muted-foreground transition-colors text-left uppercase cursor-pointer"
           >
             LET'S TALK
           </button>
