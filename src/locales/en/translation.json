@@ -249,7 +249,7 @@
           "intro": "The DREAM ecosystem is a digital platform for Ukraine's recovery. My role was to create the main module for displaying geodata.",
           "features": "Key Features:",
           "features_list": {
-            "1": "<strong>Clustering:</strong> Processing 10,000+ objects.",
+            "1": "<strong>Clustering:</strong> Processing 2,000+ objects.",
             "2": "<strong>Heat Map:</strong> Analytics layer for destruction."
           }
         },
