@@ -15,6 +15,7 @@ export interface Project {
   tags?: string[];
   color?: string;
   images?: ProjectImage[];
+  websiteUrl?: string;
 }
 
 export interface ExperienceItem {
@@ -98,6 +99,7 @@ export const getProjectsData = (t: TFunction): Record<string, Project> => ({
     id: "ixlayer",
     title: "IXLAYER",
     subtitle: "Health Tech / DNA",
+    websiteUrl: "https://ixlayer.com/",
     content: `
       <ul class="list-disc pl-6 mb-6 text-foreground/80 text-sm leading-[1.7]">
         <h5 class="font-mono text-xs uppercase tracking-widest text-muted-foreground mt-8 mb-4 font-medium">${t(
@@ -150,6 +152,7 @@ export const getProjectsData = (t: TFunction): Record<string, Project> => ({
     subtitle: "U-STUDIO / ECOSYSTEM",
     category: "CASE STUDY 01",
     color: "indigo",
+    websiteUrl: "https://map.dream.gov.ua/",
     content: `
       <p class="mb-6 leading-[1.7] text-foreground/80 text-sm">${t(
         "portfolio.experience.projects.map_dream.intro"
@@ -367,6 +370,7 @@ export const getProjectsData = (t: TFunction): Record<string, Project> => ({
     subtitle: "IXLAYER / MARKETING",
     category: "CASE STUDY 04",
     color: "pink",
+    websiteUrl: "https://ixlayer.com/",
     content: `
       <p class="mb-6 leading-[1.7] text-foreground/80 text-sm">${t(
         "portfolio.experience.projects.ixlayer_landing.intro"
@@ -377,6 +381,12 @@ export const getProjectsData = (t: TFunction): Record<string, Project> => ({
           )}</li>
           <li>${t(
             "portfolio.experience.projects.ixlayer_landing.features_list.2"
+          )}</li>
+          <li>${t(
+            "portfolio.experience.projects.ixlayer_landing.features_list.3"
+          )}</li>
+          <li>${t(
+            "portfolio.experience.projects.ixlayer_landing.features_list.4"
           )}</li>
       </ul>
     `,

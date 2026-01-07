@@ -203,12 +203,29 @@ const ProjectSlideOver: React.FC<ProjectSlideOverProps> = ({
 
             <div className="px-8 py-6 border-t border-foreground/5 bg-card-background flex justify-between items-center">
               <span className="font-mono text-[10px] text-muted-foreground">
-                {t("portfolio.project_slideover.confidentiality")}
+                {project.websiteUrl
+                  ? t("portfolio.project_slideover.confidentiality_public")
+                  : t("portfolio.project_slideover.confidentiality_not_public")}
               </span>
-              <div className="flex gap-4">
-                <button className="text-muted-foreground hover:text-foreground transition-colors">
-                  <Share2 className="w-4 h-4" />
-                </button>
+              <div className="flex gap-4 items-center">
+                {project.websiteUrl ? (
+                  <a
+                    href={project.websiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    title={t("portfolio.project_slideover.visit_website")}
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </a>
+                ) : (
+                  <span
+                    className="text-muted-foreground/50 font-mono text-[10px] cursor-not-allowed"
+                    title={t("portfolio.project_slideover.not_public")}
+                  >
+                    {t("portfolio.project_slideover.not_public")}
+                  </span>
+                )}
               </div>
             </div>
           </motion.div>

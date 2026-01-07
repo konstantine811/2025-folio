@@ -160,8 +160,11 @@
     },
     "project_slideover": {
       "project_details": "Project Details",
-      "confidentiality": "CONFIDENTIALITY: PUBLIC",
-      "gallery_title": "Gallery"
+      "confidentiality_public": "CONFIDENTIALITY: PUBLIC",
+      "confidentiality_not_public": "CONFIDENTIALITY: NOT PUBLIC",
+      "gallery_title": "Gallery",
+      "visit_website": "Visit website",
+      "not_public": "Not a public website"
     },
     "case_studies": {
       "title": "Case Studies",
@@ -346,10 +349,12 @@
           }
         },
         "ixlayer_landing": {
-          "intro": "Series of high-load marketing pages for telemedicine in the USA.",
+          "intro": "Development of the main Landing Page for ixlayer platform — a direct-to-patient platform for the biopharmaceutical industry in the USA.",
           "features_list": {
-            "1": "Optimized conversion and A/B testing.",
-            "2": "Accessibility WCAG 2.1 compliance."
+            "1": "Animations of various site sections: smooth transitions between sections, interactive elements, and dynamic content display.",
+            "2": "Accessibility: ensuring accessibility for all users, including screen reader support and keyboard navigation.",
+            "3": "Performance optimization: fast page loading and smooth animation performance for the best user experience.",
+            "4": "Responsive design: full support for different devices and screen sizes for access from any device."
           }
         },
         "computools": {
