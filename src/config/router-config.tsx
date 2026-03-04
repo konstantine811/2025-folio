@@ -282,6 +282,13 @@ const ThreeRaycastNavigation = lazyPage(
     )
 );
 
+const ThreeBakingTexture = lazyPage(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/baking-texture/init"
+    )
+);
+
 const LoginPage = lazyPage(
   () => import("../components/page-partials/pages/Login")
 );
@@ -332,6 +339,7 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_YUKA_FIRST_CONUS_AGENT = "three-yuka-first-conus-agent",
   EXPERIMENTAL_THREE_YUKA_CAR_SELF_DRIVING = "three-yuka-car-self-driving",
   EXPERIMENTAL_THREE_RAYCAST_NAVIGATION = "three-raycast-navigation",
+  EXPERIMENTAL_THREE_BAKING_TEXTURE = "three-baking-texture",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -382,6 +390,7 @@ export enum ExperimentalTypes {
   optimization = "optimization",
   yuka = "yuka",
   raycast = "raycast-navigation",
+  baking = "baking-texture",
 }
 
 export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
@@ -700,6 +709,15 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     description: "A raycast navigation scene created with Three.js.",
     imageUrl: imagePath("raycast-navigation"),
     type: ExperimentalTypes.raycast,
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_BAKING_TEXTURE,
+    Component: ThreeBakingTexture,
+    id: "experimental-three-baking-texture",
+    icon: "🌍",
+    description: "A baking texture scene created with Three.js.",
+    imageUrl: imagePath("baking-texture"),
+    type: ExperimentalTypes.baking,
   },
 ];
 
