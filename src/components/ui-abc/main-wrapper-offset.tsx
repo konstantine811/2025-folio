@@ -18,7 +18,7 @@ const MainWrapperOffset = forwardRef<HTMLDivElement, Props>(
       : `calc(100vh - ${fs}px)`;
     return (
       <div
-        className={clsx(className, "relative")}
+        className={clsx(className, "relative overflow-hidden")}
         style={{ height, top: isFullHeight ? hs : 0 }}
         ref={ref}
       >

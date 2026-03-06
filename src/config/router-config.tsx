@@ -289,6 +289,13 @@ const ThreeBakingTexture = lazyPage(
     )
 );
 
+const ThreeCharacterController = lazyPage(
+  () =>
+    import(
+      "../components/page-partials/pages/experimental/three-scenes/character-controller/init"
+    )
+);
+
 const LoginPage = lazyPage(
   () => import("../components/page-partials/pages/Login")
 );
@@ -340,6 +347,7 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_YUKA_CAR_SELF_DRIVING = "three-yuka-car-self-driving",
   EXPERIMENTAL_THREE_RAYCAST_NAVIGATION = "three-raycast-navigation",
   EXPERIMENTAL_THREE_BAKING_TEXTURE = "three-baking-texture",
+  EXPERIMENTAL_THREE_CHARACTER_CONTROLLER = "three-character-controller",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -719,6 +727,15 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     imageUrl: imagePath("baking-texture"),
     type: ExperimentalTypes.baking,
   },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_CHARACTER_CONTROLLER,
+    Component: ThreeCharacterController,
+    id: "experimental-three-character-controller",
+    icon: "🌍",
+    description: "A character controller scene created with Three.js.",
+    imageUrl: imagePath("character-controller"),
+    type: ExperimentalTypes.games,
+  },
 ];
 
 export const router: AppRoute[] = [
@@ -784,6 +801,7 @@ export const router: AppRoute[] = [
     ),
     isNav: true,
     id: "task-manager",
+    isDev: true,
     children: [
       ...TASK_MANAGER_ROUTERS,
       {

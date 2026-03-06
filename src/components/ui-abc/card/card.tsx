@@ -87,7 +87,7 @@ const Card = forwardRef<HTMLDivElement, Props>(
               )}
               <img
                 ref={setImgRef}
-                className="object-cover w-full inset-0 bg-cover bg-center opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-700"
+                className="object-cover w-full inset-0 bg-cover bg-center opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
                 src={srcImage}
                 alt={title}
                 onLoad={() => setIsImageLoading(false)}
