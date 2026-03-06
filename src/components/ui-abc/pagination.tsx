@@ -30,7 +30,7 @@ export function Pagination<T>({
   const endIndex = Math.min(startIndex + itemsPerPage, items.length);
   const currentItems = useMemo(
     () => items.slice(startIndex, endIndex),
-    [items, startIndex, endIndex]
+    [items, startIndex, endIndex],
   );
 
   // Calculate display range for INDEX (1-based)
@@ -107,18 +107,22 @@ export function Pagination<T>({
     <div
       className={cn(
         "relative flex flex-col min-h-[calc(100vh-200px)]",
-        className
+        className,
       )}
     >
       {/* Main content with grid */}
       <ul
         className={cn(
           "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6",
-          gridClassName
+          gridClassName,
         )}
       >
         {currentItems.map((item, index) => (
-          <li key={index}>{renderItem(item, index)}</li>
+          <li
+            key={(item as { id?: string }).id ?? `item=${startIndex + index}`}
+          >
+            {renderItem(item, startIndex + index)}
+          </li>
         ))}
       </ul>
 
@@ -144,7 +148,7 @@ export function Pagination<T>({
                 "transition-colors cursor-pointer select-none",
                 currentPage === 1
                   ? "text-muted-foreground/50 cursor-not-allowed"
-                  : "text-muted-foreground hover:text-foreground cursor-pointer"
+                  : "text-muted-foreground hover:text-foreground cursor-pointer",
               )}
             >
               PREV
@@ -177,7 +181,7 @@ export function Pagination<T>({
                       "transition-all duration-300 cursor-pointer px-3 py-1 select-none",
                       isActive
                         ? "text-foreground scale-101 text-base"
-                        : "text-muted-foreground hover:text-foreground text-sm"
+                        : "text-muted-foreground hover:text-foreground text-sm",
                     )}
                   >
                     {pageNum}
@@ -194,7 +198,7 @@ export function Pagination<T>({
                 "transition-colors",
                 currentPage === totalPages
                   ? "text-muted-foreground/50 cursor-not-allowed"
-                  : "text-muted-foreground hover:text-foreground cursor-pointer select-none"
+                  : "text-muted-foreground hover:text-foreground cursor-pointer select-none",
               )}
             >
               NEXT
