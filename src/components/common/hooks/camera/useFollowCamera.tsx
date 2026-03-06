@@ -1,8 +1,9 @@
 import { Mesh, Object3D, Object3DEventMap, Raycaster, Vector3 } from "three";
-import { camListenerTargetType } from "../character-controller";
+
 import { useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { useEditModeStore } from "../../../store/useEditModeStore";
+
+export type camListenerTargetType = "document" | "domElement";
 
 interface Props {
   disableFollowCam: boolean;
@@ -19,6 +20,7 @@ interface Props {
   camCollisionOffset?: number; // percentage
   camCollisionSpeedMult?: number;
   camListenerTarget?: camListenerTargetType;
+  isEditMode?: boolean;
 }
 
 let isMouseDown = false;
@@ -38,9 +40,9 @@ const useFollowCamera = ({
   camCollisionOffset = 0.7, // percentage
   camCollisionSpeedMult = 4,
   camListenerTarget = "domElement",
+  isEditMode = false,
 }: Props) => {
   const { scene, camera, gl } = useThree();
-  const isEditMode = useEditModeStore((s) => s.isEditMode);
   // const { rapier, world } = useRapier();
   const camRayCastRef = useRef(new Raycaster());
   const previousTouch1 = useRef<Touch | null>(null);
@@ -53,7 +55,7 @@ const useFollowCamera = ({
     origin.position.set(
       0,
       originZDis.current * Math.sin(-camInitDir.x),
-      originZDis.current * Math.cos(-camInitDir.x)
+      originZDis.current * Math.cos(-camInitDir.x),
     );
     return origin;
   }, [camInitDir.x]);
@@ -89,7 +91,7 @@ const useFollowCamera = ({
       }
       return false;
     },
-    [camMoveSpeed, camLowLimit, camUpLimit, followCam, pivot]
+    [camMoveSpeed, camLowLimit, camUpLimit, followCam, pivot],
   );
 
   // Mouse scroll event
@@ -106,7 +108,7 @@ const useFollowCamera = ({
       }
       return false;
     },
-    [originZDis, followCam, camMaxDis, camMinDis, camZoomSpeed]
+    [originZDis, followCam, camMaxDis, camMinDis, camZoomSpeed],
   );
 
   /**
@@ -150,11 +152,11 @@ const useFollowCamera = ({
       if (previousTouch1.current && previousTouch2.current) {
         const prePinchDis = Math.hypot(
           previousTouch1.current.pageX - previousTouch2.current.pageX,
-          previousTouch1.current.pageY - previousTouch2.current.pageY
+          previousTouch1.current.pageY - previousTouch2.current.pageY,
         );
         const pinchDis = Math.hypot(
           e.touches[0].pageX - e.touches[1].pageX,
-          e.touches[0].pageY - e.touches[1].pageY
+          e.touches[0].pageY - e.touches[1].pageY,
         );
 
         const vz =
@@ -183,7 +185,7 @@ const useFollowCamera = ({
       camMinDis,
       camMoveSpeed,
       pivot.rotation,
-    ]
+    ],
   );
 
   /**
@@ -210,7 +212,7 @@ const useFollowCamera = ({
   // Remove intersect objects from camera collision array
   const customTraverseRemove = useCallback((object: Object3D) => {
     intersectObjects.current = intersectObjects.current.filter(
-      (item) => item.uuid !== object.uuid // Keep all items except the one to remove
+      (item) => item.uuid !== object.uuid, // Keep all items except the one to remove
     );
 
     // Recursively traverse child objects
@@ -241,7 +243,7 @@ const useFollowCamera = ({
     if (hits.length && hits[0].distance <= -originZDis.current) {
       smallestDistance = Math.min(
         -hits[0].distance * camCollisionOffset,
-        camMinDis
+        camMinDis,
       );
     } else {
       smallestDistance = originZDis.current;
@@ -259,12 +261,12 @@ const useFollowCamera = ({
     camLerpingPoint.set(
       followCam.position.x,
       smallestDistance * Math.sin(-followCam.rotation.x),
-      smallestDistance * Math.cos(-followCam.rotation.x)
+      smallestDistance * Math.cos(-followCam.rotation.x),
     );
 
     followCam.position.lerp(
       camLerpingPoint,
-      1 - Math.exp(-camCollisionSpeedMult * delta)
+      1 - Math.exp(-camCollisionSpeedMult * delta),
     ); // delta * 2 for rapier ray setup
   };
 
@@ -342,15 +344,15 @@ const useFollowCamera = ({
         camera.position.set(
           disableFollowCamPos.x,
           disableFollowCamPos.y,
-          disableFollowCamPos.z
+          disableFollowCamPos.z,
         );
       if (disableFollowCamTarget)
         camera.lookAt(
           new Vector3(
             disableFollowCamTarget.x,
             disableFollowCamTarget.y,
-            disableFollowCamTarget.z
-          )
+            disableFollowCamTarget.z,
+          ),
         );
     }
   }, [disableFollowCam, camera, disableFollowCamPos, disableFollowCamTarget]);

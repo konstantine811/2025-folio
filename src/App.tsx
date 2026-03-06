@@ -18,9 +18,11 @@ import Footer from "./components/page-partials/footer/footer";
 import { useSmoothScroll } from "./hooks/useSmoothScroll";
 import { preloadSounds } from "./config/sounds";
 import { setSoundsReady } from "./services/subscribeHoverAudio";
+import { useLocation } from "react-router";
 
 function App() {
   subscribeToHoverSound();
+  const location = useLocation();
   useLogin(); // ✅
   useSetTheme(); // ✅
   const [isTouch, setIsTouch] = useState(false);
@@ -28,7 +30,7 @@ function App() {
   useEffect(() => {
     setIsTouch(isTouchDevice);
   }, []);
-
+  const hideFooter = location.pathname.startsWith("/three-");
   // Завантажуємо звуки тільки після першої взаємодії користувача
   useLayoutEffect(() => {
     let soundsLoaded = false;
@@ -99,7 +101,7 @@ function App() {
           </Suspense>
         </div>
         {/* <Map /> */}
-        <Footer />
+        {!hideFooter && <Footer />}
       </div>
       <TransitionPage />
       <Toaster className="border-foreground/10 font-mono" />

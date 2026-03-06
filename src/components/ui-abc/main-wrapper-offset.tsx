@@ -11,11 +11,8 @@ type Props = {
 
 const MainWrapperOffset = forwardRef<HTMLDivElement, Props>(
   ({ children, className = "", isFullHeight = false }, ref) => {
-    const fs = useHeaderSizeStore((s) => s.footerSize);
     const hs = useHeaderSizeStore((s) => s.size);
-    const height = isFullHeight
-      ? `calc(100vh - ${hs + fs}px)`
-      : `calc(100vh - ${fs}px)`;
+    const height = isFullHeight ? `calc(100vh - ${hs}px)` : `100vh`;
     return (
       <div
         className={clsx(className, "relative overflow-hidden")}
@@ -25,7 +22,7 @@ const MainWrapperOffset = forwardRef<HTMLDivElement, Props>(
         {children}
       </div>
     );
-  }
+  },
 );
 
 export default MainWrapperOffset;

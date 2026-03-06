@@ -33,7 +33,7 @@ import {
   type Collider,
 } from "@dimforge/rapier3d-compat";
 import { useFrame, useThree } from "@react-three/fiber";
-import useFollowCamera from "./hooks/useFollowCamera";
+import useFollowCamera from "@components/common/hooks/camera/useFollowCamera";
 import { useControlStore } from "@components/common/game-controller/store/control-game-store";
 import { getPivotMovingDirection } from "@/utils/game.utils";
 import {
@@ -52,6 +52,7 @@ import { SceneObjectName } from "./config/character.config";
 import { useGameDataStore } from "./stores/game-data-store";
 import { CollisionWorldType } from "../../../config/collision";
 import useCharacterCreateTexture from "./hooks/useCharacterCreateTexture";
+import { useEditModeStore } from "../../store/useEditModeStore";
 
 export type camListenerTargetType = "document" | "domElement";
 
@@ -256,7 +257,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
       // Other rigibody props from parent
       ...props
     },
-    ref
+    ref,
   ) => {
     const characterRef = useRef<RapierRigidBody | null>(null);
     const capsuleRef = useRef<Collider | null>(null);
@@ -266,7 +267,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
     const { forward, backward, rightward, leftward, run, jump } =
       useControlStore();
     const setCharacterRigidBody = useGameDataStore(
-      (state) => state.setCharacterRigidBody
+      (state) => state.setCharacterRigidBody,
     );
 
     const {
@@ -281,7 +282,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
     const setOnGround = useGameStore((s) => s.setOnGround);
     const setMoveToPoint = useGameStore((s) => s.setMoveToPoint);
     const isDisableTriggerAnim = useGameStore(
-      (state) => state.isDisableTriggerAnim
+      (state) => state.isDisableTriggerAnim,
     );
     const { rapier, world } = useRapier();
     const { scene } = useThree();
@@ -301,7 +302,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
     // light
 
     const characterLight = scene.getObjectByName(
-      SceneObjectName.characterLight
+      SceneObjectName.characterLight,
     ) as DirectionalLight;
 
     /**
@@ -321,7 +322,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
     const bodyContactForce: Vector3 = useMemo(() => new Vector3(), []);
     const slopeRayOriginUpdatePosition: Vector3 = useMemo(
       () => new Vector3(),
-      []
+      [],
     );
     const camBasedMoveCrossVecOnY: Vector3 = useMemo(() => new Vector3(), []);
 
@@ -345,8 +346,11 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
       camCollisionSpeedMult,
       camListenerTarget,
     };
-    const { pivot, followCam, cameraCollisionDetect } =
-      useFollowCamera(cameraSetups);
+    const isEditMode = useEditModeStore((s) => s.isEditMode);
+    const { pivot, followCam, cameraCollisionDetect } = useFollowCamera({
+      ...cameraSetups,
+      isEditMode,
+    });
 
     const pivotPosition: Vector3 = useMemo(() => new Vector3(), []);
     const pivotXAxis: Vector3 = useMemo(() => new Vector3(1, 0, 0), []);
@@ -374,10 +378,10 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         pivot.rotation.y += y;
         followCam.rotation.x = Math.min(
           Math.max(followCam.rotation.x + x, camLowLimit),
-          camUpLimit
+          camUpLimit,
         );
       },
-      [pivot, followCam, camLowLimit, camUpLimit]
+      [pivot, followCam, camLowLimit, camUpLimit],
     );
 
     /**
@@ -387,7 +391,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
       (rad: number) => {
         modelEuler.y += rad;
       },
-      [modelEuler]
+      [modelEuler],
     );
 
     useImperativeHandle(
@@ -399,7 +403,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         rotateCamera,
         rotateCharacterOnY,
       }),
-      [rotateCamera, rotateCharacterOnY]
+      [rotateCamera, rotateCharacterOnY],
     );
 
     /**
@@ -417,7 +421,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
     let isFalling: boolean = false;
     const initialGravityScale: number = useMemo(
       () => props.gravityScale ?? 1,
-      [props.gravityScale]
+      [props.gravityScale],
     );
 
     useCharacterCreateTexture({
@@ -456,11 +460,11 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
     const movingObjectVelocity: Vector3 = useMemo(() => new Vector3(), []);
     const movingObjectVelocityInCharacterDir: Vector3 = useMemo(
       () => new Vector3(),
-      []
+      [],
     );
     const distanceFromCharacterToObject: Vector3 = useMemo(
       () => new Vector3(),
-      []
+      [],
     );
     const objectAngvelToLinvel: Vector3 = useMemo(() => new Vector3(), []);
     const velocityDiff: Vector3 = useMemo(() => new Vector3(), []);
@@ -561,7 +565,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         .addScaledVector(pivotXAxis, camTargetPos.x)
         .addScaledVector(
           pivotYAxis,
-          camTargetPos.y + (capsuleHalfHeight + capsuleRadius / 2)
+          camTargetPos.y + (capsuleHalfHeight + capsuleRadius / 2),
         )
         .addScaledVector(pivotZAxis, camTargetPos.z);
       pivot.position.lerp(pivotPosition, 1 - Math.exp(-camFollowMult));
@@ -586,14 +590,14 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
       // Getting moving directions (IIFE)
       modelEuler.y = ((movingDirection) =>
         movingDirection === null ? modelEuler.y : movingDirection)(
-        getPivotMovingDirection(forward, backward, leftward, rightward, pivot)
+        getPivotMovingDirection(forward, backward, leftward, rightward, pivot),
       );
 
       // Rotate character Indicator
       modelQuat.setFromEuler(modelEuler);
       characterModelIndicator.quaternion.rotateTowards(
         modelQuat,
-        delta * turnSpeed
+        delta * turnSpeed,
       );
 
       // If autobalance is off, rotate character model itself
@@ -602,7 +606,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
           characterModelRef.current.quaternion.copy(pivot.quaternion);
         } else {
           characterModelRef.current.quaternion.copy(
-            characterModelIndicator.quaternion
+            characterModelIndicator.quaternion,
           );
         }
       }
@@ -646,7 +650,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         slopeRayHit,
         actualSlopeAngle,
         slopeMaxAngle,
-        canJump
+        canJump,
       );
 
       if (forward || backward || leftward || rightward) {
@@ -706,7 +710,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
           backward,
           leftward,
           rightward,
-          isPointMoving
+          isPointMoving,
         );
       isOnMovingObject = isOnMovingObjectN;
       massRatio = massRatioN;
@@ -727,7 +731,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         characterMassForce,
         jumpDirection,
         actualSlopeNormalVec,
-        jumpForceToGroundMult
+        jumpForceToGroundMult,
       );
 
       applyFloatingForce(
@@ -740,7 +744,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         characterRef.current,
         springDirVec,
         characterMassForce,
-        standingForcePoint
+        standingForcePoint,
       );
 
       applyDragForce(
@@ -755,7 +759,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         dragDampingC,
         movingObjectVelocity,
         characterRef.current,
-        movingObjectDragForce
+        movingObjectDragForce,
       );
 
       isFalling = detectFallingState(
@@ -765,7 +769,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         characterRef.current,
         fallingMaxVel,
         initialGravityScale,
-        fallingGravityScale
+        fallingGravityScale,
       );
       setOnGround(canJump);
       if (autoBalance && characterRef.current) {
@@ -794,7 +798,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
           autoBalanceSpringK,
           autoBalanceDampingC,
           autoBalanceSpringOnY,
-          autoBalanceDampingOnY
+          autoBalanceDampingOnY,
         );
       }
       if (isModePointToMove) {
@@ -942,7 +946,7 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         </RigidBody>
       </group>
     );
-  }
+  },
 );
 
 export default ComplexController;
