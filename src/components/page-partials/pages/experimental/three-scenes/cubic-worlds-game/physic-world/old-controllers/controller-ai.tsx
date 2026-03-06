@@ -13,7 +13,7 @@ import type {
   KinematicCharacterController,
 } from "@dimforge/rapier3d-compat";
 import { Vector3, Group } from "three";
-import { useControlStore } from "../character-controller/stores/control-game-store";
+import { useControlStore } from "@components/common/game-controller/store/control-game-store";
 import CharacterModel from "./character-model";
 import { ActionName } from "../character-controller/config/character.config";
 import { lerpAngle } from "@/utils/game.utils";
