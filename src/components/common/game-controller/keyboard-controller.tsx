@@ -1,6 +1,6 @@
 // components/KeyboardController.tsx
 import { useEffect, useRef } from "react";
-import { useControlStore } from "./stores/control-game-store";
+import { useControlStore } from "./store/control-game-store";
 
 const keyboardMap = [
   { name: "forward", keys: ["ArrowUp", "KeyW"] },

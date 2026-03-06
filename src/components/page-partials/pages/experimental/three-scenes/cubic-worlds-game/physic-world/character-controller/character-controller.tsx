@@ -34,7 +34,7 @@ import {
 } from "@dimforge/rapier3d-compat";
 import { useFrame, useThree } from "@react-three/fiber";
 import useFollowCamera from "./hooks/useFollowCamera";
-import { useControlStore } from "./stores/control-game-store";
+import { useControlStore } from "@components/common/game-controller/store/control-game-store";
 import { getPivotMovingDirection } from "@/utils/game.utils";
 import {
   rayGroundDetection,

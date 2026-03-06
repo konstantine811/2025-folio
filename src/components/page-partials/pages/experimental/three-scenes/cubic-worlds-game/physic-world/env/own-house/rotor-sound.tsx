@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { PositionalAudio } from "@react-three/drei";
 import * as THREE from "three";
 import { sfxs } from "../../../config/audio.config";
-import { usePauseStore } from "../../../store/usePauseMode";
+import { usePauseStore } from "@components/common/game-controller/store/usePauseMode";
 
 function RotorSound() {
   const audioRef = useRef<THREE.PositionalAudio>(null);

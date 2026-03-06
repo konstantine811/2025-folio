@@ -7,7 +7,7 @@ import {
 } from "@react-three/rapier";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { usePauseStore } from "../../../store/usePauseMode";
+import { usePauseStore } from "@components/common/game-controller/store/usePauseMode";
 import { Key } from "@/config/key";
 
 type Props = {

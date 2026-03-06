@@ -10,7 +10,7 @@ import { Euler, Vector3 } from "three";
 import { Models } from "../config/3d-model.config";
 import { useEffect, useMemo, useState } from "react";
 import { useGameStore } from "./character-controller/stores/game-store";
-import { usePauseStore } from "../store/usePauseMode";
+import { usePauseStore } from "@components/common/game-controller/store/usePauseMode";
 
 const EditModeCamera = () => {
   const isEditMode = useEditModeStore((s) => s.isEditMode);

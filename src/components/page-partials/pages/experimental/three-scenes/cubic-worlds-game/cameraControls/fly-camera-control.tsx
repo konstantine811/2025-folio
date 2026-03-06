@@ -2,7 +2,7 @@ import { CameraControls } from "@react-three/drei";
 import { useEffect, useMemo, useRef } from "react";
 // 2️⃣ Це клас з ACTION
 import CameraControlsImpl from "camera-controls";
-import { usePauseStore } from "../store/usePauseMode";
+import { usePauseStore } from "@components/common/game-controller/store/usePauseMode";
 import { CatmullRomCurve3 } from "three";
 import { useEditModeStore } from "../store/useEditModeStore";
 import { useGameDataStore } from "../physic-world/character-controller/stores/game-data-store";

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { usePauseStore } from "../store/usePauseMode";
+import { usePauseStore } from "@components/common/game-controller/store/usePauseMode";
 import { useSoundEnabledStore } from "@/storage/soundEnabled";
 
 const getTrackPath = (name: string) => `/sound/game-sfx/music/${name}.mp3`;

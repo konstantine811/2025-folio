@@ -1,6 +1,6 @@
 import { useRef, useState, TouchEvent } from "react";
-import { useControlStore } from "./stores/control-game-store";
-import { usePauseStore } from "../../store/usePauseMode";
+import { useControlStore } from "./store/control-game-store";
+import { usePauseStore } from "./store/usePauseMode";
 
 const DEADZONE = 8;
 const MAX_DRAG = 60;

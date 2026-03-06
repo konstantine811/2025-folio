@@ -17,7 +17,7 @@ import { RigidBody } from "@react-three/rapier";
 import { RotorModel } from "./rotor";
 import InfoZone from "./zone-to-folio";
 import { useEditModeStore } from "../../../store/useEditModeStore";
-import { usePauseStore } from "../../../store/usePauseMode";
+import { usePauseStore } from "@components/common/game-controller/store/usePauseMode";
 
 const path = publicModelPath("house_furniture.glb");
 

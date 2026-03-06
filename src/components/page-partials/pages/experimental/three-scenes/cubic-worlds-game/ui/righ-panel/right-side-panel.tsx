@@ -5,7 +5,6 @@ import { ScatterModalWindow } from "./scatter-draw/scatter-modal-window";
 import SelectDrawInstanceModel from "./select-draw-instance-model";
 import TabMode from "./tab-mode";
 import TabScatterDraw from "./tab-scatter-draw";
-import { Vector3 } from "three";
 // import TreeViewModel from "./tree-view-model";
 
 const RightSidePanel = () => {
@@ -17,11 +16,6 @@ const RightSidePanel = () => {
         className="mb-3"
         onClick={() => {
           if (controls) {
-            console.log(
-              "CAMERA POSITION ",
-              controls.getPosition(new Vector3())
-            );
-            console.log("CAMERA TARGET ", controls.getTarget(new Vector3()));
             // console.log("CAMERA LOOK AT ", controls.g);
           }
         }}

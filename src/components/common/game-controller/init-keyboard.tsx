@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import JoystickController from "./joystick-controller";
 import KeyboardController from "./keyboard-controller";
-import { usePauseStore } from "../../store/usePauseMode";
+import { usePauseStore } from "./store/usePauseMode";
 
 const InitKeyboardController = () => {
   const [isTouch, setIsTouch] = useState(false);

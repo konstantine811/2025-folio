@@ -121,7 +121,6 @@ export const useNav = create<NavState>((set, get) => ({
       return pos && pos.count > 0;
     });
     if (!meshes.length) return;
-    console.log("meshse", meshes);
     // 3) знімаємо масиви
     // const { positions, indices } = buildPositionsAndIndices(meshes);
 

@@ -58,7 +58,6 @@ const NavMeshDebug = () => {
 
   useEffect(() => {
     if (!dynamicTiledNavMesh) return;
-    console.log("update dynaic", dynamicTiledNavMesh);
     const debugDrawer = new DebugDrawer();
     debugDrawer.drawNavMesh(dynamicTiledNavMesh.navMesh);
     scene.add(debugDrawer);

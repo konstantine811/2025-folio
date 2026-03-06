@@ -9,7 +9,7 @@ import ScrollProgressIndicator from "./scroll-progress-indicator";
 import SecondSection from "./second-section";
 import ScrollProgressContent from "./scroll-progress-content";
 import { Button } from "@/components/ui/button";
-import { usePauseStore } from "../../store/usePauseMode";
+import { usePauseStore } from "@components/common/game-controller/store/usePauseMode";
 import CloseButton from "./close-btn";
 import { useMotionTemplate, useSpring, useTransform } from "framer-motion";
 import { useProgressMV } from "../../hooks/useProgressMV";

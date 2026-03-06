@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { usePauseStore } from "../store/usePauseMode";
+import { usePauseStore } from "@components/common/game-controller/store/usePauseMode";
 import { useTranslation } from "react-i18next";
 import { Key } from "@/config/key";
 import PauseView from "../pause/pause-view";
