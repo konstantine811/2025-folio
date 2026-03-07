@@ -10,7 +10,7 @@ import useFollowCamera from "@/components/common/hooks/camera/useFollowCamera";
 import { useMemo, useRef, useState } from "react";
 import { Group, MathUtils, Vector3 } from "three";
 import { useControlStore } from "@/components/common/game-controller/store/control-game-store";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import {
   createFallForce,
   createJumpImpulse,
@@ -40,8 +40,17 @@ const CharacterController = ({
   const modelRef = useRef<Group>(null);
   const { pivot, followCam, cameraCollisionDetect } = useFollowCamera({
     disableFollowCam: false,
+    camInitDis: -5,
+    camMaxDis: -7,
+    camMinDis: -0.7,
+    camUpLimit: 1.5, // in rad
+    camLowLimit: -1.3, // in rad
+    camInitDir: { x: 0, y: 0 }, // in rad
+    camMoveSpeed: 1,
+    camZoomSpeed: 1,
+    camCollisionOffset: 0.7,
+    camCollisionSpeedMult: 4,
   });
-  const camera = useThree((s) => s.camera);
   const { rapier, world } = useRapier();
   const { forward, backward, rightward, leftward, run, jump } =
     useControlStore();
@@ -50,6 +59,7 @@ const CharacterController = ({
   const prevPosition = useRef(new Vector3());
   const targetRotation = useRef(0);
   const currentRotation = useRef(0);
+
   const [state, setState] = useState<CharacterState>({
     moveSpeed: 0,
     jumpForce: 0,
@@ -65,11 +75,39 @@ const CharacterController = ({
   const pivotZAxis = useMemo(() => new Vector3(0, 0, 1), []);
   const followCamPosition = useMemo(() => new Vector3(), []);
 
-  useFrame(({ clock }) => {
-    const delta = clock.getDelta();
+  useFrame(({ camera }, delta) => {
+    if (delta > 1) delta %= 1;
+
     if (!rigidBody.current) return;
     // Cast multiple rays for better ground detection
-    const translation = rigidBody.current.translation();
+    const translationStable = rigidBody.current.translation();
+
+    const currentPos = new Vector3(
+      translationStable.x,
+      translationStable.y,
+      translationStable.z,
+    );
+    // Control camera
+    pivotXAxis.set(1, 0, 0);
+    pivotXAxis.applyQuaternion(pivot.quaternion);
+    pivotZAxis.set(0, 0, 1);
+    pivotZAxis.applyQuaternion(pivot.quaternion);
+    pivotPosition
+      .copy(currentPos)
+      .addScaledVector(pivotXAxis, 0)
+      .addScaledVector(pivotYAxis, capsuleHalfHeight + capsuleRadius / 2)
+      .addScaledVector(pivotZAxis, 0);
+    pivot.position.lerp(pivotPosition, 1 - Math.exp(-11));
+    followCam.getWorldPosition(followCamPosition);
+    camera.position.lerp(followCamPosition, 1 - Math.exp(-11));
+    camera.lookAt(pivot.position);
+
+    cameraCollisionDetect(delta);
+
+    // ========== 1. GROUND DETECTION (чи стоїмо на землі) ==========
+    // Що: isGrounded, closestHit / closestHitRay для ground snap.
+    // Навіщо: стрибок тільки з землі, притиск до землі, різна швидкість у повітрі.
+    // Як: кілька променів вниз з точок капсули; ігноруємо власний collider.
     const rayLength = 1.5; // Increased length for better detection
     const rayDir = new Vector3(0, -1, 0);
 
@@ -89,9 +127,9 @@ const CharacterController = ({
     for (const offset of rayOffsets) {
       const ray = new rapier.Ray(
         new Vector3(
-          translation.x + offset.x,
-          translation.y,
-          translation.z + offset.z,
+          translationStable.x + offset.x,
+          translationStable.y,
+          translationStable.z + offset.z,
         ),
         rayDir,
       );
@@ -121,8 +159,8 @@ const CharacterController = ({
     }
 
     const linvel = rigidBody.current.linvel();
-    const currentPos = new Vector3(translation.x, translation.y, translation.z);
 
+    // ========== 2. MOVEMENT STATE (для анімацій / UI) ==========
     // Update movement state
     const horizontalSpeed = Math.sqrt(
       linvel.x * linvel.x + linvel.z * linvel.z,
@@ -130,6 +168,9 @@ const CharacterController = ({
     setIsMoving(horizontalSpeed > 0.5);
     setIsSprinting(run && horizontalSpeed > 0.5);
 
+    // ========== 3. CAMERA-RELATIVE MOVEMENT + WALL CHECK ==========
+    // Що: рух у напрямку камери (W/A/S/D), поворот туди ж; біля стіни не штовхаємо в неї.
+    // Навіщо: third-person керування; без wall check при dynamic body був би flicker об стіну.
     const pivotAngle = getPivotMovingDirection(
       forward,
       backward,
@@ -146,17 +187,17 @@ const CharacterController = ({
       const dirZ = Math.cos(pivotAngle);
 
       // Перевірка чи є стіна пере нами в напрямку руху
-      const rayLength = capsuleRadius * 1.2; // трохи більше за радіус капсули
+      const wallRayLength = capsuleRadius * 1.2; // трохи більше за радіус капсули
       const moveRayOrigin = {
-        x: translation.x,
-        y: translation.y,
-        z: translation.z,
+        x: translationStable.x,
+        y: translationStable.y,
+        z: translationStable.z,
       };
       const moveRayDir = { x: dirX, y: 0, z: dirZ };
       const moveRay = new rapier.Ray(moveRayOrigin, moveRayDir);
       const wallHit = world.castRay(
         moveRay,
-        rayLength,
+        wallRayLength,
         true,
         undefined,
         undefined,
@@ -165,7 +206,6 @@ const CharacterController = ({
       );
 
       let velocity;
-      //
       if (wallHit) {
         // Є перешкод - не штовахти в стіну, лишити тільки Y
         velocity = createMovementVelocity(0, 0, 0, linvel.y);
@@ -181,6 +221,7 @@ const CharacterController = ({
       targetRotation.current = pivotAngle;
     }
 
+    // ========== 4. SMOOTH ROTATION (модель обличчям у бік руху) ==========
     // Smooth rotation
     if (modelRef.current) {
       currentRotation.current = MathUtils.lerp(
@@ -191,6 +232,7 @@ const CharacterController = ({
       modelRef.current.rotation.y = currentRotation.current;
     }
 
+    // ========== 5. JUMP ==========
     // Handle jumping
     if (jump && isGrounded) {
       // Reset vertical velocity before jumping
@@ -209,6 +251,7 @@ const CharacterController = ({
       );
     }
 
+    // ========== 6. GROUND SNAP (притиск до землі по raycast) ==========
     // Ground snapping
     if (isGrounded && !jump) {
       const snapForce = createFallForce(0.5);
@@ -219,9 +262,9 @@ const CharacterController = ({
         const targetY = point.y + 1.2; // висота персоанаж над точкою удару
         rigidBody.current.setTranslation(
           {
-            x: translation.x,
+            x: translationStable.x,
             y: targetY,
-            z: translation.z,
+            z: translationStable.z,
           },
           true,
         );
@@ -240,24 +283,6 @@ const CharacterController = ({
       isGrounded,
       velocity: linvel,
     });
-
-    // Control camera
-    pivotXAxis.set(1, 0, 0);
-    pivotXAxis.applyQuaternion(pivot.quaternion);
-    pivotZAxis.set(0, 0, 1);
-    pivotZAxis.applyQuaternion(pivot.quaternion);
-    pivotPosition
-      .copy(currentPos)
-      .addScaledVector(pivotXAxis, 0)
-      .addScaledVector(pivotYAxis, capsuleHalfHeight + capsuleRadius / 2)
-      .addScaledVector(pivotZAxis, 0);
-    pivot.position.lerp(pivotPosition, 1 - Math.exp(-11));
-    followCam.getWorldPosition(followCamPosition);
-    camera.position.lerp(followCamPosition, 1 - Math.exp(-11));
-    camera.lookAt(pivot.position);
-    if (cameraCollisionDetect) {
-      cameraCollisionDetect(delta);
-    }
   });
   return (
     <RigidBody
@@ -274,6 +299,7 @@ const CharacterController = ({
       restitution={0}
       ccd={true}
       type="dynamic"
+      userData={{ camExcludeCollision: true }}
     >
       <CapsuleCollider
         args={[capsuleHalfHeight, capsuleRadius]}

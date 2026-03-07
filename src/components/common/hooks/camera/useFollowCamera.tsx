@@ -282,7 +282,7 @@ const useFollowCamera = ({
     // Initialize camera facing direction
     pivot.rotation.y = camInitDir.y;
     followCam.rotation.x = camInitDir.x;
-
+    intersectObjects.current = [];
     // Prepare for camera ray intersect objects
     scene.children.forEach((child) => customTraverseAdd(child));
 
@@ -330,10 +330,12 @@ const useFollowCamera = ({
       document.addEventListener("touchmove", onTouchMove, { passive: false });
     } else {
       onRemove();
+      scene.remove(pivot);
     }
 
     return () => {
       onRemove();
+      scene.remove(pivot);
     };
   }, [isEditMode]);
 

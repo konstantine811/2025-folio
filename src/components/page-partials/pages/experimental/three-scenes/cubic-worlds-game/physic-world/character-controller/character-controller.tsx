@@ -599,7 +599,6 @@ const ComplexController = forwardRef<ComplexControllerHandle, Props>(
         modelQuat,
         delta * turnSpeed,
       );
-
       // If autobalance is off, rotate character model itself
       if (!autoBalance && characterModelRef.current) {
         if (isModeCameraBased) {
