@@ -1,9 +1,9 @@
-export const AGENT_COUNT = 5;
+export const AGENT_COUNT = 10;
 export const RADIUS = 0.4;
 export const HEIGHT = 1;
 export const BODY_Y_OFFSET = HEIGHT / 2;
 export const PATH_HALF_EXTENTS = { x: 5, y: 5, z: 5 };
 export const AGENT_SPEED = 3.5;
-export const PATH_UPDATE_INTERVAL_MS = 100;
+export const PATH_UPDATE_INTERVAL_MS = 800;
 export const WAYPOINT_REACH_DIST = 0.5;
 export const STOP_DIST_TO_PLAYER = 3;

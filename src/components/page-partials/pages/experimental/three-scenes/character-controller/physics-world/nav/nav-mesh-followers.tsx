@@ -150,7 +150,6 @@ export default function NavMeshFollowers({
   isDebug = false,
 }: NavMeshFollowersProps) {
   const query = useNavMeshStore((s) => s.query);
-  const playerPosition = usePlayerPositionStore((s) => s.position);
   const rigidBodyRefsRef = useRef<(RapierRigidBody | null)[]>([]);
   const pathStatesRef = useRef<AgentPathState[]>(
     Array.from({ length: AGENT_COUNT }, () => ({
@@ -167,7 +166,6 @@ export default function NavMeshFollowers({
     if (!query) return;
 
     const playerPosition = usePlayerPositionStore.getState().position;
-
     const points = generateRandomSpawnPositions(query, AGENT_COUNT, {
       center: { x: 0, y: 0, z: 0 },
       areaRadius: 12,
@@ -188,6 +186,7 @@ export default function NavMeshFollowers({
   }, [query]);
 
   useFrame(() => {
+    const playerPosition = usePlayerPositionStore.getState().position;
     updateAgents(
       rigidBodyRefsRef.current,
       pathStatesRef.current,
@@ -195,8 +194,8 @@ export default function NavMeshFollowers({
       playerPosition,
     );
   });
-
   if (!spawnPositions || spawnPositions.length !== AGENT_COUNT) return null;
+  console.log("upd");
 
   return (
     <>
