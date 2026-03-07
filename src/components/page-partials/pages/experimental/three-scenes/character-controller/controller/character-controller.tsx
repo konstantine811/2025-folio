@@ -17,6 +17,7 @@ import {
   createMovementVelocity,
 } from "../utils/physics";
 import { getPivotMovingDirection } from "@/utils/game.utils";
+import { usePlayerPositionStore } from "../physics-world/usePlayerPositionStore";
 
 export type CharacterState = {
   moveSpeed: number;
@@ -38,6 +39,7 @@ const CharacterController = ({
 }) => {
   const rigidBody = useRef<RapierRigidBody>(null);
   const modelRef = useRef<Group>(null);
+  const setPlayerPosition = usePlayerPositionStore((s) => s.setPosition);
   const { pivot, followCam, cameraCollisionDetect } = useFollowCamera({
     disableFollowCam: false,
     camInitDis: -5,
@@ -81,7 +83,11 @@ const CharacterController = ({
     if (!rigidBody.current) return;
     // Cast multiple rays for better ground detection
     const translationStable = rigidBody.current.translation();
-
+    setPlayerPosition({
+      x: translationStable.x,
+      y: translationStable.y,
+      z: translationStable.z,
+    });
     const currentPos = new Vector3(
       translationStable.x,
       translationStable.y,
@@ -152,11 +158,11 @@ const CharacterController = ({
     }
 
     // Log ground state changes
-    if (isGrounded !== state.isGrounded) {
-      console.log(
-        `Ground state changed: ${isGrounded ? "Grounded" : "In Air"}`,
-      );
-    }
+    // if (isGrounded !== state.isGrounded) {
+    //   console.log(
+    //     `Ground state changed: ${isGrounded ? "Grounded" : "In Air"}`,
+    //   );
+    // }
 
     const linvel = rigidBody.current.linvel();
 
@@ -299,7 +305,7 @@ const CharacterController = ({
       restitution={0}
       ccd={true}
       type="dynamic"
-      userData={{ camExcludeCollision: true }}
+      w
     >
       <CapsuleCollider
         args={[capsuleHalfHeight, capsuleRadius]}

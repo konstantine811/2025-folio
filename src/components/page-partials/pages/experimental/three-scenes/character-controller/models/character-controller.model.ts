@@ -4,3 +4,5 @@ export interface CharacterAnimations {
   walk: string;
   jumpFalling: string;
 }
+
+export type Vec3 = { x: number; y: number; z: number };
