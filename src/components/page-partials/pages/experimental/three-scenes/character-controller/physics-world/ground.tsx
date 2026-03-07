@@ -30,7 +30,7 @@ const Ground = () => {
   wallTexture.wrapS = wallTexture.wrapT = RepeatWrapping;
   wallTexture.repeat.set(8, 1);
 
-  const groundSize = 30;
+  const groundSize = 60;
   const wallHeight = 3;
   const wallThickness = 1;
 
