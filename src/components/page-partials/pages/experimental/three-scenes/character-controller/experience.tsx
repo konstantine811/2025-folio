@@ -5,7 +5,6 @@ import Ground from "./physics-world/ground";
 import { useRef } from "react";
 import { Group } from "three";
 import NavMeshBuilder from "./physics-world/nav/nav-mesh-builder";
-import NavMeshDebug from "./physics-world/nav/nav-mesh-debug";
 import NavMeshFollowers from "./physics-world/nav/nav-mesh-followers";
 
 const Experience = () => {

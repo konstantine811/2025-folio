@@ -305,7 +305,6 @@ const CharacterController = ({
       restitution={0}
       ccd={true}
       type="dynamic"
-      w
     >
       <CapsuleCollider
         args={[capsuleHalfHeight, capsuleRadius]}
