@@ -305,6 +305,7 @@ const CharacterController = ({
       restitution={0}
       ccd={true}
       type="dynamic"
+      userData={{ camExcludeCollision: true }}
     >
       <CapsuleCollider
         args={[capsuleHalfHeight, capsuleRadius]}
