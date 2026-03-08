@@ -13,6 +13,22 @@ const boxes = [
     position: [-4, -1, -4] as const,
     size: [3, 3, 3] as BoxDimensions,
   },
+  {
+    position: [8, -1, 8] as const,
+    size: [3, 3, 3] as BoxDimensions,
+  },
+  {
+    position: [-8, -1, 8] as const,
+    size: [3, 3, 3] as BoxDimensions,
+  },
+  {
+    position: [18, -1, -18] as const,
+    size: [3, 3, 3] as BoxDimensions,
+  },
+  {
+    position: [-18, -1, -18] as const,
+    size: [3, 3, 3] as BoxDimensions,
+  },
 ];
 
 const Ground = () => {
