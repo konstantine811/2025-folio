@@ -11,7 +11,7 @@ const Experience = () => {
   const navMeshSourceRef = useRef<Group>(null);
   return (
     <>
-      <Physics debug={true} interpolate={false} gravity={[0, -9.81, 0]}>
+      <Physics debug={false} interpolate={false} gravity={[0, -9.81, 0]}>
         <CharacterController
           animationType={characterAnimations}
           modelPath="/3d-models/characters/major_ps1_character.glb"

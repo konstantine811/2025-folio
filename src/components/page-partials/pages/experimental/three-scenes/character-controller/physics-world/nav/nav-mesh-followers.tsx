@@ -36,21 +36,6 @@ function getHorizontalDistance(a: Vec3, b: Vec3) {
   return Math.sqrt(dx * dx + dz * dz);
 }
 
-function getAgentTargetSlot(
-  playerPos: Vec3,
-  agentIndex: number,
-  total: number,
-) {
-  const ringRadius = STOP_DIST_TO_PLAYER + 1.2;
-  const angle = (agentIndex / total) * Math.PI * 2;
-
-  return {
-    x: playerPos.x + Math.cos(angle) * ringRadius,
-    y: playerPos.y,
-    z: playerPos.z + Math.sin(angle) * ringRadius,
-  };
-}
-
 function updateAgents(
   rigidBodyRefs: (RapierRigidBody | null)[],
   pathStates: AgentPathState[],
@@ -102,9 +87,7 @@ function updateAgents(
       const startResult = query.findClosestPoint(posVec, {
         halfExtents: PATH_HALF_EXTENTS,
       });
-      const desiredTarget = getAgentTargetSlot(playerPos, i, AGENT_COUNT);
-
-      const endResult = query.findClosestPoint(desiredTarget, {
+      const endResult = query.findClosestPoint(playerPos, {
         halfExtents: PATH_HALF_EXTENTS,
       });
 
