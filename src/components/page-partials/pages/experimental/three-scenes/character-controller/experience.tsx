@@ -6,6 +6,7 @@ import { useRef } from "react";
 import { Group } from "three";
 import NavMeshBuilder from "./physics-world/nav/nav-mesh-builder";
 import NavMeshFollowers from "./physics-world/nav/nav-mesh-followers";
+import NavMeshDebug from "./physics-world/nav/nav-mesh-debug";
 
 const Experience = () => {
   const navMeshSourceRef = useRef<Group>(null);
@@ -32,7 +33,7 @@ const Experience = () => {
         <NavMeshFollowers isDebug />
       </Physics>
       <NavMeshBuilder sourceRef={navMeshSourceRef} />
-      {/* <NavMeshDebug /> */}
+      <NavMeshDebug />
     </>
   );
 };

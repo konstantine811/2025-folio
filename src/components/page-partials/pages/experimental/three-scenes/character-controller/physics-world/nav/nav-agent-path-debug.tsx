@@ -34,7 +34,7 @@ export default function AgentPathDebug({ pathStatesRef, agentIndex }: Props) {
   }, [linePositions]);
 
   const lineMaterial = useMemo(
-    () => new LineBasicMaterial({ color: "cyan" }),
+    () => new LineBasicMaterial({ color: "green" }),
     [],
   );
 
@@ -122,7 +122,7 @@ export default function AgentPathDebug({ pathStatesRef, agentIndex }: Props) {
         visible={false}
       >
         <sphereGeometry args={[0.08, 10, 10]} />
-        <meshBasicMaterial color="yellow" />
+        <meshBasicMaterial color="orange" />
       </instancedMesh>
 
       <mesh ref={currentPointRef} visible={false}>
