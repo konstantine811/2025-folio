@@ -30,6 +30,38 @@ type NavMeshFollowersProps = {
 
 const TARGET_REPATH_DIST = 1.0;
 
+// Фільтруємо шлях, щоб сусідні точки були не ближче, ніж minDist
+function filterPathBySpacing(
+  path: { x: number; y: number; z: number }[],
+  minDist: number,
+) {
+  if (path.length === 0) return path;
+
+  const filtered = [path[0]];
+  let last = path[0];
+
+  for (let i = 1; i < path.length; i++) {
+    const p = path[i];
+    const dx = p.x - last.x;
+    const dy = p.y - last.y;
+    const dz = p.z - last.z;
+    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+    if (dist >= minDist) {
+      filtered.push(p);
+      last = p;
+    }
+  }
+
+  // гарантуємо, що фінальна точка завжди присутня
+  const lastOriginal = path[path.length - 1];
+  if (filtered[filtered.length - 1] !== lastOriginal) {
+    filtered.push(lastOriginal);
+  }
+
+  return filtered;
+}
+
 function getHorizontalDistance(a: Vec3, b: Vec3) {
   const dx = a.x - b.x;
   const dz = a.z - b.z;
@@ -95,13 +127,19 @@ function updateAgents(
         const res = query.computePath(startResult.point, endResult.point);
 
         if (res.success && res.path?.length) {
-          state.path = res.path;
-          state.pathIndex = 1;
-          state.lastTargetPos = {
-            x: playerPos.x,
-            y: playerPos.y,
-            z: playerPos.z,
-          };
+          // margin між waypoint’ами, залежний від радіуса
+          const minSegmentLength = RADIUS * 200.5; // підбери 2–3 * RADIUS
+          const spacedPath = filterPathBySpacing(res.path, minSegmentLength);
+
+          if (spacedPath.length >= 2) {
+            state.path = spacedPath;
+            state.pathIndex = 1;
+            state.lastTargetPos = {
+              x: playerPos.x,
+              y: playerPos.y,
+              z: playerPos.z,
+            };
+          }
         }
       }
     }
@@ -188,6 +226,7 @@ export default function NavMeshFollowers({
       playerPosition,
     );
   });
+
   if (!spawnPositions || spawnPositions.length !== AGENT_COUNT) return null;
 
   return (

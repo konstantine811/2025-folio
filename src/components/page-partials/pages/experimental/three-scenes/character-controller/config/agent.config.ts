@@ -4,6 +4,6 @@ export const HEIGHT = 1;
 export const BODY_Y_OFFSET = HEIGHT / 2;
 export const PATH_HALF_EXTENTS = { x: 5, y: 5, z: 5 };
 export const AGENT_SPEED = 3.5;
-export const PATH_UPDATE_INTERVAL_MS = 800;
+export const PATH_UPDATE_INTERVAL_MS = 1000;
 export const WAYPOINT_REACH_DIST = 0.5;
 export const STOP_DIST_TO_PLAYER = 3;
