@@ -5,4 +5,5 @@ export const characterAnimations: CharacterAnimations = {
   run: "Running",
   walk: "Walking",
   jumpFalling: "Falling",
+  attack: "StandingAttack",
 };

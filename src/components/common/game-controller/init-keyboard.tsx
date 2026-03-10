@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import JoystickController from "./joystick-controller";
-import KeyboardController from "./keyboard-controller";
 import { usePauseStore } from "./store/usePauseMode";
+import DesktopInput from "./desktop-input";
 
 const InitKeyboardController = ({
   isIgnorePause = false,
@@ -26,7 +26,7 @@ const InitKeyboardController = ({
         isTouch ? (
           <JoystickController />
         ) : (
-          <KeyboardController />
+          <DesktopInput />
         )
       ) : null}
     </>

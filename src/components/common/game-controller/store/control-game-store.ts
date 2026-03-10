@@ -8,6 +8,9 @@ interface ControlState {
   jump: boolean;
   run: boolean;
   isCameraFlow: boolean;
+  primaryClick: boolean;
+  secondaryClick: boolean;
+  attackTrigger: number;
 }
 
 const initialState: ControlState = {
@@ -18,6 +21,9 @@ const initialState: ControlState = {
   jump: false,
   run: false,
   isCameraFlow: true,
+  primaryClick: false,
+  secondaryClick: false,
+  attackTrigger: 0,
 };
 
 interface ControlActions {
@@ -30,13 +36,24 @@ interface ControlActions {
   setIsCameraFlow: (v: boolean) => void;
   setAll: (partial: Partial<ControlState>) => void;
   resetControls: () => void;
+  setPrimaryClick: (v: boolean) => void;
+  setSecondaryClick: (v: boolean) => void;
+  setAttackTrigger: (v: number) => void;
+  incAttackTrigger: () => void;
 }
 
 type ControlStore = ControlState & ControlActions;
 
 export const useControlStore = create<ControlStore>()((set) => ({
   ...initialState,
-
+  primaryClick: false,
+  secondaryClick: false,
+  attackTrigger: 0,
+  setAttackTrigger: (v) => set({ attackTrigger: v }),
+  incAttackTrigger: () =>
+    set((state) => ({ attackTrigger: state.attackTrigger + 1 })),
+  setPrimaryClick: (v) => set({ primaryClick: v }),
+  setSecondaryClick: (v) => set({ secondaryClick: v }),
   setForward: (v) => set({ forward: v }),
   setBackward: (v) => set({ backward: v }),
   setLeftward: (v) => set({ leftward: v }),

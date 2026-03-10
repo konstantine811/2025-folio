@@ -171,8 +171,10 @@ const CharacterController = ({
     const horizontalSpeed = Math.sqrt(
       linvel.x * linvel.x + linvel.z * linvel.z,
     );
-    setIsMoving(horizontalSpeed > 0.5);
-    setIsSprinting(run && horizontalSpeed > 0.5);
+    const hasMoveInput = forward || backward || leftward || rightward;
+    const isActuallyMoving = horizontalSpeed > 0.5;
+    setIsMoving(hasMoveInput && isActuallyMoving);
+    setIsSprinting(hasMoveInput && isActuallyMoving && run);
 
     // ========== 3. CAMERA-RELATIVE MOVEMENT + WALL CHECK ==========
     // Що: рух у напрямку камери (W/A/S/D), поворот туди ж; біля стіни не штовхаємо в неї.
