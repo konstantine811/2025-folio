@@ -1,4 +1,5 @@
 import {
+  BallCollider,
   CapsuleCollider,
   RapierRigidBody,
   RigidBody,
@@ -307,12 +308,13 @@ const CharacterController = ({
       restitution={0}
       ccd={true}
       type="dynamic"
-      userData={{ camExcludeCollision: true }}
+      userData={{ camExcludeCollision: true, type: "player" }}
     >
       <CapsuleCollider
         args={[capsuleHalfHeight, capsuleRadius]}
         position={[0, 0, 0]}
       />
+      <BallCollider sensor args={[1.4]} mass={0} />
       <group ref={modelRef} position={[0, -1.2, 0]} scale={5.5}>
         <CharacterModel
           isMoving={isMoving}

@@ -7,7 +7,7 @@ import type { SoloNavMeshConfig } from "@/workers/three/build-solo-nav-mesh.work
 
 // Якщо воркер без окремого типу — можна описати config локально
 const SOLO_CONFIG: SoloNavMeshConfig = {
-  cs: 0.6,
+  cs: 0.7,
   ch: 0.02,
   walkableSlopeAngle: 45,
   walkableHeight: 1.8,
