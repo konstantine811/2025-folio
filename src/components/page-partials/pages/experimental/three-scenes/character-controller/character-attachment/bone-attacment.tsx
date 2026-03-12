@@ -1,4 +1,10 @@
-import { useEffect, useRef, ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  forwardRef,
+  ReactNode,
+  useImperativeHandle,
+} from "react";
 import { Bone, Group, Object3D } from "three";
 
 type BoneAttachmentProps = {
@@ -20,35 +26,42 @@ function findBone(root: Object3D, name: string): Bone | null {
   return result;
 }
 
-export const BoneAttachment = ({
-  parentScene,
-  boneName,
-  position = [0, 0, 0],
-  rotation = [0, 0, 0],
-  scale = [1, 1, 1],
-  children,
-}: BoneAttachmentProps) => {
-  const groupRef = useRef<Group>(null);
+export const BoneAttachment = forwardRef<Group, BoneAttachmentProps>(
+  (
+    {
+      parentScene,
+      boneName,
+      position = [0, 0, 0],
+      rotation = [0, 0, 0],
+      scale = [1, 1, 1],
+      children,
+    },
+    ref,
+  ) => {
+    const groupRef = useRef<Group>(null);
 
-  useEffect(() => {
-    const group = groupRef.current;
-    if (!group) return;
+    useImperativeHandle(ref, () => groupRef.current!, []);
 
-    const bone = findBone(parentScene, boneName);
-    if (!bone) {
-      console.warn(`Bone "${boneName}" not found in scene`);
-      return;
-    }
+    useEffect(() => {
+      const group = groupRef.current;
+      if (!group) return;
 
-    bone.add(group);
-    group.position.set(...position);
-    group.rotation.set(...rotation);
-    group.scale.set(...scale);
+      const bone = findBone(parentScene, boneName);
+      if (!bone) {
+        console.warn(`Bone "${boneName}" not found in scene`);
+        return;
+      }
 
-    return () => {
-      bone.remove(group);
-    };
-  }, [parentScene, boneName, position, rotation, scale]);
+      bone.add(group);
+      group.position.set(...position);
+      group.rotation.set(...rotation);
+      group.scale.set(...scale);
 
-  return <group ref={groupRef}>{children}</group>;
-};
+      return () => {
+        bone.remove(group);
+      };
+    }, [parentScene, boneName, position, rotation, scale]);
+
+    return <group ref={groupRef}>{children}</group>;
+  },
+);

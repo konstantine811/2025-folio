@@ -7,12 +7,19 @@ import { Group } from "three";
 import NavMeshBuilder from "./physics-world/nav/nav-mesh-builder";
 import NavMeshFollowers from "./physics-world/nav/follower-agent/nav-mesh-followers";
 import NavMeshDebug from "./physics-world/nav/nav-mesh-debug";
+import { useControls } from "leva";
 
 const Experience = () => {
   const navMeshSourceRef = useRef<Group>(null);
+  const { isDebug } = useControls({
+    isDebug: {
+      value: false,
+      label: "Debug",
+    },
+  });
   return (
     <>
-      <Physics debug={true} interpolate={false} gravity={[0, -9.81, 0]}>
+      <Physics debug={isDebug} interpolate={false} gravity={[0, -9.81, 0]}>
         <CharacterController
           animationType={characterAnimations}
           modelPath="/3d-models/characters/major_ps1_character.glb"
@@ -30,10 +37,10 @@ const Experience = () => {
             </mesh>
           </RigidBody>
         </group>
-        <NavMeshFollowers isDebug />
+        <NavMeshFollowers isDebug={isDebug} />
       </Physics>
       <NavMeshBuilder sourceRef={navMeshSourceRef} />
-      <NavMeshDebug />
+      {isDebug && <NavMeshDebug />}
     </>
   );
 };

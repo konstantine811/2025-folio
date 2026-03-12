@@ -25,6 +25,7 @@ export function playAction(
   const next = actions[name];
   if (!next) return null;
 
+  
   const prevName = currentActionRef.current;
   const prev = prevName ? actions[prevName] : null;
 

@@ -1,5 +1,5 @@
 import { useAnimations, useGLTF } from "@react-three/drei";
-import { useEffect, useRef } from "react";
+import { RefObject, useEffect, useRef } from "react";
 import { Group, Mesh } from "three";
 import { CharacterAnimations } from "../models/character-controller.model";
 import { useControlStore } from "@/components/common/game-controller/store/control-game-store";
@@ -18,12 +18,14 @@ const CharacterModel = ({
   isMoving,
   isSprinting,
   isGrounded,
+  weaponAttachmentRef,
 }: {
   modelPath: string;
   isMoving?: boolean;
   isSprinting?: boolean;
   isGrounded?: boolean;
   animationType: CharacterAnimations;
+  weaponAttachmentRef?: RefObject<Group | null>;
 }) => {
   const groupRef = useRef<Group>(null);
   const { scene, animations } = useGLTF(modelPath, true);
@@ -106,6 +108,7 @@ const CharacterModel = ({
     <group ref={groupRef}>
       <primitive object={scene} />
       <BoneAttachment
+        ref={weaponAttachmentRef}
         parentScene={scene}
         boneName="mixamorigRightHand"
         position={[0, 0.149, -0.18]}

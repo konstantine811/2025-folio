@@ -1,6 +1,8 @@
 import {
   BallCollider,
   CapsuleCollider,
+  CuboidCollider,
+  interactionGroups,
   RapierRigidBody,
   RigidBody,
   useRapier,
@@ -9,7 +11,7 @@ import { CharacterAnimations } from "../models/character-controller.model";
 import CharacterModel from "./character-model";
 import useFollowCamera from "@/components/common/hooks/camera/useFollowCamera";
 import { useMemo, useRef, useState } from "react";
-import { Group, MathUtils, Vector3 } from "three";
+import { Group, MathUtils, Quaternion, Vector3 } from "three";
 import { useControlStore } from "@/components/common/game-controller/store/control-game-store";
 import { useFrame } from "@react-three/fiber";
 import {
@@ -71,6 +73,12 @@ const CharacterController = ({
     velocity: { x: 0, y: 0, z: 0 },
   });
 
+  // Weapon attachment
+  const weaponAttachmentRef = useRef<Group>(null);
+  const weaponSensorRef = useRef<RapierRigidBody>(null);
+  const wPos = useMemo(() => new Vector3(), []);
+  const wQuat = useMemo(() => new Quaternion(), []);
+
   // Vector for camera
   const pivotPosition = useMemo(() => new Vector3(), []);
   const pivotXAxis = useMemo(() => new Vector3(1, 0, 0), []);
@@ -78,7 +86,18 @@ const CharacterController = ({
   const pivotZAxis = useMemo(() => new Vector3(0, 0, 1), []);
   const followCamPosition = useMemo(() => new Vector3(), []);
 
+  const setAttacmentWeaponSensor = () => {
+    const wa = weaponAttachmentRef.current;
+    const ws = weaponSensorRef.current;
+    if (!wa || !ws) return;
+    wa.getWorldPosition(wPos);
+    wa.getWorldQuaternion(wQuat);
+    ws.setNextKinematicTranslation(wPos);
+    ws.setNextKinematicRotation(wQuat);
+  };
+
   useFrame(({ camera }, delta) => {
+    setAttacmentWeaponSensor();
     if (delta > 1) delta %= 1;
 
     if (!rigidBody.current) return;
@@ -145,7 +164,7 @@ const CharacterController = ({
         rayLength,
         true,
         undefined,
-        undefined,
+        interactionGroups(0, [1, 2]),
         undefined,
         rigidBody.current,
       );
@@ -195,8 +214,7 @@ const CharacterController = ({
       const dirX = Math.sin(pivotAngle);
       const dirZ = Math.cos(pivotAngle);
 
-      // Перевірка чи є стіна пере нами в напрямку руху
-      const wallRayLength = capsuleRadius * 1.2; // трохи більше за радіус капсули
+      const wallRayLength = capsuleRadius * 1.2;
       const moveRayOrigin = {
         x: translationStable.x,
         y: translationStable.y,
@@ -204,30 +222,42 @@ const CharacterController = ({
       };
       const moveRayDir = { x: dirX, y: 0, z: dirZ };
       const moveRay = new rapier.Ray(moveRayOrigin, moveRayDir);
+
       const wallHit = world.castRay(
         moveRay,
         wallRayLength,
         true,
         undefined,
-        undefined,
+        interactionGroups(0, [1, 2]),
         undefined,
         rigidBody.current,
       );
 
       let velocity;
       if (wallHit) {
-        // Є перешкод - не штовахти в стіну, лишити тільки Y
         velocity = createMovementVelocity(0, 0, 0, linvel.y);
       } else {
         velocity = createMovementVelocity(dirX, dirZ, speed, linvel.y);
+
         if (isGrounded) {
           const smoothing = 0.25;
           velocity.x = velocity.x * smoothing + linvel.x * (1 - smoothing);
           velocity.z = velocity.z * smoothing + linvel.z * (1 - smoothing);
         }
       }
+
       rigidBody.current.setLinvel(velocity, true);
       targetRotation.current = pivotAngle;
+    } else {
+      // різка зупинка по горизонталі
+      rigidBody.current.setLinvel(
+        {
+          x: 0,
+          y: linvel.y,
+          z: 0,
+        },
+        true,
+      );
     }
 
     // ========== 4. SMOOTH ROTATION (модель обличчям у бік руху) ==========
@@ -294,37 +324,60 @@ const CharacterController = ({
     });
   });
   return (
-    <RigidBody
-      ref={rigidBody}
-      colliders={false}
-      mass={10}
-      position={[0, 6, 1]}
-      enabledRotations={[false, false, false]}
-      lockRotations
-      gravityScale={3}
-      friction={0.5}
-      linearDamping={1}
-      angularDamping={1}
-      restitution={0}
-      ccd={true}
-      type="dynamic"
-      userData={{ camExcludeCollision: true, type: "player" }}
-    >
-      <CapsuleCollider
-        args={[capsuleHalfHeight, capsuleRadius]}
-        position={[0, 0, 0]}
-      />
-      <BallCollider sensor args={[1.4]} mass={0} />
-      <group ref={modelRef} position={[0, -1.2, 0]} scale={5.5}>
-        <CharacterModel
-          isMoving={isMoving}
-          isSprinting={isSprinting}
-          isGrounded={state.isGrounded}
-          modelPath={modelPath}
-          animationType={animationType}
+    <>
+      <RigidBody
+        ref={rigidBody}
+        colliders={false}
+        mass={10}
+        position={[0, 6, 1]}
+        enabledRotations={[false, false, false]}
+        lockRotations
+        gravityScale={3}
+        friction={0.5}
+        linearDamping={1}
+        angularDamping={1}
+        restitution={0}
+        ccd={true}
+        type="dynamic"
+        userData={{ camExcludeCollision: true, type: "player" }}
+      >
+        <CapsuleCollider
+          args={[capsuleHalfHeight, capsuleRadius]}
+          position={[0, 0, 0]}
         />
-      </group>
-    </RigidBody>
+        <BallCollider sensor args={[1.4]} mass={0} />
+        <group ref={modelRef} position={[0, -1.2, 0]} scale={5.5}>
+          <CharacterModel
+            weaponAttachmentRef={weaponAttachmentRef}
+            isMoving={isMoving}
+            isSprinting={isSprinting}
+            isGrounded={state.isGrounded}
+            modelPath={modelPath}
+            animationType={animationType}
+          />
+        </group>
+      </RigidBody>
+
+      <RigidBody
+        ref={weaponSensorRef}
+        type="kinematicPosition"
+        colliders={false}
+        gravityScale={0}
+      >
+        <CuboidCollider
+          position={[0.6, 1.05, 0.68]}
+          sensor
+          collisionGroups={interactionGroups(3, [2])}
+          args={[0.6, 0.07, 0.07]}
+          onIntersectionEnter={(e) => {
+            const other = e.other.rigidBodyObject;
+            if (other?.userData?.type === "enemy") {
+              console.log("Hit!", other.userData);
+            }
+          }}
+        />
+      </RigidBody>
+    </>
   );
 };
 

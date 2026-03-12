@@ -275,7 +275,7 @@ export default function NavMeshFollowerAgent({
         enabledRotations={[false, false, false]}
         lockRotations
         colliders={false}
-        userData={{ camExcludeCollision: true }}
+        userData={{ camExcludeCollision: true, type: "enemy" }}
       >
         <CapsuleCollider
           args={[(HEIGHT - 2 * RADIUS) / 2, RADIUS]}
@@ -283,6 +283,9 @@ export default function NavMeshFollowerAgent({
             const sensorType = payload.other.rigidBodyObject?.userData?.type;
             if (sensorType === "player") {
               isInPlayerAttackSensorRef.current = true;
+            }
+            if (sensorType === "weapon") {
+              console.log("Hit!", sensorType);
             }
           }}
           onIntersectionExit={(payload) => {

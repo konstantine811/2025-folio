@@ -1,4 +1,4 @@
-export const AGENT_COUNT = 3;
+export const AGENT_COUNT = 5;
 export const RADIUS = 1.2;
 export const HEIGHT = 4.4;
 export const BODY_Y_OFFSET = HEIGHT / 2;
