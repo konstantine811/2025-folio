@@ -86,7 +86,6 @@ export function resolveLocomotionAnimation({
 }
 
 export const playAttack = (
-  reverse = false,
   animationType: CharacterAnimations,
   actions: { [x: string]: AnimationAction | null },
   currentActionRef: RefObject<string | null>,

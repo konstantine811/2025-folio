@@ -59,7 +59,6 @@ const CharacterModel = ({
     if (isSprinting || isMoving || !isGrounded) return;
 
     playAttack(
-      false,
       animationType,
       actions,
       currentActionRef,
