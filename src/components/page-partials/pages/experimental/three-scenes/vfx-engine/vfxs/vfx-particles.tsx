@@ -112,13 +112,13 @@ const VFXParticles = ({
         attribute.addUpdateRange(
           lastCursor.current * attribute.itemSize,
           nbParticles * attribute.itemSize -
-            lastCursor.current * attribute.itemSize
+            lastCursor.current * attribute.itemSize,
         );
       } else {
         attribute.addUpdateRange(
           lastCursor.current * attribute.itemSize,
           cursor.current * attribute.itemSize -
-            lastCursor.current * attribute.itemSize
+            lastCursor.current * attribute.itemSize,
         );
       }
       attribute.needsUpdate = true;
@@ -140,7 +140,7 @@ const VFXParticles = ({
         const instanceSpeed =
           mesh.current.geometry.getAttribute("instanceSpeed");
         const instanceRotationSpeed = mesh.current.geometry.getAttribute(
-          "instanceRotationSpeed"
+          "instanceRotationSpeed",
         );
         for (let i = 0; i < count; i++) {
           if (cursor.current >= nbParticles) {
@@ -159,18 +159,17 @@ const VFXParticles = ({
             colorStart,
           } = setup();
 
+          tmpPosition.set(...position);
           expandBoundsBy(tmpPosition);
-          // 2) приблизна кінцева позиція (максимальний зсув)
-          const t = lifeTime[1]; // тривалість (максимальна)
-          const dir = new Vector3().fromArray(direction); // не нормалізую — як є
-          const grav = new Vector3().fromArray(gravity); // з settings
+
+          const t = lifeTime[1];
+          const dir = new Vector3().fromArray(direction);
+          const grav = new Vector3().fromArray(gravity);
           const end = tmpPosition
             .clone()
             .add(dir.multiplyScalar(speed * t))
             .add(grav.multiplyScalar(0.5 * t * t));
           expandBoundsBy(end);
-
-          tmpPosition.set(...position);
           tmpRotationEuler.set(...rotation);
           tmpRotation.setFromEuler(tmpRotationEuler);
           tmpScale.set(...scale);
@@ -181,7 +180,7 @@ const VFXParticles = ({
             cursor.current,
             tmpColor.r,
             tmpColor.g,
-            tmpColor.b
+            tmpColor.b,
           );
 
           tmpColor.set(colorEnd);
@@ -189,7 +188,7 @@ const VFXParticles = ({
             cursor.current,
             tmpColor.r,
             tmpColor.g,
-            tmpColor.b
+            tmpColor.b,
           );
           instanceDirection.setXYZ(cursor.current, ...direction);
           instanceLifetime.setXY(cursor.current, ...lifeTime);
@@ -202,7 +201,7 @@ const VFXParticles = ({
         needsUpdate.current = true;
       }
     },
-    [nbParticles]
+    [nbParticles],
   );
 
   useFrame(({ clock }) => {
@@ -432,7 +431,7 @@ const ParticlesMaterial = shaderMaterial(
            gl_FragColor = vec4(finalColor, alpha);
           #endif
         }
-    `
+    `,
 );
 
 extend({ ParticlesMaterial });

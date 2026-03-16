@@ -25,7 +25,6 @@ export function playAction(
   const next = actions[name];
   if (!next) return null;
 
-  
   const prevName = currentActionRef.current;
   const prev = prevName ? actions[prevName] : null;
 
@@ -89,9 +88,7 @@ export function resolveLocomotionAnimation({
 export const playAttack = (
   reverse = false,
   animationType: CharacterAnimations,
-  actions: {
-    [x: string]: AnimationAction | null;
-  },
+  actions: { [x: string]: AnimationAction | null },
   currentActionRef: RefObject<string | null>,
   isAttackingRef: RefObject<boolean>,
   isGrounded: boolean,
@@ -101,18 +98,10 @@ export const playAttack = (
   const attackName = animationType.attack;
   const attackAction = actions[attackName];
   if (!attackAction) return;
-  let action = null;
 
-  if (isAttackingRef.current) {
-    action = playAction(actions, currentActionRef, attackName, {
-      ...animationConfig.attack_1,
-      clampWhenFinished: true,
-      timeScale: -2,
-      startAt: reverse ? attackAction.getClip().duration / 2 : undefined,
-      transition: "fade",
-      preserveTime: true,
-    });
-  } else {
+  let action: AnimationAction | null = null;
+
+  if (!isAttackingRef.current) {
     action = playAction(actions, currentActionRef, attackName, {
       ...animationConfig.attack_1,
       clampWhenFinished: true,
@@ -125,22 +114,44 @@ export const playAttack = (
   if (!action) return;
 
   const mixer = action.getMixer();
+  const clipDuration = action.getClip().duration;
+  const timeScale = Math.abs(action.timeScale || 1);
+
+  // Наприклад, за 0.12 сек до кінця
+  const earlyTriggerOffset = 0.12;
+
+  // Реальна тривалість з урахуванням timeScale
+  const realDuration = clipDuration / timeScale;
+
+  const timeoutMs = Math.max((realDuration - earlyTriggerOffset) * 800, 0);
+
+  const earlyTransitionTimeout = window.setTimeout(() => {
+    // тут можна дозволити наступну атаку ще ДО finished
+    isAttackingRef.current = false;
+  }, timeoutMs);
 
   const onFinished = (e: AnimationMixerEventMap["finished"]) => {
     if (e.action !== action) return;
+
+    window.clearTimeout(earlyTransitionTimeout);
+
     isAttackingRef.current = false;
+
     const locomotion = resolveLocomotionAnimation({
       isGrounded,
       isMoving,
       isSprinting,
       animationType,
     });
+
     playAction(
       actions,
       currentActionRef,
       locomotion,
       animationConfig.locomotion,
     );
+
+    mixer.removeEventListener("finished", onFinished);
   };
 
   mixer.addEventListener("finished", onFinished);

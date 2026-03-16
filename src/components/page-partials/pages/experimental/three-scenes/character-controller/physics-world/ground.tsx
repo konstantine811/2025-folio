@@ -1,6 +1,7 @@
 import { useTexture } from "@react-three/drei";
 import { RigidBody } from "@react-three/rapier";
 import { DoubleSide, RepeatWrapping } from "three";
+import { Component, Entity } from "../ecs";
 
 type BoxDimensions = [number, number, number];
 
@@ -52,24 +53,34 @@ const Ground = () => {
 
   return (
     <group>
-      <RigidBody type="fixed" colliders="cuboid">
-        <mesh
-          receiveShadow
-          position={[0, -1, 0]}
-          rotation={[-Math.PI / 2, 0, 0]}
-        >
-          <planeGeometry args={[groundSize, groundSize]} />
-          <meshStandardMaterial map={texture} roughness={0.8} metalness={0.2} />
-        </mesh>
-        {/* Hidden floor for physics */}
-        <mesh position={[0, -1, 0]}>
-          <boxGeometry args={[groundSize, 0.1, groundSize]} />
-          <meshStandardMaterial visible={false} />
-        </mesh>
-      </RigidBody>
+      <Entity traversable>
+        <RigidBody type="fixed" colliders="cuboid">
+          <mesh
+            receiveShadow
+            position={[0, -1, 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <planeGeometry args={[groundSize, groundSize]} />
+            <meshStandardMaterial
+              map={texture}
+              roughness={0.8}
+              metalness={0.2}
+            />
+          </mesh>
+          {/* Hidden floor for physics */}
+          <Component name="three">
+            <mesh position={[0, -1, 0]}>
+              <boxGeometry args={[groundSize, 0.1, groundSize]} />
+              <meshStandardMaterial visible={false} />
+            </mesh>
+          </Component>
+        </RigidBody>
+      </Entity>
       {/* Visible walls */}
+
       <RigidBody type="fixed" colliders="cuboid">
         {/* North Wall */}
+
         <mesh position={[0, 0.5, -groundSize / 2]} castShadow receiveShadow>
           <boxGeometry args={[groundSize, wallHeight, wallThickness]} />
           <meshStandardMaterial
@@ -79,7 +90,9 @@ const Ground = () => {
             side={DoubleSide}
           />
         </mesh>
+
         {/* South Wall */}
+
         <mesh position={[0, 0.5, groundSize / 2]} castShadow receiveShadow>
           <boxGeometry args={[groundSize, wallHeight, wallThickness]} />
           <meshStandardMaterial
@@ -89,7 +102,9 @@ const Ground = () => {
             side={DoubleSide}
           />
         </mesh>
+
         {/* East Wall */}
+
         <mesh
           position={[groundSize / 2, 0.5, 0]}
           rotation={[0, Math.PI / 2, 0]}
@@ -104,7 +119,9 @@ const Ground = () => {
             side={DoubleSide}
           />
         </mesh>
+
         {/* West Wall */}
+
         <mesh
           position={[-groundSize / 2, 0.5, 0]}
           rotation={[0, Math.PI / 2, 0]}
@@ -123,24 +140,27 @@ const Ground = () => {
 
       {/* Boxes */}
       {boxes.map((box, index) => (
-        <RigidBody
-          key={index}
-          type="fixed"
-          position={box.position}
-          colliders="cuboid"
-          friction={0.1}
-          restitution={0}
-        >
-          <mesh castShadow receiveShadow>
-            <boxGeometry args={box.size} />
-            <meshStandardMaterial
-              map={platformTexture}
-              side={DoubleSide}
-              roughness={0.8}
-              metalness={0.1}
-            />
-          </mesh>
-        </RigidBody>
+        <Entity key={index} traversable>
+          <RigidBody
+            type="fixed"
+            position={box.position}
+            colliders="cuboid"
+            friction={0.1}
+            restitution={0}
+          >
+            <Component name="three">
+              <mesh castShadow receiveShadow>
+                <boxGeometry args={box.size} />
+                <meshStandardMaterial
+                  map={platformTexture}
+                  side={DoubleSide}
+                  roughness={0.8}
+                  metalness={0.1}
+                />
+              </mesh>
+            </Component>
+          </RigidBody>
+        </Entity>
       ))}
     </group>
   );
