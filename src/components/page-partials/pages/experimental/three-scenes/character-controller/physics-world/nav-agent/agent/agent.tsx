@@ -128,7 +128,6 @@ const Agent: FC<AgentProps> = ({
       path[pathIndex.current + 1]
     ) {
       pathIndex.current++;
-      w;
     }
 
     const next = path[pathIndex.current];
