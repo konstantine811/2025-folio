@@ -4,28 +4,28 @@ import { characterAnimations } from "./config/character-controller.config";
 import Ground from "./physics-world/ground";
 import { useRef } from "react";
 import { Group } from "three";
-import { NavMeshDebug } from "./physics-world/nav-second/navmesh/navmesh-debug";
+import { NavMeshDebug } from "./physics-world/nav-agent/navmesh/navmesh-debug";
 import { useControls } from "leva";
-import { NavMeshGenerator } from "./physics-world/nav-second/navmesh/navmesh";
-import { init as initRecast } from "recast-navigation";
-import { suspend } from "suspend-react";
+import { NavMeshGenerator } from "./physics-world/nav-agent/navmesh/navmesh";
 import { Component, Entity } from "./ecs";
+import { ensureRecast } from "./physics-world/nav-agent/recast-init";
+import EnemyMonsters from "./physics-world/nav-agent/enemy/enemy-monsters";
 
 const ps1Char = "/3d-models/characters/major_ps1_character.glb";
 // const ghostChar = "/3d-models/folio-scene/adventure_game/ghost_char.glb";
+// const monsterChar = "/3d-models/ps-game/monster.glb";
 
 const Experience = () => {
   const navMeshSourceRef = useRef<Group>(null);
-  const { isDebug } = useControls({
+  const { isDebug, enemyCount } = useControls({
     isDebug: {
       value: true,
       label: "Debug",
     },
+    enemyCount: { min: 0, max: 200, value: 1, step: 1 },
   });
 
-  suspend(async () => {
-    await initRecast();
-  }, []);
+  ensureRecast();
   return (
     <>
       <Physics debug={isDebug} interpolate={false} gravity={[0, -9.81, 0]}>
@@ -52,6 +52,7 @@ const Experience = () => {
             </Component>
           </Entity>
         </group>
+        <EnemyMonsters isDebug={isDebug} count={enemyCount} />
         {/* <NavMeshFollowers isDebug={isDebug} /> */}
         <NavMeshGenerator />
       </Physics>

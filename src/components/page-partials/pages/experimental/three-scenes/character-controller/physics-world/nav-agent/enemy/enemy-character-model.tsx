@@ -1,14 +1,13 @@
-import { useFrame } from "@react-three/fiber";
 import { useAnimations, useGLTF } from "@react-three/drei";
-import { useEffect, useMemo, useRef, type RefObject } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Group, Mesh } from "three";
 import { SkeletonUtils } from "three/examples/jsm/Addons.js";
 
 type EnemyCharacterModelProps = {
   modelPath: string;
   animState: "idle" | "walk" | "attack";
-  lookDirRef: RefObject<{ x: number; z: number }>;
-  turnSpeed?: number;
+  scale?: number;
+  position?: [number, number, number];
 };
 
 const ANIM_NAMES = {
@@ -17,20 +16,13 @@ const ANIM_NAMES = {
   attack: "Attack",
 };
 
-function lerpAngle(current: number, target: number, t: number) {
-  let delta = target - current;
-
-  while (delta > Math.PI) delta -= Math.PI * 2;
-  while (delta < -Math.PI) delta += Math.PI * 2;
-
-  return current + delta * t;
-}
-
 export default function EnemyCharacterModel({
+  scale = 1,
   modelPath,
   animState,
-  lookDirRef,
-  turnSpeed = 8,
+  position,
+  // lookDirRef,
+  // turnSpeed = 8,
 }: EnemyCharacterModelProps) {
   const groupRef = useRef<Group>(null);
   const { scene, animations } = useGLTF(modelPath);
@@ -61,31 +53,14 @@ export default function EnemyCharacterModel({
     next.reset().fadeIn(0.15).play();
 
     if (prev && prev !== next) {
-      prev.fadeOut(0.15);
+      prev.fadeOut(1);
     }
 
     currentAnimRef.current = nextName;
   }, [animState, actions]);
 
-  useFrame((_, delta) => {
-    if (!groupRef.current) return;
-
-    const lookDir = lookDirRef.current;
-    if (!lookDir) return;
-
-    if (Math.abs(lookDir.x) < 1e-4 && Math.abs(lookDir.z) < 1e-4) return;
-
-    // якщо модель дивиться не вздовж +Z, додай тут офсет:
-    // const targetAngle = Math.atan2(lookDir.x, lookDir.z) + Math.PI;
-    const targetAngle = Math.atan2(lookDir.x, lookDir.z);
-    const currentAngle = groupRef.current.rotation.y;
-
-    const t = 1 - Math.exp(-turnSpeed * delta);
-    groupRef.current.rotation.y = lerpAngle(currentAngle, targetAngle, t);
-  });
-
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} scale={scale} position={position}>
       <primitive object={clonedScene} />
     </group>
   );

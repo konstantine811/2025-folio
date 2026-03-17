@@ -1,5 +1,4 @@
 import {
-  BallCollider,
   CapsuleCollider,
   CuboidCollider,
   interactionGroups,
@@ -21,6 +20,7 @@ import {
 } from "../utils/physics";
 import { getPivotMovingDirection } from "@/utils/game.utils";
 import { usePlayerPositionStore } from "../physics-world/usePlayerPositionStore";
+import { Component, Entity, EntityType } from "../ecs";
 
 export type CharacterState = {
   moveSpeed: number;
@@ -40,7 +40,7 @@ const CharacterController = ({
   modelPath: string;
   animationType: CharacterAnimations;
 }) => {
-  const rigidBody = useRef<RapierRigidBody>(null);
+  const playerRef = useRef<EntityType>(null!);
   const modelRef = useRef<Group>(null);
   const setPlayerPosition = usePlayerPositionStore((s) => s.setPosition);
   const { pivot, followCam, cameraCollisionDetect } = useFollowCamera({
@@ -99,10 +99,10 @@ const CharacterController = ({
   useFrame(({ camera }, delta) => {
     setAttacmentWeaponSensor();
     if (delta > 1) delta %= 1;
-
-    if (!rigidBody.current) return;
+    const characterRigidBody = playerRef.current.rigidBody;
+    if (!characterRigidBody) return;
     // Cast multiple rays for better ground detection
-    const translationStable = rigidBody.current.translation();
+    const translationStable = characterRigidBody.translation();
     setPlayerPosition({
       x: translationStable.x,
       y: translationStable.y,
@@ -166,7 +166,7 @@ const CharacterController = ({
         undefined,
         interactionGroups(0, [1, 2]),
         undefined,
-        rigidBody.current,
+        characterRigidBody,
       );
       if (ray) {
         closestHitRay = ray;
@@ -184,7 +184,7 @@ const CharacterController = ({
     //   );
     // }
 
-    const linvel = rigidBody.current.linvel();
+    const linvel = characterRigidBody.linvel();
 
     // ========== 2. MOVEMENT STATE (для анімацій / UI) ==========
     // Update movement state
@@ -230,7 +230,7 @@ const CharacterController = ({
         undefined,
         interactionGroups(0, [1, 2]),
         undefined,
-        rigidBody.current,
+        characterRigidBody,
       );
 
       let velocity;
@@ -246,11 +246,11 @@ const CharacterController = ({
         }
       }
 
-      rigidBody.current.setLinvel(velocity, true);
+      characterRigidBody.setLinvel(velocity, true);
       targetRotation.current = pivotAngle;
     } else {
       // різка зупинка по горизонталі
-      rigidBody.current.setLinvel(
+      characterRigidBody.setLinvel(
         {
           x: 0,
           y: linvel.y,
@@ -275,7 +275,7 @@ const CharacterController = ({
     // Handle jumping
     if (jump && isGrounded) {
       // Reset vertical velocity before jumping
-      rigidBody.current.setLinvel(
+      characterRigidBody.setLinvel(
         {
           x: linvel.x,
           y: 0,
@@ -284,7 +284,7 @@ const CharacterController = ({
         true,
       );
 
-      rigidBody.current.applyImpulse(
+      characterRigidBody.applyImpulse(
         createJumpImpulse(2.5, { y: linvel.y }),
         true,
       );
@@ -294,12 +294,12 @@ const CharacterController = ({
     // Ground snapping
     if (isGrounded && !jump) {
       const snapForce = createFallForce(0.5);
-      rigidBody.current.applyImpulse(snapForce, true);
+      characterRigidBody.applyImpulse(snapForce, true);
 
       if (closestHit && closestHitRay) {
         const point = closestHitRay.pointAt(closestHit.timeOfImpact);
         const targetY = point.y + 1.2; // висота персоанаж над точкою удару
-        rigidBody.current.setTranslation(
+        characterRigidBody.setTranslation(
           {
             x: translationStable.x,
             y: targetY,
@@ -325,38 +325,40 @@ const CharacterController = ({
   });
   return (
     <>
-      <RigidBody
-        ref={rigidBody}
-        colliders={false}
-        mass={10}
-        position={[0, 6, 1]}
-        enabledRotations={[false, false, false]}
-        lockRotations
-        gravityScale={3}
-        friction={0.5}
-        linearDamping={1}
-        angularDamping={1}
-        restitution={0}
-        ccd={true}
-        type="dynamic"
-        userData={{ camExcludeCollision: true, type: "player" }}
-      >
-        <CapsuleCollider
-          args={[capsuleHalfHeight, capsuleRadius]}
-          position={[0, 0, 0]}
-        />
-        <BallCollider sensor args={[1.4]} mass={0} />
-        <group ref={modelRef} position={[0, -1.2, 0]} scale={5.5}>
-          <CharacterModel
-            weaponAttachmentRef={weaponAttachmentRef}
-            isMoving={isMoving}
-            isSprinting={isSprinting}
-            isGrounded={state.isGrounded}
-            modelPath={modelPath}
-            animationType={animationType}
-          />
-        </group>
-      </RigidBody>
+      <Entity isPlayer ref={playerRef}>
+        <Component name="rigidBody">
+          <RigidBody
+            colliders={false}
+            mass={10}
+            position={[0, 6, 1]}
+            enabledRotations={[false, false, false]}
+            lockRotations
+            gravityScale={3}
+            friction={0.5}
+            linearDamping={1}
+            angularDamping={1}
+            restitution={0}
+            ccd={true}
+            type="dynamic"
+            userData={{ camExcludeCollision: true, type: "player" }}
+          >
+            <CapsuleCollider
+              args={[capsuleHalfHeight, capsuleRadius]}
+              position={[0, 0, 0]}
+            />
+            <group ref={modelRef} position={[0, -1.2, 0]} scale={5.5}>
+              <CharacterModel
+                weaponAttachmentRef={weaponAttachmentRef}
+                isMoving={isMoving}
+                isSprinting={isSprinting}
+                isGrounded={state.isGrounded}
+                modelPath={modelPath}
+                animationType={animationType}
+              />
+            </group>
+          </RigidBody>
+        </Component>
+      </Entity>
 
       <RigidBody
         ref={weaponSensorRef}
