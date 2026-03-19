@@ -1,14 +1,11 @@
-import { useRef } from "react";
-import { Mesh } from "three";
+import { PortalScene } from "./load-models/portal-scene";
 
 const Experience = () => {
-    const meshRef = useRef<Mesh>(null);
-    return (
-        <mesh ref={meshRef}>
-            <boxGeometry />
-            <meshStandardMaterial color="red" roughness={0} metalness={1} />
-        </mesh>
-    );
+  return (
+    <>
+      <PortalScene />
+    </>
+  );
 };
 
 export default Experience;
