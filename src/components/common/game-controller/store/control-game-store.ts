@@ -46,9 +46,6 @@ type ControlStore = ControlState & ControlActions;
 
 export const useControlStore = create<ControlStore>()((set) => ({
   ...initialState,
-  primaryClick: false,
-  secondaryClick: false,
-  attackTrigger: 0,
   setAttackTrigger: (v) => set({ attackTrigger: v }),
   incAttackTrigger: () =>
     set((state) => ({ attackTrigger: state.attackTrigger + 1 })),

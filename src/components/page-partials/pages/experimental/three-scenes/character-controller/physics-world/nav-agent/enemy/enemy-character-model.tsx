@@ -60,7 +60,7 @@ export default function EnemyCharacterModel({
   }, [animState, actions]);
 
   return (
-    <group ref={groupRef} scale={scale} position={position}>
+    <group userData={{ camExcludeCollision: true }} ref={groupRef} scale={scale} position={position}>
       <primitive object={clonedScene} />
     </group>
   );

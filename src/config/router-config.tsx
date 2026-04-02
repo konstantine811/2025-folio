@@ -8,38 +8,40 @@ import { Navigate } from "react-router";
 type Routable = ComponentType<object>;
 
 export function lazyPage<P extends object>(
-  loader: () => Promise<{ default: ComponentType<P> }>
+  loader: () => Promise<{ default: ComponentType<P> }>,
 ): LazyExoticComponent<Routable> {
   return lazy(loader) as LazyExoticComponent<Routable>;
 }
 
 const HomePage = lazyPage(
-  () => import("../components/page-partials/pages/Home")
+  () => import("../components/page-partials/pages/Home"),
 );
 const ExperimentalPage = lazyPage(
-  () => import("../components/page-partials/pages/Experimental")
+  () => import("../components/page-partials/pages/Experimental"),
 );
 const BlogPage = lazyPage(
-  () => import("../components/page-partials/pages/blog/Blog")
+  () => import("../components/page-partials/pages/blog/Blog"),
 );
 
 const ArticlePage = lazyPage(
-  () => import("../components/page-partials/pages/blog/Article")
+  () => import("../components/page-partials/pages/blog/Article"),
 );
 
 const TaskManager = lazyPage(
-  () => import("../components/page-partials/pages/task-manager/TaskManager")
+  () => import("../components/page-partials/pages/task-manager/TaskManager"),
 );
 const TemplateTask = lazyPage(
   () =>
-    import("../components/page-partials/pages/task-manager/pages/TemplateTask")
+    import("../components/page-partials/pages/task-manager/pages/TemplateTask"),
 );
 const DailyTask = lazyPage(
-  () => import("../components/page-partials/pages/task-manager/pages/DailyTask")
+  () =>
+    import("../components/page-partials/pages/task-manager/pages/DailyTask"),
 );
 
 const TaskAnalytics = lazyPage(
-  () => import("../components/page-partials/pages/task-manager/pages/Analytics")
+  () =>
+    import("../components/page-partials/pages/task-manager/pages/Analytics"),
 );
 
 // const Test = lazyPage(
@@ -53,253 +55,192 @@ const TaskAnalytics = lazyPage(
 // );
 const ThreePhysicsEngine = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/physics-engine/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/physics-engine/init"),
 );
 
 const ThreeStaging = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/staging/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/staging/init"),
 );
 
 const ThreeViews = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/three-views/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/three-views/init"),
 );
 
 const ThreeCameraControls = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/camera-controls/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/camera-controls/init"),
 );
 
 const ThreeRenderTarget = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/render-target/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/render-target/init"),
 );
 
 const ThreePostProcessing = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/post-processing/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/post-processing/init"),
 );
 
 const ThreeTheatreJs = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/theatre-js/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/theatre-js/init"),
 );
 
 const ThreeOptimization = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/optimization/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/optimization/init"),
 );
 
 const ThreeShaderIntro = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/shader-intro/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/shader-intro/init"),
 );
 
 const ThreeShaderShapingFunctions = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/shader-shaping-functions/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/shader-shaping-functions/init"),
 );
 
 const ThreeShaderImageSlider = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/shader-image-slider/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/shader-image-slider/init"),
 );
 
 const ThreeWaterShader = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/shader-water/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/shader-water/init"),
 );
 
 const ThreeTransitionShader = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/shader-transition/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/shader-transition/init"),
 );
 
 const ThreeVFXParticles = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/vfx-particles/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/vfx-particles/init"),
 );
 
 const ThreeVFXTrail = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/vfx-trail/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/vfx-trail/init"),
 );
 
 const ThreeCubicWorldsGame = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/init"),
 );
 
 const ThreeVFXEngine = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/vfx-engine/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/vfx-engine/init"),
 );
 
 const TwoCanvasFirstSimpleBall = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/2d-canvas/first-simple-ball/init"
-    )
+    import("../components/page-partials/pages/experimental/2d-canvas/first-simple-ball/init"),
 );
 
 const ThreeVFXFireworks = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/vfx-fireworks/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/vfx-fireworks/init"),
 );
 
 const TwoCanvasPhysicsTrain = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/2d-canvas/physics-train/wrap"
-    )
+    import("../components/page-partials/pages/experimental/2d-canvas/physics-train/wrap"),
 );
 
 const ThreeWizardGame = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/wizard-game/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/wizard-game/init"),
 );
 
 const ThreeWebGPU = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/webgpu/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/webgpu/init"),
 );
 
 const ThreeHome3D = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/home-3d/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/home-3d/init"),
 );
 
 const ThreeAi = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/ai-three/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/ai-three/init"),
 );
 
 const ThreePhysicsSimulation = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/three-physics-simulation/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/three-physics-simulation/init"),
 );
 
 const ThreeParticleCursorAnimation = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/particle-cursor-animation/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/particle-cursor-animation/init"),
 );
 
 const SphereMatTest = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/maps/sphera-map/sphere-mat-test"
-    )
+    import("../components/page-partials/pages/experimental/maps/sphera-map/sphere-mat-test"),
 );
 
 const Geniverse = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/geniverse/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/geniverse/init"),
 );
 
 const ThreeParticleMorphing = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/particle-morphing/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/particle-morphing/init"),
 );
 
 const ThreeScrollParticleMorphing = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/scroll-particle-morphing/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/scroll-particle-morphing/init"),
 );
 
 const ThreeYukaFirstConusAgent = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/yuka/first-conus-agent/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/yuka/first-conus-agent/init"),
 );
 
 const ThreeYukaCarSelfDriving = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/yuka/car-self-driving/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/yuka/car-self-driving/init"),
 );
 
 const ThreeRaycastNavigation = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/raycast-navigation/hello-raycast/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/raycast-navigation/hello-raycast/init"),
 );
 
 const ThreeBakingTexture = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/baking-texture/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/baking-texture/init"),
 );
 
 const ThreeCharacterController = lazyPage(
   () =>
-    import(
-      "../components/page-partials/pages/experimental/three-scenes/character-controller/init"
-    )
+    import("../components/page-partials/pages/experimental/three-scenes/character-controller/init"),
 );
 
 const LoginPage = lazyPage(
-  () => import("../components/page-partials/pages/Login")
+  () => import("../components/page-partials/pages/Login"),
 );
 
+const ThreeLearnCamera = lazyPage(
+  () =>
+    import("../components/page-partials/pages/experimental/three-scenes/learn-camera/camera-controls/init"),
+);
+
+const ThreeSciFi = lazyPage(
+  () =>
+    import("../components/page-partials/pages/experimental/three-scenes/demo-scenes/sci-fi/init"),
+);
 export enum RoutPath {
   HOME = "/",
   EXPERIMENTAL = "/labs",
@@ -348,6 +289,8 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_RAYCAST_NAVIGATION = "three-raycast-navigation",
   EXPERIMENTAL_THREE_BAKING_TEXTURE = "three-baking-texture",
   EXPERIMENTAL_THREE_CHARACTER_CONTROLLER = "three-character-controller",
+  EXPERIMENTAL_THREE_LEARN_CAMERA = "three-learn-camera",
+  EXPERIMENTAL_THREE_SCI_FI = "three-sci-fi",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -399,6 +342,7 @@ export enum ExperimentalTypes {
   yuka = "yuka",
   raycast = "raycast-navigation",
   baking = "baking-texture",
+  demoScenes = "demo-scenes",
 }
 
 export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
@@ -735,6 +679,24 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     description: "A character controller scene created with Three.js.",
     imageUrl: imagePath("character-controller"),
     type: ExperimentalTypes.games,
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_LEARN_CAMERA,
+    Component: ThreeLearnCamera,
+    id: "experimental-three-learn-camera",
+    icon: "🎥",
+    description: "A learn camera scene created with Three.js.",
+    imageUrl: imagePath("learn-camera"),
+    type: ExperimentalTypes.camera,
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_SCI_FI,
+    Component: ThreeSciFi,
+    id: "experimental-three-sci-fi",
+    icon: "🎥",
+    description: "A sci-fi scene created with Three.js.",
+    imageUrl: imagePath("sci-fi"),
+    type: ExperimentalTypes.demoScenes,
   },
 ];
 

@@ -14,7 +14,7 @@ export function PortalScene(props: JSX.IntrinsicElements["group"]) {
   const { tint, emissive, emissiveIntensity } = useControls({
     tint: { value: "#7f7986", label: "Baked tint" },
     emissive: { value: "#d88e52", label: "Lamp emissive" },
-    emissiveIntensity: { value: 5.5, label: "Lamp emissive intensity" },
+    emissiveIntensity: { value: 20, label: "Lamp emissive intensity" },
   });
   const bakedMat = useMemo(
     () =>
@@ -30,11 +30,11 @@ export function PortalScene(props: JSX.IntrinsicElements["group"]) {
   const lampMat = useMemo(() => {
     const m = (materials["ligt-lamp"] as MeshStandardMaterial).clone();
     m.emissive = new Color(emissive); // колір свічення
-    m.emissiveIntensity = emissiveIntensity; // сила (підбери на око)
+    m.emissiveIntensity = 5; // сила (підбери на око)
     // m.emissiveMap = someTexture;        // опційно, якщо є окрема карта
     m.needsUpdate = true;
     return m;
-  }, [materials, emissive, emissiveIntensity]);
+  }, [materials, emissive]);
 
   useEffect(
     () => () => {
@@ -776,6 +776,14 @@ export function PortalScene(props: JSX.IntrinsicElements["group"]) {
         material={lampMat}
         position={[2.481, 1.338, 0.706]}
       />
+      <pointLight
+        position={[2.481, 1.338, 0.706]}
+        color={emissive}
+        intensity={emissiveIntensity}
+        distance={10}
+        decay={2}
+        castShadow
+      />
       <mesh
         castShadow
         receiveShadow
@@ -783,6 +791,14 @@ export function PortalScene(props: JSX.IntrinsicElements["group"]) {
         material={lampMat}
         position={[-2.108, 1.338, -1.092]}
         rotation={[3.114, 0.039, -3.141]}
+      />
+      <pointLight
+        position={[-2.108, 1.338, -1.092]}
+        color={emissive}
+        intensity={emissiveIntensity}
+        distance={10}
+        decay={2}
+        castShadow
       />
       <mesh
         castShadow
@@ -792,6 +808,15 @@ export function PortalScene(props: JSX.IntrinsicElements["group"]) {
         position={[-2.198, 1.34, 2.082]}
         rotation={[3.114, 0.039, -3.141]}
       />
+      <pointLight
+        position={[-2.198, 1.34, 2.082]}
+        color={emissive}
+        intensity={emissiveIntensity}
+        distance={10}
+        decay={2}
+        castShadow
+      />
+
       <mesh
         castShadow
         receiveShadow
@@ -799,6 +824,14 @@ export function PortalScene(props: JSX.IntrinsicElements["group"]) {
         material={lampMat}
         position={[1.806, 1.339, -1.991]}
         rotation={[0.028, -0.162, 0.004]}
+      />
+      <pointLight
+        position={[1.806, 1.339, -1.991]}
+        color={emissive}
+        intensity={emissiveIntensity}
+        distance={10}
+        decay={2}
+        castShadow
       />
     </group>
   );

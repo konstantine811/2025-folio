@@ -1,10 +1,5 @@
-import { useState } from "react";
-import { AppView, Project } from "../types/types";
-import {
-  generateMindMap,
-  generateSlides,
-  generateTeachingContent,
-} from "../services/geminiService";
+import { useCallback, useState } from "react";
+import type { AppView, Project, ProjectPatchFn } from "../types/types";
 import Sidebar from "./Sidebar";
 import Dashboard from "./Dashboard";
 import NodesView from "./NodesView";
@@ -12,55 +7,52 @@ import EditorView from "./EditorView";
 import PresentationView from "./PresentationView";
 import AssetsView from "./AssetsView";
 import CreateProjectModal from "./CreateProjectModal";
-import LoadingOverlay from "./LoadingOverlay";
 
 const Main = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [view, setView] = useState<AppView>("dashboard");
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [creationPrompt, setCreationPrompt] = useState("");
+  const [newDocTitle, setNewDocTitle] = useState("");
 
-  const createNewProject = async (topic: string) => {
-    if (!topic.trim()) return;
+  const applyProjectPatch = useCallback((fn: ProjectPatchFn) => {
+    setCurrentProject((cur) => {
+      if (!cur) return null;
+      const next = fn(cur);
+      const stamped =
+        next === cur ? cur : { ...next, lastModified: Date.now() };
+      if (stamped !== cur) {
+        setProjects((prev) =>
+          prev.map((p) => (p.id === stamped.id ? stamped : p)),
+        );
+      }
+      return stamped;
+    });
+  }, []);
+
+  const createNewDocument = () => {
+    const title = newDocTitle.trim();
+    if (!title) return;
+    const newProject: Project = {
+      id: `doc-${Date.now()}`,
+      title,
+      content: "",
+      nodes: [],
+      links: [],
+      slides: [],
+      images: [],
+      lastModified: Date.now(),
+    };
+    setProjects((prev) => [newProject, ...prev]);
+    setCurrentProject(newProject);
     setIsCreateModalOpen(false);
-    setIsGenerating(true);
-    try {
-      const content = await generateTeachingContent(
-        topic,
-        "Professional research protocol"
-      );
-      const [mindMap, slides] = await Promise.all([
-        generateMindMap(content),
-        generateSlides(content),
-      ]);
-      const newProject: Project = {
-        id: `EDU-PROT-${Date.now()}`,
-        title: topic.toUpperCase(),
-        content,
-        nodes: mindMap.nodes,
-        links: mindMap.links,
-        slides,
-        images: [],
-        lastModified: Date.now(),
-      };
-      setProjects([newProject, ...projects]);
-      setCurrentProject(newProject);
-      setView("nodes");
-    } catch {
-      alert("ERROR: PROTOCOL_INIT_FAILURE");
-    } finally {
-      setIsGenerating(false);
-      setCreationPrompt("");
-    }
+    setNewDocTitle("");
+    setView("nodes");
   };
 
   const updateProjectContent = (content: string) => {
     if (!currentProject) return;
-    const updated = { ...currentProject, content, lastModified: Date.now() };
-    setCurrentProject(updated);
-    setProjects(projects.map((p) => (p.id === updated.id ? updated : p)));
+    applyProjectPatch((p) => ({ ...p, content }));
   };
 
   const handleProjectSelect = (project: Project) => {
@@ -69,25 +61,23 @@ const Main = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row bg-black text-white font-sans grow">
+    <div className="flex flex-col bg-black font-sans text-white md:flex-row grow">
       <Sidebar
         view={view}
         currentProject={currentProject}
         onViewChange={setView}
       />
 
-      <main className="flex-1 overflow-hidden relative">
-        {isGenerating && <LoadingOverlay />}
-
+      <main className="relative flex-1 overflow-hidden">
         <CreateProjectModal
           isOpen={isCreateModalOpen}
-          creationPrompt={creationPrompt}
+          title={newDocTitle}
           onClose={() => setIsCreateModalOpen(false)}
-          onPromptChange={setCreationPrompt}
-          onCreate={() => createNewProject(creationPrompt)}
+          onTitleChange={setNewDocTitle}
+          onCreate={createNewDocument}
         />
 
-        <div className="w-full h-full relative">
+        <div className="relative h-full w-full">
           {view === "dashboard" && (
             <Dashboard
               projects={projects}
@@ -97,7 +87,10 @@ const Main = () => {
           )}
 
           {view === "nodes" && currentProject && (
-            <NodesView project={currentProject} />
+            <NodesView
+              project={currentProject}
+              onProjectPatch={applyProjectPatch}
+            />
           )}
 
           {view === "editor" && currentProject && (

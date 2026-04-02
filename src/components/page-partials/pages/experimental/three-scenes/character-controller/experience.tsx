@@ -53,13 +53,10 @@ const Experience = () => {
           </Entity>
         </group>
         <EnemyMonsters isDebug={isDebug} count={enemyCount} />
-        {/* <NavMeshFollowers isDebug={isDebug} /> */}
         <NavMeshGenerator />
       </Physics>
 
       {isDebug && <NavMeshDebug />}
-      {/* <NavMeshBuilder sourceRef={navMeshSourceRef} /> */}
-      {/* {isDebug && <NavMeshDebug />} */}
     </>
   );
 };

@@ -93,6 +93,7 @@ export const playAttack = (
   isGrounded: boolean,
   isMoving: boolean,
   isSprinting: boolean,
+  setPlayerAttacking: (v: boolean) => void,
 ) => {
   const attackName = animationType.attack;
   const attackAction = actions[attackName];
@@ -127,6 +128,7 @@ export const playAttack = (
   const earlyTransitionTimeout = window.setTimeout(() => {
     // тут можна дозволити наступну атаку ще ДО finished
     isAttackingRef.current = false;
+    setPlayerAttacking(false);
   }, timeoutMs);
 
   const onFinished = (e: AnimationMixerEventMap["finished"]) => {
@@ -135,6 +137,7 @@ export const playAttack = (
     window.clearTimeout(earlyTransitionTimeout);
 
     isAttackingRef.current = false;
+    setPlayerAttacking(false);
 
     const locomotion = resolveLocomotionAnimation({
       isGrounded,
@@ -155,4 +158,5 @@ export const playAttack = (
 
   mixer.addEventListener("finished", onFinished);
   isAttackingRef.current = true;
+  setPlayerAttacking(true);
 };

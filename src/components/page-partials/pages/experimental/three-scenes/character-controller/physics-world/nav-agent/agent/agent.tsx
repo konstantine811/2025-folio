@@ -5,12 +5,13 @@ import {
   RigidBody,
   useBeforePhysicsStep,
 } from "@react-three/rapier";
-import { FC, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { Quaternion, Vector3, Vector3Like } from "three";
 import { navQuery, playerQuery } from "../../../ecs";
 import { useFrame } from "@react-three/fiber";
 import { Line } from "@react-three/drei";
 import { AnimState } from "../models/anim.model";
+import { useCombatStatusStore } from "../../../store/combat-status-store";
 
 export type AgentProps = {
   position: [number, number, number];
@@ -19,6 +20,7 @@ export type AgentProps = {
   size?: [number, number];
   onAnimStateChange: (animState: AnimState) => void;
   intervalUpdateMs?: number;
+  name: string;
 };
 
 const radius = 0.5;
@@ -49,8 +51,17 @@ const Agent: FC<AgentProps> = ({
   size = [radius, height],
   onAnimStateChange,
   intervalUpdateMs = 1000,
+  name,
 }) => {
   const ref = useRef<RapierRigidBody>(null!);
+  const isAttack = useCombatStatusStore((s) => s.isPlayerAttacking);
+  const hitPlayerAttackRef = useRef(false);
+
+  useEffect(() => {
+    if (!isAttack) {
+      hitPlayerAttackRef.current = false;
+    }
+  }, [isAttack]);
 
   const [path, setPath] = useState<Vector3[]>([]);
   const pathIndex = useRef(1);
@@ -200,6 +211,19 @@ const Agent: FC<AgentProps> = ({
         colliders={false}
         angularDamping={0.9}
         linearDamping={0.5}
+        userData={{ type: "enemy", enemyId: name }}
+        onIntersectionEnter={(e) => {
+          const other = e.other.rigidBodyObject;
+          if (other?.userData?.type === "player-weapon") {
+            const isAttack = useCombatStatusStore.getState().isPlayerAttacking;
+            if (isAttack && !hitPlayerAttackRef.current) {
+              const ud = other.userData as { damage?: number };
+              const damage = typeof ud.damage === "number" ? ud.damage : 10;
+              useCombatStatusStore.getState().applyDamageToEnemy(name, damage);
+              hitPlayerAttackRef.current = true;
+            }
+          }
+        }}
       >
         {children}
 

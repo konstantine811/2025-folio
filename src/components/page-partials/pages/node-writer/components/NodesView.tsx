@@ -1,31 +1,29 @@
-import { Project } from "../types/types";
+import type { Project, ProjectPatchFn } from "../types/types";
+import NodeCanvas from "../node-canvas";
 
 interface NodesViewProps {
   project: Project;
+  onProjectPatch: (fn: ProjectPatchFn) => void;
 }
 
-const NodesView = ({ project }: NodesViewProps) => {
+const NodesView = ({ project, onProjectPatch }: NodesViewProps) => {
   return (
-    <div className="w-full h-full flex flex-col">
-      <div className="h-14 bg-black border-b border-white/5 flex items-center px-8 justify-between z-10">
+    <div className="flex h-full w-full flex-col">
+      <div className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-white/5 bg-black px-8">
         <div className="flex items-center gap-6">
-          <span className="mono text-[10px] text-[#00FF9C] uppercase tracking-widest">
-            Active_Protocol:
+          <span className="mono text-[10px] uppercase tracking-widest text-[#00FF9C]">
+            Документ
           </span>
           <h2 className="mono text-[10px] font-bold uppercase tracking-tight text-white/60">
             {project.title}
           </h2>
         </div>
-        <div className="mono text-[8px] text-white/20 uppercase tracking-widest">
-          Render: 48.9226° N, 24.7111° E
+        <div className="mono text-[8px] uppercase tracking-widest text-white/20">
+          Ноди · зв&apos;язки · текст
         </div>
       </div>
-      <div className="flex-1 relative">
-        {/* <NodeGraph
-          nodes={project.nodes}
-          links={project.links}
-          onUpdate={updateGraph}
-        /> */}
+      <div className="min-h-0 flex-1">
+        <NodeCanvas project={project} onProjectPatch={onProjectPatch} />
       </div>
     </div>
   );

@@ -3,22 +3,33 @@ import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import Experience from "./experience";
 import ThreeLoader from "../common/three-loader";
-import { CameraControls, Environment } from "@react-three/drei";
-import { Bloom, EffectComposer } from "@react-three/postprocessing";
+import { CameraControls, Environment, Sparkles } from "@react-three/drei";
 
 export default function Init() {
   return (
     <MainWrapperOffset isFullHeight={true}>
       <ThreeLoader />
-      <Canvas>
+      <Canvas
+        flat
+        camera={{
+          fov: 45,
+          near: 0.1,
+          far: 50,
+          position: [1, 2, 6],
+        }}
+      >
         <Suspense fallback={null}>
           <color attach="background" args={["#131017"]} />
           <Environment preset="sunset" />
           <CameraControls makeDefault />
           <Experience />
-          <EffectComposer>
-            <Bloom intensity={1.0} />
-          </EffectComposer>
+          <Sparkles
+            size={6}
+            scale={[4, 2, 4]}
+            position-y={1}
+            speed={0.2}
+            count={40}
+          />
         </Suspense>
       </Canvas>
     </MainWrapperOffset>

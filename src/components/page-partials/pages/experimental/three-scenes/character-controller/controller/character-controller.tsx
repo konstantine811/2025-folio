@@ -79,6 +79,16 @@ const CharacterController = ({
   const wPos = useMemo(() => new Vector3(), []);
   const wQuat = useMemo(() => new Quaternion(), []);
 
+  const weaponUserData = useMemo(
+    () =>
+      ({
+        type: "player-weapon",
+        name: "sword",
+        damage: 10,
+      }) as const,
+    [],
+  );
+
   // Vector for camera
   const pivotPosition = useMemo(() => new Vector3(), []);
   const pivotXAxis = useMemo(() => new Vector3(1, 0, 0), []);
@@ -365,18 +375,13 @@ const CharacterController = ({
         type="kinematicPosition"
         colliders={false}
         gravityScale={0}
+        userData={weaponUserData}
       >
         <CuboidCollider
           position={[0.6, 1.05, 0.68]}
           sensor
           collisionGroups={interactionGroups(3, [2])}
           args={[0.6, 0.07, 0.07]}
-          onIntersectionEnter={(e) => {
-            const other = e.other.rigidBodyObject;
-            if (other?.userData?.type === "enemy") {
-              console.log("Hit!", other.userData);
-            }
-          }}
         />
       </RigidBody>
     </>

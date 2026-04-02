@@ -11,6 +11,7 @@ import {
 import { animationConfig } from "../config/character-controller.config";
 import { BoneAttachment } from "../character-attachment/bone-attacment";
 import { Sword } from "../character-attachment/sword";
+import { useCombatStatusStore } from "../store/combat-status-store";
 
 const CharacterModel = ({
   modelPath,
@@ -36,6 +37,7 @@ const CharacterModel = ({
   // 2) читаємо стан дії
   const currentActionRef = useRef<string | null>(null);
   const isAttackingRef = useRef(false);
+  const setPlayerAttacking = useCombatStatusStore((s) => s.setPlayerAttacking);
 
   useEffect(() => {
     scene.traverse((child) => {
@@ -57,7 +59,6 @@ const CharacterModel = ({
   useEffect(() => {
     if (!isPrimaryClick) return;
     if (isSprinting || isMoving || !isGrounded) return;
-
     playAttack(
       animationType,
       actions,
@@ -66,6 +67,7 @@ const CharacterModel = ({
       isGrounded,
       isMoving ?? false,
       isSprinting ?? false,
+      setPlayerAttacking,
     );
   }, [
     isPrimaryClick,
@@ -76,6 +78,7 @@ const CharacterModel = ({
     animationType,
     currentActionRef,
     isAttackingRef,
+    setPlayerAttacking,
   ]);
 
   useEffect(() => {

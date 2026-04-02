@@ -17,13 +17,22 @@ export interface NodeData {
   type: "concept" | "resource" | "activity";
   x?: number;
   y?: number;
+  /** Явна ширина ноди (px); інакше дефолт канвасу. */
+  width?: number;
+  /** Явна висота ноди (px). */
+  height?: number;
   fx?: number | null;
   fy?: number | null;
 }
 
+/** Порт ноди: північ, схід, південь, захід (край для звʼязку). */
+export type NodePort = "n" | "e" | "s" | "w";
+
 export interface LinkData {
   source: string;
   target: string;
+  sourcePort?: NodePort;
+  targetPort?: NodePort;
 }
 
 export interface Slide {
@@ -45,6 +54,8 @@ export type AppView =
   | "nodes"
   | "presentation"
   | "assets";
+
+export type ProjectPatchFn = (prev: Project) => Project;
 
 export interface User {
   name: string;

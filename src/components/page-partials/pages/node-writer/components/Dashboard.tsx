@@ -22,14 +22,14 @@ const Dashboard = ({
             </span>
           </div>
           <h2 className="text-[7vw] font-black tracking-tighter italic leading-none uppercase">
-            ПРОТОКОЛИ
+            ДОКУМЕНТИ
           </h2>
         </div>
         <button
           onClick={onCreateClick}
           className="bg-white text-black px-12 py-6 font-black text-xs hover:bg-[#00FF9C] transition-all flex items-center gap-4 uppercase tracking-[0.2em]"
         >
-          [ Створити_Новий ]
+          [ Новий_документ ]
         </button>
       </header>
 
