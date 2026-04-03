@@ -26,10 +26,13 @@ import {
   useDeferredRowClick,
   useFolderTitleColorPicker,
 } from "./workspace-tree";
+import WorkspaceCloudPreloader from "./WorkspaceCloudPreloader";
 
 interface DashboardProps {
   folders: WorkspaceFolder[];
   projects: Project[];
+  /** Поки тягнемо папки/документи з Firestore — зелена смуга в панелі дерева. */
+  workspaceLoading?: boolean;
   onWorkspaceSync: (folders: WorkspaceFolder[], projects: Project[]) => void;
   onCreateDocumentInFolder: (folderId: string | null) => void;
   onAddRootFolder: () => void;
@@ -45,6 +48,7 @@ interface DashboardProps {
 const Dashboard = ({
   folders,
   projects,
+  workspaceLoading = false,
   onWorkspaceSync,
   onCreateDocumentInFolder,
   onAddRootFolder,
@@ -171,67 +175,90 @@ const Dashboard = ({
 
       <div className="mx-auto max-w-7xl pb-20">
         {isEmpty ? (
-          <div className="rounded-xl border border-border/10 bg-card/50 py-16 text-center">
-            <p className="mono text-[10px] tracking-wide text-muted-foreground">
-              Немає папок і документів. Створіть папку або документ.
-            </p>
-          </div>
+          workspaceLoading ? (
+            <div
+              className="flex min-h-[180px] flex-col overflow-hidden rounded-xl border border-border/10 bg-card/40 animate-in fade-in duration-500 fill-mode-both"
+              role="status"
+              aria-live="polite"
+              aria-busy="true"
+              aria-label="Завантаження workspace"
+            >
+              <WorkspaceCloudPreloader />
+              <div className="flex flex-1 items-center justify-center px-4 py-12">
+                <p className="mono text-[10px] tracking-wide text-muted-foreground">
+                  Завантаження з хмари…
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-border/10 bg-card/50 py-16 text-center">
+              <p className="mono text-[10px] tracking-wide text-muted-foreground">
+                Немає папок і документів. Створіть папку або документ.
+              </p>
+            </div>
+          )
         ) : (
           <DndProvider backend={MultiBackend} options={getBackendOptions()}>
-            <Tree<WorkspaceTreeMeta>
-              tree={treeData}
-              rootId={WORKSPACE_TREE_ROOT_ID}
-              sort={false}
-              insertDroppableFirst={false}
-              dropTargetOffset={4}
-              initialOpen={initialOpen}
-              canDrop={(_, { dropTargetId }) => {
-                if (dropTargetId === WORKSPACE_TREE_ROOT_ID) return true;
-                const target = treeData.find((n) => n.id === dropTargetId);
-                return !!target?.droppable;
-              }}
-              onDrop={handleDrop}
-              placeholderRender={(_, { depth }) => (
-                <div
-                  className="rounded-full bg-primary/45"
-                  style={{
-                    marginLeft: TREE_ROW_BASE_PAD + depth * TREE_ROW_INDENT,
-                    height: 3,
-                  }}
-                />
+            <div className="flex min-h-[180px] flex-col overflow-hidden rounded-xl border border-border/10 bg-card/40">
+              {workspaceLoading && (
+                <div className="animate-in fade-in duration-500 fill-mode-both">
+                  <WorkspaceCloudPreloader />
+                </div>
               )}
-              rootProps={{
-                className:
-                  "min-h-[180px] rounded-xl border border-border/10 bg-card/40 px-2 py-2",
-              }}
-              render={(node, treeProps) => (
-                <WorkspaceTreeRow
-                  node={node}
-                  depth={treeProps.depth}
-                  isOpen={treeProps.isOpen}
-                  onToggle={treeProps.onToggle}
-                  isDragging={treeProps.isDragging}
-                  isDropTarget={treeProps.isDropTarget}
-                  folderById={folderById}
-                  projectById={projectById}
-                  draftTitle={draftTitle}
-                  setDraftTitle={setDraftTitle}
-                  commitDraft={commitDraft}
-                  clearPendingRowClick={clearPendingRowClick}
-                  schedulePrimaryAction={schedule}
-                  onProjectSelect={onProjectSelect}
-                  paletteOpenForFolderId={paletteOpenForFolderId}
-                  setPaletteOpenForFolderId={setPaletteOpenForFolderId}
-                  paletteAnchorRef={paletteAnchorRef}
-                  openNativeFolderColorPicker={openNativeFolderColorPicker}
-                  onSetFolderTitleColor={onSetFolderTitleColor}
-                  onAddChildFolder={onAddChildFolder}
-                  onCreateDocumentInFolder={onCreateDocumentInFolder}
-                  onDeleteFolder={onDeleteFolder}
-                  onDeleteProject={onDeleteProject}
-                />
-              )}
-            />
+              <Tree<WorkspaceTreeMeta>
+                tree={treeData}
+                rootId={WORKSPACE_TREE_ROOT_ID}
+                sort={false}
+                insertDroppableFirst={false}
+                dropTargetOffset={4}
+                initialOpen={initialOpen}
+                canDrop={(_, { dropTargetId }) => {
+                  if (dropTargetId === WORKSPACE_TREE_ROOT_ID) return true;
+                  const target = treeData.find((n) => n.id === dropTargetId);
+                  return !!target?.droppable;
+                }}
+                onDrop={handleDrop}
+                placeholderRender={(_, { depth }) => (
+                  <div
+                    className="rounded-full bg-primary/45"
+                    style={{
+                      marginLeft: TREE_ROW_BASE_PAD + depth * TREE_ROW_INDENT,
+                      height: 3,
+                    }}
+                  />
+                )}
+                rootProps={{
+                  className: "min-h-0 flex-1 px-2 py-2",
+                }}
+                render={(node, treeProps) => (
+                  <WorkspaceTreeRow
+                    node={node}
+                    depth={treeProps.depth}
+                    isOpen={treeProps.isOpen}
+                    onToggle={treeProps.onToggle}
+                    isDragging={treeProps.isDragging}
+                    isDropTarget={treeProps.isDropTarget}
+                    folderById={folderById}
+                    projectById={projectById}
+                    draftTitle={draftTitle}
+                    setDraftTitle={setDraftTitle}
+                    commitDraft={commitDraft}
+                    clearPendingRowClick={clearPendingRowClick}
+                    schedulePrimaryAction={schedule}
+                    onProjectSelect={onProjectSelect}
+                    paletteOpenForFolderId={paletteOpenForFolderId}
+                    setPaletteOpenForFolderId={setPaletteOpenForFolderId}
+                    paletteAnchorRef={paletteAnchorRef}
+                    openNativeFolderColorPicker={openNativeFolderColorPicker}
+                    onSetFolderTitleColor={onSetFolderTitleColor}
+                    onAddChildFolder={onAddChildFolder}
+                    onCreateDocumentInFolder={onCreateDocumentInFolder}
+                    onDeleteFolder={onDeleteFolder}
+                    onDeleteProject={onDeleteProject}
+                  />
+                )}
+              />
+            </div>
           </DndProvider>
         )}
       </div>

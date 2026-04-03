@@ -35,6 +35,8 @@ export enum FirebaseCollection {
   cubicWorlds = "cubicWorlds",
   statusWork = "status_work",
   sphereAgentsPoints = "sphere-agents-points",
+  /** Node Writer: workspace за `uid` → підколекції `folders`, `projects`. */
+  nodeWriter = "node-writer",
 }
 
 export const FirebaseCollectionProps = {

@@ -1,0 +1,102 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /status_work/{docId} {
+      allow read: if true;   // всім можна читати
+      allow write: if false; // нікому не можна писати
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    match /cubicWorlds/{uid} {
+      match /scatters/{scatterId} {
+        // читання — лише власнику
+        allow read: if isOwner(uid);
+
+        // створення
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['name','email','updatedAt','data'])
+          && request.resource.data.name == scatterId
+          && request.resource.data.updatedAt is string;
+
+        // оновлення
+        allow update: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['name','email','updatedAt','data'])
+          // ID не змінюємо під час update:
+          && request.resource.data.name == scatterId
+          && request.resource.data.updatedAt is string;
+
+        // видалення — ВАЖЛИВО: без request.resource!
+        allow delete: if isOwner(uid)
+          // (необов'язково) перевірка, що документ, який видаляємо, справді з цим ID:
+          && resource.data.name == scatterId;
+      }
+    }
+
+    // 🔐 Дозволено тільки читання для статей
+    match /articles-blog/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /daily-tasks/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // 🔽 вкладена колекція days
+      match /days/{dateId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    match /daily-journal/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      match /days/{dateId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    match /daily-analytics/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // 🔽 вкладена колекція days
+      match /days/{dateId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    match /planned-tasks/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // 🔽 вкладена колекція days
+      match /days/{dateId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    match /template-tasks/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /sphere-agents-points/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Node Writer: workspace (папки + документи) — лише власник uid
+    match /node-writer/{uid} {
+      match /folders/{folderId} {
+        allow read, write: if isOwner(uid);
+      }
+      match /projects/{projectId} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+  }
+}

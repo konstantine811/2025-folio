@@ -1,6 +1,7 @@
 import { JSX, useEffect, useMemo } from "react";
 import { useGLTF, useTexture } from "@react-three/drei";
 import {
+  Mesh,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
 } from "three";
@@ -84,56 +85,56 @@ export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
       <mesh
         castShadow
         receiveShadow
-        geometry={nodes.support.geometry}
+        geometry={(nodes.support as Mesh).geometry}
         material={materials.support}
         position={[0.054, 2.533, -0.042]}
       />
       <mesh
         castShadow
         receiveShadow
-        geometry={nodes.window_frame.geometry}
+        geometry={(nodes.window_frame as Mesh).geometry}
         material={materials["Material.004"]}
         position={[0, 2.639, -0.92]}
       />
       <mesh
         castShadow
         receiveShadow
-        geometry={nodes.ship_top.geometry}
+        geometry={(nodes.ship_top as Mesh).geometry}
         material={materials.shop_top}
         position={[0, 5.272, 17.861]}
       />
       <mesh
         castShadow
         receiveShadow
-        geometry={nodes.ship_floor.geometry}
+        geometry={(nodes.ship_floor as Mesh).geometry}
         material={materials.floor}
         position={[0, 0.057, 17.861]}
       />
       <mesh
         castShadow
         receiveShadow
-        geometry={nodes.ship_top_white.geometry}
+        geometry={(nodes.ship_top_white as Mesh).geometry}
         material={materials.ship_top_white}
         position={[0, 5.257, 19.199]}
       />
       <mesh
         castShadow
         receiveShadow
-        geometry={nodes.ship_husk.geometry}
+        geometry={(nodes.ship_husk as Mesh).geometry}
         material={materials.shop_husk}
         position={[0, 2.671, 17.861]}
       />
       <mesh
         castShadow
         receiveShadow
-        geometry={nodes.window_glass.geometry}
+        geometry={(nodes.window_glass as Mesh).geometry}
         material={materials["Glass.001"]}
         position={[0, 2.639, -0.951]}
       />
       <mesh
         castShadow
         receiveShadow
-        geometry={nodes.light_frame.geometry}
+        geometry={(nodes.light_frame as Mesh).geometry}
         material={materials["Material.003"]}
         position={[0, 5.178, 1.543]}
       />

@@ -23,7 +23,7 @@ function Earth() {
 
   return (
     <mesh position={[-60, -70, -200]}>
-      <icosahedronGeometry args={[100, 32, 32]} />
+      <icosahedronGeometry args={[100, 32]} />
       <meshStandardMaterial map={texture} />
     </mesh>
   );

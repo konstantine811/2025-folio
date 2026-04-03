@@ -1,4 +1,6 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { useLocation, useNavigate } from "react-router";
 import type {
   AppView,
   Project,
@@ -12,10 +14,51 @@ import EditorView from "./EditorView";
 import PresentationView from "./PresentationView";
 import AssetsView from "./AssetsView";
 import CreateProjectModal from "./CreateProjectModal";
+import DocumentRouteLoading from "./DocumentRouteLoading";
 import { collectFolderSubtreeIds } from "../workspace/workspace-tree-utils";
 import { nextChildOrder } from "../workspace/next-child-order";
+import {
+  loadWorkspaceFromFirestore,
+  syncWorkspaceToFirestore,
+} from "@/services/firebase/node-writer-workspace";
+import { useSmoothedLoading } from "@/hooks/use-smoothed-loading";
+import { useNodeWriterWorkspaceStore } from "@/storage/nodeWriterWorkspaceStore";
+import { useAuthStore } from "@/storage/useAuthStore";
+import { RoutPath } from "@/config/router-config";
+import {
+  buildNodeWriterPath,
+  parseNodeWriterPath,
+} from "../workspace/node-writer-paths";
+
+/** Документи/папки, створені локально до відповіді сервера, не затирати при applyRemote. */
+function mergeServerFoldersIntoLocal(
+  server: WorkspaceFolder[],
+  local: WorkspaceFolder[],
+): WorkspaceFolder[] {
+  const remoteIds = new Set(server.map((f) => f.id));
+  const localOnly = local.filter((f) => !remoteIds.has(f.id));
+  return localOnly.length === 0 ? server : [...server, ...localOnly];
+}
+
+function mergeServerProjectsIntoLocal(
+  server: Project[],
+  local: Project[],
+): Project[] {
+  const remoteIds = new Set(server.map((p) => p.id));
+  const localOnly = local.filter((p) => !remoteIds.has(p.id));
+  return localOnly.length === 0 ? server : [...server, ...localOnly];
+}
 
 const Main = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const user = useAuthStore((s) => s.user);
+  const putWorkspaceCache = useNodeWriterWorkspaceStore((s) => s.putWorkspace);
+  const [nwStoreHydrated, setNwStoreHydrated] = useState(() =>
+    useNodeWriterWorkspaceStore.persist.hasHydrated(),
+  );
+  const [cloudReady, setCloudReady] = useState(false);
+
   const [folders, setFolders] = useState<WorkspaceFolder[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
@@ -26,10 +69,165 @@ const Main = () => {
     string | null
   >(null);
 
+  /** Щойно створені id: pathname-effect не робить redirect, поки projects ще не містить документ (гонка navigate vs setState). */
+  const pendingLocalProjectIdsRef = useRef<Set<string>>(new Set());
+
   const createModalFolderLabel = useMemo(() => {
     if (!createTargetFolderId) return null;
     return folders.find((f) => f.id === createTargetFolderId)?.title ?? null;
   }, [createTargetFolderId, folders]);
+
+  const nodeWriterRoute = useMemo(
+    () => parseNodeWriterPath(location.pathname),
+    [location.pathname],
+  );
+
+  const showDocumentRouteLoading = Boolean(
+    user?.uid && !cloudReady && nodeWriterRoute.projectId,
+  );
+
+  const showDashboardWorkspaceLoading = Boolean(
+    user?.uid && !cloudReady && !nodeWriterRoute.projectId,
+  );
+
+  const smoothDashboardWorkspaceLoading = useSmoothedLoading(
+    showDashboardWorkspaceLoading,
+    { showAfterMs: 260, minVisibleMs: 420 },
+  );
+
+  const smoothDocumentRouteLoading = useSmoothedLoading(
+    showDocumentRouteLoading,
+    { showAfterMs: 300, minVisibleMs: 0 },
+  );
+
+  useEffect(() => {
+    const api = useNodeWriterWorkspaceStore.persist;
+    if (api.hasHydrated()) {
+      setNwStoreHydrated(true);
+      return;
+    }
+    return api.onFinishHydration(() => setNwStoreHydrated(true));
+  }, []);
+
+  useEffect(() => {
+    if (!nwStoreHydrated) return;
+
+    if (!user?.uid) {
+      setCloudReady(false);
+      setFolders([]);
+      setProjects([]);
+      setCurrentProject(null);
+      setView("dashboard");
+      return;
+    }
+
+    const uid = user.uid;
+    let cancelled = false;
+    const { getWorkspace, isWorkspaceFresh } =
+      useNodeWriterWorkspaceStore.getState();
+    const cached = getWorkspace(uid);
+    const fresh = isWorkspaceFresh(uid);
+
+    const applyRemote = (data: {
+      folders: WorkspaceFolder[];
+      projects: Project[];
+    }) => {
+      if (cancelled) return;
+      setFolders((prev) => mergeServerFoldersIntoLocal(data.folders, prev));
+      setProjects((prev) => mergeServerProjectsIntoLocal(data.projects, prev));
+      setCloudReady(true);
+    };
+
+    if (cached && fresh) {
+      setFolders(cached.folders);
+      setProjects(cached.projects);
+      setCurrentProject((cur) => {
+        if (!cur) return null;
+        return cached.projects.find((p) => p.id === cur.id) ?? null;
+      });
+      setCloudReady(true);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    if (cached && !fresh) {
+      setFolders(cached.folders);
+      setProjects(cached.projects);
+      setCurrentProject((cur) => {
+        if (!cur) return null;
+        return cached.projects.find((p) => p.id === cur.id) ?? null;
+      });
+      setCloudReady(true);
+      loadWorkspaceFromFirestore(uid)
+        .then((data) => {
+          if (cancelled) return;
+          applyRemote(data);
+        })
+        .catch((err) => {
+          console.error("Node writer: не вдалося оновити з Firestore", err);
+        });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setCloudReady(false);
+    loadWorkspaceFromFirestore(uid)
+      .then((data) => {
+        if (cancelled) return;
+        applyRemote(data);
+      })
+      .catch((err) => {
+        console.error("Node writer: не вдалося завантажити з Firestore", err);
+        if (!cancelled) setCloudReady(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.uid, nwStoreHydrated]);
+
+  useEffect(() => {
+    if (!cloudReady) return;
+    const { projectId, view } = parseNodeWriterPath(location.pathname);
+    if (!projectId) {
+      pendingLocalProjectIdsRef.current.clear();
+      setView("dashboard");
+      setCurrentProject(null);
+      return;
+    }
+    const p = projects.find((pr) => pr.id === projectId);
+    if (!p) {
+      if (pendingLocalProjectIdsRef.current.has(projectId)) {
+        return;
+      }
+      navigate(RoutPath.NODE_WRITER, { replace: true });
+      return;
+    }
+    pendingLocalProjectIdsRef.current.delete(projectId);
+    setCurrentProject(p);
+    setView(view);
+  }, [cloudReady, location.pathname, projects, navigate]);
+
+  useEffect(() => {
+    if (!user?.uid || !cloudReady) return;
+    const timer = window.setTimeout(() => {
+      syncWorkspaceToFirestore(user.uid, folders, projects).catch((err) => {
+        console.error("Node writer: не вдалося зберегти в Firestore", err);
+      });
+    }, 900);
+    return () => clearTimeout(timer);
+  }, [user?.uid, cloudReady, folders, projects]);
+
+  useEffect(() => {
+    if (!user?.uid || !cloudReady) return;
+    const uid = user.uid;
+    const t = window.setTimeout(() => {
+      putWorkspaceCache(uid, folders, projects);
+    }, 500);
+    return () => clearTimeout(t);
+  }, [user?.uid, cloudReady, folders, projects, putWorkspaceCache]);
 
   const applyProjectPatch = useCallback((fn: ProjectPatchFn) => {
     setCurrentProject((cur) => {
@@ -57,7 +255,7 @@ const Main = () => {
     const parentKey = createTargetFolderId;
     const order = nextChildOrder(folders, projects, parentKey);
     const newProject: Project = {
-      id: `doc-${Date.now()}`,
+      id: `doc-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
       title,
       content: "",
       nodes: [],
@@ -69,12 +267,20 @@ const Main = () => {
       folderId: parentKey,
       workspaceOrder: order,
     };
-    setProjects((prev) => [newProject, ...prev]);
-    setCurrentProject(newProject);
-    setIsCreateModalOpen(false);
-    setNewDocTitle("");
-    setCreateTargetFolderId(null);
-    setView("nodes");
+
+    pendingLocalProjectIdsRef.current.add(newProject.id);
+    flushSync(() => {
+      setProjects((prev) => [newProject, ...prev]);
+      setCurrentProject(newProject);
+      setIsCreateModalOpen(false);
+      setNewDocTitle("");
+      setCreateTargetFolderId(null);
+      setView("nodes");
+    });
+    const path = buildNodeWriterPath(newProject.id, "nodes");
+    queueMicrotask(() => {
+      navigate(path, { replace: false });
+    });
   };
 
   const addFolder = (parentId: string | null) => {
@@ -119,6 +325,7 @@ const Main = () => {
       const fid = cur.folderId ?? null;
       if (fid && subtree.has(fid)) {
         setView("dashboard");
+        navigate(RoutPath.NODE_WRITER, { replace: true });
         return null;
       }
       return cur;
@@ -141,6 +348,7 @@ const Main = () => {
     setCurrentProject((cur) => {
       if (cur?.id === id) {
         setView("dashboard");
+        navigate(RoutPath.NODE_WRITER, { replace: true });
         return null;
       }
       return cur;
@@ -154,10 +362,15 @@ const Main = () => {
       setCurrentProject((cur) => {
         if (!cur) return null;
         const updated = nextProjects.find((p) => p.id === cur.id);
-        return updated ?? cur;
+        if (!updated) {
+          setView("dashboard");
+          navigate(RoutPath.NODE_WRITER, { replace: true });
+          return null;
+        }
+        return updated;
       });
     },
-    [],
+    [navigate],
   );
 
   const updateProjectContent = (content: string) => {
@@ -168,14 +381,31 @@ const Main = () => {
   const handleProjectSelect = (project: Project) => {
     setCurrentProject(project);
     setView("nodes");
+    navigate(buildNodeWriterPath(project.id, "nodes"), { replace: false });
   };
 
+  const handleViewChange = useCallback(
+    (next: AppView) => {
+      if (next === "dashboard") {
+        setView("dashboard");
+        navigate(RoutPath.NODE_WRITER, { replace: false });
+        return;
+      }
+      setView(next);
+      const pid = currentProject?.id;
+      if (pid) {
+        navigate(buildNodeWriterPath(pid, next), { replace: false });
+      }
+    },
+    [navigate, currentProject?.id],
+  );
+
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background font-sans text-foreground md:flex-row">
+    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-background font-sans text-foreground md:flex-row">
       <Sidebar
         view={view}
         currentProject={currentProject}
-        onViewChange={setView}
+        onViewChange={handleViewChange}
       />
 
       <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -192,10 +422,13 @@ const Main = () => {
         />
 
         <div className="relative flex min-h-0 w-full min-w-0 flex-1 flex-col">
-          {view === "dashboard" && (
+          {smoothDocumentRouteLoading && <DocumentRouteLoading />}
+
+          {!showDocumentRouteLoading && view === "dashboard" && (
             <Dashboard
               folders={folders}
               projects={projects}
+              workspaceLoading={smoothDashboardWorkspaceLoading}
               onWorkspaceSync={syncWorkspaceFromTreeDrop}
               onCreateDocumentInFolder={openCreateDocument}
               onAddRootFolder={() => addFolder(null)}
@@ -209,25 +442,25 @@ const Main = () => {
             />
           )}
 
-          {view === "nodes" && currentProject && (
+          {!showDocumentRouteLoading && view === "nodes" && currentProject && (
             <NodesView
               project={currentProject}
               onProjectPatch={applyProjectPatch}
             />
           )}
 
-          {view === "editor" && currentProject && (
+          {!showDocumentRouteLoading && view === "editor" && currentProject && (
             <EditorView
               project={currentProject}
               onContentChange={updateProjectContent}
             />
           )}
 
-          {view === "presentation" && currentProject && (
+          {!showDocumentRouteLoading && view === "presentation" && currentProject && (
             <PresentationView project={currentProject} />
           )}
 
-          {view === "assets" && currentProject && (
+          {!showDocumentRouteLoading && view === "assets" && currentProject && (
             <AssetsView project={currentProject} />
           )}
         </div>

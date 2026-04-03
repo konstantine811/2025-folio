@@ -7,6 +7,15 @@ import { Navigate } from "react-router";
 
 type Routable = ComponentType<object>;
 
+/** Один стабільний елемент маршруту: інакше при зміні URL `/node-writer` → `/node-writer/doc/…` React Router монтує інший `<Route>` і повністю скидає стан `Main`. */
+function NodeWriterWithAuth() {
+  return (
+    <AuthGuard>
+      <NodeWriterPage />
+    </AuthGuard>
+  );
+}
+
 export function lazyPage<P extends object>(
   loader: () => Promise<{ default: ComponentType<P> }>,
 ): LazyExoticComponent<Routable> {
@@ -741,12 +750,8 @@ export const router: AppRoute[] = [
     },
   },
   {
-    path: RoutPath.NODE_WRITER,
-    Component: () => (
-      <AuthGuard>
-        <NodeWriterPage />
-      </AuthGuard>
-    ),
+    path: `${RoutPath.NODE_WRITER}/*`,
+    Component: NodeWriterWithAuth,
     isNav: true,
     isDev: true,
     id: "node-writer",

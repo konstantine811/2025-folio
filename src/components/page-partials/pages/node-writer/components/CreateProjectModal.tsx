@@ -45,28 +45,34 @@ const CreateProjectModal = ({
             <Icons.Close />
           </button>
         </div>
-        <input
-          autoFocus
-          type="text"
-          value={title}
-          onChange={(e) => onTitleChange(e.target.value)}
-          placeholder="Назва документа…"
-          className="w-full border-b border-border/40 bg-transparent py-4 pl-2 text-4xl font-semibold tracking-tight text-foreground outline-none placeholder:text-muted-foreground/40"
-        />
-        <div className="mt-16 flex items-end justify-between gap-8">
-          <div className="mono max-w-md text-[8px] leading-relaxed tracking-wide text-muted-foreground">
-            Далі додавайте ноди на полотні, з&apos;єднуйте їх у режимі зв&apos;язку та
-            вводьте текст у кожній ноді.
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (title.trim()) onCreate();
+          }}
+        >
+          <input
+            autoFocus
+            type="text"
+            value={title}
+            onChange={(e) => onTitleChange(e.target.value)}
+            placeholder="Назва документа…"
+            className="w-full border-b border-border/40 bg-transparent py-4 pl-2 text-4xl font-semibold tracking-tight text-foreground outline-none placeholder:text-muted-foreground/40"
+          />
+          <div className="mt-16 flex items-end justify-between gap-8">
+            <div className="mono max-w-md text-[8px] leading-relaxed tracking-wide text-muted-foreground">
+              Далі додавайте ноди на полотні, з&apos;єднуйте їх у режимі
+              зв&apos;язку та вводьте текст у кожній ноді.
+            </div>
+            <button
+              type="submit"
+              disabled={!title.trim()}
+              className="shrink-0 bg-primary px-12 py-4 text-xs font-black tracking-wide text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-20"
+            >
+              Створити
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onCreate}
-            disabled={!title.trim()}
-            className="shrink-0 bg-primary px-12 py-4 text-xs font-black tracking-wide text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-20"
-          >
-            Створити
-          </button>
-        </div>
+        </form>
       </div>
     </div>
   );
