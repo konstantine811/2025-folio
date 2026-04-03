@@ -8,63 +8,55 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ view, currentProject, onViewChange }: SidebarProps) => {
+  const navBtn = (active: boolean) =>
+    `p-3 transition-colors ${
+      active
+        ? "text-primary"
+        : "text-muted-foreground hover:text-foreground"
+    }`;
+
   return (
-    <nav className="w-full md:w-20 bg-black border-r border-white/5 flex flex-col sticky top-0 z-40">
-      <div className="flex-1 flex flex-col items-center pt-10 gap-8">
+    <nav className="sticky top-0 z-40 flex w-full flex-col border-r border-border/30 bg-card md:w-20">
+      <div className="flex flex-1 flex-col items-center gap-8 pt-10">
         <button
+          type="button"
           onClick={() => onViewChange("dashboard")}
-          className={`p-3 transition-all ${
-            view === "dashboard"
-              ? "text-[#00FF9C]"
-              : "text-white/20 hover:text-white"
-          }`}
+          className={navBtn(view === "dashboard")}
           title="Голова"
         >
           <Icons.Dashboard />
         </button>
         {currentProject && (
           <>
-            <div className="w-4 h-px bg-white/5"></div>
+            <div className="h-px w-4 bg-border/50" />
             <button
+              type="button"
               onClick={() => onViewChange("nodes")}
-              className={`p-3 transition-all ${
-                view === "nodes"
-                  ? "text-[#00FF9C]"
-                  : "text-white/20 hover:text-white"
-              }`}
+              className={navBtn(view === "nodes")}
               title="Майстерня"
             >
               <Icons.Nodes />
             </button>
             <button
+              type="button"
               onClick={() => onViewChange("editor")}
-              className={`p-3 transition-all ${
-                view === "editor"
-                  ? "text-[#00FF9C]"
-                  : "text-white/20 hover:text-white"
-              }`}
+              className={navBtn(view === "editor")}
               title="Текст"
             >
               <Icons.Editor />
             </button>
             <button
+              type="button"
               onClick={() => onViewChange("presentation")}
-              className={`p-3 transition-all ${
-                view === "presentation"
-                  ? "text-[#00FF9C]"
-                  : "text-white/20 hover:text-white"
-              }`}
+              className={navBtn(view === "presentation")}
               title="Презентація"
             >
               <Icons.Presentation />
             </button>
             <button
+              type="button"
               onClick={() => onViewChange("assets")}
-              className={`p-3 transition-all ${
-                view === "assets"
-                  ? "text-[#00FF9C]"
-                  : "text-white/20 hover:text-white"
-              }`}
+              className={navBtn(view === "assets")}
               title="Бібліотека"
             >
               <Icons.Assets />
@@ -73,9 +65,11 @@ const Sidebar = ({ view, currentProject, onViewChange }: SidebarProps) => {
         )}
       </div>
 
-      <div className="p-6 flex flex-col items-center gap-6 border-t border-white/5">
-        <div className="status-dot"></div>
-        {/* /// LOGOUT BUTTON */}
+      <div className="flex flex-col items-center gap-6 border-t border-border/30 p-6">
+        <div
+          className="size-1.5 shrink-0 rounded-full bg-primary shadow-[0_0_10px] shadow-primary/60"
+          aria-hidden
+        />
       </div>
     </nav>
   );

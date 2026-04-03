@@ -1,0 +1,103 @@
+/**
+ * Стилі заголовка мови в «вікні редактора» (tailwind).
+ * Ключ — те, що показуємо в title bar (зазвичай короткий тег з fence).
+ */
+export function codeFenceLangAccentClasses(
+  langLower: string,
+  isDark: boolean,
+): string {
+  const k = langLower.trim().toLowerCase();
+  const dark = {
+    js: "text-amber-300 bg-amber-400/15 ring-1 ring-amber-400/35",
+    javascript: "text-amber-300 bg-amber-400/15 ring-1 ring-amber-400/35",
+    mjs: "text-amber-300 bg-amber-400/15 ring-1 ring-amber-400/35",
+    cjs: "text-amber-300 bg-amber-400/15 ring-1 ring-amber-400/35",
+    ts: "text-sky-300 bg-sky-400/15 ring-1 ring-sky-400/35",
+    typescript: "text-sky-300 bg-sky-400/15 ring-1 ring-sky-400/35",
+    tsx: "text-cyan-300 bg-cyan-400/15 ring-1 ring-cyan-400/35",
+    jsx: "text-teal-300 bg-teal-400/15 ring-1 ring-teal-400/35",
+    css: "text-blue-400 bg-blue-500/15 ring-1 ring-blue-400/35",
+    scss: "text-pink-300 bg-pink-500/15 ring-1 ring-pink-400/35",
+    sass: "text-pink-300 bg-pink-500/15 ring-1 ring-pink-400/35",
+    less: "text-indigo-300 bg-indigo-500/15 ring-1 ring-indigo-400/35",
+    html: "text-orange-300 bg-orange-500/15 ring-1 ring-orange-400/35",
+    htm: "text-orange-300 bg-orange-500/15 ring-1 ring-orange-400/35",
+    xml: "text-orange-200 bg-orange-500/12 ring-1 ring-orange-400/30",
+    json: "text-yellow-200 bg-yellow-400/12 ring-1 ring-yellow-400/30",
+    jsonc: "text-yellow-200 bg-yellow-400/12 ring-1 ring-yellow-400/30",
+    yaml: "text-violet-300 bg-violet-500/15 ring-1 ring-violet-400/35",
+    yml: "text-violet-300 bg-violet-500/15 ring-1 ring-violet-400/35",
+    md: "text-fuchsia-300 bg-fuchsia-500/12 ring-1 ring-fuchsia-400/30",
+    markdown: "text-fuchsia-300 bg-fuchsia-500/12 ring-1 ring-fuchsia-400/30",
+    bash: "text-lime-300 bg-lime-400/12 ring-1 ring-lime-400/30",
+    sh: "text-lime-300 bg-lime-400/12 ring-1 ring-lime-400/30",
+    shell: "text-lime-300 bg-lime-400/12 ring-1 ring-lime-400/30",
+    zsh: "text-lime-300 bg-lime-400/12 ring-1 ring-lime-400/30",
+    npm: "text-lime-300 bg-lime-400/12 ring-1 ring-lime-400/30",
+    yarn: "text-lime-300 bg-lime-400/12 ring-1 ring-lime-400/30",
+    pnpm: "text-lime-300 bg-lime-400/12 ring-1 ring-lime-400/30",
+    npx: "text-lime-300 bg-lime-400/12 ring-1 ring-lime-400/30",
+    py: "text-emerald-300 bg-emerald-500/15 ring-1 ring-emerald-400/35",
+    python: "text-emerald-300 bg-emerald-500/15 ring-1 ring-emerald-400/35",
+    rs: "text-orange-200 bg-orange-600/15 ring-1 ring-orange-500/30",
+    rust: "text-orange-200 bg-orange-600/15 ring-1 ring-orange-500/30",
+    go: "text-cyan-200 bg-cyan-600/15 ring-1 ring-cyan-500/30",
+    sql: "text-sky-200 bg-sky-600/15 ring-1 ring-sky-500/30",
+    graphql: "text-pink-200 bg-pink-600/12 ring-1 ring-pink-500/25",
+    gql: "text-pink-200 bg-pink-600/12 ring-1 ring-pink-500/25",
+    vue: "text-green-300 bg-green-500/15 ring-1 ring-green-400/30",
+    svelte: "text-rose-300 bg-rose-500/15 ring-1 ring-rose-400/30",
+    terminal: "text-lime-300 bg-lime-400/12 ring-1 ring-lime-400/30",
+    console: "text-lime-300 bg-lime-400/12 ring-1 ring-lime-400/30",
+  } as const;
+  const light = {
+    js: "text-amber-700 bg-amber-500/20 ring-1 ring-amber-600/25",
+    javascript: "text-amber-700 bg-amber-500/20 ring-1 ring-amber-600/25",
+    mjs: "text-amber-700 bg-amber-500/20 ring-1 ring-amber-600/25",
+    cjs: "text-amber-700 bg-amber-500/20 ring-1 ring-amber-600/25",
+    ts: "text-sky-800 bg-sky-500/20 ring-1 ring-sky-600/30",
+    typescript: "text-sky-800 bg-sky-500/20 ring-1 ring-sky-600/30",
+    tsx: "text-cyan-800 bg-cyan-500/18 ring-1 ring-cyan-600/28",
+    jsx: "text-teal-800 bg-teal-500/18 ring-1 ring-teal-600/28",
+    css: "text-blue-700 bg-blue-500/18 ring-1 ring-blue-600/28",
+    scss: "text-pink-700 bg-pink-500/18 ring-1 ring-pink-600/28",
+    sass: "text-pink-700 bg-pink-500/18 ring-1 ring-pink-600/28",
+    less: "text-indigo-700 bg-indigo-500/18 ring-1 ring-indigo-600/28",
+    html: "text-orange-700 bg-orange-500/18 ring-1 ring-orange-600/28",
+    htm: "text-orange-700 bg-orange-500/18 ring-1 ring-orange-600/28",
+    xml: "text-orange-800 bg-orange-500/15 ring-1 ring-orange-600/25",
+    json: "text-yellow-800 bg-yellow-500/18 ring-1 ring-yellow-700/22",
+    jsonc: "text-yellow-800 bg-yellow-500/18 ring-1 ring-yellow-700/22",
+    yaml: "text-violet-800 bg-violet-500/18 ring-1 ring-violet-600/28",
+    yml: "text-violet-800 bg-violet-500/18 ring-1 ring-violet-600/28",
+    md: "text-fuchsia-800 bg-fuchsia-500/15 ring-1 ring-fuchsia-600/25",
+    markdown: "text-fuchsia-800 bg-fuchsia-500/15 ring-1 ring-fuchsia-600/25",
+    bash: "text-lime-900 bg-lime-500/22 ring-1 ring-lime-700/28",
+    sh: "text-lime-900 bg-lime-500/22 ring-1 ring-lime-700/28",
+    shell: "text-lime-900 bg-lime-500/22 ring-1 ring-lime-700/28",
+    zsh: "text-lime-900 bg-lime-500/22 ring-1 ring-lime-700/28",
+    npm: "text-lime-900 bg-lime-500/22 ring-1 ring-lime-700/28",
+    yarn: "text-lime-900 bg-lime-500/22 ring-1 ring-lime-700/28",
+    pnpm: "text-lime-900 bg-lime-500/22 ring-1 ring-lime-700/28",
+    npx: "text-lime-900 bg-lime-500/22 ring-1 ring-lime-700/28",
+    py: "text-emerald-800 bg-emerald-500/18 ring-1 ring-emerald-700/28",
+    python: "text-emerald-800 bg-emerald-500/18 ring-1 ring-emerald-700/28",
+    rs: "text-orange-900 bg-orange-500/18 ring-1 ring-orange-700/25",
+    rust: "text-orange-900 bg-orange-500/18 ring-1 ring-orange-700/25",
+    go: "text-cyan-900 bg-cyan-500/18 ring-1 ring-cyan-700/25",
+    sql: "text-sky-900 bg-sky-500/18 ring-1 ring-sky-700/25",
+    graphql: "text-pink-900 bg-pink-500/15 ring-1 ring-pink-700/22",
+    gql: "text-pink-900 bg-pink-500/15 ring-1 ring-pink-700/22",
+    vue: "text-green-800 bg-green-500/18 ring-1 ring-green-700/28",
+    svelte: "text-rose-800 bg-rose-500/18 ring-1 ring-rose-700/28",
+    terminal: "text-lime-900 bg-lime-500/22 ring-1 ring-lime-700/28",
+    console: "text-lime-900 bg-lime-500/22 ring-1 ring-lime-700/28",
+  } as const;
+
+  const map = isDark ? dark : light;
+  const hit = map[k as keyof typeof map];
+  if (hit) return `${hit} font-semibold`;
+  return isDark
+    ? "text-primary bg-primary/12 ring-1 ring-primary/30 font-semibold"
+    : "text-primary bg-primary/15 ring-1 ring-primary/35 font-semibold";
+}

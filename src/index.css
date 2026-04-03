@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&family=Rubik+Doodle+Shadow&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&family=Oswald:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&family=Rubik+Doodle+Shadow&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&family=Oswald:wght@400;500&family=Roboto+Mono:wght@400;500;600&display=swap");
 @import "tailwindcss";
 @import "mapbox-gl/dist/mapbox-gl.css";
 @import "tw-animate-css";
@@ -161,6 +161,8 @@ textarea:-webkit-autofill:focus {
   --font-display_2: "Rubik Doodle Shadow", "sans-serif";
   --font-display: "Oswald", "sans-serif";
   --font-mono: "JetBrains Mono", monospace;
+  /* Моноширина з виразнішою кирилицею — прев’ю коду в node-writer */
+  --font-mono-code: "Roboto Mono", "JetBrains Mono", ui-monospace, monospace;
   --font-pixel: "Jura", "Inter", system-ui;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -318,6 +320,34 @@ textarea:-webkit-autofill:focus {
   scrollbar-color: oklch(0.556 0 0) transparent;
 }
 
+/* Node writer canvas: дуже тонкі скролбари, прямі кути, ледь помітний thumb */
+.node-canvas-scroll {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--foreground) 28%, transparent)
+    transparent;
+}
+
+.node-canvas-scroll::-webkit-scrollbar {
+  width: 1px;
+  height: 1px;
+}
+
+.node-canvas-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 0;
+}
+
+.node-canvas-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--foreground) 22%, transparent);
+  border-radius: 0;
+  border: none;
+}
+
+.node-canvas-scroll::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--foreground) 38%, transparent);
+}
+
 .has-tasks::after {
   content: "";
   display: block;
@@ -352,4 +382,176 @@ textarea:-webkit-autofill:focus {
   border-radius: 50%;
   display: inline-block;
   box-shadow: 0 0 10px #00ff9c;
+}
+
+/* Inline «пігулки» в прев’ю markdown у node-writer (HTML span + rehype-raw) */
+.markdown-node-preview .md-hl-border {
+  display: inline;
+  border-radius: 0.375rem;
+  border: 1px solid color-mix(in oklch, currentColor 88%, transparent);
+  padding: 0.1em 0.35em;
+  font-size: 0.92em;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  vertical-align: baseline;
+}
+
+/* Яскравий синій як бейджі на canvas (~#5e86ff), не приглушений primary */
+.markdown-node-preview .md-hl-accent,
+.markdown-node-preview .md-hl-violet {
+  display: inline;
+  border-radius: 0.375rem;
+  padding: 0.1em 0.35em;
+  font-size: 0.92em;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  vertical-align: baseline;
+  background: color-mix(in srgb, #5e86ff 62%, transparent);
+  color: #f2f6ff;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, #8babff 75%, transparent),
+    0 0 12px color-mix(in srgb, #5e86ff 22%, transparent);
+}
+
+/* Світліший насичений зелений */
+.markdown-node-preview .md-hl-green,
+.markdown-node-preview .md-hl-mint {
+  display: inline;
+  border-radius: 0.375rem;
+  padding: 0.1em 0.35em;
+  font-size: 0.92em;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  vertical-align: baseline;
+  background: color-mix(in srgb, #4ade80 72%, #bbf7d0 18%);
+  color: oklch(0.22 0.08 150);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #22c55e 55%, transparent);
+}
+
+.markdown-node-preview .md-align {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.markdown-node-preview .md-align-l {
+  text-align: left;
+}
+
+.markdown-node-preview .md-align-c {
+  text-align: center;
+}
+
+.markdown-node-preview .md-align-r {
+  text-align: right;
+}
+
+.markdown-node-preview .md-font-body {
+  font-style: normal;
+  font-family: inherit;
+  font-weight: inherit;
+}
+
+.markdown-node-preview .md-font-italic {
+  font-style: italic;
+  font-family: inherit;
+}
+
+.markdown-node-preview .md-font-bold {
+  font-weight: 700;
+  font-family: inherit;
+}
+
+.markdown-node-preview .md-font-thin {
+  font-weight: 200;
+  font-family: inherit;
+}
+
+.markdown-node-preview .md-font-mono {
+  font-style: normal;
+  font-family: var(--font-mono-code);
+  font-size: 0.9em;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 0.1em 0.38em;
+  border-radius: 0.3rem;
+  background: color-mix(in oklch, var(--muted) 72%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--border) 70%, transparent);
+}
+
+.dark .markdown-node-preview .md-font-mono {
+  background: color-mix(in oklch, var(--muted) 55%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--foreground) 12%, transparent);
+}
+
+/* Інлайн `code` у прев’ю ноди (не fenced-блок) */
+.markdown-node-preview .node-md-inline-code {
+  font-family: var(--font-mono-code);
+  font-size: 0.88em;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 0.1em 0.4em;
+  border-radius: 0.3rem;
+  background: color-mix(in oklch, var(--muted) 72%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--border) 70%, transparent);
+}
+
+.dark .markdown-node-preview .node-md-inline-code {
+  background: color-mix(in oklch, var(--muted) 55%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--foreground) 12%, transparent);
+}
+
+/* Node writer: кілька рядків «1. …» — окремий ReactMarkdown на рядок, тому один CSS-лічильник на групу */
+/* Скрол у тексті ноди: смуга 1px (WebKit); Firefox — найвужчий доступний thin */
+[data-node-markdown-root] {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--foreground) 38%, transparent) transparent;
+}
+
+[data-node-markdown-root]::-webkit-scrollbar {
+  width: 1px;
+}
+
+[data-node-markdown-root]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-node-markdown-root]::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--foreground) 42%, transparent);
+  border-radius: 0;
+}
+
+[data-node-markdown-root]::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--foreground) 58%, transparent);
+}
+
+[data-node-markdown-root] .md-node-ol-run {
+  counter-reset: node-md-ol;
+}
+
+[data-node-markdown-root] .md-node-ol-run .markdown-node-preview ol {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+[data-node-markdown-root] .md-node-ol-run .markdown-node-preview ol > li {
+  counter-increment: node-md-ol;
+  position: relative;
+  padding-left: 1.4rem;
+}
+
+[data-node-markdown-root] .md-node-ol-run .markdown-node-preview ol > li::before {
+  content: counter(node-md-ol) ". ";
+  position: absolute;
+  left: 0;
+  width: 1.25rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Лінки в прев’ю ноди (markdown + raw HTML через rehype-raw) */
+.markdown-node-preview a.markdown-node-preview-link,
+.markdown-node-preview a[href]:where(:not([class])) {
+  color: #5e86ff;
+  text-decoration: underline;
+  text-decoration-color: #5e86ff;
+  text-underline-offset: 3px;
 }

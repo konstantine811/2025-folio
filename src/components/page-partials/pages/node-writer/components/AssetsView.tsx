@@ -6,7 +6,7 @@ interface AssetsViewProps {
 
 const AssetsView = ({ project }: AssetsViewProps) => {
   return (
-    <div className="max-w-7xl mx-auto p-24 h-full overflow-y-auto pb-40">
+    <div className="mx-auto min-h-0 w-full max-w-7xl flex-1 overflow-y-auto p-24 pb-40">
       <header className="mb-20">
         <h2 className="text-5xl font-black tracking-tighter italic uppercase">
           Бібліотека Ресурсів

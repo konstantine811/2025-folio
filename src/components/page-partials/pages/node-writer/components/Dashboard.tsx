@@ -1,63 +1,238 @@
-import { Project } from "../types/types";
+import { useMemo, useState } from "react";
+import {
+  Tree,
+  getBackendOptions,
+  MultiBackend,
+  type DropOptions,
+  type NodeModel,
+} from "@minoru/react-dnd-treeview";
+import { DndProvider } from "react-dnd";
+import type { Project, WorkspaceFolder } from "../types/types";
+import {
+  WORKSPACE_TREE_ROOT_ID,
+  buildWorkspaceTreeData,
+  folderNodeId,
+  isValidWorkspaceTreeAfterDrop,
+  normalizeWorkspaceTreeAfterDnD,
+  syncWorkspaceFromTree,
+  type WorkspaceTreeMeta,
+} from "../workspace/workspace-tree-utils";
+import {
+  ROW_CLICK_DELAY_MS,
+  TREE_ROW_BASE_PAD,
+  TREE_ROW_INDENT,
+  NativeFolderColorInput,
+  WorkspaceTreeRow,
+  useDeferredRowClick,
+  useFolderTitleColorPicker,
+} from "./workspace-tree";
 
 interface DashboardProps {
+  folders: WorkspaceFolder[];
   projects: Project[];
-  onCreateClick: () => void;
+  onWorkspaceSync: (folders: WorkspaceFolder[], projects: Project[]) => void;
+  onCreateDocumentInFolder: (folderId: string | null) => void;
+  onAddRootFolder: () => void;
+  onAddChildFolder: (parentFolderId: string) => void;
+  onRenameFolder: (id: string, title: string) => void;
+  onSetFolderTitleColor: (id: string, color: string | null) => void;
+  onDeleteFolder: (id: string) => void;
+  onRenameProject: (id: string, title: string) => void;
+  onDeleteProject: (id: string) => void;
   onProjectSelect: (project: Project) => void;
 }
 
 const Dashboard = ({
+  folders,
   projects,
-  onCreateClick,
+  onWorkspaceSync,
+  onCreateDocumentInFolder,
+  onAddRootFolder,
+  onAddChildFolder,
+  onRenameFolder,
+  onSetFolderTitleColor,
+  onDeleteFolder,
+  onRenameProject,
+  onDeleteProject,
   onProjectSelect,
 }: DashboardProps) => {
+  const treeData = useMemo(
+    () => buildWorkspaceTreeData(folders, projects),
+    [folders, projects],
+  );
+
+  const initialOpen = useMemo(
+    () => folders.map((f) => folderNodeId(f.id)),
+    [folders],
+  );
+
+  const [draftTitle, setDraftTitle] = useState<{
+    nodeId: string;
+    value: string;
+  } | null>(null);
+
+  const projectById = useMemo(
+    () => new Map(projects.map((p) => [p.id, p])),
+    [projects],
+  );
+
+  const folderById = useMemo(
+    () => new Map(folders.map((f) => [f.id, f])),
+    [folders],
+  );
+
+  const { schedule, clearPending: clearPendingRowClick } = useDeferredRowClick(
+    ROW_CLICK_DELAY_MS,
+  );
+
+  const {
+    paletteOpenForFolderId,
+    setPaletteOpenForFolderId,
+    nativePickFolderId,
+    colorInputNonce,
+    paletteAnchorRef,
+    colorInputRef,
+    openNativeFolderColorPicker,
+    applyNativePickerColor,
+  } = useFolderTitleColorPicker(onSetFolderTitleColor);
+
+  const commitDraft = () => {
+    if (!draftTitle) return;
+    const { nodeId, value } = draftTitle;
+    setDraftTitle(null);
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    if (nodeId.startsWith("fol:")) {
+      onRenameFolder(nodeId.slice(4), trimmed);
+    } else if (nodeId.startsWith("doc:")) {
+      onRenameProject(nodeId.slice(4), trimmed);
+    }
+  };
+
+  const handleDrop = (
+    newTree: NodeModel<WorkspaceTreeMeta>[],
+    options: DropOptions<WorkspaceTreeMeta>,
+  ) => {
+    if (!options.dragSource) return;
+    const normalized = normalizeWorkspaceTreeAfterDnD(newTree);
+    if (!isValidWorkspaceTreeAfterDrop(normalized, folders, projects)) {
+      return;
+    }
+    const synced = syncWorkspaceFromTree(normalized, folders, projects);
+    onWorkspaceSync(synced.folders, synced.projects);
+  };
+
+  const isEmpty = folders.length === 0 && projects.length === 0;
+
   return (
-    <div className="w-full h-full overflow-y-auto p-12 lg:p-24 bg-black">
-      <header className="mb-24 flex flex-col md:flex-row md:items-end justify-between gap-12 max-w-7xl mx-auto">
+    <div className="min-h-0 w-full flex-1 overflow-y-auto bg-background p-8 lg:p-16">
+      <NativeFolderColorInput
+        colorInputNonce={colorInputNonce}
+        inputRef={colorInputRef}
+        defaultTitleColor={
+          nativePickFolderId
+            ? folderById.get(nativePickFolderId)?.titleColor
+            : undefined
+        }
+        onPick={applyNativePickerColor}
+      />
+      <header className="mx-auto mb-8 flex max-w-7xl flex-col justify-between gap-5 md:flex-row md:items-end">
         <div>
-          <div className="flex items-center gap-3 mb-6">
-            <span className="status-dot"></span>
-            <span className="mono text-[10px] text-white/40 uppercase tracking-[0.3em] italic">
-              Workspace // Active Sessions
+          <div className="mb-4 flex items-center gap-2">
+            <div
+              className="size-1.5 shrink-0 rounded-full bg-primary shadow-[0_0_10px] shadow-primary/60"
+              aria-hidden
+            />
+            <span className="mono text-[10px] tracking-wide text-muted-foreground italic">
+              Workspace · active sessions
             </span>
           </div>
-          <h2 className="text-[7vw] font-black tracking-tighter italic leading-none uppercase">
-            ДОКУМЕНТИ
+          <h2 className="text-[7vw] font-black leading-none tracking-tighter text-foreground italic">
+            Документи
           </h2>
         </div>
-        <button
-          onClick={onCreateClick}
-          className="bg-white text-black px-12 py-6 font-black text-xs hover:bg-[#00FF9C] transition-all flex items-center gap-4 uppercase tracking-[0.2em]"
-        >
-          [ Новий_документ ]
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onCreateDocumentInFolder(null)}
+            className="flex items-center gap-2 bg-primary px-6 py-3 text-xs font-black tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            [ Новий документ ]
+          </button>
+          <button
+            type="button"
+            onClick={onAddRootFolder}
+            className="border border-border/40 px-6 py-3 text-xs font-black tracking-wide text-foreground transition-colors hover:border-primary/50"
+          >
+            [ Нова папка ]
+          </button>
+        </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-7xl mx-auto pb-32">
-        {projects.length === 0 ? (
-          <div className="col-span-full py-40 text-center border border-white/5">
-            <p className="mono text-[10px] text-white/10 uppercase tracking-[0.5em]">
-              No records found in archive
+      <div className="mx-auto max-w-7xl pb-20">
+        {isEmpty ? (
+          <div className="rounded-xl border border-border/10 bg-card/50 py-16 text-center">
+            <p className="mono text-[10px] tracking-wide text-muted-foreground">
+              Немає папок і документів. Створіть папку або документ.
             </p>
           </div>
         ) : (
-          projects.map((project) => (
-            <div
-              key={project.id}
-              onClick={() => onProjectSelect(project)}
-              className="group bg-black p-10 border border-white/5 hover:border-[#00FF9C] transition-all cursor-pointer aspect-[4/5] flex flex-col justify-between"
-            >
-              <div className="mono text-[8px] text-white/10 uppercase tracking-widest">
-                {new Date(project.lastModified).toLocaleDateString()}
-              </div>
-              <div>
-                <h3 className="text-2xl font-black mb-4 tracking-tighter leading-none uppercase italic group-hover:text-[#00FF9C] transition-colors line-clamp-3">
-                  {project.title}
-                </h3>
-                <div className="h-px w-0 group-hover:w-full bg-[#00FF9C] transition-all duration-500"></div>
-              </div>
-            </div>
-          ))
+          <DndProvider backend={MultiBackend} options={getBackendOptions()}>
+            <Tree<WorkspaceTreeMeta>
+              tree={treeData}
+              rootId={WORKSPACE_TREE_ROOT_ID}
+              sort={false}
+              insertDroppableFirst={false}
+              dropTargetOffset={4}
+              initialOpen={initialOpen}
+              canDrop={(_, { dropTargetId }) => {
+                if (dropTargetId === WORKSPACE_TREE_ROOT_ID) return true;
+                const target = treeData.find((n) => n.id === dropTargetId);
+                return !!target?.droppable;
+              }}
+              onDrop={handleDrop}
+              placeholderRender={(_, { depth }) => (
+                <div
+                  className="rounded-full bg-primary/45"
+                  style={{
+                    marginLeft: TREE_ROW_BASE_PAD + depth * TREE_ROW_INDENT,
+                    height: 3,
+                  }}
+                />
+              )}
+              rootProps={{
+                className:
+                  "min-h-[180px] rounded-xl border border-border/10 bg-card/40 px-2 py-2",
+              }}
+              render={(node, treeProps) => (
+                <WorkspaceTreeRow
+                  node={node}
+                  depth={treeProps.depth}
+                  isOpen={treeProps.isOpen}
+                  onToggle={treeProps.onToggle}
+                  isDragging={treeProps.isDragging}
+                  isDropTarget={treeProps.isDropTarget}
+                  folderById={folderById}
+                  projectById={projectById}
+                  draftTitle={draftTitle}
+                  setDraftTitle={setDraftTitle}
+                  commitDraft={commitDraft}
+                  clearPendingRowClick={clearPendingRowClick}
+                  schedulePrimaryAction={schedule}
+                  onProjectSelect={onProjectSelect}
+                  paletteOpenForFolderId={paletteOpenForFolderId}
+                  setPaletteOpenForFolderId={setPaletteOpenForFolderId}
+                  paletteAnchorRef={paletteAnchorRef}
+                  openNativeFolderColorPicker={openNativeFolderColorPicker}
+                  onSetFolderTitleColor={onSetFolderTitleColor}
+                  onAddChildFolder={onAddChildFolder}
+                  onCreateDocumentInFolder={onCreateDocumentInFolder}
+                  onDeleteFolder={onDeleteFolder}
+                  onDeleteProject={onDeleteProject}
+                />
+              )}
+            />
+          </DndProvider>
         )}
       </div>
     </div>

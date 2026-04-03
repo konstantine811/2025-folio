@@ -12,6 +12,7 @@ import { Children, isValidElement, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
+import { remarkDefaultFenceLang } from "@/utils/remark-default-fence-lang";
 
 const ParseMarkdown = ({
   content,
@@ -34,7 +35,7 @@ const ParseMarkdown = ({
   return (
     <ReactMarkdown
       rehypePlugins={[rehypeRaw]}
-      remarkPlugins={[remarkGfm]}
+      remarkPlugins={[remarkGfm, remarkDefaultFenceLang]}
       components={{
         img: ({ src, alt }) => <ImageWithLoader src={src} alt={alt} />,
         h1: (props) => (

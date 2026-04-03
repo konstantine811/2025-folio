@@ -3,6 +3,8 @@ import { Icons } from "./Icons";
 interface CreateProjectModalProps {
   isOpen: boolean;
   title: string;
+  /** Якщо задано — документ створюється всередині цієї папки (підказка в UI). */
+  targetFolderLabel?: string | null;
   onClose: () => void;
   onTitleChange: (value: string) => void;
   onCreate: () => void;
@@ -11,6 +13,7 @@ interface CreateProjectModalProps {
 const CreateProjectModal = ({
   isOpen,
   title,
+  targetFolderLabel,
   onClose,
   onTitleChange,
   onCreate,
@@ -18,21 +21,26 @@ const CreateProjectModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-6 backdrop-blur-xl duration-300">
-      <div className="w-full max-w-4xl border border-white/10 bg-black p-12">
+    <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-background/90 p-6 backdrop-blur-xl duration-300">
+      <div className="w-full max-w-4xl border border-border/30 bg-card p-12 shadow-lg">
         <div className="mb-16 flex items-start justify-between">
           <div>
-            <div className="mono mb-4 text-[9px] uppercase tracking-[0.3em] text-white/20">
+            <div className="mono mb-4 text-[9px] tracking-wide text-muted-foreground">
               Новий документ
+              {targetFolderLabel ? (
+                <span className="mt-2 block text-foreground/80">
+                  У папці: {targetFolderLabel}
+                </span>
+              ) : null}
             </div>
-            <h3 className="text-6xl font-black leading-none tracking-tighter text-white uppercase italic">
+            <h3 className="text-6xl font-black leading-none tracking-tighter text-foreground italic">
               Створити
             </h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-white/20 transition-colors hover:text-white"
+            className="text-muted-foreground transition-colors hover:text-foreground"
           >
             <Icons.Close />
           </button>
@@ -42,11 +50,11 @@ const CreateProjectModal = ({
           type="text"
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
-          placeholder="НАЗВА ДОКУМЕНТА…"
-          className="w-full border-b border-white/10 bg-transparent py-4 pl-2 text-4xl font-black tracking-tighter text-white uppercase outline-none placeholder:text-white/5"
+          placeholder="Назва документа…"
+          className="w-full border-b border-border/40 bg-transparent py-4 pl-2 text-4xl font-semibold tracking-tight text-foreground outline-none placeholder:text-muted-foreground/40"
         />
-        <div className="mt-16 flex items-end justify-between">
-          <div className="mono max-w-md text-[8px] leading-relaxed uppercase tracking-widest text-white/20">
+        <div className="mt-16 flex items-end justify-between gap-8">
+          <div className="mono max-w-md text-[8px] leading-relaxed tracking-wide text-muted-foreground">
             Далі додавайте ноди на полотні, з&apos;єднуйте їх у режимі зв&apos;язку та
             вводьте текст у кожній ноді.
           </div>
@@ -54,7 +62,7 @@ const CreateProjectModal = ({
             type="button"
             onClick={onCreate}
             disabled={!title.trim()}
-            className="bg-white px-12 py-4 text-xs font-black tracking-widest text-black uppercase transition-all hover:bg-[#00FF9C] disabled:opacity-20"
+            className="shrink-0 bg-primary px-12 py-4 text-xs font-black tracking-wide text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-20"
           >
             Створити
           </button>

@@ -12,11 +12,19 @@ type Props = {
 const MainWrapperOffset = forwardRef<HTMLDivElement, Props>(
   ({ children, className = "", isFullHeight = false }, ref) => {
     const hs = useHeaderSizeStore((s) => s.size);
-    const height = isFullHeight ? `calc(100vh - ${hs}px)` : `100vh`;
     return (
       <div
-        className={clsx(className, "relative overflow-hidden")}
-        style={{ height, top: isFullHeight ? hs : 0 }}
+        className={clsx(
+          className,
+          "relative overflow-hidden",
+          isFullHeight &&
+            "box-border flex min-h-0 min-w-0 flex-1 flex-col",
+        )}
+        style={
+          isFullHeight
+            ? { paddingTop: hs }
+            : { height: "100vh" }
+        }
         ref={ref}
       >
         {children}

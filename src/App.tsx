@@ -4,7 +4,7 @@ import { subscribeToHoverSound } from "@services/subscribeHoverAudio";
 // import MouseTrail from "@components/mouse/mouse-trail";
 import { Suspense, useEffect, useLayoutEffect, useState } from "react";
 import { Routes, Route } from "react-router";
-import { router } from "@config/router-config";
+import { router, RoutPath } from "@config/router-config";
 import TransitionPage from "@components/page-partials/page-setting/transition-page";
 import RouteWrapper from "@components/page-partials/pages/RouteWrapper";
 import Preloader from "./components/page-partials/preloader/preloader";
@@ -30,7 +30,7 @@ function App() {
   useEffect(() => {
     setIsTouch(isTouchDevice);
   }, []);
-  const hideFooter = location.pathname.startsWith("/three-");
+  const hideFooter = location.pathname.startsWith("/three-") || location.pathname.startsWith(RoutPath.NODE_WRITER);
   // Завантажуємо звуки тільки після першої взаємодії користувача
   useLayoutEffect(() => {
     let soundsLoaded = false;
@@ -93,7 +93,7 @@ function App() {
       )}
       <div className="min-h-screen w-full flex flex-col justify-between">
         <Header />
-        <div className="grow">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <Suspense fallback={<Preloader />}>
             <RouteWrapper>
               <Routes>{renderRoutes(router)}</Routes>

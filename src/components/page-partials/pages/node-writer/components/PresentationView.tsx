@@ -11,7 +11,7 @@ const PresentationView = ({ project }: PresentationViewProps) => {
 
   if (slides.length === 0) {
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center bg-black p-12">
+      <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center bg-black p-12">
         <h2 className="mb-4 text-4xl font-black uppercase italic tracking-tighter">
           Презентація
         </h2>
@@ -24,7 +24,7 @@ const PresentationView = ({ project }: PresentationViewProps) => {
   }
 
   return (
-    <div className="flex h-full w-full flex-col overflow-y-auto bg-black p-12 lg:p-24">
+    <div className="flex min-h-0 w-full flex-1 flex-col overflow-y-auto bg-black p-12 lg:p-24">
       <header className="mx-auto mb-16 flex w-full max-w-7xl items-end justify-between">
         <div>
           <h2 className="text-4xl font-black uppercase italic tracking-tighter">

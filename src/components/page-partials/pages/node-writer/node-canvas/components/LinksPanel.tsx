@@ -1,29 +1,65 @@
-import type { LinkData, NodeData } from "../../types/types";
+import type { CanvasImageItem, LinkData, NodeData } from "../../types/types";
 
 interface LinksPanelProps {
   links: LinkData[];
   nodes: NodeData[];
+  canvasImages: CanvasImageItem[];
   onRemoveLink: (source: string, target: string) => void;
 }
 
-export function LinksPanel({ links, nodes, onRemoveLink }: LinksPanelProps) {
+function endpointLabel(
+  id: string,
+  isCanvas: boolean | undefined,
+  nodes: NodeData[],
+  canvasImages: CanvasImageItem[],
+): string {
+  if (isCanvas) {
+    const t = canvasImages.find((i) => i.id === id)?.title?.trim();
+    return t ? `🖼 ${t}` : "🖼 Зображення";
+  }
+  return nodes.find((n) => n.id === id)?.label ?? id;
+}
+
+export function LinksPanel({
+  links,
+  nodes,
+  canvasImages,
+  onRemoveLink,
+}: LinksPanelProps) {
   if (links.length === 0) return null;
 
   return (
-    <div className="max-h-28 overflow-y-auto border-t border-white/10 bg-black px-4 py-2">
-      <p className="mono mb-2 text-[8px] tracking-widest text-white/30 uppercase">
+    <div className="max-h-28 shrink-0 overflow-y-auto border-t border-border/20 bg-card px-4 py-2">
+      <p className="mono mb-2 text-[8px] tracking-widest text-muted-foreground uppercase">
         Зв&apos;язки
       </p>
       <ul className="flex flex-wrap gap-2">
         {links.map((l) => (
-          <li key={`${l.source}-${l.target}`}>
+          <li
+            key={`${l.source}-${l.target}-${String(l.sourceIsCanvasImage)}-${String(l.targetIsCanvasImage)}-${l.sourcePort ?? ""}-${l.targetPort ?? ""}-${l.sourceChildSlot ?? ""}`}
+          >
             <button
               type="button"
-              className="mono border border-white/10 px-2 py-1 text-[9px] text-white/50 uppercase hover:border-red-500/50 hover:text-red-400"
+              className="mono border border-border/25 px-2 py-1 text-[9px] text-muted-foreground normal-case hover:border-destructive/40 hover:text-destructive"
               onClick={() => onRemoveLink(l.source, l.target)}
             >
-              {nodes.find((n) => n.id === l.source)?.label ?? l.source} →{" "}
-              {nodes.find((n) => n.id === l.target)?.label ?? l.target} ✕
+              {endpointLabel(
+                l.source,
+                l.sourceIsCanvasImage,
+                nodes,
+                canvasImages,
+              )}
+              {l.sourceChildSlot != null
+                ? ` [${(l.sourcePort ?? "e").toUpperCase()}·${l.sourceChildSlot}]`
+                : ""}{" "}
+              →{" "}
+              {endpointLabel(
+                l.target,
+                l.targetIsCanvasImage,
+                nodes,
+                canvasImages,
+              )}{" "}
+              ✕
             </button>
           </li>
         ))}

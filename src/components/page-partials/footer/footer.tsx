@@ -15,11 +15,18 @@ const Footer = () => {
   const [isContactOpen, setIsContactOpen] = useState(false);
 
   useEffect(() => {
-    if (footerRef.current) {
-      const footerHeight = footerRef.current.getBoundingClientRect().height;
-      setFooterSize(footerHeight);
-    }
-  }, [footerRef, setFooterSize]);
+    const el = footerRef.current;
+    if (!el) return;
+    const measure = () =>
+      setFooterSize(el.getBoundingClientRect().height);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      setFooterSize(0);
+    };
+  }, [setFooterSize]);
 
   useEffect(() => {
     const unsubscribe = subscribeToStatusWork((data) => {

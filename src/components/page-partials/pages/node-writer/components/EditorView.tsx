@@ -7,7 +7,7 @@ interface EditorViewProps {
 
 const EditorView = ({ project, onContentChange }: EditorViewProps) => {
   return (
-    <div className="max-w-4xl mx-auto h-full flex flex-col py-24 px-12 overflow-y-auto">
+    <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col overflow-y-auto py-24 px-12">
       <div className="mb-16">
         <h2 className="text-5xl font-black tracking-tighter italic uppercase">
           Текстовий протокол
