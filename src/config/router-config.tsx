@@ -1,3 +1,4 @@
+import AuthGuard from "@/components/auth/auth-guard";
 import NodeWriterPage from "@/components/page-partials/pages/node-writer/NodeWriter";
 import { AppRoute } from "@/types/route";
 import { ChartSpline, LayoutDashboard } from "lucide-react";
