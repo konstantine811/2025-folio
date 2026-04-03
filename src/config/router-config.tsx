@@ -753,7 +753,6 @@ export const router: AppRoute[] = [
     path: `${RoutPath.NODE_WRITER}/*`,
     Component: NodeWriterWithAuth,
     isNav: true,
-    isDev: true,
     id: "node-writer",
     classes: {
       linkCircle: "bg-red-500",
