@@ -5,7 +5,7 @@ import {
   Component,
   Entity,
 } from "@components/page-partials/pages/experimental/three-scenes/cubic-worlds-game/enemy/entity-component-store";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 
 type FollowerProps = {
   position: Vector3Tuple;
@@ -22,9 +22,6 @@ const Follower = (props: FollowerProps) => {
     maxAcceleration: 5.5,
     maxSpeed: 5.5,
   };
-  useEffect(() => {
-    console.log("crowd agent", agentRef);
-  }, []);
   return (
     <Entity followPlayer>
       <Component name="crowdAgent">

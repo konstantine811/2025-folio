@@ -6,6 +6,8 @@ import { visibleChildSlotCount } from "../utils";
 const EDGES: NodePort[] = ["n", "e", "s", "w"];
 
 export interface ChildSlotsProps {
+  /** Якщо true — слоти не показуються (режим перегляду). */
+  readOnly?: boolean;
   nodeId: string;
   links: LinkData[];
   wireDragging: boolean;
@@ -85,6 +87,7 @@ function EdgeSlotRow({
 }
 
 export function ChildSlotHandles(props: ChildSlotsProps) {
+  if (props.readOnly) return null;
   return (
     <>
       {EDGES.map((edge) => (

@@ -29,6 +29,8 @@ import {
   useScrollPanSession,
   type ScrollPanSession,
 } from "./hooks/use-scroll-pan-session";
+import { NODE_WRITER_WORKSPACE_SCOPE } from "@/config/node-writer-access.config";
+import { uploadNodeWriterCanvasPastedFile } from "@/services/firebase/node-writer-workspace";
 import {
   bboxPortPoint,
   clientToCanvas,
@@ -50,6 +52,8 @@ import {
 interface NodeCanvasProps {
   project: Project;
   onProjectPatch: (fn: ProjectPatchFn) => void;
+  /** Лише перегляд і панорама (Tab+тягти), без редагування. */
+  readOnly?: boolean;
 }
 
 const EMPTY_CANVAS_IMAGES: CanvasImageItem[] = [];
@@ -89,7 +93,11 @@ type ResizeSession =
       originH: number;
     };
 
-const NodeCanvas = ({ project, onProjectPatch }: NodeCanvasProps) => {
+const NodeCanvas = ({
+  project,
+  onProjectPatch,
+  readOnly = false,
+}: NodeCanvasProps) => {
   const { nodes, links } = project;
   const canvasImages = project.canvasImages ?? EMPTY_CANVAS_IMAGES;
   const semanticSnapshotRef = useRef(semanticNodesSnapshot(project));
@@ -147,6 +155,7 @@ const NodeCanvas = ({ project, onProjectPatch }: NodeCanvasProps) => {
 
   const patch = useCallback(
     (fn: ProjectPatchFn) => {
+      if (readOnly) return;
       onProjectPatch((prev) => {
         const next = fn(prev);
         const snap = semanticNodesSnapshot(next);
@@ -157,7 +166,7 @@ const NodeCanvas = ({ project, onProjectPatch }: NodeCanvasProps) => {
         return next;
       });
     },
-    [onProjectPatch],
+    [onProjectPatch, readOnly],
   );
 
   const patchRef = useRef(patch);
@@ -277,19 +286,56 @@ const NodeCanvas = ({ project, onProjectPatch }: NodeCanvasProps) => {
   });
 
   const onImagePasted = useCallback(
-    (item: CanvasImageItem) => {
+    (item: CanvasImageItem, file: File) => {
+      const projectId = project.id;
+      const itemId = item.id;
       patch((p) => ({
         ...p,
         canvasImages: [...(p.canvasImages ?? []), item],
       }));
+      void uploadNodeWriterCanvasPastedFile(
+        NODE_WRITER_WORKSPACE_SCOPE,
+        projectId,
+        itemId,
+        file,
+      )
+        .then((httpsUrl) => {
+          patch((p) => {
+            if (p.id !== projectId) return p;
+            const list = p.canvasImages ?? [];
+            if (!list.some((i) => i.id === itemId)) return p;
+            const im = list.find((i) => i.id === itemId);
+            const oldUrl = im?.url ?? "";
+            if (oldUrl.startsWith("blob:")) {
+              try {
+                URL.revokeObjectURL(oldUrl);
+              } catch {
+                /* ignore */
+              }
+            }
+            return {
+              ...p,
+              canvasImages: list.map((i) =>
+                i.id === itemId ? { ...i, url: httpsUrl } : i,
+              ),
+            };
+          });
+        })
+        .catch((e) => {
+          console.error(
+            "[Node writer] Не вдалося завантажити вставлене зображення в Storage",
+            e,
+          );
+        });
     },
-    [patch],
+    [patch, project.id],
   );
 
   useCanvasPasteImages({
     scrollRef,
     scaleRef,
     onImagePasted,
+    enabled: !readOnly,
   });
 
   const removeLink = (source: string, target: string) => {
@@ -304,6 +350,7 @@ const NodeCanvas = ({ project, onProjectPatch }: NodeCanvasProps) => {
   };
 
   const onNodePointerDown = (e: React.PointerEvent, node: NodeData) => {
+    if (readOnly) return;
     e.preventDefault();
     e.stopPropagation();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -357,6 +404,7 @@ const NodeCanvas = ({ project, onProjectPatch }: NodeCanvasProps) => {
   };
 
   const onImagePointerDown = (e: React.PointerEvent, image: CanvasImageItem) => {
+    if (readOnly) return;
     e.preventDefault();
     e.stopPropagation();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -406,6 +454,7 @@ const NodeCanvas = ({ project, onProjectPatch }: NodeCanvasProps) => {
     edge: NodePort,
     slot: number,
   ) => {
+    if (readOnly) return;
     e.preventDefault();
     e.stopPropagation();
     patch((p) => ({
@@ -433,6 +482,7 @@ const NodeCanvas = ({ project, onProjectPatch }: NodeCanvasProps) => {
     sourceId: string,
     edge: NodePort,
   ) => {
+    if (readOnly) return;
     e.preventDefault();
     e.stopPropagation();
     const { x, y } = clientToCanvas(
@@ -689,6 +739,8 @@ const NodeCanvas = ({ project, onProjectPatch }: NodeCanvasProps) => {
       return;
     }
 
+    if (readOnly) return;
+
     const { x, y } = clientToScrollContent(
       e.clientX,
       e.clientY,
@@ -750,6 +802,7 @@ const NodeCanvas = ({ project, onProjectPatch }: NodeCanvasProps) => {
   };
 
   const startResize = (e: React.PointerEvent, node: NodeData) => {
+    if (readOnly) return;
     e.preventDefault();
     e.stopPropagation();
     const { w, h } = layoutOf(node.id);
@@ -768,6 +821,7 @@ const NodeCanvas = ({ project, onProjectPatch }: NodeCanvasProps) => {
     e: React.PointerEvent,
     image: CanvasImageItem,
   ) => {
+    if (readOnly) return;
     e.preventDefault();
     e.stopPropagation();
     setResize({
@@ -793,7 +847,9 @@ const NodeCanvas = ({ project, onProjectPatch }: NodeCanvasProps) => {
             ? panSession
               ? "cursor-grabbing"
               : "cursor-grab"
-            : "cursor-crosshair"
+            : readOnly
+              ? "cursor-default"
+              : "cursor-crosshair"
         }
         onCanvasPointerDown={onCanvasPointerDown}
         drawPreviewRect={drawPreviewPx}
@@ -814,6 +870,7 @@ const NodeCanvas = ({ project, onProjectPatch }: NodeCanvasProps) => {
         {nodes.map((node) => (
           <NodeCard
             key={node.id}
+            readOnly={readOnly}
             node={node}
             links={links}
             zIndex={drag?.id === node.id ? 25 : 2}
@@ -851,6 +908,7 @@ const NodeCanvas = ({ project, onProjectPatch }: NodeCanvasProps) => {
         {canvasImages.map((image) => (
           <CanvasImageCard
             key={image.id}
+            readOnly={readOnly}
             image={image}
             zIndex={imageDrag?.id === image.id ? 25 : 3}
             wireDragging={wireDragging}
@@ -874,6 +932,7 @@ const NodeCanvas = ({ project, onProjectPatch }: NodeCanvasProps) => {
       </CanvasBoard>
 
       <LinksPanel
+        readOnly={readOnly}
         links={links}
         nodes={nodes}
         canvasImages={canvasImages}

@@ -1,5 +1,10 @@
 import type { CSSProperties } from "react";
+import { useMemo } from "react";
 import { Info } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import remarkGfm from "remark-gfm";
+import { remarkDefaultFenceLang } from "@/utils/remark-default-fence-lang";
 import {
   Tooltip,
   TooltipContent,
@@ -22,7 +27,10 @@ import {
 import { nodeTextThemeFromAccent } from "../utils/node-accent";
 import { deriveMarkdownBlocks } from "../utils/node-markdown-blocks";
 import { ChildSlotHandles } from "./ChildSlotHandles";
-import { NodeMarkdownBlocksEditor } from "./NodeMarkdownBlocksEditor";
+import {
+  NodeMarkdownBlocksEditor,
+  nodeMarkdownPreviewComponents,
+} from "./NodeMarkdownBlocksEditor";
 
 /** Значення для нативного `<input type="color">`, коли в ноди ще немає accent. */
 const COLOR_INPUT_FALLBACK = "#6366f1";
@@ -32,6 +40,8 @@ const COLOR_SWATCH_IDLE_GRADIENT =
   "conic-gradient(from 0deg, #ef4444, #f97316, #eab308, #22c55e, #14b8a6, #3b82f6, #a855f7, #ec4899, #ef4444)";
 
 interface NodeCardProps {
+  /** Лише перегляд: без перетягування, редагування та звʼязків. */
+  readOnly?: boolean;
   node: NodeData;
   links: LinkData[];
   zIndex: number;
@@ -55,6 +65,7 @@ interface NodeCardProps {
 }
 
 export function NodeCard({
+  readOnly = false,
   node,
   links,
   zIndex,
@@ -84,6 +95,14 @@ export function NodeCard({
       ? nodeTextThemeFromAccent(accent)
       : null;
 
+  const mdFg = themeAccent?.fg ?? "inherit";
+  const mdFgMuted = themeAccent?.fgMuted ?? "inherit";
+  const mdComponents = useMemo(
+    () => nodeMarkdownPreviewComponents(mdFg, mdFgMuted),
+    [mdFg, mdFgMuted],
+  );
+  const mdBlocks = deriveMarkdownBlocks(node);
+
   const labelClass = `${NODE_HEADING_LABEL_CLASSES[headingLevel]} ${labelWeight} tracking-tight uppercase ${themeAccent ? "" : "text-foreground"}`;
 
   const rootStyle: CSSProperties = {
@@ -100,6 +119,64 @@ export function NodeCard({
         }
       : {}),
   };
+
+  if (readOnly) {
+    return (
+      <div
+        ref={setNodeRef(node.id)}
+        data-node-id={node.id}
+        style={rootStyle}
+        className={`pointer-events-none group/node-card absolute flex flex-col overflow-hidden border shadow-sm ${
+          themeAccent
+            ? "border-solid"
+            : "border-border/20 bg-card/95 text-card-foreground backdrop-blur-sm"
+        }`}
+      >
+        <ChildSlotHandles
+          readOnly
+          nodeId={node.id}
+          links={links}
+          wireDragging={false}
+          onPointerDown={onStartWireFromChildSlot}
+        />
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div
+            className="flex shrink-0 items-center border-b border-solid px-3 py-2"
+            style={
+              themeAccent
+                ? { borderBottomColor: themeAccent.headerRule }
+                : undefined
+            }
+          >
+            <span className={`min-w-0 truncate ${labelClass}`}>{node.label}</span>
+          </div>
+          <div
+            className={`min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-1 pl-5 pr-2 ${
+              !themeAccent ? "text-foreground/90" : ""
+            }`}
+            style={themeAccent ? { color: themeAccent.fg } : undefined}
+          >
+            {mdBlocks.map((b) => (
+              <div
+                key={b.id}
+                className="markdown-node-preview px-2 py-0.5 text-[12px] leading-snug"
+              >
+                {b.text.trim() ? (
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkDefaultFenceLang]}
+                    rehypePlugins={[rehypeRaw]}
+                    components={mdComponents}
+                  >
+                    {b.text}
+                  </ReactMarkdown>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

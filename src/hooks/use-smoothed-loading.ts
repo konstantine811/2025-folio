@@ -23,8 +23,8 @@ export function useSmoothedLoading(
   loadingRef.current = loading;
 
   useEffect(() => {
-    let showTimer: ReturnType<typeof setTimeout> | undefined;
-    let hideTimer: ReturnType<typeof setTimeout> | undefined;
+    let showTimer: number | undefined;
+    let hideTimer: number | undefined;
 
     if (loading) {
       if (visibleRef.current) {

@@ -1,6 +1,8 @@
 import type { CanvasImageItem, LinkData, NodeData } from "../../types/types";
 
 interface LinksPanelProps {
+  /** Якщо true — список без кнопок видалення. */
+  readOnly?: boolean;
   links: LinkData[];
   nodes: NodeData[];
   canvasImages: CanvasImageItem[];
@@ -21,6 +23,7 @@ function endpointLabel(
 }
 
 export function LinksPanel({
+  readOnly = false,
   links,
   nodes,
   canvasImages,
@@ -38,29 +41,50 @@ export function LinksPanel({
           <li
             key={`${l.source}-${l.target}-${String(l.sourceIsCanvasImage)}-${String(l.targetIsCanvasImage)}-${l.sourcePort ?? ""}-${l.targetPort ?? ""}-${l.sourceChildSlot ?? ""}`}
           >
-            <button
-              type="button"
-              className="mono border border-border/25 px-2 py-1 text-[9px] text-muted-foreground normal-case hover:border-destructive/40 hover:text-destructive"
-              onClick={() => onRemoveLink(l.source, l.target)}
-            >
-              {endpointLabel(
-                l.source,
-                l.sourceIsCanvasImage,
-                nodes,
-                canvasImages,
-              )}
-              {l.sourceChildSlot != null
-                ? ` [${(l.sourcePort ?? "e").toUpperCase()}·${l.sourceChildSlot}]`
-                : ""}{" "}
-              →{" "}
-              {endpointLabel(
-                l.target,
-                l.targetIsCanvasImage,
-                nodes,
-                canvasImages,
-              )}{" "}
-              ✕
-            </button>
+            {readOnly ? (
+              <span className="mono inline-block border border-border/20 px-2 py-1 text-[9px] text-muted-foreground normal-case">
+                {endpointLabel(
+                  l.source,
+                  l.sourceIsCanvasImage,
+                  nodes,
+                  canvasImages,
+                )}
+                {l.sourceChildSlot != null
+                  ? ` [${(l.sourcePort ?? "e").toUpperCase()}·${l.sourceChildSlot}]`
+                  : ""}{" "}
+                →{" "}
+                {endpointLabel(
+                  l.target,
+                  l.targetIsCanvasImage,
+                  nodes,
+                  canvasImages,
+                )}
+              </span>
+            ) : (
+              <button
+                type="button"
+                className="mono border border-border/25 px-2 py-1 text-[9px] text-muted-foreground normal-case hover:border-destructive/40 hover:text-destructive"
+                onClick={() => onRemoveLink(l.source, l.target)}
+              >
+                {endpointLabel(
+                  l.source,
+                  l.sourceIsCanvasImage,
+                  nodes,
+                  canvasImages,
+                )}
+                {l.sourceChildSlot != null
+                  ? ` [${(l.sourcePort ?? "e").toUpperCase()}·${l.sourceChildSlot}]`
+                  : ""}{" "}
+                →{" "}
+                {endpointLabel(
+                  l.target,
+                  l.targetIsCanvasImage,
+                  nodes,
+                  canvasImages,
+                )}{" "}
+                ✕
+              </button>
+            )}
           </li>
         ))}
       </ul>

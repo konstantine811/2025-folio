@@ -31,6 +31,14 @@ import WorkspaceCloudPreloader from "./WorkspaceCloudPreloader";
 interface DashboardProps {
   folders: WorkspaceFolder[];
   projects: Project[];
+  /** Кнопки «Новий документ» / «Нова папка» у шапці. */
+  allowWorkspaceCreate?: boolean;
+  /** DnD у дереві (лише адмін). */
+  allowTreeEdits?: boolean;
+  /** Перейменування, видалення, колір папки (лише адмін). */
+  allowAdminRowActions?: boolean;
+  /** Дочірня папка та новий документ у рядку дерева. */
+  allowCreateRowActions?: boolean;
   /** Поки тягнемо папки/документи з Firestore — зелена смуга в панелі дерева. */
   workspaceLoading?: boolean;
   onWorkspaceSync: (folders: WorkspaceFolder[], projects: Project[]) => void;
@@ -48,6 +56,10 @@ interface DashboardProps {
 const Dashboard = ({
   folders,
   projects,
+  allowWorkspaceCreate = true,
+  allowTreeEdits = true,
+  allowAdminRowActions = true,
+  allowCreateRowActions = true,
   workspaceLoading = false,
   onWorkspaceSync,
   onCreateDocumentInFolder,
@@ -155,22 +167,24 @@ const Dashboard = ({
             Документи
           </h2>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => onCreateDocumentInFolder(null)}
-            className="flex items-center gap-2 bg-primary px-6 py-3 text-xs font-black tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            [ Новий документ ]
-          </button>
-          <button
-            type="button"
-            onClick={onAddRootFolder}
-            className="border border-border/40 px-6 py-3 text-xs font-black tracking-wide text-foreground transition-colors hover:border-primary/50"
-          >
-            [ Нова папка ]
-          </button>
-        </div>
+        {allowWorkspaceCreate ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onCreateDocumentInFolder(null)}
+              className="flex items-center gap-2 bg-primary px-6 py-3 text-xs font-black tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              [ Новий документ ]
+            </button>
+            <button
+              type="button"
+              onClick={onAddRootFolder}
+              className="border border-border/40 px-6 py-3 text-xs font-black tracking-wide text-foreground transition-colors hover:border-primary/50"
+            >
+              [ Нова папка ]
+            </button>
+          </div>
+        ) : null}
       </header>
 
       <div className="mx-auto max-w-7xl pb-20">
@@ -193,7 +207,9 @@ const Dashboard = ({
           ) : (
             <div className="rounded-xl border border-border/10 bg-card/50 py-16 text-center">
               <p className="mono text-[10px] tracking-wide text-muted-foreground">
-                Немає папок і документів. Створіть папку або документ.
+                {allowWorkspaceCreate
+                  ? "Немає папок і документів. Створіть папку або документ."
+                  : "Немає папок і документів."}
               </p>
             </div>
           )
@@ -212,11 +228,16 @@ const Dashboard = ({
                 insertDroppableFirst={false}
                 dropTargetOffset={4}
                 initialOpen={initialOpen}
-                canDrop={(_, { dropTargetId }) => {
-                  if (dropTargetId === WORKSPACE_TREE_ROOT_ID) return true;
-                  const target = treeData.find((n) => n.id === dropTargetId);
-                  return !!target?.droppable;
-                }}
+                canDrag={allowTreeEdits ? () => true : () => false}
+                canDrop={
+                  allowTreeEdits
+                    ? (_, { dropTargetId }) => {
+                        if (dropTargetId === WORKSPACE_TREE_ROOT_ID) return true;
+                        const target = treeData.find((n) => n.id === dropTargetId);
+                        return !!target?.droppable;
+                      }
+                    : () => false
+                }
                 onDrop={handleDrop}
                 placeholderRender={(_, { depth }) => (
                   <div
@@ -238,6 +259,8 @@ const Dashboard = ({
                     onToggle={treeProps.onToggle}
                     isDragging={treeProps.isDragging}
                     isDropTarget={treeProps.isDropTarget}
+                    allowAdminRowActions={allowAdminRowActions}
+                    allowCreateRowActions={allowCreateRowActions}
                     folderById={folderById}
                     projectById={projectById}
                     draftTitle={draftTitle}

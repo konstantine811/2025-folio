@@ -31,6 +31,8 @@ function edgeTransformClass(edge: NodePort): string {
 }
 
 interface CanvasImageCardProps {
+  /** Лише перегляд: без перетягування, портів і заголовка. */
+  readOnly?: boolean;
   image: CanvasImageItem;
   zIndex: number;
   wireDragging: boolean;
@@ -48,6 +50,7 @@ interface CanvasImageCardProps {
 }
 
 export function CanvasImageCard({
+  readOnly = false,
   image,
   zIndex,
   wireDragging,
@@ -60,6 +63,31 @@ export function CanvasImageCard({
   onRemove,
 }: CanvasImageCardProps) {
   const { id, x, y, width, height, url, title } = image;
+
+  if (readOnly) {
+    return (
+      <div
+        data-canvas-image-id={id}
+        style={{
+          left: x,
+          top: y,
+          width,
+          height,
+          zIndex,
+        }}
+        className="pointer-events-none absolute flex flex-col overflow-hidden border border-border/20 bg-card/90 shadow-sm backdrop-blur-sm"
+      >
+        <div className="relative min-h-0 flex-1 overflow-hidden p-1">
+          <img
+            src={url}
+            alt={title?.trim() || ""}
+            draggable={false}
+            className="pointer-events-none mx-auto block h-full max-h-full w-full max-w-full object-contain select-none"
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

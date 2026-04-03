@@ -19,8 +19,13 @@ import { collectFolderSubtreeIds } from "../workspace/workspace-tree-utils";
 import { nextChildOrder } from "../workspace/next-child-order";
 import {
   loadWorkspaceFromFirestore,
+  resolveProjectMediaUrls,
   syncWorkspaceToFirestore,
 } from "@/services/firebase/node-writer-workspace";
+import {
+  isNodeWriterAdminEmail,
+  NODE_WRITER_WORKSPACE_SCOPE,
+} from "@/config/node-writer-access.config";
 import { useSmoothedLoading } from "@/hooks/use-smoothed-loading";
 import { useNodeWriterWorkspaceStore } from "@/storage/nodeWriterWorkspaceStore";
 import { useAuthStore } from "@/storage/useAuthStore";
@@ -53,6 +58,10 @@ const Main = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useAuthStore((s) => s.user);
+  const isWorkspaceAdmin = useMemo(
+    () => isNodeWriterAdminEmail(user?.email ?? null),
+    [user?.email],
+  );
   const putWorkspaceCache = useNodeWriterWorkspaceStore((s) => s.putWorkspace);
   const [nwStoreHydrated, setNwStoreHydrated] = useState(() =>
     useNodeWriterWorkspaceStore.persist.hasHydrated(),
@@ -121,12 +130,12 @@ const Main = () => {
       return;
     }
 
-    const uid = user.uid;
     let cancelled = false;
     const { getWorkspace, isWorkspaceFresh } =
       useNodeWriterWorkspaceStore.getState();
-    const cached = getWorkspace(uid);
-    const fresh = isWorkspaceFresh(uid);
+    const scope = NODE_WRITER_WORKSPACE_SCOPE;
+    const cached = getWorkspace(scope);
+    const fresh = isWorkspaceFresh(scope);
 
     const applyRemote = (data: {
       folders: WorkspaceFolder[];
@@ -138,30 +147,49 @@ const Main = () => {
       setCloudReady(true);
     };
 
-    if (cached && fresh) {
-      setFolders(cached.folders);
-      setProjects(cached.projects);
+    const applyCachedProjects = async (entry: {
+      folders: WorkspaceFolder[];
+      projects: Project[];
+    }) => {
+      const resolvedProjects = await Promise.all(
+        entry.projects.map((p) => resolveProjectMediaUrls(p)),
+      );
+      if (cancelled) return;
+      setFolders(entry.folders);
+      setProjects(resolvedProjects);
       setCurrentProject((cur) => {
         if (!cur) return null;
-        return cached.projects.find((p) => p.id === cur.id) ?? null;
+        return resolvedProjects.find((p) => p.id === cur.id) ?? null;
       });
       setCloudReady(true);
+    };
+
+    if (cached && fresh) {
+      void applyCachedProjects(cached).catch((err) => {
+        console.error("Node writer: медіа з кешу", err);
+        if (!cancelled) {
+          setFolders(cached.folders);
+          setProjects(cached.projects);
+          setCurrentProject((cur) => {
+            if (!cur) return null;
+            return cached.projects.find((p) => p.id === cur.id) ?? null;
+          });
+          setCloudReady(true);
+        }
+      });
       return () => {
         cancelled = true;
       };
     }
 
     if (cached && !fresh) {
-      setFolders(cached.folders);
-      setProjects(cached.projects);
-      setCurrentProject((cur) => {
-        if (!cur) return null;
-        return cached.projects.find((p) => p.id === cur.id) ?? null;
-      });
-      setCloudReady(true);
-      loadWorkspaceFromFirestore(uid)
-        .then((data) => {
+      void applyCachedProjects(cached)
+        .then(() => {
           if (cancelled) return;
+          return loadWorkspaceFromFirestore(scope);
+        })
+        .then((data) => {
+          if (cancelled || !data) return;
           applyRemote(data);
         })
         .catch((err) => {
@@ -173,7 +201,7 @@ const Main = () => {
     }
 
     setCloudReady(false);
-    loadWorkspaceFromFirestore(uid)
+    loadWorkspaceFromFirestore(scope)
       .then((data) => {
         if (cancelled) return;
         applyRemote(data);
@@ -206,25 +234,36 @@ const Main = () => {
       return;
     }
     pendingLocalProjectIdsRef.current.delete(projectId);
+    if (
+      !isWorkspaceAdmin &&
+      (view === "editor" || view === "assets")
+    ) {
+      navigate(buildNodeWriterPath(projectId, "nodes"), { replace: true });
+      return;
+    }
     setCurrentProject(p);
     setView(view);
-  }, [cloudReady, location.pathname, projects, navigate]);
+  }, [cloudReady, location.pathname, projects, navigate, isWorkspaceAdmin]);
 
   useEffect(() => {
-    if (!user?.uid || !cloudReady) return;
+    if (!user?.uid || !cloudReady || !isWorkspaceAdmin) return;
     const timer = window.setTimeout(() => {
-      syncWorkspaceToFirestore(user.uid, folders, projects).catch((err) => {
+      syncWorkspaceToFirestore(
+        NODE_WRITER_WORKSPACE_SCOPE,
+        folders,
+        projects,
+        true,
+      ).catch((err) => {
         console.error("Node writer: не вдалося зберегти в Firestore", err);
       });
     }, 900);
     return () => clearTimeout(timer);
-  }, [user?.uid, cloudReady, folders, projects]);
+  }, [user?.uid, cloudReady, folders, projects, isWorkspaceAdmin]);
 
   useEffect(() => {
     if (!user?.uid || !cloudReady) return;
-    const uid = user.uid;
     const t = window.setTimeout(() => {
-      putWorkspaceCache(uid, folders, projects);
+      putWorkspaceCache(NODE_WRITER_WORKSPACE_SCOPE, folders, projects);
     }, 500);
     return () => clearTimeout(t);
   }, [user?.uid, cloudReady, folders, projects, putWorkspaceCache]);
@@ -245,11 +284,13 @@ const Main = () => {
   }, []);
 
   const openCreateDocument = (folderId: string | null) => {
+    if (!isWorkspaceAdmin) return;
     setCreateTargetFolderId(folderId);
     setIsCreateModalOpen(true);
   };
 
   const createNewDocument = () => {
+    if (!isWorkspaceAdmin) return;
     const title = newDocTitle.trim();
     if (!title) return;
     const parentKey = createTargetFolderId;
@@ -269,21 +310,23 @@ const Main = () => {
     };
 
     pendingLocalProjectIdsRef.current.add(newProject.id);
+    const initialDocView: AppView = "nodes";
     flushSync(() => {
       setProjects((prev) => [newProject, ...prev]);
       setCurrentProject(newProject);
       setIsCreateModalOpen(false);
       setNewDocTitle("");
       setCreateTargetFolderId(null);
-      setView("nodes");
+      setView(initialDocView);
     });
-    const path = buildNodeWriterPath(newProject.id, "nodes");
+    const path = buildNodeWriterPath(newProject.id, initialDocView);
     queueMicrotask(() => {
       navigate(path, { replace: false });
     });
   };
 
   const addFolder = (parentId: string | null) => {
+    if (!isWorkspaceAdmin) return;
     const order = nextChildOrder(folders, projects, parentId);
     const id = `fld-${Date.now()}`;
     setFolders((prev) => [
@@ -379,9 +422,10 @@ const Main = () => {
   };
 
   const handleProjectSelect = (project: Project) => {
+    const v: AppView = "nodes";
     setCurrentProject(project);
-    setView("nodes");
-    navigate(buildNodeWriterPath(project.id, "nodes"), { replace: false });
+    setView(v);
+    navigate(buildNodeWriterPath(project.id, v), { replace: false });
   };
 
   const handleViewChange = useCallback(
@@ -391,13 +435,20 @@ const Main = () => {
         navigate(RoutPath.NODE_WRITER, { replace: false });
         return;
       }
+      if (
+        !isWorkspaceAdmin &&
+        next !== "presentation" &&
+        next !== "nodes"
+      ) {
+        return;
+      }
       setView(next);
       const pid = currentProject?.id;
       if (pid) {
         navigate(buildNodeWriterPath(pid, next), { replace: false });
       }
     },
-    [navigate, currentProject?.id],
+    [navigate, currentProject?.id, isWorkspaceAdmin],
   );
 
   return (
@@ -405,6 +456,7 @@ const Main = () => {
       <Sidebar
         view={view}
         currentProject={currentProject}
+        isWorkspaceAdmin={isWorkspaceAdmin}
         onViewChange={handleViewChange}
       />
 
@@ -428,6 +480,10 @@ const Main = () => {
             <Dashboard
               folders={folders}
               projects={projects}
+              allowWorkspaceCreate={isWorkspaceAdmin}
+              allowTreeEdits={isWorkspaceAdmin}
+              allowAdminRowActions={isWorkspaceAdmin}
+              allowCreateRowActions={isWorkspaceAdmin}
               workspaceLoading={smoothDashboardWorkspaceLoading}
               onWorkspaceSync={syncWorkspaceFromTreeDrop}
               onCreateDocumentInFolder={openCreateDocument}
@@ -442,27 +498,41 @@ const Main = () => {
             />
           )}
 
-          {!showDocumentRouteLoading && view === "nodes" && currentProject && (
-            <NodesView
-              project={currentProject}
-              onProjectPatch={applyProjectPatch}
-            />
-          )}
+          {!showDocumentRouteLoading &&
+            view === "nodes" &&
+            currentProject && (
+              <NodesView
+                project={currentProject}
+                onProjectPatch={applyProjectPatch}
+                readOnly={!isWorkspaceAdmin}
+              />
+            )}
 
-          {!showDocumentRouteLoading && view === "editor" && currentProject && (
-            <EditorView
-              project={currentProject}
-              onContentChange={updateProjectContent}
-            />
-          )}
+          {!showDocumentRouteLoading &&
+            view === "editor" &&
+            currentProject &&
+            isWorkspaceAdmin && (
+              <EditorView
+                project={currentProject}
+                onContentChange={updateProjectContent}
+              />
+            )}
 
-          {!showDocumentRouteLoading && view === "presentation" && currentProject && (
-            <PresentationView project={currentProject} />
-          )}
+          {!showDocumentRouteLoading &&
+            view === "presentation" &&
+            currentProject && (
+              <PresentationView
+                project={currentProject}
+                readOnlyViewer={!isWorkspaceAdmin}
+              />
+            )}
 
-          {!showDocumentRouteLoading && view === "assets" && currentProject && (
-            <AssetsView project={currentProject} />
-          )}
+          {!showDocumentRouteLoading &&
+            view === "assets" &&
+            currentProject &&
+            isWorkspaceAdmin && (
+              <AssetsView project={currentProject} />
+            )}
         </div>
       </main>
     </div>

@@ -28,13 +28,17 @@ function computeDisplaySize(nw: number, nh: number): { w: number; h: number } {
 export function useCanvasPasteImages(opts: {
   scrollRef: RefObject<HTMLDivElement | null>;
   scaleRef: RefObject<number>;
-  onImagePasted: (item: CanvasImageItem) => void;
+  /** `file` — те саме джерело, що й `item.url` (blob); потрібне для негайного upload у Storage. */
+  onImagePasted: (item: CanvasImageItem, file: File) => void;
+  /** Якщо false — слухач paste не підключається. */
+  enabled?: boolean;
 }) {
-  const { scrollRef, scaleRef, onImagePasted } = opts;
+  const { scrollRef, scaleRef, onImagePasted, enabled = true } = opts;
   const onPastedRef = useRef(onImagePasted);
   onPastedRef.current = onImagePasted;
 
   useEffect(() => {
+    if (!enabled) return;
     const onPaste = (e: ClipboardEvent) => {
       if (isKeyboardTypingTarget(e.target)) return;
       if (!activeElementAllowsCanvasShortcuts(scrollRef.current)) return;
@@ -67,14 +71,17 @@ export function useCanvasPasteImages(opts: {
         const cy = scroll.scrollTop + scroll.clientHeight / 2;
         const x = Math.max(0, cx / s - w / 2);
         const y = Math.max(0, cy / s - h / 2);
-        onPastedRef.current({
-          id: newCanvasImageId(),
-          x,
-          y,
-          width: w,
-          height: h,
-          url,
-        });
+        onPastedRef.current(
+          {
+            id: newCanvasImageId(),
+            x,
+            y,
+            width: w,
+            height: h,
+            url,
+          },
+          file,
+        );
       };
       img.onerror = () => {
         URL.revokeObjectURL(url);
@@ -84,5 +91,5 @@ export function useCanvasPasteImages(opts: {
 
     window.addEventListener("paste", onPaste);
     return () => window.removeEventListener("paste", onPaste);
-  }, [scrollRef, scaleRef]);
+  }, [scrollRef, scaleRef, enabled]);
 }

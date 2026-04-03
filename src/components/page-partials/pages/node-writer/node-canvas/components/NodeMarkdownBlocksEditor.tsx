@@ -29,6 +29,7 @@ import {
 import { newMarkdownBlockId } from "../utils/node-ids";
 import { MarkdownLineHighlightToolbar } from "./MarkdownLineHighlightToolbar";
 import { MarkdownLinkUrlPopover } from "./MarkdownLinkUrlPopover";
+import { MarkdownResolvingImg } from "./MarkdownResolvingImg";
 import {
   NODE_MD_ALIGN,
   NODE_MD_FONT,
@@ -60,7 +61,10 @@ function blocksEqual(a: NodeMarkdownBlock[], b: NodeMarkdownBlock[]): boolean {
   return true;
 }
 
-function previewComponents(fg: string, fgMuted: string): Partial<Components> {
+export function nodeMarkdownPreviewComponents(
+  fg: string,
+  fgMuted: string,
+): Partial<Components> {
   return {
     p: ({ children }) => (
       <p className="my-0 text-[12px] leading-snug">{children}</p>
@@ -150,6 +154,16 @@ function previewComponents(fg: string, fgMuted: string): Partial<Components> {
     em: ({ children }) => <em className="italic">{children}</em>,
     span: ({ className, children }) => (
       <span className={className}>{children}</span>
+    ),
+    img: ({ src, alt, className }) => (
+      <MarkdownResolvingImg
+        src={src}
+        alt={alt}
+        className={
+          className ??
+          "my-1 max-h-48 max-w-full rounded border border-border/20 object-contain"
+        }
+      />
     ),
   };
 }
@@ -329,7 +343,7 @@ export function NodeMarkdownBlocksEditor({
   const fgMuted = themeAccent?.fgMuted ?? "inherit";
 
   const mdComponents = useMemo(
-    () => previewComponents(fg, fgMuted),
+    () => nodeMarkdownPreviewComponents(fg, fgMuted),
     [fg, fgMuted],
   );
 

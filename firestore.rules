@@ -15,6 +15,12 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == uid;
     }
 
+    // Повинно збігатися з NODE_WRITER_ADMIN_EMAIL у node-writer-access.config.ts
+    function nodeWriterAdminEmail() {
+      return isSignedIn()
+        && request.auth.token.email == 'constainabrams@gmail.com';
+    }
+
     match /cubicWorlds/{uid} {
       match /scatters/{scatterId} {
         // читання — лише власнику
@@ -89,13 +95,16 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Node Writer: workspace (папки + документи) — лише власник uid
-    match /node-writer/{uid} {
+    // Node Writer: спільний workspace `shared` — читати всі залогінені;
+    // створювати/змінювати/видаляти папки та документи — лише адмін (email).
+    match /node-writer/shared {
       match /folders/{folderId} {
-        allow read, write: if isOwner(uid);
+        allow read: if isSignedIn();
+        allow create, update, delete: if nodeWriterAdminEmail();
       }
       match /projects/{projectId} {
-        allow read, write: if isOwner(uid);
+        allow read: if isSignedIn();
+        allow create, update, delete: if nodeWriterAdminEmail();
       }
     }
   }

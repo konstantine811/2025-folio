@@ -1,5 +1,4 @@
 import { CameraControls, Stars } from "@react-three/drei";
-import { ShipFloor } from "./ship/ship-floor";
 import { ShipContainer } from "./ship/ship-container";
 import Earth from "./ship/earth";
 

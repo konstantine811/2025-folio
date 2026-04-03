@@ -1,9 +1,7 @@
 /**
- * Node Writer → Firestore: `node-writer/{uid}/folders|projects`.
- * Медіа → Firebase Storage за шляхом `node-writer/{uid}/projects/{projectId}/…`;
- * у Firestore у полях `url` / `imageUrl` зберігається посилання виду `nw-storage:<path>` (path без gs://).
- * Зовнішні http(s) та старі data: лишаються як є; при наступному збереженні data/blob підуть у Storage.
- * Правила: `firestore.rules`, `storage.rules`.
+ * Node Writer → Firestore: `node-writer/shared/folders|projects` (спільний workspace).
+ * Медіа → `node-writer/shared/projects/{projectId}/…`.
+ * Права: `firestore.rules`, `storage.rules`.
  */
 import { collection, doc, getDocs, writeBatch } from "firebase/firestore";
 import {
@@ -12,6 +10,7 @@ import {
   listAll,
   ref,
   uploadBytes,
+  type StorageReference,
 } from "firebase/storage";
 import { db, FirebaseCollection, storage } from "@/config/firebase.config";
 import type {
@@ -39,12 +38,13 @@ export function nodeWriterRefFromPath(storagePath: string): string {
   return `${NODE_WRITER_STORAGE_PREFIX}${storagePath}`;
 }
 
-export function nodeWriterFoldersRef(uid: string) {
-  return collection(db, FirebaseCollection.nodeWriter, uid, FOLDERS);
+/** `workspaceScope` зазвичай `shared` (див. `NODE_WRITER_WORKSPACE_SCOPE`). */
+export function nodeWriterFoldersRef(workspaceScope: string) {
+  return collection(db, FirebaseCollection.nodeWriter, workspaceScope, FOLDERS);
 }
 
-export function nodeWriterProjectsRef(uid: string) {
-  return collection(db, FirebaseCollection.nodeWriter, uid, PROJECTS);
+export function nodeWriterProjectsRef(workspaceScope: string) {
+  return collection(db, FirebaseCollection.nodeWriter, workspaceScope, PROJECTS);
 }
 
 function sanitizeStorageKey(id: string): string {
@@ -69,10 +69,10 @@ async function deleteStorageTree(root: StorageReference): Promise<void> {
 }
 
 export async function deleteNodeWriterProjectMedia(
-  uid: string,
+  workspaceScope: string,
   projectId: string,
 ): Promise<void> {
-  const path = `node-writer/${uid}/projects/${projectId}`;
+  const path = `node-writer/${workspaceScope}/projects/${projectId}`;
   try {
     await deleteStorageTree(ref(storage, path));
   } catch {
@@ -80,19 +80,108 @@ export async function deleteNodeWriterProjectMedia(
   }
 }
 
+/**
+ * Завантажує вставлене з буфера зображення в Storage одразу (поки `File` ще валідний).
+ * Повертає https URL для `<img src>`; у Firestore при синку він згортається в `nw-storage:`.
+ */
+export async function uploadNodeWriterCanvasPastedFile(
+  workspaceScope: string,
+  projectId: string,
+  canvasImageId: string,
+  file: Blob,
+): Promise<string> {
+  const ext = extFromMime(file.type || "");
+  const base = `canvas_${sanitizeStorageKey(canvasImageId)}`;
+  const path = `node-writer/${workspaceScope}/projects/${projectId}/${base}.${ext}`;
+  const sRef = ref(storage, path);
+  await uploadBytes(sRef, file, {
+    contentType: file.type || "application/octet-stream",
+  });
+  return getDownloadURL(sRef);
+}
+
+/** XHR інколи читає `blob:` там, де `fetch` падає з TypeError (розширення, відкликаний контекст тощо). */
+function blobFromUrlXHR(url: string): Promise<Blob | null> {
+  return new Promise((resolve) => {
+    try {
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", url, true);
+      xhr.responseType = "blob";
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
+          resolve(xhr.response);
+        } else {
+          resolve(null);
+        }
+      };
+      xhr.onerror = () => resolve(null);
+      xhr.send();
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
+/** Останній вихід для картинки: малюємо в canvas → PNG (працює для багатьох `blob:`). */
+function blobFromImageUrlViaCanvas(url: string): Promise<Blob | null> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const w = img.naturalWidth || img.width;
+        const h = img.naturalHeight || img.height;
+        if (w <= 0 || h <= 0) {
+          resolve(null);
+          return;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(null);
+          return;
+        }
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob((b) => resolve(b), "image/png");
+      } catch {
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+}
+
 async function blobFromUrl(url: string): Promise<Blob | null> {
   if (!url) return null;
-  if (url.startsWith("blob:") || url.startsWith("data:")) {
-    const res = await fetch(url);
-    return res.blob();
+  if (!url.startsWith("blob:") && !url.startsWith("data:")) {
+    return null;
   }
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    return await res.blob();
+  } catch {
+    /* fetch(blob:) інколи дає TypeError: Failed to fetch */
+  }
+
+  const xhrBlob = await blobFromUrlXHR(url);
+  if (xhrBlob && xhrBlob.size > 0) return xhrBlob;
+
+  if (url.startsWith("blob:") || url.startsWith("data:")) {
+    const fromCanvas = await blobFromImageUrlViaCanvas(url);
+    if (fromCanvas && fromCanvas.size > 0) return fromCanvas;
+  }
+
   return null;
 }
 
 /**
  * Після `getDownloadURL` у стані лежить https; перед записом у Firestore повертаємо `nw-storage:path`.
  */
-function firebaseDownloadUrlToNwRef(url: string): string | null {
+export function firebaseDownloadUrlToNwRef(url: string): string | null {
   if (!url.startsWith("https://")) return null;
   try {
     const u = new URL(url);
@@ -119,7 +208,7 @@ function firebaseDownloadUrlToNwRef(url: string): string | null {
  * інші http(s) → без змін.
  */
 async function mediaUrlToStoragePath(
-  uid: string,
+  workspaceScope: string,
   projectId: string,
   fileBase: string,
   url: string,
@@ -131,80 +220,119 @@ async function mediaUrlToStoragePath(
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
 
   const blob = await blobFromUrl(url);
-  if (!blob) return url;
+  if (!blob) {
+    return url;
+  }
 
   const ext = extFromMime(blob.type);
-  const path = `node-writer/${uid}/projects/${projectId}/${fileBase}.${ext}`;
+  const path = `node-writer/${workspaceScope}/projects/${projectId}/${fileBase}.${ext}`;
   const sRef = ref(storage, path);
-  await uploadBytes(sRef, blob, {
-    contentType: blob.type || "application/octet-stream",
-  });
+  try {
+    await uploadBytes(sRef, blob, {
+      contentType: blob.type || "application/octet-stream",
+    });
+  } catch (e) {
+    console.warn(
+      "[Node writer] uploadBytes не вдався; залишаємо поточний URL у документі.",
+      fileBase,
+      e,
+    );
+    return url;
+  }
   return nodeWriterRefFromPath(path);
 }
 
 async function embedCanvasImages(
   items: CanvasImageItem[],
-  uid: string,
+  workspaceScope: string,
   projectId: string,
 ): Promise<CanvasImageItem[]> {
-  return Promise.all(
-    items.map(async (img) => ({
-      ...img,
-      url: await mediaUrlToStoragePath(
-        uid,
+  const pairs = await Promise.all(
+    items.map(async (img) => {
+      const url = await mediaUrlToStoragePath(
+        workspaceScope,
         projectId,
         `canvas_${sanitizeStorageKey(img.id)}`,
         img.url,
-      ),
-    })),
+      );
+      return { img, url };
+    }),
   );
+  const kept = pairs.filter((p) => !p.url.startsWith("blob:"));
+  const dropped = pairs.length - kept.length;
+  if (dropped > 0) {
+    console.warn(
+      `[Node writer] ${dropped} зображ. на полотні пропущено при збереженні (мертві blob: URL — зазвичай після перезавантаження; перевставте). Проєкт: ${projectId}`,
+    );
+  }
+  return kept.map(({ img, url }) => ({ ...img, url }));
 }
 
 async function embedNodes(
   nodes: Project["nodes"],
-  uid: string,
+  workspaceScope: string,
   projectId: string,
 ): Promise<Project["nodes"]> {
-  return Promise.all(
+  let droppedNodeImages = 0;
+  const out = await Promise.all(
     nodes.map(async (n) => {
       if (!n.imageUrl) return n;
       const next = await mediaUrlToStoragePath(
-        uid,
+        workspaceScope,
         projectId,
         `node_${sanitizeStorageKey(n.id)}`,
         n.imageUrl,
       );
+      if (next.startsWith("blob:")) {
+        droppedNodeImages++;
+        const { imageUrl: _removed, ...rest } = n;
+        return rest as typeof n;
+      }
       return next === n.imageUrl ? n : { ...n, imageUrl: next };
     }),
   );
+  if (droppedNodeImages > 0) {
+    console.warn(
+      `[Node writer] ${droppedNodeImages} зображ. у нодах знято з payload (мертві blob:). Проєкт: ${projectId}`,
+    );
+  }
+  return out;
 }
 
 async function embedAssets(
   assets: Asset[],
-  uid: string,
+  workspaceScope: string,
   projectId: string,
 ): Promise<Asset[]> {
-  return Promise.all(
+  const pairs = await Promise.all(
     assets.map(async (a) => ({
-      ...a,
+      a,
       url: await mediaUrlToStoragePath(
-        uid,
+        workspaceScope,
         projectId,
         `asset_${sanitizeStorageKey(a.id)}`,
         a.url,
       ),
     })),
   );
+  const kept = pairs.filter((p) => !p.url.startsWith("blob:"));
+  const dropped = pairs.length - kept.length;
+  if (dropped > 0) {
+    console.warn(
+      `[Node writer] ${dropped} асетів пропущено (мертві blob:). Проєкт: ${projectId}`,
+    );
+  }
+  return kept.map(({ a, url }) => ({ ...a, url }));
 }
 
 export async function prepareProjectForFirestore(
   project: Project,
-  uid: string,
+  workspaceScope: string,
 ): Promise<Omit<Project, "id">> {
   const [canvasImages, nodes, images] = await Promise.all([
-    embedCanvasImages(project.canvasImages, uid, project.id),
-    embedNodes(project.nodes, uid, project.id),
-    embedAssets(project.images, uid, project.id),
+    embedCanvasImages(project.canvasImages, workspaceScope, project.id),
+    embedNodes(project.nodes, workspaceScope, project.id),
+    embedAssets(project.images, workspaceScope, project.id),
   ]);
   const { id: _id, ...rest } = project;
   return {
@@ -215,12 +343,44 @@ export async function prepareProjectForFirestore(
   };
 }
 
-async function resolveUrlForDisplay(url: string): Promise<string> {
+/**
+ * Свіжий URL для `<img src>`: `nw-storage:` або застарілий https з нашого Firebase Storage
+ * (токен у query згорає — треба знову взяти getDownloadURL по шляху).
+ */
+export async function resolveNodeWriterMediaUrlForDisplay(
+  url: string,
+): Promise<string> {
   if (!url) return url;
   if (isNodeWriterStorageRef(url)) {
-    return getDownloadURL(ref(storage, nodeWriterPathFromRef(url)));
+    try {
+      return await getDownloadURL(ref(storage, nodeWriterPathFromRef(url)));
+    } catch {
+      return url;
+    }
+  }
+  const nw = firebaseDownloadUrlToNwRef(url);
+  if (nw) {
+    try {
+      return await getDownloadURL(ref(storage, nodeWriterPathFromRef(nw)));
+    } catch {
+      return url;
+    }
   }
   return url;
+}
+
+async function resolveUrlForDisplay(url: string): Promise<string> {
+  return resolveNodeWriterMediaUrlForDisplay(url);
+}
+
+/**
+ * Для localStorage: не кешувати довгі https з токеном — лише `nw-storage:path` (без терміну дії).
+ */
+export function toPersistableNodeWriterMediaUrl(url: string): string {
+  if (!url) return url;
+  if (isNodeWriterStorageRef(url)) return url;
+  const nw = firebaseDownloadUrlToNwRef(url);
+  return nw ?? url;
 }
 
 export async function resolveProjectMediaUrls(project: Project): Promise<Project> {
@@ -271,13 +431,14 @@ async function commitInChunks(
   }
 }
 
-export async function syncWorkspaceToFirestore(
-  uid: string,
+/** Повна синхронізація: видалення зайвого на сервері + усі set (лише для адміна). */
+async function syncWorkspaceFullAdmin(
+  workspaceScope: string,
   folders: WorkspaceFolder[],
   projects: Project[],
 ): Promise<void> {
-  const fCol = nodeWriterFoldersRef(uid);
-  const pCol = nodeWriterProjectsRef(uid);
+  const fCol = nodeWriterFoldersRef(workspaceScope);
+  const pCol = nodeWriterProjectsRef(workspaceScope);
 
   const [fSnap, pSnap] = await Promise.all([getDocs(fCol), getDocs(pCol)]);
 
@@ -289,7 +450,9 @@ export async function syncWorkspaceToFirestore(
     .filter((id) => !localProjectIds.has(id));
 
   await Promise.all(
-    removedProjectIds.map((id) => deleteNodeWriterProjectMedia(uid, id)),
+    removedProjectIds.map((id) =>
+      deleteNodeWriterProjectMedia(workspaceScope, id),
+    ),
   );
 
   const ops: Array<{
@@ -319,7 +482,7 @@ export async function syncWorkspaceToFirestore(
   }
 
   for (const p of projects) {
-    const payload = await prepareProjectForFirestore(p, uid);
+    const payload = await prepareProjectForFirestore(p, workspaceScope);
     ops.push({
       type: "set",
       ref: doc(pCol, p.id),
@@ -330,13 +493,71 @@ export async function syncWorkspaceToFirestore(
   await commitInChunks(ops);
 }
 
-export async function loadWorkspaceFromFirestore(uid: string): Promise<{
+/** Лише **create** нових id (без update/delete існуючих) — для не-адмінів за правилами Firestore. */
+async function syncWorkspaceNewItemsOnly(
+  workspaceScope: string,
+  folders: WorkspaceFolder[],
+  projects: Project[],
+): Promise<void> {
+  const fCol = nodeWriterFoldersRef(workspaceScope);
+  const pCol = nodeWriterProjectsRef(workspaceScope);
+  const [fSnap, pSnap] = await Promise.all([getDocs(fCol), getDocs(pCol)]);
+  const serverFolderIds = new Set(fSnap.docs.map((d) => d.id));
+  const serverProjectIds = new Set(pSnap.docs.map((d) => d.id));
+
+  const ops: Array<{
+    type: "set" | "delete";
+    ref: ReturnType<typeof doc>;
+    data?: unknown;
+  }> = [];
+
+  for (const f of folders) {
+    if (!serverFolderIds.has(f.id)) {
+      const { id, ...payload } = f;
+      ops.push({
+        type: "set",
+        ref: doc(fCol, id),
+        data: firestoreSafe(payload as unknown as Record<string, unknown>),
+      });
+    }
+  }
+
+  for (const p of projects) {
+    if (!serverProjectIds.has(p.id)) {
+      const payload = await prepareProjectForFirestore(p, workspaceScope);
+      ops.push({
+        type: "set",
+        ref: doc(pCol, p.id),
+        data: firestoreSafe(payload as unknown as Record<string, unknown>),
+      });
+    }
+  }
+
+  if (ops.length > 0) {
+    await commitInChunks(ops);
+  }
+}
+
+export async function syncWorkspaceToFirestore(
+  workspaceScope: string,
+  folders: WorkspaceFolder[],
+  projects: Project[],
+  fullAdminSync: boolean,
+): Promise<void> {
+  if (fullAdminSync) {
+    await syncWorkspaceFullAdmin(workspaceScope, folders, projects);
+  } else {
+    await syncWorkspaceNewItemsOnly(workspaceScope, folders, projects);
+  }
+}
+
+export async function loadWorkspaceFromFirestore(workspaceScope: string): Promise<{
   folders: WorkspaceFolder[];
   projects: Project[];
 }> {
   const [fSnap, pSnap] = await Promise.all([
-    getDocs(nodeWriterFoldersRef(uid)),
-    getDocs(nodeWriterProjectsRef(uid)),
+    getDocs(nodeWriterFoldersRef(workspaceScope)),
+    getDocs(nodeWriterProjectsRef(workspaceScope)),
   ]);
 
   const folders: WorkspaceFolder[] = fSnap.docs.map((d) => {

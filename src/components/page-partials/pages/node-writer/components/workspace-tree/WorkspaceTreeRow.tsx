@@ -20,6 +20,10 @@ export interface WorkspaceTreeRowProps {
   onToggle: () => void;
   isDragging: boolean;
   isDropTarget: boolean;
+  /** Перейменування, видалення, колір — лише для адміна. */
+  allowAdminRowActions?: boolean;
+  /** Дочірня папка та новий документ у папці. */
+  allowCreateRowActions?: boolean;
   folderById: Map<string, WorkspaceFolder>;
   projectById: Map<string, Project>;
   draftTitle: DraftTitleState;
@@ -46,6 +50,8 @@ export function WorkspaceTreeRow({
   onToggle,
   isDragging,
   isDropTarget,
+  allowAdminRowActions = true,
+  allowCreateRowActions = true,
   folderById,
   projectById,
   draftTitle,
@@ -104,7 +110,7 @@ export function WorkspaceTreeRow({
             }
       }
       onDoubleClick={
-        isRowEditing
+        isRowEditing || !allowAdminRowActions
           ? undefined
           : (e) => {
               e.preventDefault();
@@ -223,7 +229,7 @@ export function WorkspaceTreeRow({
         {!isRowEditing ? (
           <>
             <div className="flex shrink-0 items-center gap-px opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-              {isFolder && folderId ? (
+              {allowAdminRowActions && isFolder && folderId ? (
                 <div
                   ref={
                     paletteOpenForFolderId === folderId
@@ -293,7 +299,7 @@ export function WorkspaceTreeRow({
                   ) : null}
                 </div>
               ) : null}
-              {isFolder && folderId ? (
+              {allowCreateRowActions && isFolder && folderId ? (
                 <>
                   <button
                     type="button"
@@ -321,47 +327,51 @@ export function WorkspaceTreeRow({
                   </button>
                 </>
               ) : null}
-              <button
-                type="button"
-                title="Перейменувати"
-                className={treeRowIconBtn}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  clearPendingRowClick();
-                  setDraftTitle({
-                    nodeId: nodeIdStr,
-                    value: node.text,
-                  });
-                }}
-              >
-                <Icons.WorkspaceRename />
-              </button>
-              <button
-                type="button"
-                title="Видалити"
-                className={treeRowIconBtnDanger}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  clearPendingRowClick();
-                  if (
-                    !window.confirm(
-                      isFolder
-                        ? "Видалити папку та весь вміст (підпапки й документи)?"
-                        : "Видалити цей документ?",
-                    )
-                  ) {
-                    return;
-                  }
-                  if (isFolder && folderId) {
-                    onDeleteFolder(folderId);
-                  }
-                  if (node.data?.kind === "project") {
-                    onDeleteProject(node.data.projectId);
-                  }
-                }}
-              >
-                <Icons.WorkspaceTrash />
-              </button>
+              {allowAdminRowActions ? (
+                <>
+                  <button
+                    type="button"
+                    title="Перейменувати"
+                    className={treeRowIconBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      clearPendingRowClick();
+                      setDraftTitle({
+                        nodeId: nodeIdStr,
+                        value: node.text,
+                      });
+                    }}
+                  >
+                    <Icons.WorkspaceRename />
+                  </button>
+                  <button
+                    type="button"
+                    title="Видалити"
+                    className={treeRowIconBtnDanger}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      clearPendingRowClick();
+                      if (
+                        !window.confirm(
+                          isFolder
+                            ? "Видалити папку та весь вміст (підпапки й документи)?"
+                            : "Видалити цей документ?",
+                        )
+                      ) {
+                        return;
+                      }
+                      if (isFolder && folderId) {
+                        onDeleteFolder(folderId);
+                      }
+                      if (node.data?.kind === "project") {
+                        onDeleteProject(node.data.projectId);
+                      }
+                    }}
+                  >
+                    <Icons.WorkspaceTrash />
+                  </button>
+                </>
+              ) : null}
             </div>
             <div className="min-h-8 min-w-0 flex-1" aria-hidden />
           </>

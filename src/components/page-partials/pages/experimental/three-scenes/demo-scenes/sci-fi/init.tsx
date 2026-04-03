@@ -1,5 +1,4 @@
 import MainWrapperOffset from "@/components/ui-abc/main-wrapper-offset";
-import ThreeLoader from "../../common/three-loader";
 import { Canvas } from "@react-three/fiber";
 import Experience from "./experience";
 import { Suspense } from "react";

@@ -14,6 +14,9 @@ export default defineConfig({
     VitePWA({
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
+        // Без мініфікації workbox-бандла через terser: у великих білдах інколи падає
+        // «Unfinished hook action(s) on exit: (terser) renderChunk» при generateSW.
+        mode: "development",
       },
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "favicon.ico", "robots.txt"],

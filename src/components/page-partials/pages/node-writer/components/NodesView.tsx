@@ -4,7 +4,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { NODE_CANVAS_HELP_TEXT } from "../node-canvas/constants";
+import {
+  NODE_CANVAS_HELP_TEXT,
+  NODE_CANVAS_HELP_TEXT_VIEW_ONLY,
+} from "../node-canvas/constants";
 import { useEditableProjectTitle } from "../hooks/use-editable-project-title";
 import NodeCanvas from "../node-canvas";
 import type { Project, ProjectPatchFn } from "../types/types";
@@ -12,9 +15,14 @@ import type { Project, ProjectPatchFn } from "../types/types";
 interface NodesViewProps {
   project: Project;
   onProjectPatch: (fn: ProjectPatchFn) => void;
+  readOnly?: boolean;
 }
 
-const NodesView = ({ project, onProjectPatch }: NodesViewProps) => {
+const NodesView = ({
+  project,
+  onProjectPatch,
+  readOnly = false,
+}: NodesViewProps) => {
   const {
     editingTitle,
     setEditingTitle,
@@ -47,11 +55,15 @@ const NodesView = ({ project, onProjectPatch }: NodesViewProps) => {
               sideOffset={6}
               className="mono max-w-md px-3 py-2.5 text-left text-[10px] leading-relaxed font-normal tracking-normal text-balance normal-case"
             >
-              {NODE_CANVAS_HELP_TEXT}
+              {readOnly ? NODE_CANVAS_HELP_TEXT_VIEW_ONLY : NODE_CANVAS_HELP_TEXT}
             </TooltipContent>
           </Tooltip>
           <div className="min-w-0 flex-1">
-            {editingTitle ? (
+            {readOnly ? (
+              <h2 className="truncate text-sm font-medium tracking-normal text-foreground/90">
+                {project.title}
+              </h2>
+            ) : editingTitle ? (
               <input
                 ref={titleInputRef}
                 value={draftTitle}
@@ -77,11 +89,15 @@ const NodesView = ({ project, onProjectPatch }: NodesViewProps) => {
           </div>
         </div>
         <div className="mono ml-4 shrink-0 text-[8px] tracking-wide text-muted-foreground">
-          Ноди · зв&apos;язки · текст
+          {readOnly ? "Лише перегляд" : "Ноди · звʼязки · текст"}
         </div>
       </div>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <NodeCanvas project={project} onProjectPatch={onProjectPatch} />
+        <NodeCanvas
+          project={project}
+          onProjectPatch={onProjectPatch}
+          readOnly={readOnly}
+        />
       </div>
     </div>
   );

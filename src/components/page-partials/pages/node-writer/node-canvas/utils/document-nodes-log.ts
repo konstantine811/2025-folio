@@ -22,30 +22,6 @@ export function semanticNodesSnapshot(project: Project): string {
   });
 }
 
-export function logDocumentNodesSummary(project: Project): void {
-  const nodeById = new Map(project.nodes.map((n) => [n.id, n]));
-  const payload = {
-    документ: project.title,
-    ноди: project.nodes.map((n) => {
-      const дочірні = project.links
-        .filter((l) => l.source === n.id)
-        .map((l) => {
-          const t = nodeById.get(l.target);
-          return {
-            заголовок: t?.label ?? l.target,
-            текст: t?.description ?? "",
-            слот: l.sourceChildSlot,
-            бік: l.sourcePort,
-            ціль_id: l.target,
-          };
-        });
-      return {
-        id: n.id,
-        заголовок: n.label,
-        текст: n.description ?? "",
-        дочірні,
-      };
-    }),
-  };
-  console.log("%c[Документ · ноди]", "color:#00FF9C;font-weight:bold", payload);
+export function logDocumentNodesSummary(_project: Project): void {
+  /* дебаг-лог прибрано з production */
 }

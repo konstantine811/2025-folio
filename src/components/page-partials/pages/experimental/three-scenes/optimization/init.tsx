@@ -18,17 +18,11 @@ const Init = () => {
       <ThreeLoader />
       <Canvas camera={{ position: [0, 2, 10], fov: 70 }}>
         <PerformanceMonitor
-          onChange={(api) => {
-            console.log("Perfomance Monitor (FPS)", api.fps);
-            console.log("Perfomance Mointor (Factor)", api.factor);
-          }}
-          onIncline={() => {
-            console.log("Performance Monitor (Inclined)");
-          }}
+          onChange={() => {}}
+          onIncline={() => {}}
           onDecline={() => {
             setNBoxes(nBoxes / 2);
             setEffect(false);
-            console.log("Performance Monitor (Declined)");
           }}
         />
         <Suspense fallback={null}>

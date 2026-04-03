@@ -3,9 +3,14 @@ import { Project } from "../types/types";
 
 interface PresentationViewProps {
   project: Project;
+  /** Режим лише перегляду (гості): без підказок про редагування. */
+  readOnlyViewer?: boolean;
 }
 
-const PresentationView = ({ project }: PresentationViewProps) => {
+const PresentationView = ({
+  project,
+  readOnlyViewer = false,
+}: PresentationViewProps) => {
   const [activeSlide, setActiveSlide] = useState(0);
   const slides = project.slides;
 
@@ -13,11 +18,12 @@ const PresentationView = ({ project }: PresentationViewProps) => {
     return (
       <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center bg-black p-12">
         <h2 className="mb-4 text-4xl font-black uppercase italic tracking-tighter">
-          Презентація
+          Перегляд
         </h2>
         <p className="mono max-w-md text-center text-[10px] uppercase leading-relaxed tracking-widest text-white/25">
-          Слайдів немає. Ручні документи поки без авто-слайдів — додайте їх у модель
-          проєкту або використовуйте вигляд «Текст».
+          {readOnlyViewer
+            ? "Для цього документа ще немає слайдів презентації."
+            : "Слайдів немає. Ручні документи поки без авто-слайдів — додайте їх у модель проєкту або використовуйте вигляд «Текст»."}
         </p>
       </div>
     );
@@ -28,7 +34,7 @@ const PresentationView = ({ project }: PresentationViewProps) => {
       <header className="mx-auto mb-16 flex w-full max-w-7xl items-end justify-between">
         <div>
           <h2 className="text-4xl font-black uppercase italic tracking-tighter">
-            Презентація
+            {readOnlyViewer ? "Перегляд" : "Презентація"}
           </h2>
           <p className="mono mt-1 text-[9px] uppercase tracking-widest text-white/20">
             Slide {activeSlide + 1} // {slides.length}

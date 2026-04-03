@@ -4,10 +4,17 @@ import { Icons } from "./Icons";
 interface SidebarProps {
   view: AppView;
   currentProject: Project | null;
+  /** Повний набір вкладок документа (редактор, бібліотека тощо). */
+  isWorkspaceAdmin?: boolean;
   onViewChange: (view: AppView) => void;
 }
 
-const Sidebar = ({ view, currentProject, onViewChange }: SidebarProps) => {
+const Sidebar = ({
+  view,
+  currentProject,
+  isWorkspaceAdmin = true,
+  onViewChange,
+}: SidebarProps) => {
   const navBtn = (active: boolean) =>
     `p-3 transition-colors ${
       active
@@ -29,38 +36,61 @@ const Sidebar = ({ view, currentProject, onViewChange }: SidebarProps) => {
         {currentProject && (
           <>
             <div className="h-px w-4 bg-border/50" />
-            <button
-              type="button"
-              onClick={() => onViewChange("nodes")}
-              className={navBtn(view === "nodes")}
-              title="Майстерня"
-            >
-              <Icons.Nodes />
-            </button>
-            <button
-              type="button"
-              onClick={() => onViewChange("editor")}
-              className={navBtn(view === "editor")}
-              title="Текст"
-            >
-              <Icons.Editor />
-            </button>
-            <button
-              type="button"
-              onClick={() => onViewChange("presentation")}
-              className={navBtn(view === "presentation")}
-              title="Презентація"
-            >
-              <Icons.Presentation />
-            </button>
-            <button
-              type="button"
-              onClick={() => onViewChange("assets")}
-              className={navBtn(view === "assets")}
-              title="Бібліотека"
-            >
-              <Icons.Assets />
-            </button>
+            {!isWorkspaceAdmin ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onViewChange("nodes")}
+                  className={navBtn(view === "nodes")}
+                  title="Майстерня (перегляд)"
+                >
+                  <Icons.Nodes />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onViewChange("presentation")}
+                  className={navBtn(view === "presentation")}
+                  title="Презентація"
+                >
+                  <Icons.Presentation />
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onViewChange("nodes")}
+                  className={navBtn(view === "nodes")}
+                  title="Майстерня"
+                >
+                  <Icons.Nodes />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onViewChange("editor")}
+                  className={navBtn(view === "editor")}
+                  title="Текст"
+                >
+                  <Icons.Editor />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onViewChange("presentation")}
+                  className={navBtn(view === "presentation")}
+                  title="Презентація"
+                >
+                  <Icons.Presentation />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onViewChange("assets")}
+                  className={navBtn(view === "assets")}
+                  title="Бібліотека"
+                >
+                  <Icons.Assets />
+                </button>
+              </>
+            )}
           </>
         )}
       </div>
