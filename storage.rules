@@ -3,7 +3,7 @@ service firebase.storage {
   match /b/{bucket}/o {
     // Node Writer shared — email як у node-writer-access.config.ts (NODE_WRITER_ADMIN_EMAIL)
     match /node-writer/shared/{allPaths=**} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow write: if request.auth != null
         && request.auth.token.email == 'constainabrams@gmail.com';
     }

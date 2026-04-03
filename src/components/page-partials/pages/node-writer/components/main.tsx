@@ -92,11 +92,11 @@ const Main = () => {
   );
 
   const showDocumentRouteLoading = Boolean(
-    user?.uid && !cloudReady && nodeWriterRoute.projectId,
+    !cloudReady && nodeWriterRoute.projectId,
   );
 
   const showDashboardWorkspaceLoading = Boolean(
-    user?.uid && !cloudReady && !nodeWriterRoute.projectId,
+    !cloudReady && !nodeWriterRoute.projectId,
   );
 
   const smoothDashboardWorkspaceLoading = useSmoothedLoading(
@@ -120,15 +120,6 @@ const Main = () => {
 
   useEffect(() => {
     if (!nwStoreHydrated) return;
-
-    if (!user?.uid) {
-      setCloudReady(false);
-      setFolders([]);
-      setProjects([]);
-      setCurrentProject(null);
-      setView("dashboard");
-      return;
-    }
 
     let cancelled = false;
     const { getWorkspace, isWorkspaceFresh } =
@@ -214,7 +205,7 @@ const Main = () => {
     return () => {
       cancelled = true;
     };
-  }, [user?.uid, nwStoreHydrated]);
+  }, [nwStoreHydrated]);
 
   useEffect(() => {
     if (!cloudReady) return;
@@ -246,13 +237,13 @@ const Main = () => {
   }, [cloudReady, location.pathname, projects, navigate, isWorkspaceAdmin]);
 
   useEffect(() => {
-    if (!user?.uid || !cloudReady || !isWorkspaceAdmin) return;
+    if (!user?.uid || !cloudReady) return;
     const timer = window.setTimeout(() => {
       syncWorkspaceToFirestore(
         NODE_WRITER_WORKSPACE_SCOPE,
         folders,
         projects,
-        true,
+        isWorkspaceAdmin,
       ).catch((err) => {
         console.error("Node writer: не вдалося зберегти в Firestore", err);
       });
@@ -261,12 +252,12 @@ const Main = () => {
   }, [user?.uid, cloudReady, folders, projects, isWorkspaceAdmin]);
 
   useEffect(() => {
-    if (!user?.uid || !cloudReady) return;
+    if (!cloudReady) return;
     const t = window.setTimeout(() => {
       putWorkspaceCache(NODE_WRITER_WORKSPACE_SCOPE, folders, projects);
     }, 500);
     return () => clearTimeout(t);
-  }, [user?.uid, cloudReady, folders, projects, putWorkspaceCache]);
+  }, [cloudReady, folders, projects, putWorkspaceCache]);
 
   const applyProjectPatch = useCallback((fn: ProjectPatchFn) => {
     setCurrentProject((cur) => {

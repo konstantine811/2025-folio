@@ -493,17 +493,17 @@ async function syncWorkspaceFullAdmin(
   await commitInChunks(ops);
 }
 
-/** Лише **create** нових id (без update/delete існуючих) — для не-адмінів за правилами Firestore. */
-async function syncWorkspaceNewItemsOnly(
+/**
+ * Усі локальні папки/проєкти записати в Firestore (`set`), без видалення документів на сервері.
+ * Для залогінених не-адмінів — зміни в існуючих документах теж потрапляють у хмару.
+ */
+async function syncWorkspaceUpsertLocal(
   workspaceScope: string,
   folders: WorkspaceFolder[],
   projects: Project[],
 ): Promise<void> {
   const fCol = nodeWriterFoldersRef(workspaceScope);
   const pCol = nodeWriterProjectsRef(workspaceScope);
-  const [fSnap, pSnap] = await Promise.all([getDocs(fCol), getDocs(pCol)]);
-  const serverFolderIds = new Set(fSnap.docs.map((d) => d.id));
-  const serverProjectIds = new Set(pSnap.docs.map((d) => d.id));
 
   const ops: Array<{
     type: "set" | "delete";
@@ -512,30 +512,24 @@ async function syncWorkspaceNewItemsOnly(
   }> = [];
 
   for (const f of folders) {
-    if (!serverFolderIds.has(f.id)) {
-      const { id, ...payload } = f;
-      ops.push({
-        type: "set",
-        ref: doc(fCol, id),
-        data: firestoreSafe(payload as unknown as Record<string, unknown>),
-      });
-    }
+    const { id, ...payload } = f;
+    ops.push({
+      type: "set",
+      ref: doc(fCol, id),
+      data: firestoreSafe(payload as unknown as Record<string, unknown>),
+    });
   }
 
   for (const p of projects) {
-    if (!serverProjectIds.has(p.id)) {
-      const payload = await prepareProjectForFirestore(p, workspaceScope);
-      ops.push({
-        type: "set",
-        ref: doc(pCol, p.id),
-        data: firestoreSafe(payload as unknown as Record<string, unknown>),
-      });
-    }
+    const payload = await prepareProjectForFirestore(p, workspaceScope);
+    ops.push({
+      type: "set",
+      ref: doc(pCol, p.id),
+      data: firestoreSafe(payload as unknown as Record<string, unknown>),
+    });
   }
 
-  if (ops.length > 0) {
-    await commitInChunks(ops);
-  }
+  await commitInChunks(ops);
 }
 
 export async function syncWorkspaceToFirestore(
@@ -547,7 +541,7 @@ export async function syncWorkspaceToFirestore(
   if (fullAdminSync) {
     await syncWorkspaceFullAdmin(workspaceScope, folders, projects);
   } else {
-    await syncWorkspaceNewItemsOnly(workspaceScope, folders, projects);
+    await syncWorkspaceUpsertLocal(workspaceScope, folders, projects);
   }
 }
 

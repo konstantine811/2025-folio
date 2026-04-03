@@ -1,4 +1,3 @@
-import AuthGuard from "@/components/auth/auth-guard";
 import NodeWriterPage from "@/components/page-partials/pages/node-writer/NodeWriter";
 import { AppRoute } from "@/types/route";
 import { ChartSpline, LayoutDashboard } from "lucide-react";
@@ -7,13 +6,13 @@ import { Navigate } from "react-router";
 
 type Routable = ComponentType<object>;
 
-/** Один стабільний елемент маршруту: інакше при зміні URL `/node-writer` → `/node-writer/doc/…` React Router монтує інший `<Route>` і повністю скидає стан `Main`. */
-function NodeWriterWithAuth() {
-  return (
-    <AuthGuard>
-      <NodeWriterPage />
-    </AuthGuard>
-  );
+/**
+ * Node Writer без обовʼязкового логіну: перегляд папок/нод для всіх (див. firestore/storage rules).
+ * Редагування й синк — лише для адміна після входу.
+ * Один стабільний елемент маршруту, щоб не скидався стан `Main` при навігації.
+ */
+function NodeWriterRoute() {
+  return <NodeWriterPage />;
 }
 
 export function lazyPage<P extends object>(
@@ -751,7 +750,7 @@ export const router: AppRoute[] = [
   },
   {
     path: `${RoutPath.NODE_WRITER}/*`,
-    Component: NodeWriterWithAuth,
+    Component: NodeWriterRoute,
     isNav: true,
     id: "node-writer",
     classes: {
