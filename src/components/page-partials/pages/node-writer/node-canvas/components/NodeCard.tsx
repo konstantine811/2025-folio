@@ -245,7 +245,9 @@ export function NodeCard({
       ref={setNodeRef(node.id)}
       data-node-id={node.id}
       style={rootStyle}
-      className="pointer-events-auto group/node-card absolute isolate overflow-visible"
+      className={`pointer-events-auto group/node-card absolute isolate overflow-visible ${
+        multiSelected ? "rounded-2xl ring-1 ring-sky-400/22 ring-offset-0" : ""
+      }`}
     >
       {nodeHasLinks ? (
         <div
@@ -255,9 +257,7 @@ export function NodeCard({
         />
       ) : null}
       <div
-        className={`relative flex h-full min-h-0 flex-col overflow-visible shadow-md transition-[border-color,box-shadow] ${
-          multiSelected ? "rounded-2xl ring-2 ring-sky-400/65 ring-offset-0" : ""
-        } ${
+        className={`relative flex h-full min-h-0 flex-col overflow-hidden shadow-md transition-[border-color,box-shadow] ${
           themeAccent
             ? "rounded-2xl border border-solid backdrop-blur-xl backdrop-saturate-150"
             : `${NODE_OUTER_GLASS} text-card-foreground ${NODE_OUTER_GLASS_INTERACTIVE}`
@@ -285,7 +285,7 @@ export function NodeCard({
         >
           <div
             title="Перетягнути · Shift+клік — у групу / з групи"
-            className={`flex w-7 shrink-0 cursor-grab touch-none items-center justify-center border-r border-solid text-[10px] active:cursor-grabbing ${
+            className={`rounded-tl-2xl flex w-7 shrink-0 cursor-grab touch-none items-center justify-center border-r border-solid text-[10px] active:cursor-grabbing ${
               themeAccent
                 ? ""
                 : `border-white/10 bg-white/[0.04] text-muted-foreground dark:border-white/[0.09]`
@@ -476,6 +476,7 @@ export function NodeCard({
                 </button>
               </TooltipTrigger>
               <TooltipContent
+                variant="dark"
                 side="top"
                 align="start"
                 sideOffset={6}
@@ -486,27 +487,27 @@ export function NodeCard({
             </Tooltip>
           </div>
         </div>
-      </div>
 
-      <div
-        role="separator"
-        aria-hidden
-        title="Змінити розмір"
-        className={`absolute right-0 bottom-0 z-[50] h-4 w-4 cursor-nwse-resize touch-manipulation border-t border-l border-solid ${
-          themeAccent
-            ? ""
-            : "border-white/15 bg-white/[0.06] hover:border-white/25 hover:bg-white/10"
-        }`}
-        style={
-          themeAccent
-            ? {
-                borderColor: themeAccent.border,
-                backgroundColor: themeAccent.dragBg,
-              }
-            : undefined
-        }
-        onPointerDown={(e) => onResizePointerDown(e, node)}
-      />
+        <div
+          role="separator"
+          aria-hidden
+          title="Змінити розмір"
+          className={`rounded-br-2xl absolute right-0 bottom-0 z-[50] h-4 w-4 cursor-nwse-resize touch-manipulation border-t border-l border-solid ${
+            themeAccent
+              ? ""
+              : "border-white/15 bg-white/[0.06] hover:border-white/25 hover:bg-white/10"
+          }`}
+          style={
+            themeAccent
+              ? {
+                  borderColor: themeAccent.border,
+                  backgroundColor: themeAccent.dragBg,
+                }
+              : undefined
+          }
+          onPointerDown={(e) => onResizePointerDown(e, node)}
+        />
+      </div>
     </div>
   );
 }

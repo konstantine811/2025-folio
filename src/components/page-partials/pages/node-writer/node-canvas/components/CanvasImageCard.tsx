@@ -145,7 +145,7 @@ export function CanvasImageCard({
         style={IMAGE_NODE_REAR_GLOW}
       />
       <div
-        className={`relative flex h-full min-h-0 flex-col overflow-visible transition-[border-color,box-shadow] ${IMAGE_CARD_OUTER} ${IMAGE_CARD_OUTER_HOVER}`}
+        className={`relative flex h-full min-h-0 flex-col overflow-hidden transition-[border-color,box-shadow] ${IMAGE_CARD_OUTER} ${IMAGE_CARD_OUTER_HOVER}`}
       >
         {EDGES.map((edge) => (
           <button
@@ -179,7 +179,7 @@ export function CanvasImageCard({
           <div className="flex min-h-0 shrink-0 items-stretch gap-0 border-b border-white/[0.07]">
             <div
               title="Перетягнути"
-              className="flex w-7 shrink-0 cursor-grab touch-none items-center justify-center border-r border-white/[0.07] bg-white/[0.03] text-[10px] text-zinc-500 active:cursor-grabbing"
+              className="rounded-tl-[1.75rem] flex w-7 shrink-0 cursor-grab touch-none items-center justify-center border-r border-white/[0.07] bg-white/[0.03] text-[10px] text-zinc-500 active:cursor-grabbing"
               onPointerDown={(e) => onDragPointerDown(e, image)}
               onPointerMove={onDragPointerMove}
               onPointerUp={onDragPointerUp}
@@ -232,15 +232,15 @@ export function CanvasImageCard({
             </div>
           </div>
         </div>
-      </div>
 
-      <div
-        role="separator"
-        aria-hidden
-        title="Змінити розмір"
-        className="absolute right-0 bottom-0 z-[50] h-4 w-4 cursor-nwse-resize touch-manipulation border-t border-l border-solid border-white/15 bg-white/[0.06] hover:border-white/25 hover:bg-white/10"
-        onPointerDown={(e) => onResizePointerDown(e, image)}
-      />
+        <div
+          role="separator"
+          aria-hidden
+          title="Змінити розмір"
+          className="rounded-br-[1.75rem] absolute right-0 bottom-0 z-[50] h-4 w-4 cursor-nwse-resize touch-manipulation border-t border-l border-solid border-white/15 bg-white/[0.06] hover:border-white/25 hover:bg-white/10"
+          onPointerDown={(e) => onResizePointerDown(e, image)}
+        />
+      </div>
     </div>
   );
 }

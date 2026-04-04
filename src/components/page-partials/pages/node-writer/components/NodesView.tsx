@@ -55,6 +55,7 @@ const NodesView = ({
               </button>
             </TooltipTrigger>
             <TooltipContent
+              variant="dark"
               side="bottom"
               align="start"
               sideOffset={6}
