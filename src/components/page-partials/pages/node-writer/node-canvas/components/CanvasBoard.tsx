@@ -25,6 +25,8 @@ interface CanvasBoardProps {
   knifePolygonPreviewPoints: Array<{ x: number; y: number }> | null;
   /** Червоне прев’ю — режим «ніж» по звʼязках (K + малювання). */
   linkKnifeDrawPreview?: boolean;
+  /** Блакитне прев’ю — Shift+рамка виділення нод. */
+  marqueeSelectPreview?: boolean;
   /** Лінії звʼязків у px спейсера (під нодами в стеку). */
   graphLayer?: (ctx: CanvasBoardGraphContext) => React.ReactNode;
   children: React.ReactNode;
@@ -38,6 +40,7 @@ export function CanvasBoard({
   drawPreviewRect,
   knifePolygonPreviewPoints,
   linkKnifeDrawPreview = false,
+  marqueeSelectPreview = false,
   graphLayer,
   children,
 }: CanvasBoardProps) {
@@ -199,10 +202,26 @@ export function CanvasBoard({
                 y={drawPreviewRect.top}
                 width={drawPreviewRect.w}
                 height={drawPreviewRect.h}
-                fill={linkKnifeDrawPreview ? "rgb(248 113 113)" : "var(--primary)"}
-                fillOpacity={linkKnifeDrawPreview ? 0.14 : 0.1}
-                stroke={linkKnifeDrawPreview ? "rgb(248 113 113)" : "var(--primary)"}
-                strokeOpacity={linkKnifeDrawPreview ? 0.72 : 0.45}
+                fill={
+                  linkKnifeDrawPreview
+                    ? "rgb(248 113 113)"
+                    : marqueeSelectPreview
+                      ? "rgb(56 189 248)"
+                      : "var(--primary)"
+                }
+                fillOpacity={
+                  linkKnifeDrawPreview ? 0.14 : marqueeSelectPreview ? 0.12 : 0.1
+                }
+                stroke={
+                  linkKnifeDrawPreview
+                    ? "rgb(248 113 113)"
+                    : marqueeSelectPreview
+                      ? "rgb(56 189 248)"
+                      : "var(--primary)"
+                }
+                strokeOpacity={
+                  linkKnifeDrawPreview ? 0.72 : marqueeSelectPreview ? 0.65 : 0.45
+                }
                 strokeWidth={linkKnifeDrawPreview ? 1.25 : 1}
                 strokeDasharray="4 3"
               />

@@ -1,4 +1,4 @@
-import { Scissors } from "lucide-react";
+import { MousePointer, Plus, Scissors } from "lucide-react";
 import type { RefObject } from "react";
 import {
   useCallback,
@@ -23,6 +23,7 @@ import {
   MIN_LINK_KNIFE_PATH_LENGTH_PX,
   MIN_LINK_KNIFE_POLYGON_VERTICES,
   MIN_LINK_KNIFE_SAMPLE_PX,
+  MIN_MARQUEE_SELECT_RECT,
   MIN_NODE_H,
   MIN_NODE_W,
 } from "./constants";
@@ -61,6 +62,7 @@ import {
   newMarkdownBlockId,
   newNodeId,
   normalizeDrawRect,
+  rectsIntersectLogical,
   resolveNodeLayout,
   runFitViewToNodes,
   semanticNodesSnapshot,
@@ -85,6 +87,24 @@ interface NodeCanvasProps {
 }
 
 const EMPTY_CANVAS_IMAGES: CanvasImageItem[] = [];
+
+/** Lucide не має MousePointerPlus — курсор + «плюс» як режим додавання до виділення (Shift). */
+function ShiftSelectionIcon() {
+  return (
+    <span className="relative inline-flex h-4 w-4 shrink-0">
+      <MousePointer
+        className="absolute left-0 top-0 size-3.5 text-sky-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]"
+        strokeWidth={2.25}
+        aria-hidden
+      />
+      <Plus
+        className="absolute -right-0.5 top-0 size-2 text-sky-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]"
+        strokeWidth={3}
+        aria-hidden
+      />
+    </span>
+  );
+}
 
 type WireSession =
   | {
@@ -129,6 +149,14 @@ type DrawCreateNewNode = {
   x1: number;
   y1: number;
 };
+type DrawCreateMarqueeSelect = {
+  mode: "marqueeSelect";
+  pointerId: number;
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+};
 type DrawCreateLinkKnife = {
   mode: "linkKnife";
   pointerId: number;
@@ -146,8 +174,20 @@ const NodeCanvas = ({
   const semanticSnapshotRef = useRef(semanticNodesSnapshot(project));
   useEffect(() => {
     semanticSnapshotRef.current = semanticNodesSnapshot(project);
+    setSelectedNodeIds(new Set());
     // eslint-disable-next-line react-hooks/exhaustive-deps -- лише при перемиканні документа
   }, [project.id]);
+
+  useEffect(() => {
+    const valid = new Set(nodes.map((n) => n.id));
+    setSelectedNodeIds((prev) => {
+      const next = new Set([...prev].filter((id) => valid.has(id)));
+      if (next.size === prev.size && [...prev].every((id) => next.has(id))) {
+        return prev;
+      }
+      return next;
+    });
+  }, [nodes]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -166,13 +206,21 @@ const NodeCanvas = ({
     Map<string, { w: number; h: number }>
   >(() => new Map());
 
+  /** Виділення нод (Shift+клік по ⋮⋮); перетягування рухає всю групу. */
+  const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const selectedNodeIdsRef = useRef<Set<string>>(selectedNodeIds);
+  selectedNodeIdsRef.current = selectedNodeIds;
+
   const [drag, setDrag] = useState<{
-    id: string;
+    ids: string[];
     pointerCanvasX: number;
     pointerCanvasY: number;
-    originX: number;
-    originY: number;
+    origins: Record<string, { x: number; y: number }>;
   } | null>(null);
+  const dragRef = useRef(drag);
+  dragRef.current = drag;
 
   const [resize, setResize] = useState<ResizeSession | null>(null);
 
@@ -186,7 +234,7 @@ const NodeCanvas = ({
 
   /** Жест малювання: нода — прямокутник; ніж — полігон у px скролу. */
   const [drawCreate, setDrawCreate] = useState<
-    DrawCreateNewNode | DrawCreateLinkKnife | null
+    DrawCreateNewNode | DrawCreateMarqueeSelect | DrawCreateLinkKnife | null
   >(null);
 
   /** Затиснута K / «л» (UK) — малювання смугою перетинає й видаляє звʼязки. */
@@ -274,6 +322,12 @@ const NodeCanvas = ({
   };
 
   const removeNode = (id: string) => {
+    setSelectedNodeIds((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
     patch((p) => ({
       ...p,
       nodes: p.nodes.filter((n) => n.id !== id),
@@ -392,6 +446,65 @@ const NodeCanvas = ({
     };
   }, [linkKnifeArmedUi, readOnly]);
 
+  const [shiftHeldUi, setShiftHeldUi] = useState(false);
+  const [shiftPointerClient, setShiftPointerClient] = useState<{
+    clientX: number;
+    clientY: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const allowShiftUi = (target: EventTarget | null) => {
+      if (readOnly) return false;
+      if (isKeyboardTypingTarget(target)) return false;
+      return activeElementAllowsCanvasShortcuts(
+        scrollRef.current,
+        shortcutShellRef?.current ?? null,
+      );
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Shift") return;
+      if (!allowShiftUi(e.target)) return;
+      setShiftHeldUi(true);
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.key !== "Shift") return;
+      setShiftHeldUi(false);
+    };
+    const onBlur = () => {
+      setShiftHeldUi(false);
+    };
+    const onFocusIn = (e: Event) => {
+      if (isKeyboardTypingTarget(e.target)) setShiftHeldUi(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onBlur);
+    window.addEventListener("focusin", onFocusIn);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onBlur);
+      window.removeEventListener("focusin", onFocusIn);
+    };
+  }, [readOnly, shortcutShellRef]);
+
+  useEffect(() => {
+    if (!shiftHeldUi || readOnly || linkKnifeArmedUi) {
+      setShiftPointerClient(null);
+      return;
+    }
+    const sync = (e: PointerEvent) => {
+      setShiftPointerClient({ clientX: e.clientX, clientY: e.clientY });
+    };
+    window.addEventListener("pointermove", sync, { passive: true });
+    window.addEventListener("pointerdown", sync, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", sync);
+      window.removeEventListener("pointerdown", sync);
+    };
+  }, [shiftHeldUi, readOnly, linkKnifeArmedUi]);
+
   const onImagePasted = useCallback(
     (item: CanvasImageItem, file: File) => {
       const projectId = project.id;
@@ -471,6 +584,17 @@ const NodeCanvas = ({
 
   const onNodePointerDown = (e: React.PointerEvent, node: NodeData) => {
     if (readOnly) return;
+    if (e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      setSelectedNodeIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(node.id)) next.delete(node.id);
+        else next.add(node.id);
+        return next;
+      });
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -480,29 +604,50 @@ const NodeCanvas = ({
       scrollRef.current,
       scaleRef.current,
     );
+    const sel = selectedNodeIdsRef.current;
+    const idsToMove = sel.has(node.id) ? [...sel] : [node.id];
+    if (!sel.has(node.id)) {
+      setSelectedNodeIds(new Set([node.id]));
+    }
+    const origins: Record<string, { x: number; y: number }> = {};
+    for (const id of idsToMove) {
+      const n = nodes.find((item) => item.id === id);
+      if (n) origins[id] = { x: n.x ?? 0, y: n.y ?? 0 };
+    }
+    const ids = idsToMove.filter((id) => origins[id] != null);
+    if (ids.length === 0) return;
     setDrag({
-      id: node.id,
+      ids,
       pointerCanvasX: x,
       pointerCanvasY: y,
-      originX: node.x ?? 0,
-      originY: node.y ?? 0,
+      origins,
     });
   };
 
   const onNodePointerMove = (e: React.PointerEvent) => {
-    if (!drag) return;
+    const d = dragRef.current;
+    if (!d) return;
     const { x, y } = clientToCanvas(
       e.clientX,
       e.clientY,
       scrollRef.current,
       scaleRef.current,
     );
-    const dx = x - drag.pointerCanvasX;
-    const dy = y - drag.pointerCanvasY;
-    updateNode(drag.id, {
-      x: Math.max(0, drag.originX + dx),
-      y: Math.max(0, drag.originY + dy),
-    });
+    const dx = x - d.pointerCanvasX;
+    const dy = y - d.pointerCanvasY;
+    patch((p) => ({
+      ...p,
+      nodes: p.nodes.map((n) => {
+        if (!d.ids.includes(n.id)) return n;
+        const o = d.origins[n.id];
+        if (!o) return n;
+        return {
+          ...n,
+          x: Math.max(0, o.x + dx),
+          y: Math.max(0, o.y + dy),
+        };
+      }),
+    }));
   };
 
   const onNodePointerUp = (e: React.PointerEvent) => {
@@ -874,7 +1019,9 @@ const NodeCanvas = ({
         });
         return;
       }
-      setDrawCreate({ ...d, x1: x, y1: y });
+      if (d.mode === "newNode" || d.mode === "marqueeSelect") {
+        setDrawCreate({ ...d, x1: x, y1: y });
+      }
     };
 
     const onUp = (e: PointerEvent) => {
@@ -940,7 +1087,47 @@ const NodeCanvas = ({
         y1,
       );
 
-      if (rwPx >= MIN_DRAW_RECT && rhPx >= MIN_DRAW_RECT) {
+      if (d.mode === "marqueeSelect") {
+        if (rwPx >= MIN_MARQUEE_SELECT_RECT && rhPx >= MIN_MARQUEE_SELECT_RECT) {
+          const s = Math.max(scaleRef.current, 0.01);
+          const selLeft = lpx / s;
+          const selTop = tpx / s;
+          const selW = rwPx / s;
+          const selH = rhPx / s;
+          const selRect = {
+            left: selLeft,
+            top: selTop,
+            w: selW,
+            h: selH,
+          };
+          const picked: string[] = [];
+          for (const n of nodesRef.current) {
+            const layout = resolveNodeLayout(n, layoutsRef.current.get(n.id));
+            const nx = n.x ?? 0;
+            const ny = n.y ?? 0;
+            const nodeRect = {
+              left: nx,
+              top: ny,
+              w: layout.w,
+              h: layout.h,
+            };
+            if (rectsIntersectLogical(selRect, nodeRect)) {
+              picked.push(n.id);
+            }
+          }
+          if (picked.length > 0) {
+            setSelectedNodeIds((prev) => {
+              const next = new Set(prev);
+              for (const id of picked) next.add(id);
+              return next;
+            });
+          }
+        }
+        setDrawCreate(null);
+        return;
+      }
+
+      if (d.mode === "newNode" && rwPx >= MIN_DRAW_RECT && rhPx >= MIN_DRAW_RECT) {
         const s = Math.max(scaleRef.current, 0.01);
         const left = lpx / s;
         const top = tpx / s;
@@ -1011,12 +1198,23 @@ const NodeCanvas = ({
       scrollRef.current,
     );
     if (linkKnifeArmedRef.current) {
+      setSelectedNodeIds(new Set());
       setDrawCreate({
         mode: "linkKnife",
         pointerId: e.pointerId,
         pointsScrollPx: [{ x, y }],
       });
+    } else if (e.shiftKey) {
+      setDrawCreate({
+        mode: "marqueeSelect",
+        pointerId: e.pointerId,
+        x0: x,
+        y0: y,
+        x1: x,
+        y1: y,
+      });
     } else {
+      setSelectedNodeIds(new Set());
       setDrawCreate({
         mode: "newNode",
         pointerId: e.pointerId,
@@ -1061,7 +1259,7 @@ const NodeCanvas = ({
     : null;
 
   const drawPreviewPx =
-    drawCreate?.mode === "newNode"
+    drawCreate?.mode === "newNode" || drawCreate?.mode === "marqueeSelect"
       ? normalizeDrawRect(
           drawCreate.x0,
           drawCreate.y0,
@@ -1129,6 +1327,29 @@ const NodeCanvas = ({
     strokeWidth: 2.25 as const,
   };
 
+  const showShiftChrome =
+    !readOnly && shiftHeldUi && !linkKnifeArmedUi;
+
+  const shiftCursorPortal =
+    typeof document !== "undefined" &&
+    showShiftChrome &&
+    shiftPointerClient
+      ? createPortal(
+          <div
+            className="pointer-events-none fixed z-[99998]"
+            style={{
+              left: shiftPointerClient.clientX,
+              top: shiftPointerClient.clientY,
+              transform: "translate(10px, 8px)",
+            }}
+            aria-hidden
+          >
+            <ShiftSelectionIcon />
+          </div>,
+          document.body,
+        )
+      : null;
+
   const linkKnifeCursorPortal =
     typeof document !== "undefined" &&
     !readOnly &&
@@ -1152,15 +1373,30 @@ const NodeCanvas = ({
 
   return (
     <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      {shiftCursorPortal}
       {linkKnifeCursorPortal}
-      {!readOnly && linkKnifeArmedUi ? (
-        <div
-          className="pointer-events-none absolute top-3 right-4 z-[80] flex items-center gap-1.5 rounded-full border border-red-400/40 bg-red-950/55 px-2.5 py-1 text-[10px] font-medium text-red-100/95 shadow-md backdrop-blur-sm"
-          role="status"
-          aria-live="polite"
-        >
-          <Scissors {...linkKnifeScissorsProps} aria-hidden />
-          Ніж по звʼязках
+      {!readOnly && (linkKnifeArmedUi || showShiftChrome) ? (
+        <div className="pointer-events-none absolute top-3 right-4 z-[80] flex flex-col items-end gap-2">
+          {linkKnifeArmedUi ? (
+            <div
+              className="flex items-center gap-1.5 rounded-full border border-red-400/40 bg-red-950/55 px-2.5 py-1 text-[10px] font-medium text-red-100/95 shadow-md backdrop-blur-sm"
+              role="status"
+              aria-live="polite"
+            >
+              <Scissors {...linkKnifeScissorsProps} aria-hidden />
+              Ніж по звʼязках
+            </div>
+          ) : null}
+          {showShiftChrome ? (
+            <div
+              className="flex items-center gap-1.5 rounded-full border border-sky-400/40 bg-sky-950/55 px-2.5 py-1 text-[10px] font-medium text-sky-100/95 shadow-md backdrop-blur-sm"
+              role="status"
+              aria-live="polite"
+            >
+              <ShiftSelectionIcon />
+              Shift — група · рамка
+            </div>
+          ) : null}
         </div>
       ) : null}
       <CanvasBoard
@@ -1180,6 +1416,7 @@ const NodeCanvas = ({
         }
         onCanvasPointerDown={onCanvasPointerDown}
         drawPreviewRect={drawPreviewPx}
+        marqueeSelectPreview={drawCreate?.mode === "marqueeSelect"}
         knifePolygonPreviewPoints={knifePolygonPreviewPoints}
         graphLayer={({ spacerW, spacerH, scale: s }) => (
           <NodeGraphSvg
@@ -1201,8 +1438,11 @@ const NodeCanvas = ({
             readOnly={readOnly}
             node={node}
             links={links}
-            zIndex={drag?.id === node.id ? 25 : 2}
+            zIndex={
+              drag?.ids.includes(node.id) ? 25 : 2
+            }
             wireDragging={wireDragging}
+            multiSelected={selectedNodeIds.has(node.id)}
             onStartWireFromChildSlot={startWireFromChildSlot}
             onDragPointerDown={onNodePointerDown}
             onDragPointerMove={onNodePointerMove}

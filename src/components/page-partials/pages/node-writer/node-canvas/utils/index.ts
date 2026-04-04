@@ -35,6 +35,7 @@ export {
   linkUsesPort,
   normalizeDrawRect,
   oppositePort,
+  rectsIntersectLogical,
   portPoint,
   resolveLinkSourcePortForBezier,
   visibleChildSlotCount,

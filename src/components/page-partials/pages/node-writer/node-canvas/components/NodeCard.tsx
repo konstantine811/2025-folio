@@ -83,6 +83,8 @@ interface NodeCardProps {
   wireDropHighlightPort?: NodePort | null;
   /** Якщо false — з цією нодою вже є звʼязок; червона обводка порту. */
   wireDropHighlightAllowed?: boolean;
+  /** Виділено в групу (Shift) — обводка картки. */
+  multiSelected?: boolean;
 }
 
 export function NodeCard({
@@ -105,6 +107,7 @@ export function NodeCard({
   setNodeRef,
   wireDropHighlightPort = null,
   wireDropHighlightAllowed = true,
+  multiSelected = false,
 }: NodeCardProps) {
   const x = node.x ?? 0;
   const y = node.y ?? 0;
@@ -253,6 +256,8 @@ export function NodeCard({
       ) : null}
       <div
         className={`relative flex h-full min-h-0 flex-col overflow-visible shadow-md transition-[border-color,box-shadow] ${
+          multiSelected ? "rounded-2xl ring-2 ring-sky-400/65 ring-offset-0" : ""
+        } ${
           themeAccent
             ? "rounded-2xl border border-solid backdrop-blur-xl backdrop-saturate-150"
             : `${NODE_OUTER_GLASS} text-card-foreground ${NODE_OUTER_GLASS_INTERACTIVE}`
@@ -279,7 +284,7 @@ export function NodeCard({
           }
         >
           <div
-            title="Перетягнути"
+            title="Перетягнути · Shift+клік — у групу / з групи"
             className={`flex w-7 shrink-0 cursor-grab touch-none items-center justify-center border-r border-solid text-[10px] active:cursor-grabbing ${
               themeAccent
                 ? ""

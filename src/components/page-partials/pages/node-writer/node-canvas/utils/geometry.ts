@@ -344,3 +344,16 @@ export function normalizeDrawRect(
   const h = Math.abs(y1 - y0);
   return { left, top, w, h };
 }
+
+/** Перетин двох вісево-вирівняних прямокутників у логічних координатах полотна. */
+export function rectsIntersectLogical(
+  a: { left: number; top: number; w: number; h: number },
+  b: { left: number; top: number; w: number; h: number },
+): boolean {
+  return (
+    a.left < b.left + b.w &&
+    a.left + a.w > b.left &&
+    a.top < b.top + b.h &&
+    a.top + a.h > b.top
+  );
+}
