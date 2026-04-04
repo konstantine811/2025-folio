@@ -1336,11 +1336,9 @@ const NodeCanvas = ({
     shiftPointerClient
       ? createPortal(
           <div
-            className="pointer-events-none fixed z-[99998]"
+            className="pointer-events-none fixed left-0 top-0 z-[99998]"
             style={{
-              left: shiftPointerClient.clientX,
-              top: shiftPointerClient.clientY,
-              transform: "translate(10px, 8px)",
+              transform: `translate(${shiftPointerClient.clientX}px, ${shiftPointerClient.clientY}px)`,
             }}
             aria-hidden
           >
@@ -1357,11 +1355,9 @@ const NodeCanvas = ({
     linkKnifePointerClient
       ? createPortal(
           <div
-            className="pointer-events-none fixed z-[99999]"
+            className="pointer-events-none fixed left-0 top-0 z-[99999]"
             style={{
-              left: linkKnifePointerClient.clientX,
-              top: linkKnifePointerClient.clientY,
-              transform: "translate(10px, 8px)",
+              transform: `translate(${linkKnifePointerClient.clientX}px, ${linkKnifePointerClient.clientY}px)`,
             }}
             aria-hidden
           >
@@ -1412,7 +1408,9 @@ const NodeCanvas = ({
               ? "cursor-default"
               : linkKnifeArmedUi
                 ? "cursor-none"
-                : "cursor-crosshair"
+                : showShiftChrome
+                  ? "cursor-none"
+                  : "cursor-crosshair"
         }
         onCanvasPointerDown={onCanvasPointerDown}
         drawPreviewRect={drawPreviewPx}
