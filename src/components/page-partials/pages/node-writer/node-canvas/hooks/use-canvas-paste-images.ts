@@ -27,13 +27,20 @@ function computeDisplaySize(nw: number, nh: number): { w: number; h: number } {
 /** Ctrl+V: вставка зображення з буфера в центр видимої області полотна. */
 export function useCanvasPasteImages(opts: {
   scrollRef: RefObject<HTMLDivElement | null>;
+  shortcutShellRef?: RefObject<HTMLElement | null>;
   scaleRef: RefObject<number>;
   /** `file` — те саме джерело, що й `item.url` (blob); потрібне для негайного upload у Storage. */
   onImagePasted: (item: CanvasImageItem, file: File) => void;
   /** Якщо false — слухач paste не підключається. */
   enabled?: boolean;
 }) {
-  const { scrollRef, scaleRef, onImagePasted, enabled = true } = opts;
+  const {
+    scrollRef,
+    shortcutShellRef,
+    scaleRef,
+    onImagePasted,
+    enabled = true,
+  } = opts;
   const onPastedRef = useRef(onImagePasted);
   onPastedRef.current = onImagePasted;
 
@@ -41,7 +48,13 @@ export function useCanvasPasteImages(opts: {
     if (!enabled) return;
     const onPaste = (e: ClipboardEvent) => {
       if (isKeyboardTypingTarget(e.target)) return;
-      if (!activeElementAllowsCanvasShortcuts(scrollRef.current)) return;
+      if (
+        !activeElementAllowsCanvasShortcuts(
+          scrollRef.current,
+          shortcutShellRef?.current ?? null,
+        )
+      )
+        return;
 
       const items = e.clipboardData?.items;
       if (!items?.length) return;
@@ -91,5 +104,5 @@ export function useCanvasPasteImages(opts: {
 
     window.addEventListener("paste", onPaste);
     return () => window.removeEventListener("paste", onPaste);
-  }, [scrollRef, scaleRef, enabled]);
+  }, [scrollRef, shortcutShellRef, scaleRef, enabled]);
 }

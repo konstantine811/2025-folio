@@ -184,11 +184,11 @@ export function WorkspaceTreeRow({
                 }
                 onBlur={commitDraft}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+                  if (e.code === "Enter" || e.code === "NumpadEnter") {
                     e.preventDefault();
                     commitDraft();
                   }
-                  if (e.key === "Escape") {
+                  if (e.code === "Escape") {
                     setDraftTitle(null);
                   }
                 }}

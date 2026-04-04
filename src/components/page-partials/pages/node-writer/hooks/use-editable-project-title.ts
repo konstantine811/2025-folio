@@ -29,7 +29,7 @@ export function useEditableProjectTitle(
   useEffect(() => {
     if (!editingTitle) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.code === "Escape") {
         setDraftTitle(projectTitle);
         setEditingTitle(false);
       }

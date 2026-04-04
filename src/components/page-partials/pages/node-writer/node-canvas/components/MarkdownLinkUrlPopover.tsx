@@ -70,12 +70,12 @@ export function MarkdownLinkUrlPopover({
             placeholder="Type or paste URL"
             className="w-full min-w-0 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
             onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
-              if (e.key === "Escape") {
+              if (e.code === "Escape") {
                 e.preventDefault();
                 onDismiss();
                 return;
               }
-              if (e.key === "Enter") {
+              if (e.code === "Enter" || e.code === "NumpadEnter") {
                 e.preventDefault();
                 onApply(e.currentTarget.value);
               }

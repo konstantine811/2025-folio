@@ -31,19 +31,33 @@ export function resolveNodeHeadingLevel(
   return LEGACY_NODE_HEADING_LEVEL;
 }
 
-/** Класи для поля заголовка ноди за рівнем h1…h6 (h1 суттєво більший за h2). */
+/**
+ * Заголовок ноди: sentence case, геометричний sans (Inter через `font-sans`).
+ * Розміри підписові, без «крикливого» масштабу all-caps.
+ */
 export const NODE_HEADING_LABEL_CLASSES: Record<NodeHeadingLevel, string> = {
-  1: "text-[40px] leading-[1.05] tracking-tight",
-  2: "text-[26px] leading-tight",
-  3: "text-[21px] leading-snug",
-  4: "text-[18px] leading-snug",
-  5: "text-[16px] leading-snug",
-  6: "text-[14px] leading-snug",
+  1: "text-[2rem] leading-tight tracking-normal",
+  2: "text-[1.375rem] leading-snug tracking-normal",
+  3: "text-[1.125rem] leading-snug tracking-normal",
+  4: "text-[1rem] leading-snug tracking-normal",
+  5: "text-[0.9375rem] leading-snug tracking-normal",
+  6: "text-[0.8125rem] leading-snug tracking-normal",
 };
+
+/** Markdown у ноді: прев’ю, textarea та read-only блок. */
+export const NODE_MD_BODY_TYPO =
+  "font-sans text-[14px] leading-relaxed antialiased";
 export const MIN_NODE_W = 140;
 export const MIN_NODE_H = 88;
 /** Мінімальний розмір жесту малювання ноди (у CSS px на екрані, не в логічних координатах полотна). */
 export const MIN_DRAW_RECT = 40;
+
+/** Мінімальна відстань між точками контуру ножа (px контенту скролу). */
+export const MIN_LINK_KNIFE_SAMPLE_PX = 4;
+/** Мінімум вершин у замкненому полігоні ножа. */
+export const MIN_LINK_KNIFE_POLYGON_VERTICES = 3;
+/** Мінімальний периметр контуру (px скролу), щоб випадковий клік не різав. */
+export const MIN_LINK_KNIFE_PATH_LENGTH_PX = 24;
 
 /** Межі розміру зображення з буфера (логічні px полотна). */
 export const PASTED_IMAGE_MAX_SIDE = 420;
@@ -59,7 +73,7 @@ export const FIT_VIEW_MIN_BOX_LOGICAL = 200;
 
 /** Текст довідки полотна (підказка біля іконки «Документ»). */
 export const NODE_CANVAS_HELP_TEXT =
-  "Малюйте прямокутник — нова нода. На кожному боці ноди — нумеровані слоти 1, 2, 3… (окремий порядок зверху, справа, знизу, зліва). Тягніть зі слота — знімає цей звʼязок. Кут — розмір. Ctrl або ⌘ + коліщатко — масштаб. Клавіша / — підігнати масштаб і прокрутку під усі ноди. Затисніть Tab і тягніть тло — рух по полотну (у полі вводу Tab лишається як завжди). Ctrl+V — вставити зображення з буфера на полотно; з ребра зображення або ноди можна вести звʼязок до іншої ноди або зображення.";
+  "Малюйте прямокутник — нова нода. Затисніть K (на укр. — клавіша «л») і ведіть довільний замкнений контур — ріжуться звʼязки, що перетинають область або її межу; зʼявляться ножиці. На кожному боці ноди — слоти 1, 2, 3… Тягніть зі слота — знімає звʼязок. Кут ноди — розмір. Ctrl або ⌘ + коліщатко — масштаб. / — підігнати вигляд. Tab + тягти тло — панорама. Ctrl/⌘+V на полотні — зображення; у тексті ноди — картинка в markdown. З ребра зображення або ноди — звʼязок до іншої ноди або зображення.";
 
 /** Режим лише перегляду полотна (гості). */
 export const NODE_CANVAS_HELP_TEXT_VIEW_ONLY =
@@ -67,7 +81,7 @@ export const NODE_CANVAS_HELP_TEXT_VIEW_ONLY =
 
 /** Підказка внизу картки ноди (іконка «i» у футері). */
 export const NODE_MARKDOWN_EDITOR_HELP_TEXT =
-  "⋮⋮ рух · кут — розмір · з усіх боків 1, 2… — порядок дітей · Markdown: Enter — наступний блок · у ``` — Enter лишає рядок усередині коду ·\n↑↓ між блоками · виділення тексту — панель стилів над рядком";
+  "⋮⋮ рух · кут — розмір · з усіх боків 1, 2… — порядок дітей · Markdown: Enter — наступний блок · у ``` — Enter лишає рядок усередині коду ·\n↑↓ між блоками · виділення тексту — панель стилів над рядком · Ctrl/⌘+V у рядку — вставити зображення з буфера (завантаження в хмару)";
 
 export const PORT_LABELS: Record<NodePort, string> = {
   n: "зверху",
@@ -76,9 +90,19 @@ export const PORT_LABELS: Record<NodePort, string> = {
   w: "зліва",
 };
 
+/**
+ * Відступ портів від краю картки (0 — кружечки впритул до ребра).
+ * Геометрія звʼязків у `geometry.ts` використовує те саме значення.
+ */
+export const NODE_PORT_EDGE_INSET = 0;
+/** Відстань між центрами сусідніх слотів на одному боці. */
+export const NODE_PORT_SLOT_GAP = 14;
+/** Візуальний розмір кнопки-порту (px); gap = NODE_PORT_SLOT_GAP − це значення. */
+export const NODE_PORT_HANDLE_PX = 12;
+
 export const PORT_HANDLE_POSITION: Record<NodePort, string> = {
-  n: "left-1/2 top-0 -translate-x-1/2 -translate-y-1/2",
-  s: "left-1/2 bottom-0 -translate-x-1/2 translate-y-1/2",
-  w: "left-0 top-1/2 -translate-x-1/2 -translate-y-1/2",
-  e: "right-0 top-1/2 translate-x-1/2 -translate-y-1/2",
+  n: "left-1/2 top-0 -translate-x-1/2 flex flex-row",
+  s: "left-1/2 bottom-0 -translate-x-1/2 flex flex-row",
+  w: "left-0 top-1/2 -translate-y-1/2 flex flex-col",
+  e: "right-0 top-1/2 -translate-y-1/2 flex flex-col",
 };

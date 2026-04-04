@@ -18,6 +18,8 @@ import DocumentRouteLoading from "./DocumentRouteLoading";
 import { collectFolderSubtreeIds } from "../workspace/workspace-tree-utils";
 import { nextChildOrder } from "../workspace/next-child-order";
 import {
+  collectRemovedNodeWriterStoragePaths,
+  deleteNodeWriterStorageObjectsByPaths,
   loadWorkspaceFromFirestore,
   resolveProjectMediaUrls,
   syncWorkspaceToFirestore,
@@ -263,13 +265,21 @@ const Main = () => {
     setCurrentProject((cur) => {
       if (!cur) return null;
       const next = fn(cur);
-      const stamped =
-        next === cur ? cur : { ...next, lastModified: Date.now() };
-      if (stamped !== cur) {
-        setProjects((prev) =>
-          prev.map((p) => (p.id === stamped.id ? stamped : p)),
+      if (next === cur) {
+        return cur;
+      }
+      const removed = collectRemovedNodeWriterStoragePaths(cur, next);
+      if (removed.length > 0) {
+        void deleteNodeWriterStorageObjectsByPaths(
+          removed,
+          next.id,
+          NODE_WRITER_WORKSPACE_SCOPE,
         );
       }
+      const stamped = { ...next, lastModified: Date.now() };
+      setProjects((prev) =>
+        prev.map((p) => (p.id === stamped.id ? stamped : p)),
+      );
       return stamped;
     });
   }, []);

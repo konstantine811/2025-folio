@@ -1,9 +1,16 @@
 import type { CSSProperties } from "react";
 import type { LinkData, NodePort } from "../../types/types";
-import { PORT_LABELS } from "../constants";
+import {
+  NODE_PORT_EDGE_INSET,
+  NODE_PORT_HANDLE_PX,
+  NODE_PORT_SLOT_GAP,
+  PORT_LABELS,
+} from "../constants";
 import { visibleChildSlotCount } from "../utils";
 
 const EDGES: NodePort[] = ["n", "e", "s", "w"];
+
+const SLOT_FLEX_GAP_PX = NODE_PORT_SLOT_GAP - NODE_PORT_HANDLE_PX;
 
 export interface ChildSlotsProps {
   /** Якщо true — слоти не показуються (режим перегляду). */
@@ -11,6 +18,10 @@ export interface ChildSlotsProps {
   nodeId: string;
   links: LinkData[];
   wireDragging: boolean;
+  /** Підсвітка боку, куди зараз «приліпить» звʼязок під курсором. */
+  highlightDropPort?: NodePort | null;
+  /** Якщо false — пара вже зʼєднана; показуємо червону обводку замість білої. */
+  highlightDropAllowed?: boolean;
   onPointerDown: (
     e: React.PointerEvent,
     nodeId: string,
@@ -19,70 +30,83 @@ export interface ChildSlotsProps {
   ) => void;
 }
 
-function edgePositionStyle(
-  edge: NodePort,
-  slot: number,
-  count: number,
-): CSSProperties {
-  const t = `${(slot / (count + 1)) * 100}%`;
+function edgeGroupPositionStyle(edge: NodePort): CSSProperties {
+  const d = NODE_PORT_EDGE_INSET;
   switch (edge) {
-    case "e":
-      return { top: t, right: 0 };
-    case "w":
-      return { top: t, left: 0 };
     case "n":
-      return { left: t, top: 0 };
+      return { left: "50%", top: d, transform: "translateX(-50%)" };
     case "s":
-      return { left: t, bottom: 0 };
+      return { left: "50%", bottom: d, transform: "translateX(-50%)" };
+    case "e":
+      return { right: d, top: "50%", transform: "translateY(-50%)" };
+    case "w":
+      return { left: d, top: "50%", transform: "translateY(-50%)" };
   }
 }
 
-function edgeTransformClass(edge: NodePort): string {
-  switch (edge) {
-    case "e":
-      return "translate-x-1/2 -translate-y-1/2";
-    case "w":
-      return "-translate-x-1/2 -translate-y-1/2";
-    case "n":
-      return "-translate-x-1/2 -translate-y-1/2";
-    case "s":
-      return "-translate-x-1/2 translate-y-1/2";
-  }
+function edgeGroupLayoutClass(edge: NodePort): string {
+  return edge === "n" || edge === "s"
+    ? "flex flex-row items-center justify-center"
+    : "flex flex-col items-center justify-center";
 }
 
-function EdgeSlotRow({
+/** Кольори портів за стороною (як у node-based AI UI: різні типи «каналів»). */
+const EDGE_PORT_RING: Record<NodePort, string> = {
+  e: "border-sky-400/80 bg-sky-400 text-sky-950 shadow-[0_0_10px_rgba(56,189,248,0.45)]",
+  w: "border-emerald-400/80 bg-emerald-400 text-emerald-950 shadow-[0_0_10px_rgba(52,211,153,0.4)]",
+  n: "border-amber-400/80 bg-amber-400 text-amber-950 shadow-[0_0_10px_rgba(251,191,36,0.45)]",
+  s: "border-rose-400/80 bg-rose-400 text-rose-950 shadow-[0_0_10px_rgba(251,113,133,0.4)]",
+};
+
+function EdgeSlotGroup({
   nodeId,
   links,
   edge,
   wireDragging,
+  highlightDropPort,
+  highlightDropAllowed = true,
   onPointerDown,
 }: ChildSlotsProps & { edge: NodePort }) {
   const count = visibleChildSlotCount(links, nodeId, edge);
   const slots = Array.from({ length: count }, (_, i) => i + 1);
-  const tf = edgeTransformClass(edge);
 
   return (
-    <>
+    <div
+      className={`absolute z-[45] ${edgeGroupLayoutClass(edge)}`}
+      style={{
+        ...edgeGroupPositionStyle(edge),
+        gap: SLOT_FLEX_GAP_PX,
+      }}
+    >
       {slots.map((slot) => (
         <button
           key={slot}
           type="button"
           data-node-id={nodeId}
+          data-link-port={edge}
           data-source-child-edge={edge}
           data-source-child-slot={String(slot)}
           title={`${PORT_LABELS[edge]} · слот ${slot}`}
-          style={edgePositionStyle(edge, slot, count)}
-          className={`absolute z-[45] flex h-6 min-w-6 cursor-crosshair touch-manipulation items-center justify-center rounded-full border border-border/40 bg-primary px-1 font-mono text-[9px] font-bold text-primary-foreground shadow-sm transition-opacity ${tf} ${
-            wireDragging
-              ? "opacity-100"
-              : "opacity-0 group-hover/node-card:opacity-100"
-          } hover:scale-110 hover:bg-primary/90`}
+          className={`flex cursor-crosshair touch-manipulation items-center justify-center rounded-full border border-solid p-0 font-mono text-[6px] font-bold leading-none transition-all ${EDGE_PORT_RING[edge]} ${
+            highlightDropPort === edge
+              ? highlightDropAllowed
+                ? "z-[55] scale-110 opacity-100 ring-2 ring-white/95 ring-offset-2 ring-offset-zinc-950"
+                : "z-[55] scale-110 opacity-100 ring-2 ring-red-500 ring-offset-2 ring-offset-zinc-950 shadow-[0_0_12px_rgba(239,68,68,0.55)]"
+              : wireDragging
+                ? "opacity-100"
+                : "opacity-0 group-hover/node-card:opacity-100"
+          } hover:scale-110`}
+          style={{
+            width: NODE_PORT_HANDLE_PX,
+            minWidth: NODE_PORT_HANDLE_PX,
+            height: NODE_PORT_HANDLE_PX,
+          }}
           onPointerDown={(e) => onPointerDown(e, nodeId, edge, slot)}
         >
           {slot}
         </button>
       ))}
-    </>
+    </div>
   );
 }
 
@@ -91,7 +115,7 @@ export function ChildSlotHandles(props: ChildSlotsProps) {
   return (
     <>
       {EDGES.map((edge) => (
-        <EdgeSlotRow key={edge} {...props} edge={edge} />
+        <EdgeSlotGroup key={edge} {...props} edge={edge} />
       ))}
     </>
   );

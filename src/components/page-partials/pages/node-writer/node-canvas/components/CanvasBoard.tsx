@@ -21,6 +21,10 @@ interface CanvasBoardProps {
   onCanvasPointerDown: (e: React.PointerEvent) => void;
   /** Прев’ю прямокутника в px координатах контенту скролу (уся площа спейсера). */
   drawPreviewRect: { left: number; top: number; w: number; h: number } | null;
+  /** Контур ножа (freehand) у px скролу; малюється поверх полотна. */
+  knifePolygonPreviewPoints: Array<{ x: number; y: number }> | null;
+  /** Червоне прев’ю — режим «ніж» по звʼязках (K + малювання). */
+  linkKnifeDrawPreview?: boolean;
   /** Лінії звʼязків у px спейсера (під нодами в стеку). */
   graphLayer?: (ctx: CanvasBoardGraphContext) => React.ReactNode;
   children: React.ReactNode;
@@ -32,6 +36,8 @@ export function CanvasBoard({
   canvasOverlayCursorClass,
   onCanvasPointerDown,
   drawPreviewRect,
+  knifePolygonPreviewPoints,
+  linkKnifeDrawPreview = false,
   graphLayer,
   children,
 }: CanvasBoardProps) {
@@ -99,7 +105,7 @@ export function CanvasBoard({
         data-lenis-prevent
         data-lenis-prevent-wheel
         data-lenis-prevent-touch
-        className="node-canvas-scroll absolute inset-0 overflow-auto overscroll-contain bg-background"
+        className="node-canvas-scroll absolute inset-0 overflow-auto overscroll-contain bg-background dark:bg-zinc-950"
       >
         <div
           className="relative shrink-0"
@@ -111,7 +117,7 @@ export function CanvasBoard({
             className="pointer-events-none absolute inset-0 z-0"
             style={{
               backgroundImage:
-                "radial-gradient(circle, color-mix(in srgb, var(--foreground) 20%, transparent) 1px, transparent 1px)",
+                "radial-gradient(circle, color-mix(in srgb, var(--foreground) 14%, transparent) 1.25px, transparent 1.25px)",
               backgroundSize: `${CANVAS_DOT_GRID_STEP * s}px ${CANVAS_DOT_GRID_STEP * s}px`,
             }}
           />
@@ -141,7 +147,47 @@ export function CanvasBoard({
           >
             {children}
           </div>
-          {drawPreviewRect && (
+          {knifePolygonPreviewPoints && knifePolygonPreviewPoints.length > 0 ? (
+            <svg
+              className="pointer-events-none absolute left-0 top-0 z-[2]"
+              width={spacerW}
+              height={spacerH}
+              aria-hidden
+            >
+              <polyline
+                points={knifePolygonPreviewPoints
+                  .map((p) => `${p.x},${p.y}`)
+                  .join(" ")}
+                fill="none"
+                stroke="rgb(248 113 113)"
+                strokeOpacity={0.88}
+                strokeWidth={1.35}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeDasharray="4 3"
+              />
+              {knifePolygonPreviewPoints.length >= 3 ? (
+                <line
+                  x1={
+                    knifePolygonPreviewPoints[
+                      knifePolygonPreviewPoints.length - 1
+                    ]!.x
+                  }
+                  y1={
+                    knifePolygonPreviewPoints[
+                      knifePolygonPreviewPoints.length - 1
+                    ]!.y
+                  }
+                  x2={knifePolygonPreviewPoints[0]!.x}
+                  y2={knifePolygonPreviewPoints[0]!.y}
+                  stroke="rgb(248 113 113)"
+                  strokeOpacity={0.35}
+                  strokeWidth={1}
+                  strokeDasharray="2 5"
+                />
+              ) : null}
+            </svg>
+          ) : drawPreviewRect ? (
             <svg
               className="pointer-events-none absolute left-0 top-0 z-[2]"
               width={spacerW}
@@ -153,15 +199,15 @@ export function CanvasBoard({
                 y={drawPreviewRect.top}
                 width={drawPreviewRect.w}
                 height={drawPreviewRect.h}
-                fill="var(--primary)"
-                fillOpacity={0.1}
-                stroke="var(--primary)"
-                strokeOpacity={0.45}
-                strokeWidth={1}
+                fill={linkKnifeDrawPreview ? "rgb(248 113 113)" : "var(--primary)"}
+                fillOpacity={linkKnifeDrawPreview ? 0.14 : 0.1}
+                stroke={linkKnifeDrawPreview ? "rgb(248 113 113)" : "var(--primary)"}
+                strokeOpacity={linkKnifeDrawPreview ? 0.72 : 0.45}
+                strokeWidth={linkKnifeDrawPreview ? 1.25 : 1}
                 strokeDasharray="4 3"
               />
             </svg>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

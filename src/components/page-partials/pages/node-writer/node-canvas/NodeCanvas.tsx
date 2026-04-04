@@ -1,3 +1,5 @@
+import { Scissors } from "lucide-react";
+import type { RefObject } from "react";
 import {
   useCallback,
   useEffect,
@@ -6,6 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import type {
   CanvasImageItem,
   LinkData,
@@ -15,7 +18,14 @@ import type {
   Project,
   ProjectPatchFn,
 } from "../types/types";
-import { MIN_DRAW_RECT, MIN_NODE_H, MIN_NODE_W } from "./constants";
+import {
+  MIN_DRAW_RECT,
+  MIN_LINK_KNIFE_PATH_LENGTH_PX,
+  MIN_LINK_KNIFE_POLYGON_VERTICES,
+  MIN_LINK_KNIFE_SAMPLE_PX,
+  MIN_NODE_H,
+  MIN_NODE_W,
+} from "./constants";
 import { CanvasBoard } from "./components/CanvasBoard";
 import { CanvasImageCard } from "./components/CanvasImageCard";
 import { CanvasEmptyHint } from "./components/CanvasEmptyHint";
@@ -32,28 +42,46 @@ import {
 import { NODE_WRITER_WORKSPACE_SCOPE } from "@/config/node-writer-access.config";
 import { uploadNodeWriterCanvasPastedFile } from "@/services/firebase/node-writer-workspace";
 import {
+  activeElementAllowsCanvasShortcuts,
+  isKeyboardTypingTarget,
+  isLinkKnifeArmKeyDown,
+  isLinkKnifeArmKeyUp,
+} from "./utils/canvas-keyboard";
+import {
   bboxPortPoint,
   clientToCanvas,
   clientToScrollContent,
+  collectLinkKeysIntersectingLogicalPolygon,
   descriptionFromBlocks,
   edgeChildSlotPoint,
+  inferPortAtPoint,
+  linkStableKey,
   linkUsesChildSlot,
   logDocumentNodesSummary,
   newMarkdownBlockId,
   newNodeId,
   normalizeDrawRect,
-  oppositePort,
   resolveNodeLayout,
   runFitViewToNodes,
   semanticNodesSnapshot,
   visibleChildSlotCount,
 } from "./utils";
+import {
+  layoutGetterFromRefs,
+  resolveWireDropHighlight,
+  type WireDropHighlight,
+} from "./utils/wire-drop-highlight";
 
 interface NodeCanvasProps {
   project: Project;
   onProjectPatch: (fn: ProjectPatchFn) => void;
   /** Лише перегляд і панорама (Tab+тягти), без редагування. */
   readOnly?: boolean;
+  /**
+   * Шапка + полотно: щоб гарячі клавіші працювали, коли фокус у тулбарі документа,
+   * а не лише всередині скролу канвасу.
+   */
+  shortcutShellRef?: RefObject<HTMLElement | null>;
 }
 
 const EMPTY_CANVAS_IMAGES: CanvasImageItem[] = [];
@@ -93,10 +121,25 @@ type ResizeSession =
       originH: number;
     };
 
+type DrawCreateNewNode = {
+  mode: "newNode";
+  pointerId: number;
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+};
+type DrawCreateLinkKnife = {
+  mode: "linkKnife";
+  pointerId: number;
+  pointsScrollPx: Array<{ x: number; y: number }>;
+};
+
 const NodeCanvas = ({
   project,
   onProjectPatch,
   readOnly = false,
+  shortcutShellRef,
 }: NodeCanvasProps) => {
   const { nodes, links } = project;
   const canvasImages = project.canvasImages ?? EMPTY_CANVAS_IMAGES;
@@ -141,17 +184,31 @@ const NodeCanvas = ({
     originY: number;
   } | null>(null);
 
-  /** Кутки жесту в px координатах контенту скролу (для прев’ю на весь спейсер). */
-  const [drawCreate, setDrawCreate] = useState<{
-    pointerId: number;
-    x0: number;
-    y0: number;
-    x1: number;
-    y1: number;
+  /** Жест малювання: нода — прямокутник; ніж — полігон у px скролу. */
+  const [drawCreate, setDrawCreate] = useState<
+    DrawCreateNewNode | DrawCreateLinkKnife | null
+  >(null);
+
+  /** Затиснута K / «л» (UK) — малювання смугою перетинає й видаляє звʼязки. */
+  const linkKnifeArmedRef = useRef(false);
+  const [linkKnifeArmedUi, setLinkKnifeArmedUi] = useState(false);
+
+  const setLinkKnifeArmed = useCallback((armed: boolean) => {
+    linkKnifeArmedRef.current = armed;
+    setLinkKnifeArmedUi(armed);
+    if (!armed) setLinkKnifePointerClient(null);
+  }, []);
+
+  /** Позиція курсора (viewport) — плаваючі ножиці замість ненадійного `cursor: url()`. */
+  const [linkKnifePointerClient, setLinkKnifePointerClient] = useState<{
+    clientX: number;
+    clientY: number;
   } | null>(null);
 
   const [wireSession, setWireSession] = useState<WireSession | null>(null);
   const [wireCursor, setWireCursor] = useState({ x: 0, y: 0 });
+  const [wireDropHighlight, setWireDropHighlight] =
+    useState<WireDropHighlight | null>(null);
 
   const patch = useCallback(
     (fn: ProjectPatchFn) => {
@@ -262,6 +319,8 @@ const NodeCanvas = ({
 
   const nodesRef = useRef(nodes);
   nodesRef.current = nodes;
+  const linksRef = useRef(links);
+  linksRef.current = links;
   const layoutsRef = useRef(nodeLayouts);
   layoutsRef.current = nodeLayouts;
   const canvasImagesRef = useRef(canvasImages);
@@ -281,9 +340,57 @@ const NodeCanvas = ({
 
   useNodeCanvasKeyboard({
     scrollRef,
+    shortcutShellRef,
     fitViewToNodes,
     setTabPanArmed,
   });
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.repeat) return;
+      if (!isLinkKnifeArmKeyDown(e)) return;
+      if (isKeyboardTypingTarget(e.target)) return;
+      if (
+        !activeElementAllowsCanvasShortcuts(
+          scrollRef.current,
+          shortcutShellRef?.current ?? null,
+        )
+      )
+        return;
+      setLinkKnifeArmed(true);
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (!isLinkKnifeArmKeyUp(e)) return;
+      setLinkKnifeArmed(false);
+    };
+    const onBlur = () => {
+      setLinkKnifeArmed(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onBlur);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onBlur);
+    };
+  }, [setLinkKnifeArmed, shortcutShellRef]);
+
+  useEffect(() => {
+    if (!linkKnifeArmedUi || readOnly) {
+      setLinkKnifePointerClient(null);
+      return;
+    }
+    const sync = (e: PointerEvent) => {
+      setLinkKnifePointerClient({ clientX: e.clientX, clientY: e.clientY });
+    };
+    window.addEventListener("pointermove", sync, { passive: true });
+    window.addEventListener("pointerdown", sync, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", sync);
+      window.removeEventListener("pointerdown", sync);
+    };
+  }, [linkKnifeArmedUi, readOnly]);
 
   const onImagePasted = useCallback(
     (item: CanvasImageItem, file: File) => {
@@ -331,8 +438,21 @@ const NodeCanvas = ({
     [patch, project.id],
   );
 
+  const uploadMarkdownPasteImage = useCallback(
+    async (file: File) => {
+      return uploadNodeWriterCanvasPastedFile(
+        NODE_WRITER_WORKSPACE_SCOPE,
+        project.id,
+        `md-${newMarkdownBlockId()}`,
+        file,
+      );
+    },
+    [project.id],
+  );
+
   useCanvasPasteImages({
     scrollRef,
+    shortcutShellRef,
     scaleRef,
     onImagePasted,
     enabled: !readOnly,
@@ -513,10 +633,29 @@ const NodeCanvas = ({
           scaleRef.current,
         ),
       );
+      const lg = layoutGetterFromRefs(
+        nodesRef.current,
+        layoutsRef.current,
+      );
+      setWireDropHighlight(
+        resolveWireDropHighlight(
+          e.clientX,
+          e.clientY,
+          wireSession,
+          scrollRef.current,
+          scaleRef.current,
+          nodesRef.current,
+          canvasImagesRef.current,
+          lg,
+          linksRef.current,
+        ),
+      );
     };
 
     const onUp = (e: PointerEvent) => {
       if (e.pointerId !== wireSession.pointerId) return;
+
+      setWireDropHighlight(null);
 
       const el = document.elementFromPoint(e.clientX, e.clientY);
       const portEl = el?.closest("[data-link-port]") as HTMLElement | null;
@@ -532,22 +671,58 @@ const NodeCanvas = ({
         | NodePort
         | undefined;
 
+      const dropPt = clientToCanvas(
+        e.clientX,
+        e.clientY,
+        scrollRef.current,
+        scaleRef.current,
+      );
+      const layoutFor = (id: string) =>
+        resolveNodeLayout(
+          nodesRef.current.find((n) => n.id === id),
+          layoutsRef.current.get(id),
+        );
+
       if (wireSession.kind === "node") {
         const { sourceId, sourceEdge, sourceChildSlot } = wireSession;
         if (targetCanvasImageId && targetCanvasImageId !== sourceId) {
-          addProjectLinkRef.current({
-            source: sourceId,
-            target: targetCanvasImageId,
-            sourcePort: sourceEdge,
-            targetPort: imageTargetPort ?? oppositePort(sourceEdge),
-            sourceChildSlot,
-            targetIsCanvasImage: true,
-          });
+          const img = canvasImagesRef.current.find(
+            (i) => i.id === targetCanvasImageId,
+          );
+          if (img) {
+            const targetPort: NodePort =
+              imageTargetPort ??
+              inferPortAtPoint(
+                dropPt.x,
+                dropPt.y,
+                img.x,
+                img.y,
+                img.width,
+                img.height,
+              );
+            addProjectLinkRef.current({
+              source: sourceId,
+              target: targetCanvasImageId,
+              sourcePort: sourceEdge,
+              targetPort,
+              sourceChildSlot,
+              targetIsCanvasImage: true,
+            });
+          }
         } else if (targetNodeId && targetNodeId !== sourceId) {
           const targetNode = nodesRef.current.find((n) => n.id === targetNodeId);
           if (targetNode) {
+            const { w, h } = layoutFor(targetNodeId);
             const targetPort: NodePort =
-              targetPortAttr ?? oppositePort(sourceEdge);
+              targetPortAttr ??
+              inferPortAtPoint(
+                dropPt.x,
+                dropPt.y,
+                targetNode.x ?? 0,
+                targetNode.y ?? 0,
+                w,
+                h,
+              );
             addProjectLinkRef.current({
               source: sourceId,
               target: targetNodeId,
@@ -562,23 +737,49 @@ const NodeCanvas = ({
         if (targetNodeId && targetNodeId !== sourceId) {
           const targetNode = nodesRef.current.find((n) => n.id === targetNodeId);
           if (targetNode) {
+            const { w, h } = layoutFor(targetNodeId);
+            const targetPort: NodePort =
+              targetPortAttr ??
+              inferPortAtPoint(
+                dropPt.x,
+                dropPt.y,
+                targetNode.x ?? 0,
+                targetNode.y ?? 0,
+                w,
+                h,
+              );
             addProjectLinkRef.current({
               source: sourceId,
               target: targetNodeId,
               sourcePort: sourceEdge,
-              targetPort: targetPortAttr ?? oppositePort(sourceEdge),
+              targetPort,
               sourceIsCanvasImage: true,
             });
           }
         } else if (targetCanvasImageId && targetCanvasImageId !== sourceId) {
-          addProjectLinkRef.current({
-            source: sourceId,
-            target: targetCanvasImageId,
-            sourcePort: sourceEdge,
-            targetPort: imageTargetPort ?? oppositePort(sourceEdge),
-            sourceIsCanvasImage: true,
-            targetIsCanvasImage: true,
-          });
+          const img = canvasImagesRef.current.find(
+            (i) => i.id === targetCanvasImageId,
+          );
+          if (img) {
+            const targetPort: NodePort =
+              imageTargetPort ??
+              inferPortAtPoint(
+                dropPt.x,
+                dropPt.y,
+                img.x,
+                img.y,
+                img.width,
+                img.height,
+              );
+            addProjectLinkRef.current({
+              source: sourceId,
+              target: targetCanvasImageId,
+              sourcePort: sourceEdge,
+              targetPort,
+              sourceIsCanvasImage: true,
+              targetIsCanvasImage: true,
+            });
+          }
         }
       }
 
@@ -589,6 +790,7 @@ const NodeCanvas = ({
     window.addEventListener("pointerup", onUp);
     window.addEventListener("pointercancel", onUp);
     return () => {
+      setWireDropHighlight(null);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
       window.removeEventListener("pointercancel", onUp);
@@ -657,6 +859,21 @@ const NodeCanvas = ({
         e.clientY,
         scrollRef.current,
       );
+      if (d.mode === "linkKnife") {
+        const pts = d.pointsScrollPx;
+        const last = pts[pts.length - 1];
+        if (
+          last &&
+          Math.hypot(x - last.x, y - last.y) < MIN_LINK_KNIFE_SAMPLE_PX
+        ) {
+          return;
+        }
+        setDrawCreate({
+          ...d,
+          pointsScrollPx: [...pts, { x, y }],
+        });
+        return;
+      }
       setDrawCreate({ ...d, x1: x, y1: y });
     };
 
@@ -669,6 +886,53 @@ const NodeCanvas = ({
         e.clientY,
         scrollRef.current,
       );
+
+      if (d.mode === "linkKnife") {
+        let pts = d.pointsScrollPx;
+        const last = pts[pts.length - 1];
+        if (
+          !last ||
+          Math.hypot(x1 - last.x, y1 - last.y) >= MIN_LINK_KNIFE_SAMPLE_PX
+        ) {
+          pts = [...pts, { x: x1, y: y1 }];
+        }
+        const n = pts.length;
+        if (n >= MIN_LINK_KNIFE_POLYGON_VERTICES) {
+          let per = 0;
+          for (let i = 0; i < n - 1; i++) {
+            per += Math.hypot(pts[i + 1]!.x - pts[i]!.x, pts[i + 1]!.y - pts[i]!.y);
+          }
+          per += Math.hypot(pts[0]!.x - pts[n - 1]!.x, pts[0]!.y - pts[n - 1]!.y);
+          if (per >= MIN_LINK_KNIFE_PATH_LENGTH_PX) {
+            const s = Math.max(scaleRef.current, 0.01);
+            const polyLogical = pts.map((p) => ({
+              x: p.x / s,
+              y: p.y / s,
+            }));
+            patchRef.current((p) => {
+              const layoutGetter = (id: string) => {
+                const node = p.nodes.find((x) => x.id === id);
+                return resolveNodeLayout(node, layoutsRef.current.get(id));
+              };
+              const cut = collectLinkKeysIntersectingLogicalPolygon(
+                p.links,
+                p.nodes,
+                p.canvasImages ?? EMPTY_CANVAS_IMAGES,
+                layoutGetter,
+                polyLogical,
+              );
+              if (cut.size === 0) return p;
+              return {
+                ...p,
+                links: p.links.filter((l) => !cut.has(linkStableKey(l))),
+              };
+            });
+          }
+        }
+        setDrawCreate(null);
+        return;
+      }
+
       const { left: lpx, top: tpx, w: rwPx, h: rhPx } = normalizeDrawRect(
         d.x0,
         d.y0,
@@ -746,13 +1010,22 @@ const NodeCanvas = ({
       e.clientY,
       scrollRef.current,
     );
-    setDrawCreate({
-      pointerId: e.pointerId,
-      x0: x,
-      y0: y,
-      x1: x,
-      y1: y,
-    });
+    if (linkKnifeArmedRef.current) {
+      setDrawCreate({
+        mode: "linkKnife",
+        pointerId: e.pointerId,
+        pointsScrollPx: [{ x, y }],
+      });
+    } else {
+      setDrawCreate({
+        mode: "newNode",
+        pointerId: e.pointerId,
+        x0: x,
+        y0: y,
+        x1: x,
+        y1: y,
+      });
+    }
   };
 
   const wireStart: { x: number; y: number } | null = wireSession
@@ -787,14 +1060,18 @@ const NodeCanvas = ({
       })()
     : null;
 
-  const drawPreviewPx = drawCreate
-    ? normalizeDrawRect(
-        drawCreate.x0,
-        drawCreate.y0,
-        drawCreate.x1,
-        drawCreate.y1,
-      )
-    : null;
+  const drawPreviewPx =
+    drawCreate?.mode === "newNode"
+      ? normalizeDrawRect(
+          drawCreate.x0,
+          drawCreate.y0,
+          drawCreate.x1,
+          drawCreate.y1,
+        )
+      : null;
+
+  const knifePolygonPreviewPoints =
+    drawCreate?.mode === "linkKnife" ? drawCreate.pointsScrollPx : null;
 
   const setNodeRef = (id: string) => (el: HTMLDivElement | null) => {
     if (el) nodeRefs.current.set(id, el);
@@ -835,13 +1112,61 @@ const NodeCanvas = ({
     });
   };
 
+  const linkedCanvasImageIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const l of links) {
+      if (l.sourceIsCanvasImage === true) ids.add(l.source);
+      if (l.targetIsCanvasImage === true) ids.add(l.target);
+    }
+    return ids;
+  }, [links]);
+
   const wireDragging = wireSession !== null;
 
+  const linkKnifeScissorsProps = {
+    className:
+      "size-3.5 shrink-0 text-red-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]",
+    strokeWidth: 2.25 as const,
+  };
+
+  const linkKnifeCursorPortal =
+    typeof document !== "undefined" &&
+    !readOnly &&
+    linkKnifeArmedUi &&
+    linkKnifePointerClient
+      ? createPortal(
+          <div
+            className="pointer-events-none fixed z-[99999]"
+            style={{
+              left: linkKnifePointerClient.clientX,
+              top: linkKnifePointerClient.clientY,
+              transform: "translate(10px, 8px)",
+            }}
+            aria-hidden
+          >
+            <Scissors {...linkKnifeScissorsProps} aria-hidden />
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
-    <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+    <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      {linkKnifeCursorPortal}
+      {!readOnly && linkKnifeArmedUi ? (
+        <div
+          className="pointer-events-none absolute top-3 right-4 z-[80] flex items-center gap-1.5 rounded-full border border-red-400/40 bg-red-950/55 px-2.5 py-1 text-[10px] font-medium text-red-100/95 shadow-md backdrop-blur-sm"
+          role="status"
+          aria-live="polite"
+        >
+          <Scissors {...linkKnifeScissorsProps} aria-hidden />
+          Ніж по звʼязках
+        </div>
+      ) : null}
       <CanvasBoard
         scrollRef={scrollRef}
         scale={scale}
+        linkKnifeDrawPreview={drawCreate?.mode === "linkKnife"}
         canvasOverlayCursorClass={
           tabPanArmed || panSession
             ? panSession
@@ -849,10 +1174,13 @@ const NodeCanvas = ({
               : "cursor-grab"
             : readOnly
               ? "cursor-default"
-              : "cursor-crosshair"
+              : linkKnifeArmedUi
+                ? "cursor-none"
+                : "cursor-crosshair"
         }
         onCanvasPointerDown={onCanvasPointerDown}
         drawPreviewRect={drawPreviewPx}
+        knifePolygonPreviewPoints={knifePolygonPreviewPoints}
         graphLayer={({ spacerW, spacerH, scale: s }) => (
           <NodeGraphSvg
             scrollPxW={spacerW}
@@ -900,8 +1228,23 @@ const NodeCanvas = ({
                 description: descriptionFromBlocks(safe),
               });
             }}
+            uploadMarkdownPasteImage={
+              readOnly ? undefined : uploadMarkdownPasteImage
+            }
             onRemove={removeNode}
             setNodeRef={setNodeRef}
+            wireDropHighlightPort={
+              wireDropHighlight?.targetKind === "node" &&
+              wireDropHighlight.nodeId === node.id
+                ? wireDropHighlight.port
+                : null
+            }
+            wireDropHighlightAllowed={
+              wireDropHighlight?.targetKind === "node" &&
+              wireDropHighlight.nodeId === node.id
+                ? wireDropHighlight.dropAllowed
+                : true
+            }
           />
         ))}
 
@@ -909,9 +1252,22 @@ const NodeCanvas = ({
           <CanvasImageCard
             key={image.id}
             readOnly={readOnly}
+            linked={linkedCanvasImageIds.has(image.id)}
             image={image}
             zIndex={imageDrag?.id === image.id ? 25 : 3}
             wireDragging={wireDragging}
+            highlightDropPort={
+              wireDropHighlight?.targetKind === "canvasImage" &&
+              wireDropHighlight.imageId === image.id
+                ? wireDropHighlight.port
+                : null
+            }
+            highlightDropAllowed={
+              wireDropHighlight?.targetKind === "canvasImage" &&
+              wireDropHighlight.imageId === image.id
+                ? wireDropHighlight.dropAllowed
+                : true
+            }
             onStartWireFromEdge={startWireFromCanvasImage}
             onDragPointerDown={onImagePointerDown}
             onDragPointerMove={onImagePointerMove}

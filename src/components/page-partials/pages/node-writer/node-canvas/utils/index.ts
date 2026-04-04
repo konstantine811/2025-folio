@@ -29,14 +29,23 @@ export {
   edgeChildSlotPoint,
   getLinkEndpoints,
   inferPortAtPoint,
+  linkBezierGeometry,
+  linkBezierPathD,
   linkUsesChildSlot,
   linkUsesPort,
   normalizeDrawRect,
   oppositePort,
   portPoint,
+  resolveLinkSourcePortForBezier,
   visibleChildSlotCount,
 } from "./geometry";
-export type { LayoutGetter } from "./geometry";
+export type { LayoutGetter, LinkBezierGeometry } from "./geometry";
+export {
+  collectLinkKeysIntersectingLogicalPolygon,
+  collectLinkKeysIntersectingLogicalRect,
+  linkStableKey,
+} from "./link-knife";
+export type { LogicalPoint, LogicalRect } from "./link-knife";
 export { resolveNodeLayout } from "./layout";
 export {
   getCanvasContentBoundsLogical,

@@ -7,18 +7,25 @@ import {
 
 export function useNodeCanvasKeyboard(opts: {
   scrollRef: RefObject<HTMLDivElement | null>;
+  shortcutShellRef?: RefObject<HTMLElement | null>;
   fitViewToNodes: () => void;
   setTabPanArmed: (armed: boolean) => void;
 }) {
-  const { scrollRef, fitViewToNodes, setTabPanArmed } = opts;
+  const { scrollRef, shortcutShellRef, fitViewToNodes, setTabPanArmed } = opts;
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (isKeyboardTypingTarget(e.target)) return;
-      if (!activeElementAllowsCanvasShortcuts(scrollRef.current)) return;
+      if (
+        !activeElementAllowsCanvasShortcuts(
+          scrollRef.current,
+          shortcutShellRef?.current ?? null,
+        )
+      )
+        return;
 
       if (
-        (e.key === "/" || e.code === "Slash") &&
+        e.code === "Slash" &&
         !e.ctrlKey &&
         !e.metaKey &&
         !e.altKey
@@ -49,5 +56,5 @@ export function useNodeCanvasKeyboard(opts: {
       window.removeEventListener("keyup", onKeyUp);
       window.removeEventListener("blur", onWindowBlur);
     };
-  }, [scrollRef, fitViewToNodes, setTabPanArmed]);
+  }, [scrollRef, shortcutShellRef, fitViewToNodes, setTabPanArmed]);
 }

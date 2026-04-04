@@ -30,6 +30,7 @@ import { newMarkdownBlockId } from "../utils/node-ids";
 import { MarkdownLineHighlightToolbar } from "./MarkdownLineHighlightToolbar";
 import { MarkdownLinkUrlPopover } from "./MarkdownLinkUrlPopover";
 import { MarkdownResolvingImg } from "./MarkdownResolvingImg";
+import { NODE_MD_BODY_TYPO } from "../constants";
 import {
   NODE_MD_ALIGN,
   NODE_MD_FONT,
@@ -67,7 +68,7 @@ export function nodeMarkdownPreviewComponents(
 ): Partial<Components> {
   return {
     p: ({ children }) => (
-      <p className="my-0 text-[12px] leading-snug">{children}</p>
+      <p className={`my-0 ${NODE_MD_BODY_TYPO}`}>{children}</p>
     ),
     h1: ({ children }) => (
       <h1
@@ -105,22 +106,22 @@ export function nodeMarkdownPreviewComponents(
       <h5 className="my-0 text-[0.88rem] font-medium leading-snug">{children}</h5>
     ),
     h6: ({ children }) => (
-      <h6 className="my-0 text-[0.82rem] font-medium uppercase leading-snug opacity-90">
+      <h6 className="my-0 text-[0.82rem] font-medium leading-snug opacity-90">
         {children}
       </h6>
     ),
     ul: ({ children }) => (
-      <ul className="my-0 list-disc pl-4 text-[12px] leading-snug">{children}</ul>
+      <ul className={`my-0 list-disc pl-4 ${NODE_MD_BODY_TYPO}`}>{children}</ul>
     ),
     ol: ({ children }) => (
-      <ol className="my-0 list-decimal pl-4 text-[12px] leading-snug">
+      <ol className={`my-0 list-decimal pl-4 ${NODE_MD_BODY_TYPO}`}>
         {children}
       </ol>
     ),
     li: ({ children }) => <li className="my-0">{children}</li>,
     blockquote: ({ children }) => (
       <blockquote
-        className="my-0 border-l-2 pl-2 text-[12px] italic leading-snug opacity-90"
+        className={`my-0 border-l-2 pl-2 italic opacity-90 ${NODE_MD_BODY_TYPO}`}
         style={{ borderColor: fgMuted }}
       >
         {children}
@@ -161,7 +162,7 @@ export function nodeMarkdownPreviewComponents(
         alt={alt}
         className={
           className ??
-          "my-1 max-h-48 max-w-full rounded border border-border/20 object-contain"
+          "my-2 block w-full max-w-full max-h-[min(72vh,40rem)] rounded border border-border/20 object-contain"
         }
       />
     ),
@@ -185,6 +186,11 @@ interface NodeMarkdownBlocksEditorProps {
   blocks: NodeMarkdownBlock[];
   themeAccent: NodeAccentTextTheme | null;
   onBlocksChange: (blocks: NodeMarkdownBlock[]) => void;
+  /**
+   * Ctrl/⌘+V: вставити зображення з буфера як `![](<url>)` після upload у Storage.
+   * Без пропа — лише текстовий paste (як раніше).
+   */
+  uploadPasteImage?: (file: File) => Promise<string>;
 }
 
 function InactiveMarkdownLineRow({
@@ -217,16 +223,16 @@ function InactiveMarkdownLineRow({
         onActivate();
       }}
       onKeyDown={(e) => {
-        if (e.key !== "Enter" && e.key !== " ") return;
+        if (e.code !== "Enter" && e.code !== "Space") return;
         e.preventDefault();
         e.stopPropagation();
         onActivate();
       }}
     >
       {empty ? (
-        <div className="min-h-[1.35rem] px-2 py-1 text-[12px]" aria-hidden />
+        <div className={`min-h-[1.5rem] px-2 py-1 ${NODE_MD_BODY_TYPO}`} aria-hidden />
       ) : (
-        <div className="markdown-node-preview px-2 py-1 leading-snug">
+        <div className={`markdown-node-preview px-2 py-1 ${NODE_MD_BODY_TYPO}`}>
           <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkDefaultFenceLang]}
             rehypePlugins={[rehypeRaw]}
@@ -245,11 +251,14 @@ export function NodeMarkdownBlocksEditor({
   blocks,
   themeAccent,
   onBlocksChange,
+  uploadPasteImage,
 }: NodeMarkdownBlocksEditorProps) {
   const [activeLineId, setActiveLineId] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const lineRefs = useRef<Map<string, HTMLTextAreaElement>>(new Map());
   const focusCaretRef = useRef<{ id: string; pos: number } | null>(null);
+  const uploadPasteImageRef = useRef(uploadPasteImage);
+  uploadPasteImageRef.current = uploadPasteImage;
 
   const blocksRef = useRef(blocks);
   blocksRef.current = blocks;
@@ -393,8 +402,8 @@ export function NodeMarkdownBlocksEditor({
     : undefined;
 
   const lineTextareaClass = themeAccent
-    ? "w-full resize-none overflow-hidden bg-transparent px-2 py-1 font-sans text-[12px] leading-snug outline-none placeholder:text-current/45"
-    : "w-full resize-none overflow-hidden bg-transparent px-2 py-1 font-sans text-[12px] leading-snug text-foreground/90 outline-none placeholder:text-muted-foreground placeholder:opacity-50";
+    ? `w-full resize-none overflow-hidden bg-transparent px-2 py-1 outline-none placeholder:text-current/45 ${NODE_MD_BODY_TYPO}`
+    : `w-full resize-none overflow-hidden bg-transparent px-2 py-1 text-foreground/85 outline-none placeholder:text-muted-foreground placeholder:opacity-50 ${NODE_MD_BODY_TYPO}`;
 
   return (
     <div
@@ -417,6 +426,7 @@ export function NodeMarkdownBlocksEditor({
                 line={line}
                 idx={idx}
                 blocks={blocks}
+                blocksRef={blocksRef}
                 themeAccent={themeAccent}
                 lineTextareaClass={lineTextareaClass}
                 setLineRef={setLineRef}
@@ -425,6 +435,7 @@ export function NodeMarkdownBlocksEditor({
                 tryRedo={tryRedo}
                 setActiveLineId={setActiveLineId}
                 focusCaretRef={focusCaretRef}
+                uploadPasteImageRef={uploadPasteImageRef}
               />,
             );
             i++;
@@ -490,6 +501,7 @@ interface LineEditorProps {
   line: NodeMarkdownBlock;
   idx: number;
   blocks: NodeMarkdownBlock[];
+  blocksRef: MutableRefObject<NodeMarkdownBlock[]>;
   themeAccent: NodeAccentTextTheme | null;
   lineTextareaClass: string;
   setLineRef: (id: string) => (el: HTMLTextAreaElement | null) => void;
@@ -498,12 +510,16 @@ interface LineEditorProps {
   tryRedo: () => boolean;
   setActiveLineId: (id: string | null) => void;
   focusCaretRef: MutableRefObject<{ id: string; pos: number } | null>;
+  uploadPasteImageRef: MutableRefObject<
+    ((file: File) => Promise<string>) | undefined
+  >;
 }
 
 function LineEditor({
   line,
   idx,
   blocks,
+  blocksRef,
   themeAccent,
   lineTextareaClass,
   setLineRef,
@@ -512,6 +528,7 @@ function LineEditor({
   tryRedo,
   setActiveLineId,
   focusCaretRef,
+  uploadPasteImageRef,
 }: LineEditorProps) {
   const taRef = useRef<HTMLTextAreaElement | null>(null);
   const hlSelRef = useRef<{ start: number; end: number } | null>(null);
@@ -827,6 +844,54 @@ function LineEditor({
         setActiveLineId(lastId);
       }}
       onPaste={(e) => {
+        const upload = uploadPasteImageRef.current;
+        const items = e.clipboardData?.items;
+        if (upload && items?.length) {
+          for (let ii = 0; ii < items.length; ii++) {
+            const it = items[ii];
+            if (it?.kind === "file" && it.type.startsWith("image/")) {
+              const file = it.getAsFile();
+              if (file) {
+                e.preventDefault();
+                const el = e.currentTarget;
+                const start = el.selectionStart;
+                const end = el.selectionEnd;
+                const lineId = line.id;
+                void (async () => {
+                  try {
+                    const httpsUrl = await upload(file);
+                    const md = `![](<${httpsUrl}>)`;
+                    const cur = blocksRef.current;
+                    const curLine = cur.find((b) => b.id === lineId);
+                    if (!curLine) return;
+                    const nextText =
+                      curLine.text.slice(0, start) + md + curLine.text.slice(end);
+                    onBlocksChange(
+                      cur.map((b) =>
+                        b.id === lineId ? { ...b, text: nextText } : b,
+                      ),
+                    );
+                    const caret = start + md.length;
+                    focusCaretRef.current = { id: lineId, pos: caret };
+                    requestAnimationFrame(() => {
+                      const ta = taRef.current;
+                      if (!ta) return;
+                      ta.focus();
+                      ta.setSelectionRange(caret, caret);
+                    });
+                  } catch (err) {
+                    console.error(
+                      "[Node writer] Не вдалося вставити зображення в markdown",
+                      err,
+                    );
+                  }
+                })();
+                return;
+              }
+            }
+          }
+        }
+
         const clip = e.clipboardData.getData("text/plain");
         if (!clip.includes("\n")) return;
         const el = e.currentTarget;
@@ -884,7 +949,7 @@ function LineEditor({
       onKeyUp={syncHlBar}
       onKeyDown={(e) => {
         const mod = e.ctrlKey || e.metaKey;
-        if (mod && e.key.toLowerCase() === "z") {
+        if (mod && e.code === "KeyZ") {
           if (e.shiftKey) {
             if (tryRedo()) {
               e.preventDefault();
@@ -895,7 +960,7 @@ function LineEditor({
             return;
           }
         }
-        if (mod && e.key.toLowerCase() === "y" && !e.shiftKey && tryRedo()) {
+        if (mod && e.code === "KeyY" && !e.shiftKey && tryRedo()) {
           e.preventDefault();
           return;
         }
@@ -905,7 +970,10 @@ function LineEditor({
         const end = el.selectionEnd;
         const insideFence = inFencedCodeAt(line.text, start);
 
-        if (e.key === "Enter" && !e.shiftKey) {
+        if (
+          (e.code === "Enter" || e.code === "NumpadEnter") &&
+          !e.shiftKey
+        ) {
           if (insideFence) {
             return;
           }
@@ -925,7 +993,7 @@ function LineEditor({
           return;
         }
 
-        if (e.key === "Backspace" && start === 0 && end === 0 && idx > 0) {
+        if (e.code === "Backspace" && start === 0 && end === 0 && idx > 0) {
           e.preventDefault();
           const prev = blocks[idx - 1]!;
           const mergedText = prev.text + line.text;
@@ -940,7 +1008,7 @@ function LineEditor({
           return;
         }
 
-        if (e.key === "ArrowUp" && start === 0 && idx > 0) {
+        if (e.code === "ArrowUp" && start === 0 && idx > 0) {
           e.preventDefault();
           const prev = blocks[idx - 1]!;
           focusCaretRef.current = { id: prev.id, pos: prev.text.length };
@@ -949,7 +1017,7 @@ function LineEditor({
         }
 
         if (
-          e.key === "ArrowDown" &&
+          e.code === "ArrowDown" &&
           start === line.text.length &&
           idx < blocks.length - 1
         ) {

@@ -16,6 +16,7 @@ import { db, FirebaseCollection, storage } from "@/config/firebase.config";
 import type {
   Asset,
   CanvasImageItem,
+  NodeData,
   Project,
   WorkspaceFolder,
 } from "@/components/page-partials/pages/node-writer/types/types";
@@ -199,6 +200,105 @@ export function firebaseDownloadUrlToNwRef(url: string): string | null {
     return nodeWriterRefFromPath(path);
   } catch {
     return null;
+  }
+}
+
+/** Шлях у bucket (`node-writer/.../file.png`) або null, якщо не наше сховище. */
+export function urlToNodeWriterStoragePath(
+  url: string | undefined | null,
+): string | null {
+  if (!url) return null;
+  const t = String(url).trim();
+  if (!t || t.startsWith("blob:") || t.startsWith("data:")) return null;
+  if (isNodeWriterStorageRef(t)) return nodeWriterPathFromRef(t);
+  const nw = firebaseDownloadUrlToNwRef(t);
+  if (nw) return nodeWriterPathFromRef(nw);
+  return null;
+}
+
+function nodeMarkdownTextsForCollect(node: NodeData): string[] {
+  if (node.markdownBlocks && node.markdownBlocks.length > 0) {
+    return node.markdownBlocks.map((b) => b.text ?? "");
+  }
+  const raw = node.description ?? "";
+  if (!raw) return [];
+  return raw.split("\n");
+}
+
+function extractImageUrlsFromMarkdown(text: string): string[] {
+  const out: string[] = [];
+  if (!text) return out;
+  const mdImg = /!\[[^\]]*\]\(\s*<?([^>)]+)>?\s*\)/g;
+  let m: RegExpExecArray | null;
+  while ((m = mdImg.exec(text)) !== null) {
+    out.push(m[1].trim());
+  }
+  const srcRe = /<img[^>]*\bsrc\s*=\s*["']([^"']+)["']/gi;
+  while ((m = srcRe.exec(text)) !== null) {
+    out.push(m[1].trim());
+  }
+  return out;
+}
+
+/** Усі шляхи в Firebase Storage для медіа, що згадуються в проєкті. */
+export function collectNodeWriterStoragePaths(project: Project): Set<string> {
+  const out = new Set<string>();
+  const add = (url: string | undefined | null) => {
+    const p = urlToNodeWriterStoragePath(url);
+    if (p) out.add(p);
+  };
+
+  for (const im of project.canvasImages ?? []) {
+    add(im.url);
+  }
+  for (const n of project.nodes) {
+    add(n.imageUrl);
+    for (const block of nodeMarkdownTextsForCollect(n)) {
+      for (const u of extractImageUrlsFromMarkdown(block)) {
+        add(u);
+      }
+    }
+  }
+  for (const a of project.images ?? []) {
+    add(a.url);
+  }
+  return out;
+}
+
+/** Шляхи, що були в `prev`, але зникли в `next` — кандидати на видалення з Storage. */
+export function collectRemovedNodeWriterStoragePaths(
+  prev: Project,
+  next: Project,
+): string[] {
+  const prevSet = collectNodeWriterStoragePaths(prev);
+  const nextSet = collectNodeWriterStoragePaths(next);
+  const out: string[] = [];
+  for (const p of prevSet) {
+    if (!nextSet.has(p)) out.push(p);
+  }
+  return out;
+}
+
+/**
+ * Видаляє файли в Storage; лише під `node-writer/{scope}/projects/{projectId}/`.
+ */
+export async function deleteNodeWriterStorageObjectsByPaths(
+  paths: string[],
+  projectId: string,
+  workspaceScope: string,
+): Promise<void> {
+  const prefix = `node-writer/${workspaceScope}/projects/${projectId}/`;
+  const toDelete = paths.filter((p) => p.startsWith(prefix));
+  for (const path of toDelete) {
+    try {
+      await deleteObject(ref(storage, path));
+    } catch (e) {
+      console.warn(
+        "[Node writer] Не вдалося видалити файл у Storage",
+        path,
+        e,
+      );
+    }
   }
 }
 

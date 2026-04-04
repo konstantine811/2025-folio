@@ -46,7 +46,8 @@ export function nodeTextThemeFromAccent(hex: string): NodeAccentTextTheme {
   const fgSubtle = L > 0.45 ? "rgba(15,23,42,0.4)" : "rgba(248,250,252,0.45)";
   const border = L > 0.45 ? "rgba(15,23,42,0.22)" : "rgba(248,250,252,0.25)";
   const dragBg = L > 0.45 ? "rgba(15,23,42,0.07)" : "rgba(248,250,252,0.1)";
-  const headerRule = L > 0.45 ? "rgba(15,23,42,0.14)" : "rgba(248,250,252,0.16)";
+  /** Тонка лінія як зовнішня рамка — без яскравої «смуги» під заголовком. */
+  const headerRule = L > 0.45 ? "rgba(15,23,42,0.22)" : "rgba(248,250,252,0.25)";
   const footerRule = headerRule;
   return { fg, fgMuted, fgSubtle, border, dragBg, headerRule, footerRule };
 }

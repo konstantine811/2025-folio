@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { Info } from "lucide-react";
 import {
   Tooltip,
@@ -23,6 +24,7 @@ const NodesView = ({
   onProjectPatch,
   readOnly = false,
 }: NodesViewProps) => {
+  const shortcutShellRef = useRef<HTMLDivElement>(null);
   const {
     editingTitle,
     setEditingTitle,
@@ -33,7 +35,10 @@ const NodesView = ({
   } = useEditableProjectTitle(project.title, onProjectPatch);
 
   return (
-    <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col">
+    <div
+      ref={shortcutShellRef}
+      className="flex min-h-0 min-w-0 w-full flex-1 flex-col"
+    >
       <div className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-border/20 bg-card px-8">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <span className="mono shrink-0 text-[10px] tracking-wide text-primary">
@@ -70,7 +75,7 @@ const NodesView = ({
                 onChange={(e) => setDraftTitle(e.target.value)}
                 onBlur={commitTitle}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+                  if (e.code === "Enter" || e.code === "NumpadEnter") {
                     e.preventDefault();
                     commitTitle();
                   }
@@ -97,6 +102,7 @@ const NodesView = ({
           project={project}
           onProjectPatch={onProjectPatch}
           readOnly={readOnly}
+          shortcutShellRef={shortcutShellRef}
         />
       </div>
     </div>
