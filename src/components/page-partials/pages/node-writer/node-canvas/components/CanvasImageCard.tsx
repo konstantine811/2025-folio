@@ -120,7 +120,7 @@ export function CanvasImageCard({
                 src={url}
                 alt={title?.trim() || ""}
                 draggable={false}
-                className="pointer-events-none h-full w-full select-none rounded-lg object-cover"
+                className="pointer-events-none h-full w-full select-none rounded-lg object-contain object-center"
               />
               <div
                 className="pointer-events-none absolute inset-x-0 bottom-0 h-[38%] rounded-b-lg bg-gradient-to-t from-black/65 via-black/20 to-transparent"
@@ -223,7 +223,7 @@ export function CanvasImageCard({
                 src={url}
                 alt=""
                 draggable={false}
-                className="pointer-events-none h-full w-full select-none rounded-lg object-cover"
+                className="pointer-events-none h-full w-full select-none rounded-lg object-contain object-center"
               />
               <div
                 className="pointer-events-none absolute inset-x-0 bottom-0 h-[38%] rounded-b-lg bg-gradient-to-t from-black/65 via-black/20 to-transparent"

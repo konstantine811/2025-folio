@@ -5,6 +5,11 @@ export interface CanvasImageItem {
   y: number;
   width: number;
   height: number;
+  /**
+   * Співвідношення сторін оригіналу (naturalWidth / naturalHeight).
+   * Для збереження пропорцій при зміні розміру картки; без поля — width/height.
+   */
+  aspectRatio?: number;
   /** Зазвичай blob: URL; при видаленні викликати URL.revokeObjectURL. */
   url: string;
   /** Заголовок картки; за замовчуванням порожній. */

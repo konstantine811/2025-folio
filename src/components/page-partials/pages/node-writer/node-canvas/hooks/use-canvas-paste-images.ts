@@ -19,8 +19,14 @@ function computeDisplaySize(nw: number, nh: number): { w: number; h: number } {
     w = Math.round(w * r);
     h = Math.round(h * r);
   }
-  w = Math.max(PASTED_IMAGE_MIN_SIDE, w);
-  h = Math.max(PASTED_IMAGE_MIN_SIDE, h);
+  const scaleUp = Math.max(
+    PASTED_IMAGE_MIN_SIDE / w,
+    PASTED_IMAGE_MIN_SIDE / h,
+  );
+  if (scaleUp > 1) {
+    w = Math.round(w * scaleUp);
+    h = Math.round(h * scaleUp);
+  }
   return { w, h };
 }
 
@@ -80,6 +86,8 @@ export function useCanvasPasteImages(opts: {
           return;
         }
         const { w, h } = computeDisplaySize(img.naturalWidth, img.naturalHeight);
+        const aspectRatio =
+          img.naturalHeight > 0 ? img.naturalWidth / img.naturalHeight : 1;
         const cx = scroll.scrollLeft + scroll.clientWidth / 2;
         const cy = scroll.scrollTop + scroll.clientHeight / 2;
         const x = Math.max(0, cx / s - w / 2);
@@ -91,6 +99,7 @@ export function useCanvasPasteImages(opts: {
             y,
             width: w,
             height: h,
+            aspectRatio,
             url,
           },
           file,

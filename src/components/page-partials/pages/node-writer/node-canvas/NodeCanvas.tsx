@@ -40,6 +40,10 @@ import {
   useScrollPanSession,
   type ScrollPanSession,
 } from "./hooks/use-scroll-pan-session";
+import {
+  computeCanvasImageResize,
+  resolveCanvasImageAspectRatio,
+} from "./utils/canvas-image-aspect";
 import { NODE_WRITER_WORKSPACE_SCOPE } from "@/config/node-writer-access.config";
 import { uploadNodeWriterCanvasPastedFile } from "@/services/firebase/node-writer-workspace";
 import {
@@ -139,6 +143,8 @@ type ResizeSession =
       startY: number;
       originW: number;
       originH: number;
+      /** naturalWidth / naturalHeight */
+      aspectRatio: number;
     };
 
 type DrawCreateNewNode = {
@@ -954,10 +960,10 @@ const NodeCanvas = ({
       const s = scaleRef.current;
       const dx = (e.clientX - r.startX) / s;
       const dy = (e.clientY - r.startY) / s;
-      const nw = Math.max(MIN_NODE_W, r.originW + dx);
-      const nh = Math.max(MIN_NODE_H, r.originH + dy);
       patchRef.current((p) => {
         if (r.kind === "node") {
+          const nw = Math.max(MIN_NODE_W, r.originW + dx);
+          const nh = Math.max(MIN_NODE_H, r.originH + dy);
           return {
             ...p,
             nodes: p.nodes.map((n) =>
@@ -965,6 +971,15 @@ const NodeCanvas = ({
             ),
           };
         }
+        const { w: nw, h: nh } = computeCanvasImageResize(
+          r.originW,
+          r.originH,
+          dx,
+          dy,
+          r.aspectRatio,
+          MIN_NODE_W,
+          MIN_NODE_H,
+        );
         return {
           ...p,
           canvasImages: (p.canvasImages ?? []).map((im) =>
@@ -1307,6 +1322,7 @@ const NodeCanvas = ({
       startY: e.clientY,
       originW: image.width,
       originH: image.height,
+      aspectRatio: resolveCanvasImageAspectRatio(image),
     });
   };
 
