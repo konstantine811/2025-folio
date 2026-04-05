@@ -29,7 +29,11 @@ import {
   NODE_WRITER_WORKSPACE_SCOPE,
 } from "@/config/node-writer-access.config";
 import { useSmoothedLoading } from "@/hooks/use-smoothed-loading";
-import { useNodeWriterWorkspaceStore } from "@/storage/nodeWriterWorkspaceStore";
+import {
+  mergeProjectsByLastModified,
+  NW_WORKSPACE_STORAGE_KEY,
+  useNodeWriterWorkspaceStore,
+} from "@/storage/nodeWriterWorkspaceStore";
 import { useAuthStore } from "@/storage/useAuthStore";
 import { RoutPath } from "@/config/router-config";
 import {
@@ -44,15 +48,6 @@ function mergeServerFoldersIntoLocal(
 ): WorkspaceFolder[] {
   const remoteIds = new Set(server.map((f) => f.id));
   const localOnly = local.filter((f) => !remoteIds.has(f.id));
-  return localOnly.length === 0 ? server : [...server, ...localOnly];
-}
-
-function mergeServerProjectsIntoLocal(
-  server: Project[],
-  local: Project[],
-): Project[] {
-  const remoteIds = new Set(server.map((p) => p.id));
-  const localOnly = local.filter((p) => !remoteIds.has(p.id));
   return localOnly.length === 0 ? server : [...server, ...localOnly];
 }
 
@@ -136,7 +131,9 @@ const Main = () => {
     }) => {
       if (cancelled) return;
       setFolders((prev) => mergeServerFoldersIntoLocal(data.folders, prev));
-      setProjects((prev) => mergeServerProjectsIntoLocal(data.projects, prev));
+      setProjects((prev) =>
+        mergeProjectsByLastModified(data.projects, prev),
+      );
       setCloudReady(true);
     };
 
@@ -158,18 +155,27 @@ const Main = () => {
     };
 
     if (cached && fresh) {
-      void applyCachedProjects(cached).catch((err) => {
-        console.error("Node writer: медіа з кешу", err);
-        if (!cancelled) {
-          setFolders(cached.folders);
-          setProjects(cached.projects);
-          setCurrentProject((cur) => {
-            if (!cur) return null;
-            return cached.projects.find((p) => p.id === cur.id) ?? null;
-          });
-          setCloudReady(true);
-        }
-      });
+      void applyCachedProjects(cached)
+        .then(() => {
+          if (cancelled) return;
+          return loadWorkspaceFromFirestore(scope);
+        })
+        .then((data) => {
+          if (cancelled || !data) return;
+          applyRemote(data);
+        })
+        .catch((err) => {
+          console.error("Node writer: кеш / Firestore", err);
+          if (!cancelled) {
+            setFolders(cached.folders);
+            setProjects(cached.projects);
+            setCurrentProject((cur) => {
+              if (!cur) return null;
+              return cached.projects.find((p) => p.id === cur.id) ?? null;
+            });
+            setCloudReady(true);
+          }
+        });
       return () => {
         cancelled = true;
       };
@@ -208,6 +214,50 @@ const Main = () => {
       cancelled = true;
     };
   }, [nwStoreHydrated]);
+
+  /** Інша вкладка / повернення фокусу — підтягнути Firestore, щоб не лишатись на застарілому кеші. */
+  useEffect(() => {
+    if (!nwStoreHydrated || !cloudReady) return;
+    const scope = NODE_WRITER_WORKSPACE_SCOPE;
+    let cancelled = false;
+    let timer: number | undefined;
+    const pull = () => {
+      if (timer !== undefined) window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        loadWorkspaceFromFirestore(scope)
+          .then((data) => {
+            if (cancelled) return;
+            setFolders((prev) =>
+              mergeServerFoldersIntoLocal(data.folders, prev),
+            );
+            setProjects((prev) =>
+              mergeProjectsByLastModified(data.projects, prev),
+            );
+          })
+          .catch((err) => {
+            console.error(
+              "Node writer: фонове оновлення з Firestore (фокус / інша вкладка)",
+              err,
+            );
+          });
+      }, 320);
+    };
+    const onVis = () => {
+      if (document.visibilityState === "visible") pull();
+    };
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== NW_WORKSPACE_STORAGE_KEY) return;
+      pull();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      cancelled = true;
+      if (timer !== undefined) window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, [nwStoreHydrated, cloudReady]);
 
   useEffect(() => {
     if (!cloudReady) return;

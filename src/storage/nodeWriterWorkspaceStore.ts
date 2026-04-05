@@ -48,16 +48,52 @@ export function stripEphemeralMediaFromProjects(projects: Project[]): Project[] 
 }
 
 /**
- * Якщо кеш новіший за це вікно — не викликаємо Firestore при вході.
- * Локальні зміни оновлюють кеш через putWorkspace (debounce у Main).
+ * «Свіжість» кешу для підказок (наприклад, пріоритет фонового оновлення).
+ * Раніше використовувалось, щоб зовсім не читати Firestore — це ламало синх між вкладками.
  */
 export const NODE_WRITER_WORKSPACE_STALE_MS = 8 * 60 * 1000;
+
+export const NW_WORKSPACE_STORAGE_KEY = "nw-workspace-cache-v2";
 
 type CacheEntry = {
   folders: WorkspaceFolder[];
   projects: Project[];
   cachedAt: number;
 };
+
+/** Злиття списків проєктів за lastModified (новіша версія перемагає). */
+export function mergeProjectsByLastModified(
+  a: Project[],
+  b: Project[],
+): Project[] {
+  const map = new Map<string, Project>();
+  for (const p of a) map.set(p.id, p);
+  for (const p of b) {
+    const prev = map.get(p.id);
+    if (!prev) {
+      map.set(p.id, p);
+      continue;
+    }
+    map.set(
+      p.id,
+      (prev.lastModified ?? 0) >= (p.lastModified ?? 0) ? prev : p,
+    );
+  }
+  return [...map.values()];
+}
+
+function readPersistedEntryFromDisk(uid: string): CacheEntry | undefined {
+  try {
+    const raw = localStorage.getItem(NW_WORKSPACE_STORAGE_KEY);
+    if (!raw) return undefined;
+    const parsed = JSON.parse(raw) as {
+      state?: { byUid?: Record<string, CacheEntry> };
+    };
+    return parsed?.state?.byUid?.[uid];
+  } catch {
+    return undefined;
+  }
+}
 
 type NodeWriterWorkspaceState = {
   byUid: Record<string, CacheEntry>;
@@ -96,17 +132,23 @@ export const useNodeWriterWorkspaceStore = create<NodeWriterWorkspaceState>()(
   persist(
     (set, get) => ({
       byUid: {},
-      putWorkspace: (uid, folders, projects) =>
+      putWorkspace: (uid, folders, projects) => {
+        const fromDisk = readPersistedEntryFromDisk(uid);
+        const mergedProjects = mergeProjectsByLastModified(
+          projects,
+          fromDisk?.projects ?? [],
+        );
         set((s) => ({
           byUid: {
             ...s.byUid,
             [uid]: {
               folders,
-              projects: stripEphemeralMediaFromProjects(projects),
+              projects: stripEphemeralMediaFromProjects(mergedProjects),
               cachedAt: Date.now(),
             },
           },
-        })),
+        }));
+      },
       getWorkspace: (uid) => get().byUid[uid],
       isWorkspaceFresh: (uid) => {
         const e = get().byUid[uid];
