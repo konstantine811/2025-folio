@@ -137,7 +137,7 @@ export function PresentationSlideTabs({
   ));
 
   return (
-    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-1 gap-y-1">
+    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-1 gap-y-1 overflow-auto">
       {canEditChrome ? (
         <DndContext
           sensors={sensors}

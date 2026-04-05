@@ -5,9 +5,12 @@ import { IArticleHeading } from "@/types/blog-storage";
 const ArticleHeading = ({
   headings,
   title,
+  scrollBehavior = "window",
 }: {
   title: string;
   headings: IArticleHeading[];
+  /** `into-view` — для вкладеного скролу (напр. Node writer), інакше як у блозі через `window.scrollTo`. */
+  scrollBehavior?: "window" | "into-view";
 }) => {
   const hSize = useHeaderSizeStore((state) => state.size);
   const activeId = useActiveHeading(
@@ -17,11 +20,14 @@ const ArticleHeading = ({
 
   const scrollToId = (id: string) => {
     const el = document.getElementById(id);
-    if (el) {
-      const yOffset = -hSize; // заміни на висоту свого header у px
-      const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: "smooth" });
+    if (!el) return;
+    if (scrollBehavior === "into-view") {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
     }
+    const yOffset = -hSize;
+    const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    window.scrollTo({ top: y, behavior: "smooth" });
   };
   return (
     <div className="pl-4 pt-5">

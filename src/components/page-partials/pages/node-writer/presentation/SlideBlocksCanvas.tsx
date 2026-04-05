@@ -18,6 +18,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MarkdownResolvingZoomableImg } from "../node-canvas/components/MarkdownResolvingZoomableImg";
 import type {
   Slide,
   SlideBlock,
@@ -35,6 +36,9 @@ import {
   payloadToBlock,
   PRESENTATION_DND_MIME,
 } from "./presentation-model";
+
+const SLIDE_IMAGE_MAX_H =
+  "max-h-[min(72vh,min(96vw,960px))]";
 
 function headingBaseRem(slide: Slide): number {
   const h = slide.blocks?.find((b) => b.kind === "heading");
@@ -81,9 +85,11 @@ function textAlignClass(a?: SlideTextAlign): string {
 function SlideBlockBody({
   block,
   slide,
+  imageZoomEnabled = false,
 }: {
   block: SlideBlock;
   slide: Slide;
+  imageZoomEnabled?: boolean;
 }) {
   const baseRem = headingBaseRem(slide);
   const ta = textAlignClass(
@@ -119,28 +125,52 @@ function SlideBlockBody({
       </p>
     );
   }
-  const w = block.widthPct;
-  return (
-    <figure
-      className="space-y-2"
-      style={
-        w != null
-          ? { width: `${w}%`, maxWidth: "100%", marginLeft: "auto", marginRight: "auto" }
-          : undefined
-      }
-    >
-      <img
-        src={block.url}
-        alt=""
-        className="max-h-[min(50vh,420px)] w-full max-w-full rounded-lg object-contain"
-        draggable={false}
-      />
+  const wp = block.widthPct;
+  const wide = wp != null && wp > 100;
+  const figureStyle =
+    wp != null
+      ? {
+          width: `${wp}%`,
+          maxWidth: wide ? ("none" as const) : ("100%" as const),
+          marginLeft: "auto",
+          marginRight: "auto",
+        }
+      : undefined;
+
+  const imageEl = imageZoomEnabled ? (
+    <MarkdownResolvingZoomableImg
+      src={block.url}
+      alt={block.caption ?? ""}
+      compact={false}
+      className="!max-h-[min(72vh,min(96vw,960px))] w-full max-w-full rounded-lg object-contain"
+    />
+  ) : (
+    <img
+      src={block.url}
+      alt=""
+      className={cn(
+        "w-full max-w-full rounded-lg object-contain",
+        SLIDE_IMAGE_MAX_H,
+      )}
+      draggable={false}
+    />
+  );
+
+  const figure = (
+    <figure className="space-y-2" style={figureStyle}>
+      {imageEl}
       {block.caption ? (
         <figcaption className="text-center text-[10px] text-muted-foreground">
           {block.caption}
         </figcaption>
       ) : null}
     </figure>
+  );
+
+  return wide ? (
+    <div className="w-full min-w-0 overflow-x-auto">{figure}</div>
+  ) : (
+    figure
   );
 }
 
@@ -169,20 +199,27 @@ function SlideBlockPreview({
   timing,
   index,
   layout,
+  imageZoomEnabled,
 }: {
   block: SlideBlock;
   slide: Slide;
   timing: SlideBlockAnimationTiming;
   index: number;
   layout: SlideLayoutMode;
+  imageZoomEnabled: boolean;
 }) {
   const inner = animWrap(block, timing, index, (
-    <SlideBlockBody block={block} slide={slide} />
+    <SlideBlockBody
+      block={block}
+      slide={slide}
+      imageZoomEnabled={imageZoomEnabled}
+    />
   ));
   if (layout === "canvas") {
     const left = block.leftPct ?? 50;
     const top = block.topPct ?? 50;
     const w = block.widthPct;
+    const wide = w != null && w > 100;
     return (
       <div
         data-nw-slide-block
@@ -193,7 +230,12 @@ function SlideBlockPreview({
           top: `${top}%`,
           transform: "translate(-50%, -50%)",
           width: w != null ? `${w}%` : undefined,
-          maxWidth: w == null ? "min(92%, 42rem)" : "100%",
+          maxWidth:
+            w == null
+              ? "min(92%, 42rem)"
+              : wide
+                ? "none"
+                : "100%",
           zIndex: index + 1,
         }}
       >
@@ -224,6 +266,7 @@ function CanvasSlideBlock({
   const left = block.leftPct ?? 50;
   const top = block.topPct ?? 50;
   const w = block.widthPct;
+  const wide = w != null && w > 100;
   const inner = animWrap(
     block,
     timing,
@@ -250,7 +293,11 @@ function CanvasSlideBlock({
           onSelect();
         }}
       >
-        <SlideBlockBody block={block} slide={slide} />
+        <SlideBlockBody
+          block={block}
+          slide={slide}
+          imageZoomEnabled={false}
+        />
       </button>
     </>,
   );
@@ -264,13 +311,14 @@ function CanvasSlideBlock({
         top: `${top}%`,
         transform: "translate(-50%, -50%)",
         width: w != null ? `${w}%` : undefined,
-        maxWidth: w == null ? "min(92%, 42rem)" : "100%",
+        maxWidth:
+          w == null ? "min(92%, 42rem)" : wide ? "none" : "100%",
         zIndex: index + 1,
       }}
       className={cn(
-        "group pointer-events-auto rounded-lg border border-transparent p-2 transition-colors",
-        selected && "border-border/25 bg-primary/5 ring-1 ring-primary/15",
-        "hover:border-border/20",
+        "group pointer-events-auto rounded-md p-1 transition-colors",
+        selected && "bg-primary/5 ring-1 ring-primary/25",
+        "hover:ring-1 hover:ring-border/20",
       )}
       onClick={(e) => e.stopPropagation()}
     >
@@ -346,7 +394,11 @@ function SortableSlideBlock({
           onSelect();
         }}
       >
-        <SlideBlockBody block={block} slide={slide} />
+        <SlideBlockBody
+          block={block}
+          slide={slide}
+          imageZoomEnabled={false}
+        />
       </button>
     </>,
   );
@@ -458,19 +510,19 @@ export function SlideBlocksCanvas({
     </div>
   );
 
-  /** Поверхня слайда 16:9 — по центру колонки, без фону та обводки (лише контент). */
-  const slideSurface =
-    "relative mx-auto box-border min-h-0 w-[min(100%,min(96vw,1280px))] shrink-0 overflow-hidden rounded-xl p-4 md:p-6 aspect-video min-h-[min(70vh,560px)] max-h-[min(85vh,720px)]";
-
-  const slideSurfacePreview =
-    "relative mx-auto box-border min-h-0 w-[min(100%,min(96vw,1600px))] shrink-0 overflow-hidden rounded-xl p-4 md:p-6 aspect-video max-h-[min(78vh,calc(92vw*9/16))]";
+  /**
+   * Полотно canvas: єдиний скрол усередині колонки (overflow у батьках вимкнено).
+   * `basis-0` + `min-h-0` — коректна висота у flex-ланцюгу.
+   */
+  const slideSurfaceCanvas =
+    "relative box-border min-h-0 min-w-0 w-full flex-1 basis-0 overflow-auto";
 
   const renderReadonlyStack = () => (
     <div
       className={cn(
         "mx-auto w-full space-y-8",
         previewReadOnly
-          ? "mx-auto min-h-0 w-full max-w-[min(96vw,1280px)] flex-1 overflow-y-auto overflow-x-hidden px-2 py-6 md:px-4 md:py-10"
+          ? "mx-auto min-h-0 w-full max-w-[min(96vw,1280px)] flex-1 overflow-y-auto overflow-x-auto px-2 py-6 md:px-4 md:py-10"
           : "max-w-4xl",
       )}
     >
@@ -482,14 +534,15 @@ export function SlideBlocksCanvas({
           timing={timing}
           index={index}
           layout="stack"
+          imageZoomEnabled={readOnly}
         />
       ))}
     </div>
   );
 
   const renderReadonlyCanvas = () => (
-    <div className="flex min-h-0 w-full min-w-0 max-w-full flex-1 flex-col items-center justify-center overflow-hidden">
-      <div className={previewReadOnly ? slideSurfacePreview : slideSurface}>
+    <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-hidden">
+      <div className={slideSurfaceCanvas}>
         {blocks.map((block, index) => (
           <SlideBlockPreview
             key={block.id}
@@ -498,6 +551,7 @@ export function SlideBlocksCanvas({
             timing={timing}
             index={index}
             layout="canvas"
+            imageZoomEnabled={readOnly}
           />
         ))}
       </div>
@@ -514,7 +568,7 @@ export function SlideBlocksCanvas({
         items={blocks.map((b) => b.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="relative z-10 mx-auto w-full max-w-4xl space-y-4 rounded-xl border border-border/15 bg-card/90 p-6 shadow-sm ring-1 ring-border/10 md:p-10">
+        <div className="h-full relative z-10 mx-auto w-full overflow-x-auto bg-card/90 px-6">
           {blocks.map((block, index) => (
             <SortableSlideBlock
               key={block.id}
@@ -533,8 +587,8 @@ export function SlideBlocksCanvas({
   );
 
   const renderEditCanvas = () => (
-    <div className="flex min-h-0 w-full min-w-0 max-w-full flex-1 flex-col items-center justify-center overflow-hidden">
-      <div className={slideSurface}>
+    <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-hidden">
+      <div className={slideSurfaceCanvas}>
         {blocks.map((block, index) => (
           <CanvasSlideBlock
             key={block.id}
@@ -557,13 +611,13 @@ export function SlideBlocksCanvas({
   };
 
   const rootClass = cn(
-    "relative flex min-h-0 min-w-0 w-full max-w-full flex-col self-stretch",
-    previewReadOnly ? "shrink-0" : "flex-1",
-    layout === "stack"
-      ? previewReadOnly
-        ? "overflow-x-hidden overflow-y-visible"
-        : "overflow-y-auto overflow-x-hidden"
-      : "overflow-hidden",
+    "relative flex w-full max-w-full flex-col self-stretch h-full",
+    // previewReadOnly && layout === "stack" ? "shrink-0" : "min-h-0 flex-1 basis-0",
+    // layout === "stack"
+    //   ? previewReadOnly
+    //     ? "overflow-x-hidden overflow-y-auto overscroll-contain"
+    //     : "overflow-y-auto overflow-x-hidden overscroll-contain"
+    //   : "min-h-0 overflow-hidden",
   );
 
   return (

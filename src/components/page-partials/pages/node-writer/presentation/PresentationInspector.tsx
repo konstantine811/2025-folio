@@ -242,7 +242,7 @@ export function PresentationInspector({
                 <input
                   type="range"
                   min={20}
-                  max={100}
+                  max={200}
                   step={1}
                   value={selectedBlock.widthPct ?? 100}
                   onChange={(e) =>
@@ -254,6 +254,9 @@ export function PresentationInspector({
                 />
                 <span className="text-[10px] text-muted-foreground">
                   {selectedBlock.widthPct ?? 100}%
+                  {(selectedBlock.widthPct ?? 100) > 100
+                    ? " — ширше за колонку (скрол)"
+                    : ""}
                 </span>
               </label>
             ) : null}
@@ -309,7 +312,7 @@ export function PresentationInspector({
                   <input
                     type="range"
                     min={15}
-                    max={100}
+                    max={200}
                     step={1}
                     value={selectedBlock.widthPct ?? 70}
                     onChange={(e) =>
@@ -321,6 +324,9 @@ export function PresentationInspector({
                   />
                   <span className="text-[10px] text-muted-foreground">
                     {selectedBlock.widthPct ?? 70}%
+                    {(selectedBlock.widthPct ?? 70) > 100
+                      ? " — прокрутка полотна"
+                      : ""}
                   </span>
                 </label>
               </>

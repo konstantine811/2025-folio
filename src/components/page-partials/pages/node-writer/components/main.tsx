@@ -513,11 +513,6 @@ const Main = () => {
     [navigate],
   );
 
-  const updateProjectContent = (content: string) => {
-    if (!currentProject) return;
-    applyProjectPatch((p) => ({ ...p, content }));
-  };
-
   const handleProjectSelect = (project: Project) => {
     const v: AppView = "nodes";
     setCurrentProject(project);
@@ -579,7 +574,7 @@ const Main = () => {
           onCreate={createNewDocument}
         />
 
-        <div className="relative flex min-h-0 w-full min-w-0 flex-1 flex-col">
+        <div className="relative flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
           {smoothDocumentRouteLoading && <DocumentRouteLoading />}
 
           {!showDocumentRouteLoading && view === "dashboard" && (
@@ -618,10 +613,7 @@ const Main = () => {
             view === "editor" &&
             currentProject &&
             isWorkspaceAdmin && (
-              <EditorView
-                project={currentProject}
-                onContentChange={updateProjectContent}
-              />
+              <EditorView project={currentProject} />
             )}
 
           {!showDocumentRouteLoading &&

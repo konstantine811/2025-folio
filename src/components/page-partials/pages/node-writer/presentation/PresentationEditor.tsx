@@ -18,6 +18,7 @@ import {
   payloadToBlock,
   PRESENTATION_DND_MIME,
 } from "./presentation-model";
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 
 interface PresentationEditorProps {
   project: Project;
@@ -34,7 +35,7 @@ export function PresentationEditor({
     () => normalizeSlides(project.slides ?? []),
     [project.slides],
   );
-
+  const hs = useHeaderSizeStore((s) => s.size);
   const usedKeys = useMemo(
     () => collectUsedSourceKeys(project.slides ?? []),
     [project.slides],
@@ -356,7 +357,7 @@ export function PresentationEditor({
         usedKeys={usedKeys}
       />
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col basis-0" style={{ height: `calc(100vh - ${hs}px)` }}>
         <header className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border/25 px-3 py-2">
           <PresentationSlideTabs
             slides={slidesNorm}
@@ -446,8 +447,12 @@ export function PresentationEditor({
         ) : null}
 
         {effectiveReadOnly ? (
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col items-center justify-center overflow-y-auto overflow-x-hidden px-2 py-2 sm:px-4">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto">
+            <div
+              className={cn(
+                "flex min-h-0 min-w-0 flex-1  flex-col overflow-auto",
+              )}
+            >
               {activeSlide ? (
                 <SlideBlocksCanvas
                   slide={activeSlide}
@@ -494,7 +499,11 @@ export function PresentationEditor({
             ) : null}
           </div>
         ) : (
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-2 py-2 sm:px-3">
+          <div
+            className={cn(
+              "flex min-h-0 min-w-0 flex-1 flex-col h-full"
+            )}
+          >
             {activeSlide ? (
               <SlideBlocksCanvas
                 slide={activeSlide}
