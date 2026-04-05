@@ -1,5 +1,4 @@
 import type {
-  CSSProperties,
   MutableRefObject,
   ReactNode,
   RefObject,
@@ -20,7 +19,6 @@ import remarkGfm from "remark-gfm";
 import { remarkDefaultFenceLang } from "@/utils/remark-default-fence-lang";
 import { CodeBlock } from "@/components/ui-abc/code/code-block";
 import type { NodeMarkdownBlock } from "../../types/types";
-import type { NodeAccentTextTheme } from "../utils/node-accent";
 import {
   inFencedCodeAt,
   isFenceDrivenBlock,
@@ -184,7 +182,6 @@ function useTextareaAutosize(
 interface NodeMarkdownBlocksEditorProps {
   nodeId: string;
   blocks: NodeMarkdownBlock[];
-  themeAccent: NodeAccentTextTheme | null;
   onBlocksChange: (blocks: NodeMarkdownBlock[]) => void;
   /**
    * Ctrl/⌘+V: вставити зображення з буфера як `![](<url>)` після upload у Storage.
@@ -249,7 +246,6 @@ function InactiveMarkdownLineRow({
 export function NodeMarkdownBlocksEditor({
   nodeId,
   blocks,
-  themeAccent,
   onBlocksChange,
   uploadPasteImage,
 }: NodeMarkdownBlocksEditorProps) {
@@ -348,12 +344,10 @@ export function NodeMarkdownBlocksEditor({
     return true;
   }, [onBlocksChange]);
 
-  const fg = themeAccent?.fg ?? "inherit";
-  const fgMuted = themeAccent?.fgMuted ?? "inherit";
-
   const mdComponents = useMemo(
-    () => nodeMarkdownPreviewComponents(fg, fgMuted),
-    [fg, fgMuted],
+    () =>
+      nodeMarkdownPreviewComponents("var(--foreground)", "var(--muted-foreground)"),
+    [],
   );
 
   useEffect(() => {
@@ -397,20 +391,13 @@ export function NodeMarkdownBlocksEditor({
     };
   }, []);
 
-  const baseTextStyle: CSSProperties | undefined = themeAccent
-    ? { color: themeAccent.fg }
-    : undefined;
-
-  const lineTextareaClass = themeAccent
-    ? `w-full resize-none overflow-hidden bg-transparent px-2 py-1 outline-none placeholder:text-current/45 ${NODE_MD_BODY_TYPO}`
-    : `w-full resize-none overflow-hidden bg-transparent px-2 py-1 text-foreground/85 outline-none placeholder:text-muted-foreground placeholder:opacity-50 ${NODE_MD_BODY_TYPO}`;
+  const lineTextareaClass = `w-full resize-none overflow-hidden bg-transparent px-2 py-1 text-foreground/90 outline-none placeholder:text-muted-foreground placeholder:opacity-50 ${NODE_MD_BODY_TYPO}`;
 
   return (
     <div
       ref={rootRef}
       data-node-markdown-root={nodeId}
-      className={`min-h-0 min-w-0 w-full flex-1 overflow-y-auto overflow-x-hidden ${!themeAccent ? "text-foreground/90" : ""}`}
-      style={baseTextStyle}
+      className="min-h-0 min-w-0 w-full flex-1 overflow-y-auto overflow-x-hidden text-foreground/90"
       onPointerDown={(e) => e.stopPropagation()}
     >
       {(() => {
@@ -427,7 +414,6 @@ export function NodeMarkdownBlocksEditor({
                 idx={idx}
                 blocks={blocks}
                 blocksRef={blocksRef}
-                themeAccent={themeAccent}
                 lineTextareaClass={lineTextareaClass}
                 setLineRef={setLineRef}
                 onBlocksChange={commitBlocks}
@@ -502,7 +488,6 @@ interface LineEditorProps {
   idx: number;
   blocks: NodeMarkdownBlock[];
   blocksRef: MutableRefObject<NodeMarkdownBlock[]>;
-  themeAccent: NodeAccentTextTheme | null;
   lineTextareaClass: string;
   setLineRef: (id: string) => (el: HTMLTextAreaElement | null) => void;
   onBlocksChange: (blocks: NodeMarkdownBlock[]) => void;
@@ -520,7 +505,6 @@ function LineEditor({
   idx,
   blocks,
   blocksRef,
-  themeAccent,
   lineTextareaClass,
   setLineRef,
   onBlocksChange,
@@ -1030,7 +1014,6 @@ function LineEditor({
       }}
       placeholder="Markdown…"
       className={lineTextareaClass}
-      style={themeAccent ? { color: themeAccent.fg } : undefined}
       spellCheck={false}
     />
     </div>

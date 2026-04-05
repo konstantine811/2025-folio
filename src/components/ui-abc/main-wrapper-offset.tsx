@@ -1,7 +1,7 @@
 // import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import clsx from "clsx";
-import { forwardRef, ReactNode } from "react";
+import { forwardRef, type CSSProperties, type ReactNode } from "react";
 
 type Props = {
   children: ReactNode;
@@ -22,7 +22,15 @@ const MainWrapperOffset = forwardRef<HTMLDivElement, Props>(
         )}
         style={
           isFullHeight
-            ? { paddingTop: hs }
+            ? ({
+                boxSizing: "border-box",
+                paddingTop: hs,
+                // Для дочірніх елементів (напр. сайдбар Node Writer): висота смуги під хедером.
+                ["--nw-header-offset" as string]: `${Math.max(hs, 56)}px`,
+                // min-height сам по собі не дає «definite height» для height:100% у дітей — потрібна явна height.
+                height: "100dvh",
+                minHeight: "100dvh",
+              } as CSSProperties)
             : { height: "100vh" }
         }
         ref={ref}

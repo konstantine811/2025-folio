@@ -98,7 +98,7 @@ export function MarkdownLineHighlightToolbar({
     <div
       data-md-hl-toolbar=""
       className={cn(
-        "pointer-events-auto fixed z-[300] min-w-[200px] max-w-[min(272px,calc(100vw-24px))] flex-col gap-1 rounded-md border border-border/20 bg-popover/95 p-1.5 shadow-md backdrop-blur-sm dark:border-white/8",
+        "pointer-events-auto fixed z-[300] min-w-[200px] max-w-[min(272px,calc(100vw-24px))] flex-col gap-1 rounded-md border border-border bg-popover/95 p-1.5 shadow-md backdrop-blur-sm",
       )}
       style={{ left: anchorX, top: anchorY, transform }}
       role="toolbar"

@@ -5,6 +5,9 @@ const NODE_WRITER = "/node-writer";
 
 const base = NODE_WRITER.replace(/\/$/, "");
 
+/** Усі ресурси workspace (без прив’язки до одного документа). */
+export const NODE_WRITER_WORKSPACE_RESOURCES_PATH = `${base}/resources`;
+
 const DOC_VIEWS: AppView[] = [
   "nodes",
   "editor",
@@ -25,6 +28,9 @@ export function buildNodeWriterPath(
   projectId: string | null,
   view: AppView,
 ): string {
+  if (view === "workspaceAssets") {
+    return NODE_WRITER_WORKSPACE_RESOURCES_PATH;
+  }
   if (!projectId || view === "dashboard") {
     return NODE_WRITER;
   }
@@ -42,6 +48,9 @@ export function parseNodeWriterPath(pathname: string): {
   const norm = pathname.replace(/\/+$/, "") || "/";
   if (norm === base) {
     return { projectId: null, view: "dashboard" };
+  }
+  if (norm === NODE_WRITER_WORKSPACE_RESOURCES_PATH) {
+    return { projectId: null, view: "workspaceAssets" };
   }
 
   const escaped = base.replace(/\//g, "\\/");

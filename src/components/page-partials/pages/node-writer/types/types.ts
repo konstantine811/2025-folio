@@ -102,11 +102,87 @@ export interface LinkData {
   sourceChildSlot?: number;
 }
 
+/** Поява блоку на слайді (CSS animate-in). */
+export type SlideEntranceKind =
+  | "none"
+  | "fade"
+  | "slide-up"
+  | "slide-left"
+  | "zoom";
+
+/** Усі блоки разом або один за одним (затримка по порядку). */
+export type SlideBlockAnimationTiming = "together" | "sequential";
+
+/** Вертикальний стовпчик або вільне положення на полотні (у %). */
+export type SlideLayoutMode = "stack" | "canvas";
+
+/** Пресет шрифту для заголовка/тексту на слайді. */
+export type SlideFontPreset = "theme" | "sans" | "serif" | "mono";
+
+/** Вирівнювання тексту в межах блоку. */
+export type SlideTextAlign = "left" | "center" | "right";
+
+export interface SlideBlockHeading {
+  id: string;
+  kind: "heading";
+  order: number;
+  text: string;
+  sourceNodeId?: string;
+  /** Множник до базового заголовка слайда (1 = за замовчуванням). */
+  scale?: number;
+  entrance?: SlideEntranceKind;
+  fontPreset?: SlideFontPreset;
+  textAlign?: SlideTextAlign;
+  /** У режимі `canvas`: позиція та ширина блоку (0–100). */
+  leftPct?: number;
+  topPct?: number;
+  widthPct?: number;
+}
+
+export interface SlideBlockText {
+  id: string;
+  kind: "text";
+  order: number;
+  text: string;
+  sourceNodeId?: string;
+  markdownBlockId?: string;
+  /** Відносно візуального розміру заголовка на слайді (~0.35–0.5 типові для підзаголовка). */
+  scale?: number;
+  entrance?: SlideEntranceKind;
+  fontPreset?: SlideFontPreset;
+  textAlign?: SlideTextAlign;
+  leftPct?: number;
+  topPct?: number;
+  widthPct?: number;
+}
+
+export interface SlideBlockImage {
+  id: string;
+  kind: "image";
+  order: number;
+  url: string;
+  caption?: string;
+  sourceNodeId?: string;
+  sourceCanvasImageId?: string;
+  entrance?: SlideEntranceKind;
+  leftPct?: number;
+  topPct?: number;
+  /** Ширина картки зображення на слайді (0–100). */
+  widthPct?: number;
+}
+
+export type SlideBlock = SlideBlockHeading | SlideBlockText | SlideBlockImage;
+
 export interface Slide {
   id: string;
   title: string;
-  content: string;
-  visualType: "text" | "image" | "bullets";
+  /** Легасі: до міграції в blocks */
+  content?: string;
+  visualType?: "text" | "image" | "bullets";
+  blocks?: SlideBlock[];
+  blockAnimationTiming?: SlideBlockAnimationTiming;
+  /** `stack` — колонка; `canvas` — абсолютне позиціонування у відсотках. */
+  slideLayout?: SlideLayoutMode;
 }
 
 export interface Asset {
@@ -117,6 +193,8 @@ export interface Asset {
 
 export type AppView =
   | "dashboard"
+  /** Усі медіа по всіх документах робочої області. */
+  | "workspaceAssets"
   | "editor"
   | "nodes"
   | "presentation"

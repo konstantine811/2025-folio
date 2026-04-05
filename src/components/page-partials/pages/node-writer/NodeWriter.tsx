@@ -17,7 +17,7 @@ const NodeWriterPage = () => {
   }, []);
 
   return (
-    <MainWrapperOffset isFullHeight className="w-full min-h-0">
+    <MainWrapperOffset isFullHeight className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
       <Main />
     </MainWrapperOffset>
   );

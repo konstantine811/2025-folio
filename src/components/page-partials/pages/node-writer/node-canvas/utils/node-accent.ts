@@ -15,7 +15,7 @@ export function parseHexRgb(hex: string): [number, number, number] | null {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-/** Відносна яскравість sRGB (WCAG). */
+/** Відносна яскравість sRGB (WCAG) — залишено для можливих перевірок поза UI тексту. */
 export function relativeLuminance(r: number, g: number, b: number): number {
   const lin = [r, g, b].map((v) => {
     const x = v / 255;
@@ -25,29 +25,35 @@ export function relativeLuminance(r: number, g: number, b: number): number {
 }
 
 export interface NodeAccentTextTheme {
+  /** Завжди тема додатку — без автоконтрасту до фону ноди. */
   fg: string;
   fgMuted: string;
   fgSubtle: string;
+  /** Ледь помітні лінії з відтінком accent. */
   border: string;
   dragBg: string;
   headerRule: string;
   footerRule: string;
 }
 
-/** Контрастний текст і допоміжні кольори під фон ноди (#rrggbb). Некоректний hex → нейтральний сірий. */
+/**
+ * Кольори рамок/розділювачів під accent; текст лишається `foreground` теми додатку
+ * (світла/темна), без перемикання чорний/білий відносно яскравості фону ноди.
+ */
 export function nodeTextThemeFromAccent(hex: string): NodeAccentTextTheme {
   const rgb = parseHexRgb(hex) ?? [100, 116, 139];
   const [r, g, b] = rgb;
-  const L = relativeLuminance(r, g, b);
-  const dark = "#0f172a";
-  const light = "#f8fafc";
-  const fg = L > 0.45 ? dark : light;
-  const fgMuted = L > 0.45 ? "rgba(15,23,42,0.62)" : "rgba(248,250,252,0.68)";
-  const fgSubtle = L > 0.45 ? "rgba(15,23,42,0.4)" : "rgba(248,250,252,0.45)";
-  const border = L > 0.45 ? "rgba(15,23,42,0.22)" : "rgba(248,250,252,0.25)";
-  const dragBg = L > 0.45 ? "rgba(15,23,42,0.07)" : "rgba(248,250,252,0.1)";
-  /** Тонка лінія як зовнішня рамка — без яскравої «смуги» під заголовком. */
-  const headerRule = L > 0.45 ? "rgba(15,23,42,0.22)" : "rgba(248,250,252,0.25)";
+  const border = `rgba(${r},${g},${b},0.1)`;
+  const dragBg = `rgba(${r},${g},${b},0.05)`;
+  const headerRule = `rgba(${r},${g},${b},0.08)`;
   const footerRule = headerRule;
-  return { fg, fgMuted, fgSubtle, border, dragBg, headerRule, footerRule };
+  return {
+    fg: "var(--foreground)",
+    fgMuted: "var(--muted-foreground)",
+    fgSubtle: "var(--muted-foreground)",
+    border,
+    dragBg,
+    headerRule,
+    footerRule,
+  };
 }

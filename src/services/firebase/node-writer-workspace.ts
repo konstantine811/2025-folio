@@ -69,6 +69,61 @@ async function deleteStorageTree(root: StorageReference): Promise<void> {
   await Promise.all(page.prefixes.map((p) => deleteStorageTree(p)));
 }
 
+function isNodeWriterImageFileName(name: string): boolean {
+  return /\.(png|jpe?g|webp|gif|svg)$/i.test(name);
+}
+
+/** Рекурсивно збирає шляхи зображень (`fullPath`) під коренем. */
+async function collectImagePathsUnder(
+  root: StorageReference,
+  out: string[],
+): Promise<void> {
+  const page = await listAll(root);
+  for (const item of page.items) {
+    if (isNodeWriterImageFileName(item.name)) {
+      out.push(item.fullPath);
+    }
+  }
+  await Promise.all(
+    page.prefixes.map((p) => collectImagePathsUnder(p, out)),
+  );
+}
+
+/**
+ * Усі зображення в `node-writer/{scope}/projects/{projectId}/` (фактичний вміст Storage).
+ */
+export async function listNodeWriterProjectImagePaths(
+  workspaceScope: string,
+  projectId: string,
+): Promise<string[]> {
+  const out: string[] = [];
+  const root = ref(
+    storage,
+    `node-writer/${workspaceScope}/projects/${projectId}`,
+  );
+  await collectImagePathsUnder(root, out);
+  return out.sort();
+}
+
+/**
+ * Усі зображення у всіх папках проєктів під `node-writer/{scope}/projects/`
+ * (кожна підпапка — projectId). Доповнює інвентар за Firestore (у т. ч. «сироти» в Storage).
+ */
+export async function listAllNodeWriterWorkspaceImagePaths(
+  workspaceScope: string,
+): Promise<string[]> {
+  const out: string[] = [];
+  const projectsRoot = ref(
+    storage,
+    `node-writer/${workspaceScope}/projects`,
+  );
+  const page = await listAll(projectsRoot);
+  await Promise.all(
+    page.prefixes.map((p) => collectImagePathsUnder(p, out)),
+  );
+  return out.sort();
+}
+
 export async function deleteNodeWriterProjectMedia(
   workspaceScope: string,
   projectId: string,
@@ -225,7 +280,7 @@ function nodeMarkdownTextsForCollect(node: NodeData): string[] {
   return raw.split("\n");
 }
 
-function extractImageUrlsFromMarkdown(text: string): string[] {
+export function extractImageUrlsFromMarkdown(text: string): string[] {
   const out: string[] = [];
   if (!text) return out;
   const mdImg = /!\[[^\]]*\]\(\s*<?([^>)]+)>?\s*\)/g;
@@ -261,6 +316,13 @@ export function collectNodeWriterStoragePaths(project: Project): Set<string> {
   }
   for (const a of project.images ?? []) {
     add(a.url);
+  }
+  for (const slide of project.slides ?? []) {
+    for (const b of slide.blocks ?? []) {
+      if (b.kind === "image") {
+        add(b.url);
+      }
+    }
   }
   return out;
 }

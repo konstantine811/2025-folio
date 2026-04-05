@@ -37,7 +37,7 @@ const NodesView = ({
   return (
     <div
       ref={shortcutShellRef}
-      className="flex min-h-0 min-w-0 w-full flex-1 flex-col"
+      className="flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-hidden"
     >
       <div className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-border/20 bg-card px-8">
         <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -98,7 +98,7 @@ const NodesView = ({
           {readOnly ? "Лише перегляд" : "Ноди · звʼязки · текст"}
         </div>
       </div>
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <NodeCanvas
           project={project}
           onProjectPatch={onProjectPatch}

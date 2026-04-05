@@ -51,7 +51,7 @@ export function NodeGraphSvg({
     <svg
       width={scrollPxW}
       height={scrollPxH}
-      className="pointer-events-none absolute left-0 top-0 block text-zinc-200 dark:text-zinc-300"
+      className="pointer-events-none absolute left-0 top-0 block text-foreground/55"
       aria-hidden
     >
       <defs>

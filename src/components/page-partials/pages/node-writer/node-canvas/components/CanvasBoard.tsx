@@ -108,7 +108,7 @@ export function CanvasBoard({
         data-lenis-prevent
         data-lenis-prevent-wheel
         data-lenis-prevent-touch
-        className="node-canvas-scroll absolute inset-0 overflow-auto overscroll-contain bg-background dark:bg-zinc-950"
+        className="node-canvas-scroll absolute inset-0 overflow-auto overscroll-contain bg-background"
       >
         <div
           className="relative shrink-0"

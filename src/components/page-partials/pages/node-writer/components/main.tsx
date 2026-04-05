@@ -13,11 +13,13 @@ import NodesView from "./NodesView";
 import EditorView from "./EditorView";
 import PresentationView from "./PresentationView";
 import AssetsView from "./AssetsView";
+import WorkspaceAssetsView from "./WorkspaceAssetsView";
 import CreateProjectModal from "./CreateProjectModal";
 import DocumentRouteLoading from "./DocumentRouteLoading";
 import { collectFolderSubtreeIds } from "../workspace/workspace-tree-utils";
 import { nextChildOrder } from "../workspace/next-child-order";
 import {
+  collectNodeWriterStoragePaths,
   collectRemovedNodeWriterStoragePaths,
   deleteNodeWriterStorageObjectsByPaths,
   loadWorkspaceFromFirestore,
@@ -262,6 +264,16 @@ const Main = () => {
   useEffect(() => {
     if (!cloudReady) return;
     const { projectId, view } = parseNodeWriterPath(location.pathname);
+    if (view === "workspaceAssets") {
+      if (!isWorkspaceAdmin) {
+        navigate(RoutPath.NODE_WRITER, { replace: true });
+        return;
+      }
+      pendingLocalProjectIdsRef.current.clear();
+      setView("workspaceAssets");
+      setCurrentProject(null);
+      return;
+    }
     if (!projectId) {
       pendingLocalProjectIdsRef.current.clear();
       setView("dashboard");
@@ -319,20 +331,54 @@ const Main = () => {
         return cur;
       }
       const removed = collectRemovedNodeWriterStoragePaths(cur, next);
-      if (removed.length > 0) {
-        void deleteNodeWriterStorageObjectsByPaths(
-          removed,
-          next.id,
-          NODE_WRITER_WORKSPACE_SCOPE,
+      const ts = Date.now();
+      const stamped = { ...next, lastModified: ts };
+      setProjects((prevProjects) => {
+        const others = prevProjects.filter((p) => p.id !== cur.id);
+        const toDelete = removed.filter(
+          (path) =>
+            !others.some((op) => collectNodeWriterStoragePaths(op).has(path)),
         );
-      }
-      const stamped = { ...next, lastModified: Date.now() };
-      setProjects((prev) =>
-        prev.map((p) => (p.id === stamped.id ? stamped : p)),
-      );
+        if (toDelete.length > 0) {
+          void deleteNodeWriterStorageObjectsByPaths(
+            toDelete,
+            next.id,
+            NODE_WRITER_WORKSPACE_SCOPE,
+          );
+        }
+        return prevProjects.map((p) => (p.id === stamped.id ? stamped : p));
+      });
       return stamped;
     });
   }, []);
+
+  const applyProjectPatchById = useCallback(
+    (projectId: string, fn: ProjectPatchFn) => {
+      setProjects((prevProjects) => {
+        const cur = prevProjects.find((p) => p.id === projectId);
+        if (!cur) return prevProjects;
+        const next = fn(cur);
+        if (next === cur) return prevProjects;
+        const removed = collectRemovedNodeWriterStoragePaths(cur, next);
+        const others = prevProjects.filter((p) => p.id !== projectId);
+        const toDelete = removed.filter(
+          (path) =>
+            !others.some((op) => collectNodeWriterStoragePaths(op).has(path)),
+        );
+        if (toDelete.length > 0) {
+          void deleteNodeWriterStorageObjectsByPaths(
+            toDelete,
+            next.id,
+            NODE_WRITER_WORKSPACE_SCOPE,
+          );
+        }
+        const stamped = { ...next, lastModified: Date.now() };
+        setCurrentProject((c) => (c?.id === projectId ? stamped : c));
+        return prevProjects.map((p) => (p.id === projectId ? stamped : p));
+      });
+    },
+    [],
+  );
 
   const openCreateDocument = (folderId: string | null) => {
     if (!isWorkspaceAdmin) return;
@@ -486,6 +532,15 @@ const Main = () => {
         navigate(RoutPath.NODE_WRITER, { replace: false });
         return;
       }
+      if (next === "workspaceAssets") {
+        if (!isWorkspaceAdmin) return;
+        setView("workspaceAssets");
+        setCurrentProject(null);
+        navigate(buildNodeWriterPath(null, "workspaceAssets"), {
+          replace: false,
+        });
+        return;
+      }
       if (
         !isWorkspaceAdmin &&
         next !== "presentation" &&
@@ -503,7 +558,7 @@ const Main = () => {
   );
 
   return (
-    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-background font-sans text-foreground md:flex-row">
+    <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col bg-background font-sans text-foreground md:flex-row md:items-stretch">
       <Sidebar
         view={view}
         currentProject={currentProject}
@@ -511,7 +566,7 @@ const Main = () => {
         onViewChange={handleViewChange}
       />
 
-      <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+      <main className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <CreateProjectModal
           isOpen={isCreateModalOpen}
           title={newDocTitle}
@@ -574,6 +629,7 @@ const Main = () => {
             currentProject && (
               <PresentationView
                 project={currentProject}
+                onProjectPatch={applyProjectPatch}
                 readOnlyViewer={!isWorkspaceAdmin}
               />
             )}
@@ -582,7 +638,19 @@ const Main = () => {
             view === "assets" &&
             currentProject &&
             isWorkspaceAdmin && (
-              <AssetsView project={currentProject} />
+              <AssetsView
+                project={currentProject}
+                onProjectPatch={applyProjectPatch}
+              />
+            )}
+
+          {!showDocumentRouteLoading &&
+            view === "workspaceAssets" &&
+            isWorkspaceAdmin && (
+              <WorkspaceAssetsView
+                projects={projects}
+                onPatchProjectById={applyProjectPatchById}
+              />
             )}
         </div>
       </main>

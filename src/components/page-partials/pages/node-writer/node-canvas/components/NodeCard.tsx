@@ -42,17 +42,17 @@ const COLOR_SWATCH_IDLE_GRADIENT =
 
 /** Зовнішній «скло» шар (backdrop): заголовок живе тут, контент — у вкладеній панелі. */
 const NODE_OUTER_GLASS =
-  "rounded-2xl border border-white/12 bg-white/[0.07] shadow-[0_8px_40px_-12px_rgba(0,0,0,0.55)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-zinc-900/25 dark:shadow-[0_12px_48px_-16px_rgba(0,0,0,0.75)]";
+  "rounded-2xl border border-border/20 bg-card/90 shadow-md backdrop-blur-xl backdrop-saturate-150";
 
 const NODE_OUTER_GLASS_INTERACTIVE =
-  "hover:border-white/18 hover:shadow-[0_0_36px_-14px_rgba(129,140,248,0.28)]";
+  "hover:border-primary/20 hover:shadow-[0_0_36px_-14px_rgba(129,140,248,0.15)]";
 
-/** Темна внутрішня панель (обмежує title / markdown як у референс-ноді). */
+/** Внутрішня панель (title / markdown). */
 const NODE_INNER_PANEL =
-  "rounded-xl border border-white/[0.07] bg-zinc-950/95 font-sans antialiased shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] dark:border-white/[0.06] dark:bg-[#09090b]";
+  "rounded-xl border border-border/15 bg-muted/90 font-sans antialiased shadow-inner";
 
-/** Розділювач між скляним заголовком і внутрішньою панеллю. */
-const NODE_OUTER_HEADER_RULE = "border-white/10 dark:border-white/[0.08]";
+/** Розділювач між зовнішнім шаром і внутрішньою панеллю. */
+const NODE_OUTER_HEADER_RULE = "border-border/20";
 
 interface NodeCardProps {
   /** Лише перегляд: без перетягування, редагування та звʼязків. */
@@ -123,11 +123,10 @@ export function NodeCard({
       ? nodeTextThemeFromAccent(accent)
       : null;
 
-  const mdFg = themeAccent?.fg ?? "inherit";
-  const mdFgMuted = themeAccent?.fgMuted ?? "inherit";
   const mdComponents = useMemo(
-    () => nodeMarkdownPreviewComponents(mdFg, mdFgMuted),
-    [mdFg, mdFgMuted],
+    () =>
+      nodeMarkdownPreviewComponents("var(--foreground)", "var(--muted-foreground)"),
+    [],
   );
   const mdBlocks = deriveMarkdownBlocks(node);
 
@@ -136,7 +135,7 @@ export function NodeCard({
     [links, node.id],
   );
 
-  const labelClass = `font-sans antialiased ${NODE_HEADING_LABEL_CLASSES[headingLevel]} ${labelWeight} normal-case ${themeAccent ? "" : "text-foreground"}`;
+  const labelClass = `font-sans antialiased ${NODE_HEADING_LABEL_CLASSES[headingLevel]} ${labelWeight} normal-case text-foreground`;
 
   const rootStyle: CSSProperties = {
     left: x,
@@ -211,12 +210,7 @@ export function NodeCard({
           <div
             className={`mx-2 mb-2 mt-1 flex min-h-0 flex-1 flex-col overflow-hidden ${NODE_INNER_PANEL}`}
           >
-            <div
-              className={`min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-2 pl-5 pr-2 ${
-                !themeAccent ? "text-foreground/90" : ""
-              }`}
-              style={themeAccent ? { color: themeAccent.fg } : undefined}
-            >
+            <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-2 pl-5 pr-2 text-foreground/90">
               {mdBlocks.map((b) => (
                 <div
                   key={b.id}
@@ -285,17 +279,14 @@ export function NodeCard({
         >
           <div
             title="Перетягнути · Shift+клік — у групу / з групи"
-            className={`rounded-tl-2xl flex w-7 shrink-0 cursor-grab touch-none items-center justify-center border-r border-solid text-[10px] active:cursor-grabbing ${
-              themeAccent
-                ? ""
-                : `border-white/10 bg-white/[0.04] text-muted-foreground dark:border-white/[0.09]`
+            className={`rounded-tl-2xl flex w-7 shrink-0 cursor-grab touch-none items-center justify-center border-r border-solid text-[10px] text-muted-foreground active:cursor-grabbing ${
+              themeAccent ? "" : "border-border/20 bg-muted/50"
             }`}
             style={
               themeAccent
                 ? {
                     borderRightColor: themeAccent.border,
                     backgroundColor: themeAccent.dragBg,
-                    color: themeAccent.fgSubtle,
                   }
                 : undefined
             }
@@ -310,8 +301,7 @@ export function NodeCard({
             <input
               value={node.label}
               onChange={(e) => onLabelChange(node.id, e.target.value)}
-              className={`min-w-0 flex-1 bg-transparent px-1 py-0.5 outline-none placeholder:opacity-50 ${labelClass}`}
-              style={themeAccent ? { color: themeAccent.fg } : undefined}
+              className={`min-w-0 flex-1 bg-transparent px-1 py-0.5 text-foreground outline-none placeholder:opacity-50 placeholder:text-muted-foreground ${labelClass}`}
               onPointerDown={(e) => e.stopPropagation()}
             />
             <div className="flex shrink-0 items-center gap-0.5">
@@ -320,16 +310,13 @@ export function NodeCard({
                   type="button"
                   title="Знизити рівень (h6 — найменший шрифт)"
                   disabled={headingLevel >= 6}
-                  className={`mono flex h-5 min-w-5 items-center justify-center rounded border border-solid text-[11px] disabled:pointer-events-none disabled:opacity-35 ${
-                    themeAccent
-                      ? ""
-                      : "border-border/25 text-muted-foreground hover:border-border/45 hover:text-foreground"
+                  className={`mono flex h-5 min-w-5 items-center justify-center rounded border border-solid text-[11px] text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-35 ${
+                    themeAccent ? "" : "border-border/20 hover:border-border/30"
                   }`}
                   style={
                     themeAccent
                       ? {
                           borderColor: themeAccent.border,
-                          color: themeAccent.fgMuted,
                         }
                       : undefined
                   }
@@ -347,14 +334,7 @@ export function NodeCard({
                   −
                 </button>
                 <span
-                  className={`mono min-w-[1.35rem] px-0.5 text-center text-[8px] leading-none ${
-                    themeAccent ? "" : "text-muted-foreground"
-                  }`}
-                  style={
-                    themeAccent
-                      ? { color: themeAccent.fgSubtle }
-                      : undefined
-                  }
+                  className="mono min-w-[1.35rem] px-0.5 text-center text-[8px] leading-none text-muted-foreground"
                   title={`Рівень заголовка: h${headingLevel}`}
                 >
                   h{headingLevel}
@@ -363,16 +343,13 @@ export function NodeCard({
                   type="button"
                   title="Підвищити рівень (h1 — найбільший шрифт)"
                   disabled={headingLevel <= 1}
-                  className={`mono flex h-5 min-w-5 items-center justify-center rounded border border-solid text-[11px] disabled:pointer-events-none disabled:opacity-35 ${
-                    themeAccent
-                      ? ""
-                      : "border-border/25 text-muted-foreground hover:border-border/45 hover:text-foreground"
+                  className={`mono flex h-5 min-w-5 items-center justify-center rounded border border-solid text-[11px] text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-35 ${
+                    themeAccent ? "" : "border-border/20 hover:border-border/30"
                   }`}
                   style={
                     themeAccent
                       ? {
                           borderColor: themeAccent.border,
-                          color: themeAccent.fgMuted,
                         }
                       : undefined
                   }
@@ -392,9 +369,7 @@ export function NodeCard({
               </div>
               <label
                 className={`relative flex h-5 min-w-5 shrink-0 cursor-pointer overflow-hidden rounded border border-solid shadow-sm ${
-                  themeAccent
-                    ? ""
-                    : "border-white/25 ring-1 ring-black/10 dark:border-white/20 dark:ring-white/10"
+                  themeAccent ? "" : "border-border/25 ring-1 ring-border/25"
                 }`}
                 style={
                   themeAccent
@@ -422,10 +397,7 @@ export function NodeCard({
             <button
               type="button"
               title="Видалити ноду"
-              className={`mono shrink-0 px-1.5 py-0.5 text-[10px] hover:text-destructive ${
-                themeAccent ? "" : "text-muted-foreground"
-              }`}
-              style={themeAccent ? { color: themeAccent.fgMuted } : undefined}
+              className="mono shrink-0 px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-destructive"
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
@@ -444,7 +416,6 @@ export function NodeCard({
             <NodeMarkdownBlocksEditor
               nodeId={node.id}
               blocks={deriveMarkdownBlocks(node)}
-              themeAccent={themeAccent}
               onBlocksChange={(blocks) =>
                 onMarkdownBlocksChange(node.id, blocks)
               }
@@ -452,7 +423,7 @@ export function NodeCard({
             />
           </div>
           <div
-            className={`flex shrink-0 justify-start border-t border-solid border-white/8 px-1.5 py-0.5 dark:border-white/[0.07]`}
+            className="flex shrink-0 justify-start border-t border-solid border-border/20 px-1.5 py-0.5"
             style={
               themeAccent
                 ? { borderTopColor: themeAccent.border }
@@ -464,12 +435,7 @@ export function NodeCard({
                 <button
                   type="button"
                   aria-label="Підказки редактора тексту в ноді"
-                  className={`rounded p-1 transition-colors ${
-                    themeAccent
-                      ? "hover:bg-white/10"
-                      : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
-                  }`}
-                  style={themeAccent ? { color: themeAccent.fgSubtle } : undefined}
+                  className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   onPointerDown={(e) => e.stopPropagation()}
                 >
                   <Info className="size-3.5" strokeWidth={2} aria-hidden />
@@ -495,7 +461,7 @@ export function NodeCard({
           className={`rounded-br-2xl absolute right-0 bottom-0 z-[50] h-4 w-4 cursor-nwse-resize touch-manipulation border-t border-l border-solid ${
             themeAccent
               ? ""
-              : "border-white/15 bg-white/[0.06] hover:border-white/25 hover:bg-white/10"
+              : "border-border/20 bg-muted/60 hover:border-border/30 hover:bg-muted"
           }`}
           style={
             themeAccent

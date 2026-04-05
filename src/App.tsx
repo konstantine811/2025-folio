@@ -91,13 +91,15 @@ function App() {
           {/* <MouseTrail /> */}
         </>
       )}
-      <div className="min-h-screen w-full flex flex-col justify-between">
+      <div className="flex h-full min-h-0 min-h-screen w-full flex-1 flex-col justify-between">
         <Header />
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <Suspense fallback={<Preloader />}>
-            <RouteWrapper>
-              <Routes>{renderRoutes(router)}</Routes>
-            </RouteWrapper>
+            <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
+              <RouteWrapper>
+                <Routes>{renderRoutes(router)}</Routes>
+              </RouteWrapper>
+            </div>
           </Suspense>
         </div>
         {/* <Map /> */}

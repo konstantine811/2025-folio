@@ -90,8 +90,8 @@ function EdgeSlotGroup({
           className={`flex cursor-crosshair touch-manipulation items-center justify-center rounded-full border border-solid p-0 font-mono text-[6px] font-bold leading-none transition-all ${EDGE_PORT_RING[edge]} ${
             highlightDropPort === edge
               ? highlightDropAllowed
-                ? "z-[55] scale-110 opacity-100 ring-2 ring-white/95 ring-offset-2 ring-offset-zinc-950"
-                : "z-[55] scale-110 opacity-100 ring-2 ring-red-500 ring-offset-2 ring-offset-zinc-950 shadow-[0_0_12px_rgba(239,68,68,0.55)]"
+                ? "z-[55] scale-110 opacity-100 ring-2 ring-primary ring-offset-2 ring-offset-background"
+                : "z-[55] scale-110 opacity-100 ring-2 ring-destructive ring-offset-2 ring-offset-background shadow-[0_0_12px_rgba(239,68,68,0.45)]"
               : wireDragging
                 ? "opacity-100"
                 : "opacity-0 group-hover/node-card:opacity-100"

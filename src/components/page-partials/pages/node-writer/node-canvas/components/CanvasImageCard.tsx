@@ -11,13 +11,13 @@ const IMAGE_NODE_REAR_GLOW: CSSProperties = {
 };
 
 const IMAGE_CARD_OUTER =
-  "rounded-[1.75rem] border border-white/10 bg-[#0a0a0a] shadow-[0_12px_48px_-16px_rgba(0,0,0,0.75)]";
+  "rounded-[1.75rem] border border-border/20 bg-card shadow-lg";
 
 const IMAGE_CARD_OUTER_HOVER =
   "hover:border-sky-400/25 hover:shadow-[0_0_40px_-12px_rgba(56,189,248,0.25)]";
 
 const IMAGE_INNER_FRAME =
-  "rounded-xl border border-white/[0.06] bg-[#09090b] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]";
+  "rounded-xl border border-border/15 bg-background";
 
 /** Порти зображення — синій «канал». */
 const IMAGE_PORT_HANDLE =
@@ -107,13 +107,13 @@ export function CanvasImageCard({
         <div
           className={`relative flex h-full min-h-0 flex-col overflow-hidden ${IMAGE_CARD_OUTER}`}
         >
-          <div className="flex shrink-0 items-center gap-2 border-b border-white/[0.07] px-3 py-2.5">
+          <div className="flex shrink-0 items-center gap-2 border-b border-border/20 px-3 py-2.5">
             {linked ? (
               <ImageHeaderDot />
             ) : (
               <span className="h-2 w-2 shrink-0" aria-hidden />
             )}
-            <span className="min-w-0 truncate font-sans text-sm font-normal normal-case text-zinc-400">
+            <span className="min-w-0 truncate font-sans text-sm font-normal normal-case text-muted-foreground">
               {(title?.trim() || "image").toLowerCase()}
             </span>
           </div>
@@ -124,10 +124,6 @@ export function CanvasImageCard({
                 alt={title?.trim() || ""}
                 draggable={false}
                 className="pointer-events-none h-full w-full select-none rounded-lg object-contain object-center"
-              />
-              <div
-                className="pointer-events-none absolute inset-x-0 bottom-0 h-[38%] rounded-b-lg bg-gradient-to-t from-black/65 via-black/20 to-transparent"
-                aria-hidden
               />
             </div>
           </div>
@@ -162,8 +158,8 @@ export function CanvasImageCard({
             className={`absolute z-[45] flex cursor-crosshair touch-manipulation items-center justify-center rounded-full border border-solid p-0 text-[6px] font-bold leading-none transition-all ${IMAGE_PORT_HANDLE} ${
               highlightDropPort === edge
                 ? highlightDropAllowed
-                  ? "z-[55] scale-110 opacity-100 ring-2 ring-white/95 ring-offset-2 ring-offset-zinc-950"
-                  : "z-[55] scale-110 opacity-100 ring-2 ring-red-500 ring-offset-2 ring-offset-zinc-950 shadow-[0_0_12px_rgba(239,68,68,0.55)]"
+                  ? "z-[55] scale-110 opacity-100 ring-2 ring-primary ring-offset-2 ring-offset-background"
+                  : "z-[55] scale-110 opacity-100 ring-2 ring-destructive ring-offset-2 ring-offset-background shadow-[0_0_12px_rgba(239,68,68,0.45)]"
                 : wireDragging
                   ? "opacity-100"
                   : "opacity-0 group-hover/canvas-img:opacity-100"
@@ -181,10 +177,10 @@ export function CanvasImageCard({
         ))}
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <div className="flex min-h-0 shrink-0 items-stretch gap-0 border-b border-white/[0.07]">
+          <div className="flex min-h-0 shrink-0 items-stretch gap-0 border-b border-border/20">
             <div
               title="Перетягнути"
-              className="rounded-tl-[1.75rem] flex w-7 shrink-0 cursor-grab touch-none items-center justify-center border-r border-white/[0.07] bg-white/[0.03] text-[10px] text-zinc-500 active:cursor-grabbing"
+              className="rounded-tl-[1.75rem] flex w-7 shrink-0 cursor-grab touch-none items-center justify-center border-r border-border/20 bg-muted/40 text-[10px] text-muted-foreground active:cursor-grabbing"
               onPointerDown={(e) => onDragPointerDown(e, image)}
               onPointerMove={onDragPointerMove}
               onPointerUp={onDragPointerUp}
@@ -202,13 +198,13 @@ export function CanvasImageCard({
                 value={title ?? ""}
                 onChange={(e) => onTitleChange(id, e.target.value)}
                 placeholder="image"
-                className="min-w-0 flex-1 bg-transparent font-sans text-sm font-normal normal-case text-zinc-300 outline-none placeholder:text-zinc-500 placeholder:normal-case"
+                className="min-w-0 flex-1 bg-transparent font-sans text-sm font-normal normal-case text-foreground outline-none placeholder:text-muted-foreground placeholder:normal-case"
                 onPointerDown={(e) => e.stopPropagation()}
               />
               <button
                 type="button"
                 title="Прибрати зображення"
-                className="shrink-0 px-1.5 py-0.5 font-sans text-xs text-zinc-500 transition-colors hover:text-red-400"
+                className="shrink-0 px-1.5 py-0.5 font-sans text-xs text-muted-foreground transition-colors hover:text-destructive"
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -230,10 +226,6 @@ export function CanvasImageCard({
                 draggable={false}
                 className="pointer-events-none h-full w-full select-none rounded-lg object-contain object-center"
               />
-              <div
-                className="pointer-events-none absolute inset-x-0 bottom-0 h-[38%] rounded-b-lg bg-gradient-to-t from-black/65 via-black/20 to-transparent"
-                aria-hidden
-              />
             </div>
           </div>
         </div>
@@ -242,7 +234,7 @@ export function CanvasImageCard({
           role="separator"
           aria-hidden
           title="Змінити розмір"
-          className="rounded-br-[1.75rem] absolute right-0 bottom-0 z-[50] h-4 w-4 cursor-nwse-resize touch-manipulation border-t border-l border-solid border-white/15 bg-white/[0.06] hover:border-white/25 hover:bg-white/10"
+          className="rounded-br-[1.75rem] absolute right-0 bottom-0 z-[50] h-4 w-4 cursor-nwse-resize touch-manipulation border-t border-l border-solid border-border/20 bg-muted/50 hover:bg-muted"
           onPointerDown={(e) => onResizePointerDown(e, image)}
         />
       </div>

@@ -59,7 +59,7 @@ export function MarkdownLinkUrlPopover({
       <div className="relative">
         <div
           className={cn(
-            "flex min-w-[min(260px,calc(100vw-32px))] max-w-[min(340px,calc(100vw-24px))] items-center rounded-md border border-foreground/10 bg-popover px-2.5 py-2 text-popover-foreground shadow-lg backdrop-blur-md dark:border-white/14",
+            "flex min-w-[min(260px,calc(100vw-32px))] max-w-[min(340px,calc(100vw-24px))] items-center rounded-md border border-border bg-popover px-2.5 py-2 text-popover-foreground shadow-lg backdrop-blur-md",
           )}
         >
           <input
@@ -90,7 +90,7 @@ export function MarkdownLinkUrlPopover({
           />
         ) : (
           <span
-            className="pointer-events-none absolute bottom-full left-1/2 -mb-px -translate-x-1/2 h-0 w-0 border-x-[7px] border-x-transparent border-b-[8px] border-b-foreground/10 dark:border-b-white/14"
+            className="pointer-events-none absolute bottom-full left-1/2 -mb-px -translate-x-1/2 h-0 w-0 border-x-[7px] border-x-transparent border-b-[8px] border-b-border"
             aria-hidden
           />
         )}
