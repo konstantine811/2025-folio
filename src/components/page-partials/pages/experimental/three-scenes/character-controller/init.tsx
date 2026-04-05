@@ -9,7 +9,7 @@ import { Perf } from "r3f-perf";
 
 export default function Init() {
   return (
-    <MainWrapperOffset isFullHeight={true}>
+    <MainWrapperOffset>
       <InitKeyboardController isIgnorePause />
       <ThreeLoader />
 

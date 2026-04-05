@@ -60,6 +60,8 @@ interface CanvasImageCardProps {
   highlightDropPort?: NodePort | null;
   /** Якщо false — з цим зображенням вже є звʼязок; червона обводка порту. */
   highlightDropAllowed?: boolean;
+  /** Виділено в групу (Shift) — обводка картки. */
+  multiSelected?: boolean;
 }
 
 function ImageHeaderDot() {
@@ -86,6 +88,7 @@ export function CanvasImageCard({
   onRemove,
   highlightDropPort = null,
   highlightDropAllowed = true,
+  multiSelected = false,
 }: CanvasImageCardProps) {
   const { id, x, y, width, height, url, title } = image;
 
@@ -137,7 +140,9 @@ export function CanvasImageCard({
     <div
       data-canvas-image-id={id}
       style={{ left: x, top: y, width, height, zIndex }}
-      className="pointer-events-auto group/canvas-img absolute isolate overflow-visible"
+      className={`pointer-events-auto group/canvas-img absolute isolate overflow-visible ${
+        multiSelected ? "rounded-[1.75rem] ring-1 ring-sky-400/22 ring-offset-0" : ""
+      }`}
     >
       <div
         aria-hidden

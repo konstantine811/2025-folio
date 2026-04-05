@@ -181,6 +181,7 @@ const NodeCanvas = ({
   useEffect(() => {
     semanticSnapshotRef.current = semanticNodesSnapshot(project);
     setSelectedNodeIds(new Set());
+    setSelectedCanvasImageIds(new Set());
     // eslint-disable-next-line react-hooks/exhaustive-deps -- лише при перемиканні документа
   }, [project.id]);
 
@@ -194,6 +195,17 @@ const NodeCanvas = ({
       return next;
     });
   }, [nodes]);
+
+  useEffect(() => {
+    const valid = new Set(canvasImages.map((i) => i.id));
+    setSelectedCanvasImageIds((prev) => {
+      const next = new Set([...prev].filter((id) => valid.has(id)));
+      if (next.size === prev.size && [...prev].every((id) => next.has(id))) {
+        return prev;
+      }
+      return next;
+    });
+  }, [canvasImages]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -212,31 +224,48 @@ const NodeCanvas = ({
     Map<string, { w: number; h: number }>
   >(() => new Map());
 
-  /** Виділення нод (Shift+клік по ⋮⋮); перетягування рухає всю групу. */
+  /** Виділення нод (Shift+клік); перетягування рухає всю групу разом із canvas images. */
   const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(
     () => new Set(),
   );
   const selectedNodeIdsRef = useRef<Set<string>>(selectedNodeIds);
   selectedNodeIdsRef.current = selectedNodeIds;
 
+  const [selectedCanvasImageIds, setSelectedCanvasImageIds] = useState<
+    Set<string>
+  >(() => new Set());
+  const selectedCanvasImageIdsRef = useRef<Set<string>>(selectedCanvasImageIds);
+  selectedCanvasImageIdsRef.current = selectedCanvasImageIds;
+
   const [drag, setDrag] = useState<{
-    ids: string[];
+    nodeIds: string[];
+    canvasImageIds: string[];
+    pointerId: number;
     pointerCanvasX: number;
     pointerCanvasY: number;
-    origins: Record<string, { x: number; y: number }>;
+    nodeOrigins: Record<string, { x: number; y: number }>;
+    canvasOrigins: Record<string, { x: number; y: number }>;
   } | null>(null);
   const dragRef = useRef(drag);
   dragRef.current = drag;
 
-  const [resize, setResize] = useState<ResizeSession | null>(null);
+  /** Якщо pointerup не дійшов до ручки (втрата capture тощо), drag лишається — блокує клік по полотні й рухає ноди при move. */
+  useEffect(() => {
+    if (!drag) return;
+    const pid = drag.pointerId;
+    const endDrag = (e: PointerEvent) => {
+      if (e.pointerId !== pid) return;
+      setDrag(null);
+    };
+    window.addEventListener("pointerup", endDrag);
+    window.addEventListener("pointercancel", endDrag);
+    return () => {
+      window.removeEventListener("pointerup", endDrag);
+      window.removeEventListener("pointercancel", endDrag);
+    };
+  }, [drag]);
 
-  const [imageDrag, setImageDrag] = useState<{
-    id: string;
-    pointerCanvasX: number;
-    pointerCanvasY: number;
-    originX: number;
-    originY: number;
-  } | null>(null);
+  const [resize, setResize] = useState<ResizeSession | null>(null);
 
   /** Жест малювання: нода — прямокутник; ніж — полігон у px скролу. */
   const [drawCreate, setDrawCreate] = useState<
@@ -342,6 +371,12 @@ const NodeCanvas = ({
   };
 
   const removeCanvasImage = (id: string) => {
+    setSelectedCanvasImageIds((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
     patch((p) => {
       const list = p.canvasImages ?? [];
       const img = list.find((i) => i.id === id);
@@ -379,12 +414,12 @@ const NodeCanvas = ({
 
   const nodesRef = useRef(nodes);
   nodesRef.current = nodes;
+  const canvasImagesRef = useRef(canvasImages);
+  canvasImagesRef.current = canvasImages;
   const linksRef = useRef(links);
   linksRef.current = links;
   const layoutsRef = useRef(nodeLayouts);
   layoutsRef.current = nodeLayouts;
-  const canvasImagesRef = useRef(canvasImages);
-  canvasImagesRef.current = canvasImages;
   const addProjectLinkRef = useRef(addProjectLink);
   addProjectLinkRef.current = addProjectLink;
 
@@ -610,29 +645,41 @@ const NodeCanvas = ({
       scrollRef.current,
       scaleRef.current,
     );
-    const sel = selectedNodeIdsRef.current;
-    const idsToMove = sel.has(node.id) ? [...sel] : [node.id];
-    if (!sel.has(node.id)) {
+    const selN = selectedNodeIdsRef.current;
+    const selI = selectedCanvasImageIdsRef.current;
+    if (!selN.has(node.id)) {
       setSelectedNodeIds(new Set([node.id]));
+      setSelectedCanvasImageIds(new Set());
     }
-    const origins: Record<string, { x: number; y: number }> = {};
-    for (const id of idsToMove) {
+    const nodeIdsToMove = selN.has(node.id) ? [...selN] : [node.id];
+    const canvasIdsToMove = selN.has(node.id) ? [...selI] : [];
+    const nodeOrigins: Record<string, { x: number; y: number }> = {};
+    for (const id of nodeIdsToMove) {
       const n = nodes.find((item) => item.id === id);
-      if (n) origins[id] = { x: n.x ?? 0, y: n.y ?? 0 };
+      if (n) nodeOrigins[id] = { x: n.x ?? 0, y: n.y ?? 0 };
     }
-    const ids = idsToMove.filter((id) => origins[id] != null);
-    if (ids.length === 0) return;
+    const canvasOrigins: Record<string, { x: number; y: number }> = {};
+    for (const id of canvasIdsToMove) {
+      const im = canvasImages.find((item) => item.id === id);
+      if (im) canvasOrigins[id] = { x: im.x, y: im.y };
+    }
+    const nids = nodeIdsToMove.filter((id) => nodeOrigins[id] != null);
+    const cids = canvasIdsToMove.filter((id) => canvasOrigins[id] != null);
+    if (nids.length === 0 && cids.length === 0) return;
     setDrag({
-      ids,
+      nodeIds: nids,
+      canvasImageIds: cids,
+      pointerId: e.pointerId,
       pointerCanvasX: x,
       pointerCanvasY: y,
-      origins,
+      nodeOrigins,
+      canvasOrigins,
     });
   };
 
-  const onNodePointerMove = (e: React.PointerEvent) => {
+  const onDragGroupPointerMove = (e: React.PointerEvent) => {
     const d = dragRef.current;
-    if (!d) return;
+    if (!d || e.pointerId !== d.pointerId) return;
     const { x, y } = clientToCanvas(
       e.clientX,
       e.clientY,
@@ -644,11 +691,21 @@ const NodeCanvas = ({
     patch((p) => ({
       ...p,
       nodes: p.nodes.map((n) => {
-        if (!d.ids.includes(n.id)) return n;
-        const o = d.origins[n.id];
+        if (!d.nodeIds.includes(n.id)) return n;
+        const o = d.nodeOrigins[n.id];
         if (!o) return n;
         return {
           ...n,
+          x: Math.max(0, o.x + dx),
+          y: Math.max(0, o.y + dy),
+        };
+      }),
+      canvasImages: (p.canvasImages ?? []).map((im) => {
+        if (!d.canvasImageIds.includes(im.id)) return im;
+        const o = d.canvasOrigins[im.id];
+        if (!o) return im;
+        return {
+          ...im,
           x: Math.max(0, o.x + dx),
           y: Math.max(0, o.y + dy),
         };
@@ -657,6 +714,8 @@ const NodeCanvas = ({
   };
 
   const onNodePointerUp = (e: React.PointerEvent) => {
+    const d = dragRef.current;
+    if (d && e.pointerId !== d.pointerId) return;
     try {
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
     } catch {
@@ -676,6 +735,17 @@ const NodeCanvas = ({
 
   const onImagePointerDown = (e: React.PointerEvent, image: CanvasImageItem) => {
     if (readOnly) return;
+    if (e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      setSelectedCanvasImageIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(image.id)) next.delete(image.id);
+        else next.add(image.id);
+        return next;
+      });
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -685,38 +755,47 @@ const NodeCanvas = ({
       scrollRef.current,
       scaleRef.current,
     );
-    setImageDrag({
-      id: image.id,
+    const selN = selectedNodeIdsRef.current;
+    const selI = selectedCanvasImageIdsRef.current;
+    if (!selI.has(image.id)) {
+      setSelectedCanvasImageIds(new Set([image.id]));
+      setSelectedNodeIds(new Set());
+    }
+    const canvasIdsToMove = selI.has(image.id) ? [...selI] : [image.id];
+    const nodeIdsToMove = selI.has(image.id) ? [...selN] : [];
+    const nodeOrigins: Record<string, { x: number; y: number }> = {};
+    for (const id of nodeIdsToMove) {
+      const n = nodes.find((item) => item.id === id);
+      if (n) nodeOrigins[id] = { x: n.x ?? 0, y: n.y ?? 0 };
+    }
+    const canvasOrigins: Record<string, { x: number; y: number }> = {};
+    for (const id of canvasIdsToMove) {
+      const im = canvasImages.find((item) => item.id === id);
+      if (im) canvasOrigins[id] = { x: im.x, y: im.y };
+    }
+    const nids = nodeIdsToMove.filter((id) => nodeOrigins[id] != null);
+    const cids = canvasIdsToMove.filter((id) => canvasOrigins[id] != null);
+    if (nids.length === 0 && cids.length === 0) return;
+    setDrag({
+      nodeIds: nids,
+      canvasImageIds: cids,
+      pointerId: e.pointerId,
       pointerCanvasX: x,
       pointerCanvasY: y,
-      originX: image.x,
-      originY: image.y,
-    });
-  };
-
-  const onImagePointerMove = (e: React.PointerEvent) => {
-    if (!imageDrag) return;
-    const { x, y } = clientToCanvas(
-      e.clientX,
-      e.clientY,
-      scrollRef.current,
-      scaleRef.current,
-    );
-    const dx = x - imageDrag.pointerCanvasX;
-    const dy = y - imageDrag.pointerCanvasY;
-    updateCanvasImage(imageDrag.id, {
-      x: Math.max(0, imageDrag.originX + dx),
-      y: Math.max(0, imageDrag.originY + dy),
+      nodeOrigins,
+      canvasOrigins,
     });
   };
 
   const onImagePointerUp = (e: React.PointerEvent) => {
+    const d = dragRef.current;
+    if (d && e.pointerId !== d.pointerId) return;
     try {
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
     } catch {
       /* ignore */
     }
-    setImageDrag(null);
+    setDrag(null);
   };
 
   const startWireFromChildSlot = (
@@ -1115,7 +1194,7 @@ const NodeCanvas = ({
             w: selW,
             h: selH,
           };
-          const picked: string[] = [];
+          const pickedNodes: string[] = [];
           for (const n of nodesRef.current) {
             const layout = resolveNodeLayout(n, layoutsRef.current.get(n.id));
             const nx = n.x ?? 0;
@@ -1127,15 +1206,36 @@ const NodeCanvas = ({
               h: layout.h,
             };
             if (rectsIntersectLogical(selRect, nodeRect)) {
-              picked.push(n.id);
+              pickedNodes.push(n.id);
             }
           }
-          if (picked.length > 0) {
-            setSelectedNodeIds((prev) => {
-              const next = new Set(prev);
-              for (const id of picked) next.add(id);
-              return next;
-            });
+          const pickedImages: string[] = [];
+          for (const im of canvasImagesRef.current) {
+            const nodeRect = {
+              left: im.x,
+              top: im.y,
+              w: im.width,
+              h: im.height,
+            };
+            if (rectsIntersectLogical(selRect, nodeRect)) {
+              pickedImages.push(im.id);
+            }
+          }
+          if (pickedNodes.length > 0 || pickedImages.length > 0) {
+            if (pickedNodes.length > 0) {
+              setSelectedNodeIds((prev) => {
+                const next = new Set(prev);
+                for (const id of pickedNodes) next.add(id);
+                return next;
+              });
+            }
+            if (pickedImages.length > 0) {
+              setSelectedCanvasImageIds((prev) => {
+                const next = new Set(prev);
+                for (const id of pickedImages) next.add(id);
+                return next;
+              });
+            }
           }
         }
         setDrawCreate(null);
@@ -1181,7 +1281,8 @@ const NodeCanvas = ({
 
   const onCanvasPointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0) return;
-    if (drawCreate || wireSession || resize || panSession || imageDrag) return;
+    if (drag) setDrag(null);
+    if (drawCreate || wireSession || resize || panSession) return;
 
     if (tabPanArmedRef.current) {
       e.preventDefault();
@@ -1214,6 +1315,7 @@ const NodeCanvas = ({
     );
     if (linkKnifeArmedRef.current) {
       setSelectedNodeIds(new Set());
+      setSelectedCanvasImageIds(new Set());
       setDrawCreate({
         mode: "linkKnife",
         pointerId: e.pointerId,
@@ -1230,6 +1332,7 @@ const NodeCanvas = ({
       });
     } else {
       setSelectedNodeIds(new Set());
+      setSelectedCanvasImageIds(new Set());
       setDrawCreate({
         mode: "newNode",
         pointerId: e.pointerId,
@@ -1453,13 +1556,13 @@ const NodeCanvas = ({
             node={node}
             links={links}
             zIndex={
-              drag?.ids.includes(node.id) ? 25 : 2
+              drag?.nodeIds.includes(node.id) ? 25 : 2
             }
             wireDragging={wireDragging}
             multiSelected={selectedNodeIds.has(node.id)}
             onStartWireFromChildSlot={startWireFromChildSlot}
             onDragPointerDown={onNodePointerDown}
-            onDragPointerMove={onNodePointerMove}
+            onDragPointerMove={onDragGroupPointerMove}
             onDragPointerUp={onNodePointerUp}
             onResizePointerDown={startResize}
             onLabelChange={(id, label) => updateNode(id, { label })}
@@ -1508,8 +1611,11 @@ const NodeCanvas = ({
             readOnly={readOnly}
             linked={linkedCanvasImageIds.has(image.id)}
             image={image}
-            zIndex={imageDrag?.id === image.id ? 25 : 3}
+            zIndex={
+              drag?.canvasImageIds.includes(image.id) ? 25 : 3
+            }
             wireDragging={wireDragging}
+            multiSelected={selectedCanvasImageIds.has(image.id)}
             highlightDropPort={
               wireDropHighlight?.targetKind === "canvasImage" &&
               wireDropHighlight.imageId === image.id
@@ -1524,7 +1630,7 @@ const NodeCanvas = ({
             }
             onStartWireFromEdge={startWireFromCanvasImage}
             onDragPointerDown={onImagePointerDown}
-            onDragPointerMove={onImagePointerMove}
+            onDragPointerMove={onDragGroupPointerMove}
             onDragPointerUp={onImagePointerUp}
             onResizePointerDown={startCanvasImageResize}
             onTitleChange={(id, t) =>
