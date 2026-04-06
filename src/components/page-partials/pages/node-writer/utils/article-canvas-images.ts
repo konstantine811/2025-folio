@@ -1,4 +1,5 @@
 import type { CanvasImageItem, LinkData } from "../types/types";
+import type { ArticleSection } from "./article-node-tree";
 
 function sortIdsByCanvasPosition(
   ids: string[],
@@ -134,4 +135,39 @@ export function canvasImagesForArticleNode(
   }
 
   return out;
+}
+
+/**
+ * Для кожної ноди — зображення полотна для статті з **глобальним** дедупом по `id` у порядку DFS статті
+ * (батько перед дітьми, корені послідовно). Та сама картка не повторюється в нащадках.
+ */
+export function buildCanvasImagesByNodeIdDfs(
+  sections: ArticleSection[],
+  links: LinkData[],
+  canvasById: Map<string, CanvasImageItem>,
+  canvasAdj: Map<string, string[]>,
+): Map<string, CanvasImageItem[]> {
+  const used = new Set<string>();
+  const byNode = new Map<string, CanvasImageItem[]>();
+
+  function walk(s: ArticleSection) {
+    const raw = canvasImagesForArticleNode(
+      s.node.id,
+      links,
+      canvasById,
+      canvasAdj,
+    );
+    const filtered: CanvasImageItem[] = [];
+    for (const img of raw) {
+      if (!used.has(img.id)) {
+        used.add(img.id);
+        filtered.push(img);
+      }
+    }
+    byNode.set(s.node.id, filtered);
+    for (const c of s.children) walk(c);
+  }
+
+  for (const r of sections) walk(r);
+  return byNode;
 }

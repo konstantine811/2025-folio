@@ -6,12 +6,7 @@ import { remarkDefaultFenceLang } from "@/utils/remark-default-fence-lang";
 import { cn } from "@/utils/classname";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import ArticleHeading from "@/components/page-partials/pages/blog/ArticleHeading";
-import type {
-  CanvasImageItem,
-  LinkData,
-  NodeHeadingLevel,
-  Project,
-} from "../types/types";
+import type { CanvasImageItem, NodeHeadingLevel, Project } from "../types/types";
 import { MarkdownResolvingZoomableImg } from "../node-canvas/components/MarkdownResolvingZoomableImg";
 import { resolveNodeHeadingLevel } from "../node-canvas/constants";
 import {
@@ -25,7 +20,7 @@ import {
 } from "../utils/article-node-tree";
 import {
   buildCanvasCanvasAdjacency,
-  canvasImagesForArticleNode,
+  buildCanvasImagesByNodeIdDfs,
 } from "../utils/article-canvas-images";
 import { makeNodeWriterArticleMarkdownComponents } from "./node-writer-article-markdown";
 
@@ -140,17 +135,15 @@ function SectionHeading({
 
 function ArticleSectionView({
   section,
-  canvasById,
-  canvasAdj,
-  links,
+  canvasImagesByNodeId,
   isFirstRoot,
 }: {
   section: ArticleSection;
-  canvasById: Map<string, CanvasImageItem>;
-  canvasAdj: Map<string, string[]>;
-  links: LinkData[];
+  /** Зображення полотна по id ноди (глобальний дедуп по DFS статті вже застосовано). */
+  canvasImagesByNodeId: Map<string, CanvasImageItem[]>;
   isFirstRoot: boolean;
 }) {
+  const canvasImages = canvasImagesByNodeId.get(section.node.id) ?? [];
   const level = resolveNodeHeadingLevel(section.node.headingLevel);
   const body = descriptionFromBlocks(deriveMarkdownBlocks(section.node));
   const hasBody = body.trim().length > 0;
@@ -158,13 +151,6 @@ function ArticleSectionView({
   const mdComponents = useMemo(
     () => makeNodeWriterArticleMarkdownComponents(section.node.id),
     [section.node.id],
-  );
-
-  const canvasImages = canvasImagesForArticleNode(
-    section.node.id,
-    links,
-    canvasById,
-    canvasAdj,
   );
 
   return (
@@ -225,9 +211,7 @@ function ArticleSectionView({
             <ArticleSectionView
               key={c.node.id}
               section={c}
-              canvasById={canvasById}
-              canvasAdj={canvasAdj}
-              links={links}
+              canvasImagesByNodeId={canvasImagesByNodeId}
               isFirstRoot={false}
             />
           ))}
@@ -258,6 +242,17 @@ const EditorView = ({ project }: EditorViewProps) => {
   const tocHeadings = useMemo(
     () => buildTocFromSections(sections),
     [sections],
+  );
+
+  const canvasImagesByNodeId = useMemo(
+    () =>
+      buildCanvasImagesByNodeIdDfs(
+        sections,
+        project.links,
+        canvasById,
+        canvasAdj,
+      ),
+    [sections, project.links, canvasById, canvasAdj],
   );
 
   /**
@@ -309,9 +304,7 @@ const EditorView = ({ project }: EditorViewProps) => {
                 <ArticleSectionView
                   key={s.node.id}
                   section={s}
-                  canvasById={canvasById}
-                  canvasAdj={canvasAdj}
-                  links={project.links}
+                  canvasImagesByNodeId={canvasImagesByNodeId}
                   isFirstRoot={i === 0}
                 />
               ))}
