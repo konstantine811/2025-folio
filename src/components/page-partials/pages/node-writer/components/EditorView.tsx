@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from "react";
+import { useCallback, useMemo, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
@@ -260,10 +260,23 @@ const EditorView = ({ project }: EditorViewProps) => {
     [sections],
   );
 
+  /**
+   * Глобальний Lenis слухає wheel на window; body під Node writer — overflow:hidden.
+   * Явно скролимо цей контейнер і не даємо події дійти до window (Lenis не робить preventDefault на документ).
+   */
+  const onArticleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    const el = e.currentTarget;
+    if (el.scrollHeight <= el.clientHeight + 1) return;
+    el.scrollTop += e.deltaY;
+    e.preventDefault();
+  }, []);
+
   return (
     <div
-      className="relative z-[1] flex min-h-0 flex-1 flex-col overflow-y-auto bg-background pb-20"
-      style={{ minHeight: `calc(100vh - ${hSize}px)` }}
+      className="relative z-[1] box-border flex min-h-0 min-w-0 w-full flex-1 flex-col basis-0 overflow-y-auto overflow-x-hidden overscroll-contain bg-background pb-20 [-webkit-overflow-scrolling:touch]"
+      style={{ maxHeight: `calc(100dvh - ${hSize}px)` }}
+      onWheel={onArticleWheel}
     >
       <div className="grid grid-cols-10 gap-4 px-5 sm:px-10">
         <div

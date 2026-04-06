@@ -433,7 +433,6 @@ interface SlideBlocksCanvasProps {
 export function SlideBlocksCanvas({
   slide,
   readOnly,
-  previewFocus = false,
   selectedBlockId,
   onSelectBlock,
   onChangeSlide,
@@ -444,7 +443,6 @@ export function SlideBlocksCanvas({
     [slide.blocks],
   );
   const timing = slide.blockAnimationTiming ?? "sequential";
-  const previewReadOnly = readOnly && previewFocus;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -517,14 +515,21 @@ export function SlideBlocksCanvas({
   const slideSurfaceCanvas =
     "relative box-border min-h-0 min-w-0 w-full flex-1 basis-0 overflow-auto";
 
+  /** Нативний скрол: Lenis на вкладеному overflow:hidden ламав скрол (preventDefault + limit 0 / flex без min-h-0). */
+  const readonlyScrollSurface =
+    "min-h-0 w-full flex-1 basis-0 overflow-y-auto overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch]";
+
+  /** Глобальний Lenis у App перехоплює wheel; без цього скрол усередині зони «не їде», доки не клікнути. Як у CanvasBoard. */
+  const nestedLenisScrollProps = {
+    "data-lenis-prevent": true,
+    "data-lenis-prevent-wheel": true,
+    "data-lenis-prevent-touch": true,
+  } as const;
+
   const renderReadonlyStack = () => (
     <div
-      className={cn(
-        "mx-auto w-full space-y-8",
-        previewReadOnly
-          ? "mx-auto min-h-0 w-full max-w-[min(96vw,1280px)] flex-1 overflow-y-auto overflow-x-auto px-2 py-6 md:px-4 md:py-10"
-          : "max-w-4xl",
-      )}
+      {...nestedLenisScrollProps}
+      className={cn(readonlyScrollSurface, "px-2 pt-4")}
     >
       {blocks.map((block, index) => (
         <SlideBlockPreview
@@ -542,7 +547,10 @@ export function SlideBlocksCanvas({
 
   const renderReadonlyCanvas = () => (
     <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-hidden">
-      <div className={slideSurfaceCanvas}>
+      <div
+        {...nestedLenisScrollProps}
+        className={cn("relative box-border", readonlyScrollSurface)}
+      >
         {blocks.map((block, index) => (
           <SlideBlockPreview
             key={block.id}
@@ -568,7 +576,10 @@ export function SlideBlocksCanvas({
         items={blocks.map((b) => b.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="h-full relative z-10 mx-auto w-full overflow-x-auto bg-card/90 px-6">
+        <div
+          {...nestedLenisScrollProps}
+          className="h-full relative z-10 mx-auto w-full overflow-x-auto overflow-y-auto bg-card/90 px-6"
+        >
           {blocks.map((block, index) => (
             <SortableSlideBlock
               key={block.id}
@@ -588,7 +599,7 @@ export function SlideBlocksCanvas({
 
   const renderEditCanvas = () => (
     <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-hidden">
-      <div className={slideSurfaceCanvas}>
+      <div {...nestedLenisScrollProps} className={slideSurfaceCanvas}>
         {blocks.map((block, index) => (
           <CanvasSlideBlock
             key={block.id}

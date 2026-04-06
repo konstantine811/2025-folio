@@ -20,6 +20,13 @@ import {
 } from "./presentation-model";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 
+/** Щоб глобальний Lenis (App) не перехоплював wheel над вкладеними overflow-зонами презентації. */
+const NESTED_LENIS_SCROLL = {
+  "data-lenis-prevent": true,
+  "data-lenis-prevent-wheel": true,
+  "data-lenis-prevent-touch": true,
+} as const;
+
 interface PresentationEditorProps {
   project: Project;
   onProjectPatch: (fn: ProjectPatchFn) => void;
@@ -447,8 +454,12 @@ export function PresentationEditor({
         ) : null}
 
         {effectiveReadOnly ? (
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto">
+          <div
+            {...NESTED_LENIS_SCROLL}
+            className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto"
+          >
             <div
+              {...NESTED_LENIS_SCROLL}
               className={cn(
                 "flex min-h-0 min-w-0 flex-1  flex-col overflow-auto",
               )}
