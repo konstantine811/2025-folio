@@ -27,7 +27,7 @@ interface CanvasBoardProps {
   linkKnifeDrawPreview?: boolean;
   /** Блакитне прев’ю — Shift+рамка виділення нод. */
   marqueeSelectPreview?: boolean;
-  /** Лінії звʼязків у px спейсера (малюються над нодами, pointer-events-none). */
+  /** Лінії звʼязків у px спейсера (під нодами; pointer-events-none — кліки до карток). */
   graphLayer?: (ctx: CanvasBoardGraphContext) => React.ReactNode;
   children: React.ReactNode;
 }
@@ -127,9 +127,17 @@ export function CanvasBoard({
             className={`absolute inset-0 z-0 touch-none ${canvasOverlayCursorClass}`}
             onPointerDown={onCanvasPointerDown}
           />
-          {/* Ноди z-[1], лінії z-[2]: достатньо над нодами; занадто високий z графа давав непрозорий композитний шар і ховав крапки. */}
+          {/* Граф z-[1], ноди z-[2]: картки над лініями; лінії видно в проміжках між нодами. */}
+          {graphLayer && (
+            <div
+              className="pointer-events-none absolute left-0 top-0 z-[1] overflow-visible bg-transparent"
+              style={{ width: spacerW, height: spacerH }}
+            >
+              {graphLayer({ spacerW, spacerH, scale: s })}
+            </div>
+          )}
           <div
-            className="pointer-events-none relative z-[1]"
+            className="pointer-events-none relative z-[2]"
             style={{
               width: CANVAS_MIN_W,
               height: CANVAS_MIN_H,
@@ -139,14 +147,6 @@ export function CanvasBoard({
           >
             {children}
           </div>
-          {graphLayer && (
-            <div
-              className="pointer-events-none absolute left-0 top-0 z-[2] overflow-visible bg-transparent"
-              style={{ width: spacerW, height: spacerH }}
-            >
-              {graphLayer({ spacerW, spacerH, scale: s })}
-            </div>
-          )}
           {knifePolygonPreviewPoints && knifePolygonPreviewPoints.length > 0 ? (
             <svg
               className="pointer-events-none absolute left-0 top-0 z-[3] overflow-visible bg-transparent"
