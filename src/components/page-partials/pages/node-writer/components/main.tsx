@@ -289,10 +289,7 @@ const Main = () => {
       return;
     }
     pendingLocalProjectIdsRef.current.delete(projectId);
-    if (
-      !isWorkspaceAdmin &&
-      (view === "editor" || view === "assets")
-    ) {
+    if (!isWorkspaceAdmin && view === "assets") {
       navigate(buildNodeWriterPath(projectId, "nodes"), { replace: true });
       return;
     }
@@ -539,7 +536,8 @@ const Main = () => {
       if (
         !isWorkspaceAdmin &&
         next !== "presentation" &&
-        next !== "nodes"
+        next !== "nodes" &&
+        next !== "editor"
       ) {
         return;
       }
@@ -611,8 +609,7 @@ const Main = () => {
 
           {!showDocumentRouteLoading &&
             view === "editor" &&
-            currentProject &&
-            isWorkspaceAdmin && (
+            currentProject && (
               <EditorView project={currentProject} />
             )}
 

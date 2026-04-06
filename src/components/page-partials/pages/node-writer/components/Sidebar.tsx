@@ -49,6 +49,14 @@ const Sidebar = ({
                   </button>
                   <button
                     type="button"
+                    onClick={() => onViewChange("editor")}
+                    className={navBtn(view === "editor")}
+                    title="Текст (стаття)"
+                  >
+                    <Icons.Editor />
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => onViewChange("presentation")}
                     className={navBtn(view === "presentation")}
                     title="Презентація"
