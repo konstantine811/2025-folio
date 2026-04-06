@@ -27,7 +27,7 @@ interface CanvasBoardProps {
   linkKnifeDrawPreview?: boolean;
   /** Блакитне прев’ю — Shift+рамка виділення нод. */
   marqueeSelectPreview?: boolean;
-  /** Лінії звʼязків у px спейсера (під нодами в стеку). */
+  /** Лінії звʼязків у px спейсера (малюються над нодами, pointer-events-none). */
   graphLayer?: (ctx: CanvasBoardGraphContext) => React.ReactNode;
   children: React.ReactNode;
 }
@@ -109,21 +109,17 @@ export function CanvasBoard({
         data-lenis-prevent-wheel
         data-lenis-prevent-touch
         className="node-canvas-scroll absolute inset-0 overflow-auto overscroll-contain bg-background"
+        style={{
+          /* Крапки на фоні самого scroll: тоді прозорий SVG графа просвічує до них; окремий div під SVG у WebKit часто не видно крізь композитний шар. */
+          backgroundImage:
+            "radial-gradient(circle, color-mix(in srgb, var(--foreground) 14%, transparent) 1.25px, transparent 1.25px)",
+          backgroundSize: `${CANVAS_DOT_GRID_STEP * s}px ${CANVAS_DOT_GRID_STEP * s}px`,
+        }}
       >
         <div
           className="relative shrink-0"
           style={{ width: spacerW, height: spacerH }}
         >
-          {/* Сітка крапок у координатах полотна: крок у px скролу = логічний крок × scale */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 z-0"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle, color-mix(in srgb, var(--foreground) 14%, transparent) 1.25px, transparent 1.25px)",
-              backgroundSize: `${CANVAS_DOT_GRID_STEP * s}px ${CANVAS_DOT_GRID_STEP * s}px`,
-            }}
-          />
           {/* Увесь спейсер (у т.ч. порожні поля для скролу) — малювання / Tab-панорама */}
           <div
             role="presentation"
@@ -131,14 +127,7 @@ export function CanvasBoard({
             className={`absolute inset-0 z-0 touch-none ${canvasOverlayCursorClass}`}
             onPointerDown={onCanvasPointerDown}
           />
-          {graphLayer && (
-            <div
-              className="pointer-events-none absolute left-0 top-0 z-[1]"
-              style={{ width: spacerW, height: spacerH }}
-            >
-              {graphLayer({ spacerW, spacerH, scale: s })}
-            </div>
-          )}
+          {/* Ноди z-[1], лінії z-[2]: достатньо над нодами; занадто високий z графа давав непрозорий композитний шар і ховав крапки. */}
           <div
             className="pointer-events-none relative z-[1]"
             style={{
@@ -150,9 +139,17 @@ export function CanvasBoard({
           >
             {children}
           </div>
+          {graphLayer && (
+            <div
+              className="pointer-events-none absolute left-0 top-0 z-[2] overflow-visible bg-transparent"
+              style={{ width: spacerW, height: spacerH }}
+            >
+              {graphLayer({ spacerW, spacerH, scale: s })}
+            </div>
+          )}
           {knifePolygonPreviewPoints && knifePolygonPreviewPoints.length > 0 ? (
             <svg
-              className="pointer-events-none absolute left-0 top-0 z-[2]"
+              className="pointer-events-none absolute left-0 top-0 z-[3] overflow-visible bg-transparent"
               width={spacerW}
               height={spacerH}
               aria-hidden
@@ -192,7 +189,7 @@ export function CanvasBoard({
             </svg>
           ) : drawPreviewRect ? (
             <svg
-              className="pointer-events-none absolute left-0 top-0 z-[2]"
+              className="pointer-events-none absolute left-0 top-0 z-[3] overflow-visible bg-transparent"
               width={spacerW}
               height={spacerH}
               aria-hidden

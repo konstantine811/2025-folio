@@ -51,7 +51,9 @@ export function NodeGraphSvg({
     <svg
       width={scrollPxW}
       height={scrollPxH}
-      className="pointer-events-none absolute left-0 top-0 block text-foreground/55"
+      overflow="visible"
+      className="pointer-events-none absolute left-0 top-0 block overflow-visible bg-transparent text-foreground/80"
+      style={{ backgroundColor: "transparent" }}
       aria-hidden
     >
       <defs>
@@ -134,8 +136,8 @@ export function NodeGraphSvg({
               d={d}
               fill="none"
               stroke="currentColor"
-              strokeOpacity={0.38}
-              strokeWidth={1.65}
+              strokeOpacity={0.52}
+              strokeWidth={2.1}
               strokeLinecap="round"
               strokeLinejoin="round"
               markerEnd={`url(#${arrowId})`}
@@ -253,8 +255,8 @@ export function NodeGraphSvg({
           )}
           fill="none"
           stroke="currentColor"
-          strokeOpacity={0.55}
-          strokeWidth={1.65}
+          strokeOpacity={0.62}
+          strokeWidth={2.1}
           strokeLinecap="round"
           strokeDasharray="5 4"
           markerEnd={`url(#${arrowWireId})`}

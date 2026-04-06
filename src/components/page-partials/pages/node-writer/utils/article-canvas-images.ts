@@ -1,11 +1,37 @@
 import type { CanvasImageItem, LinkData } from "../types/types";
 
-/** Орієнтовані ребра між зображеннями на полотні (ланцюжки). */
+function sortIdsByCanvasPosition(
+  ids: string[],
+  canvasById: Map<string, CanvasImageItem>,
+): string[] {
+  return [...ids].sort((a, b) => {
+    const ia = canvasById.get(a);
+    const ib = canvasById.get(b);
+    const ya = ia?.y ?? 0;
+    const yb = ib?.y ?? 0;
+    if (ya !== yb) return ya - yb;
+    const xa = ia?.x ?? 0;
+    const xb = ib?.x ?? 0;
+    if (xa !== xb) return xa - xb;
+    return a.localeCompare(b);
+  });
+}
+
+/**
+ * Сусіди між зображеннями на полотні: ребро в обидва боки, щоб ланцюжок знаходився
+ * незалежно від напрямку стрілки (раніше лише source→target і DFS пропускали «зворотні» звʼязки).
+ */
 export function buildCanvasCanvasAdjacency(
   links: LinkData[],
   canvasById: Map<string, CanvasImageItem>,
 ): Map<string, string[]> {
   const m = new Map<string, string[]>();
+  const push = (from: string, to: string) => {
+    if (!canvasById.has(from) || !canvasById.has(to)) return;
+    const arr = m.get(from) ?? [];
+    arr.push(to);
+    m.set(from, arr);
+  };
   for (const l of links) {
     if (
       l.sourceIsCanvasImage &&
@@ -13,29 +39,41 @@ export function buildCanvasCanvasAdjacency(
       canvasById.has(l.source) &&
       canvasById.has(l.target)
     ) {
-      const arr = m.get(l.source) ?? [];
-      arr.push(l.target);
-      m.set(l.source, arr);
+      push(l.source, l.target);
+      push(l.target, l.source);
     }
+  }
+  for (const [k, arr] of m) {
+    const uniq = [...new Set(arr)];
+    m.set(k, sortIdsByCanvasPosition(uniq, canvasById));
   }
   return m;
 }
 
+/** Уся компонента звʼязності від кореня (BFS — передбачуваний порядок «зверху вниз» на полотні). */
 function expandCanvasChainFromRoot(
   rootId: string,
   adj: Map<string, string[]>,
   canvasById: Map<string, CanvasImageItem>,
 ): CanvasImageItem[] {
   const out: CanvasImageItem[] = [];
+  if (!canvasById.has(rootId)) return out;
+
   const visited = new Set<string>();
-  function dfs(id: string) {
-    if (visited.has(id)) return;
-    visited.add(id);
+  const queue: string[] = [rootId];
+  visited.add(rootId);
+
+  while (queue.length > 0) {
+    const id = queue.shift()!;
     const img = canvasById.get(id);
     if (img) out.push(img);
-    for (const next of adj.get(id) ?? []) dfs(next);
+    for (const next of adj.get(id) ?? []) {
+      if (!visited.has(next)) {
+        visited.add(next);
+        queue.push(next);
+      }
+    }
   }
-  dfs(rootId);
   return out;
 }
 
