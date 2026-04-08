@@ -251,6 +251,8 @@ function InactiveMarkdownLineRow({
     <div
       role="button"
       tabIndex={0}
+      data-md-preview-line="true"
+      data-md-line-id={line.id}
       aria-label="Редагувати рядок markdown"
       className="w-full cursor-text px-0 py-0.5 text-left outline-none select-text hover:bg-foreground/[0.03] focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-inset"
       onPointerDown={(e) => {
@@ -262,7 +264,10 @@ function InactiveMarkdownLineRow({
         ) {
           return;
         }
-        e.preventDefault();
+        // Дозволяємо нативне виділення тексту по drag (без preventDefault).
+        e.stopPropagation();
+      }}
+      onDoubleClick={(e) => {
         e.stopPropagation();
         onActivate();
       }}
@@ -456,18 +461,74 @@ export function NodeMarkdownBlocksEditor({
     focusCaretRef.current = { id: target.id, pos: target.text.length };
     setActiveLineId(target.id);
   }, [activeLineId]);
+
+  const getSelectedPreviewLineIds = useCallback((): string[] => {
+    const root = rootRef.current;
+    const sel = window.getSelection();
+    if (!root || !sel || sel.rangeCount === 0 || sel.isCollapsed) return [];
+    const range = sel.getRangeAt(0);
+    const lineEls = Array.from(
+      root.querySelectorAll<HTMLElement>(
+        "[data-md-preview-line][data-md-line-id]",
+      ),
+    );
+    const ids: string[] = [];
+    for (const el of lineEls) {
+      try {
+        if (!range.intersectsNode(el)) continue;
+      } catch {
+        continue;
+      }
+      const id = el.dataset.mdLineId;
+      if (id) ids.push(id);
+    }
+    return ids;
+  }, []);
+
+  const tryDeleteSelectedPreviewLines = useCallback((): boolean => {
+    const ids = getSelectedPreviewLineIds();
+    if (!ids.length) return false;
+    const picked = new Set(ids);
+    const cur = blocksRef.current;
+    let next = cur.filter((line) => !picked.has(line.id));
+    if (next.length === 0) {
+      next = [{ id: newMarkdownBlockId(), text: "" }];
+    }
+    commitBlocks(next);
+    setActiveLineId(null);
+    window.getSelection()?.removeAllRanges();
+    return true;
+  }, [commitBlocks, getSelectedPreviewLineIds]);
+
   return (
     <div
       ref={rootRef}
       data-node-markdown-root={nodeId}
-      className="min-h-0 min-w-0 w-full flex-1 overflow-y-auto overflow-x-hidden text-foreground/90 select-none"
+      className="min-h-0 min-w-0 w-full flex-1 overflow-y-auto overflow-x-hidden text-foreground/90 select-text"
+      onKeyDownCapture={(e) => {
+        const target = e.target as HTMLElement | null;
+        if (
+          target?.closest(
+            "textarea, input, button, a, [contenteditable='true'], [data-md-hl-toolbar], [data-md-link-popover], [data-mdx-inline-popover]",
+          )
+        ) {
+          return;
+        }
+        if (
+          (e.key === "Delete" || e.key === "Backspace") &&
+          tryDeleteSelectedPreviewLines()
+        ) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }}
       onPointerDown={(e) => {
         e.stopPropagation();
         const target = e.target as HTMLElement | null;
         if (!target) return;
         if (
           target.closest(
-            "textarea, input, button, a, [contenteditable='true'], [data-md-hl-toolbar], [data-md-link-popover], [data-mdx-inline-popover]",
+            "textarea, input, button, a, [contenteditable='true'], [data-md-hl-toolbar], [data-md-link-popover], [data-mdx-inline-popover], [data-md-preview-line]",
           )
         ) {
           return;
