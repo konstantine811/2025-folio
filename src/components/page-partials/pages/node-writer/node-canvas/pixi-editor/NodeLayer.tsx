@@ -10,6 +10,7 @@ type Props = {
   nodes: EditorNode[];
   onProjectPatch: (fn: ProjectPatchFn) => void;
   readOnly?: boolean;
+  isDark?: boolean;
 };
 
 const NodeLayer = ({
@@ -17,6 +18,7 @@ const NodeLayer = ({
   nodes,
   onProjectPatch,
   readOnly = false,
+  isDark = true,
 }: Props) => {
   const viewportVersion = useEditorStore((s) => s.viewportVersion);
   const visibleNodes = useMemo(() => {
@@ -54,6 +56,7 @@ const NodeLayer = ({
           viewport={viewport}
           onProjectPatch={onProjectPatch}
           readOnly={readOnly}
+          isDark={isDark}
         />
       ))}
     </pixiContainer>

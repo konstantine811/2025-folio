@@ -22,8 +22,8 @@ const MinimapOverlay = ({ minimap }: Props) => {
               key={`${item.kind}-${item.id}`}
               className={`absolute rounded-[2px] border  ${
                 item.kind === "image"
-                  ? "border-accent/60 bg-green-400/12"
-                  : "border-green-400/65 bg-emerald-500/11"
+                  ? "border-accent/30 bg-green-400/3"
+                  : "border-green-400/30 bg-emerald-500/3"
               }`}
               style={{
                 left: p.x,
@@ -35,7 +35,7 @@ const MinimapOverlay = ({ minimap }: Props) => {
           );
         })}
         <div
-          className="absolute rounded-[3px] border border-zinc-700/30 bg-zinc-500/5 shadow-[0_0_0_1px_rgba(24,24,27,0.2)] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.22)]"
+          className="absolute rounded-[3px] border border-border/30 bg-zinc-500/3 dark:border-white/10 dark:bg-white/5"
           style={{
             left: minimap.viewRect.left,
             top: minimap.viewRect.top,

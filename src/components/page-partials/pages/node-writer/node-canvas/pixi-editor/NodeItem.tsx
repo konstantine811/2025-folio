@@ -11,6 +11,7 @@ type Props = {
   viewport: Viewport;
   onProjectPatch: (fn: ProjectPatchFn) => void;
   readOnly?: boolean;
+  isDark?: boolean;
 };
 
 const NodeItem = ({
@@ -18,6 +19,7 @@ const NodeItem = ({
   viewport,
   onProjectPatch,
   readOnly = false,
+  isDark = true,
 }: Props) => {
   const { app } = useApplication();
   const selectNode = useEditorStore((s) => s.selectNode);
@@ -144,6 +146,27 @@ const NodeItem = ({
           // Transparent PIXI hit-area under the HTML overlay.
           g.roundRect(0, 0, node.width, node.height, 22);
           g.fill({ color: 0x000000, alpha: 0 });
+
+          // LOD preview: when HTML node is hidden at far zoom, show schematic card.
+          const zoom = Math.max(Math.abs(viewport.scale.x || 1), 0.0001);
+          const screenW = node.width * zoom;
+          const screenH = node.height * zoom;
+          const showSchematic = screenW < 48 || screenH < 40;
+          if (!showSchematic) return;
+
+          const strokeWidth = Math.max(0.8 / zoom, 0.0001);
+          const radius = Math.min(18, Math.max(8, Math.min(node.width, node.height) * 0.08));
+          const bodyFill = isDark ? 0x0a0f17 : 0xf4f8ff;
+          const border = isDark ? 0x9bd0ff : 0x3a6ea5;
+          const headerFill = isDark ? 0x101827 : 0xe9f1ff;
+
+          g.roundRect(0, 0, node.width, node.height, radius);
+          g.fill({ color: bodyFill, alpha: isDark ? 0.58 : 0.68 });
+          g.stroke({ color: border, alpha: isDark ? 0.44 : 0.36, width: strokeWidth });
+
+          const headerHeight = Math.max(16 / zoom, Math.min(node.height * 0.16, node.height));
+          g.roundRect(0, 0, node.width, headerHeight, radius);
+          g.fill({ color: headerFill, alpha: isDark ? 0.36 : 0.46 });
         }}
       />
     </pixiContainer>

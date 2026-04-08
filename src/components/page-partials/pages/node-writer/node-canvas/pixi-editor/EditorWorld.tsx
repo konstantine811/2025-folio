@@ -102,12 +102,14 @@ export function EditorWorld({
         nodes={nodes}
         onProjectPatch={onProjectPatch}
         readOnly={readOnly}
+        isDark={isDark}
       />
       <CanvasImageLayer
         viewport={viewport}
         canvasImages={normalizedCanvasImages}
         onProjectPatch={onProjectPatch}
         readOnly={readOnly}
+        isDark={isDark}
       />
     </>
   );

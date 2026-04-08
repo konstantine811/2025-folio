@@ -11,6 +11,7 @@ type Props = {
   canvasImages: Project["canvasImages"];
   onProjectPatch: (fn: ProjectPatchFn) => void;
   readOnly?: boolean;
+  isDark?: boolean;
 };
 
 const CanvasImageLayer = ({
@@ -18,6 +19,7 @@ const CanvasImageLayer = ({
   canvasImages,
   onProjectPatch,
   readOnly = false,
+  isDark = true,
 }: Props) => {
   const { app } = useApplication();
   const viewportVersion = useEditorStore((s) => s.viewportVersion);
@@ -194,6 +196,39 @@ const CanvasImageLayer = ({
                 // Transparent PIXI hit-area under the HTML overlay.
                 g.roundRect(0, 0, image.width, image.height, 22);
                 g.fill({ color: 0x000000, alpha: 0 });
+
+                // LOD preview: when HTML image card is hidden at far zoom, show schematic card.
+                const zoom = Math.max(Math.abs(viewport.scale.x || 1), 0.0001);
+                const screenW = image.width * zoom;
+                const screenH = image.height * zoom;
+                const bodyHeight = Math.max(0, image.height - 50 - 10);
+                const showSchematic =
+                  screenW < 48 || screenH < 40 || bodyHeight * zoom < 12;
+                if (!showSchematic) return;
+
+                const strokeWidth = Math.max(0.8 / zoom, 0.0001);
+                const radius = Math.min(
+                  18,
+                  Math.max(8, Math.min(image.width, image.height) * 0.08),
+                );
+                const bodyFill = isDark ? 0x07131f : 0xecf7ff;
+                const border = isDark ? 0x4fd1ff : 0x2f7fb3;
+                const headerFill = isDark ? 0x0e2030 : 0xddf2ff;
+
+                g.roundRect(0, 0, image.width, image.height, radius);
+                g.fill({ color: bodyFill, alpha: isDark ? 0.56 : 0.7 });
+                g.stroke({
+                  color: border,
+                  alpha: isDark ? 0.48 : 0.36,
+                  width: strokeWidth,
+                });
+
+                const headerHeight = Math.max(
+                  16 / zoom,
+                  Math.min(image.height * 0.14, image.height),
+                );
+                g.roundRect(0, 0, image.width, headerHeight, radius);
+                g.fill({ color: headerFill, alpha: isDark ? 0.34 : 0.45 });
               }}
             />
           </pixiContainer>
