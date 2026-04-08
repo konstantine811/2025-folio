@@ -12,10 +12,28 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import type { Components } from "react-markdown";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
+import {
+  BlockTypeSelect,
+  BoldItalicUnderlineToggles,
+  CodeToggle,
+  CreateLink,
+  ListsToggle,
+  MDXEditor,
+  Separator,
+  UndoRedo,
+  headingsPlugin,
+  listsPlugin,
+  markdownShortcutPlugin,
+  quotePlugin,
+  thematicBreakPlugin,
+  toolbarPlugin,
+} from "@mdxeditor/editor";
+import "@mdxeditor/editor/style.css";
 import { remarkDefaultFenceLang } from "@/utils/remark-default-fence-lang";
 import { CodeBlock } from "@/components/ui-abc/code/code-block";
 import type { NodeMarkdownBlock } from "../../types/types";
@@ -48,6 +66,34 @@ function isOrderedListLineMarkdown(text: string): boolean {
 const UNDO_STACK_MAX = 80;
 const UNDO_DEBOUNCE_MS = 320;
 
+function InlineMdxToolbar() {
+  return (
+    <>
+      <UndoRedo />
+      <Separator />
+      <BoldItalicUnderlineToggles />
+      <CodeToggle />
+      <Separator />
+      <ListsToggle />
+      <Separator />
+      <BlockTypeSelect />
+      <Separator />
+      <CreateLink />
+    </>
+  );
+}
+
+const INLINE_MDX_PLUGINS = [
+  headingsPlugin(),
+  listsPlugin(),
+  quotePlugin(),
+  thematicBreakPlugin(),
+  markdownShortcutPlugin(),
+  toolbarPlugin({
+    toolbarContents: () => <InlineMdxToolbar />,
+  }),
+];
+
 function cloneMarkdownBlocks(blocks: NodeMarkdownBlock[]): NodeMarkdownBlock[] {
   return blocks.map((b) => ({ id: b.id, text: b.text }));
 }
@@ -70,7 +116,7 @@ export function nodeMarkdownPreviewComponents(
     ),
     h1: ({ children }) => (
       <h1
-        className="my-0 border-b border-current/15 pb-1 text-[1.35rem] font-extrabold leading-tight tracking-tight"
+        className="my-0 pb-1 text-[1.35rem] font-extrabold leading-tight tracking-tight"
         style={{ color: fg }}
       >
         {children}
@@ -183,6 +229,7 @@ interface NodeMarkdownBlocksEditorProps {
   nodeId: string;
   blocks: NodeMarkdownBlock[];
   onBlocksChange: (blocks: NodeMarkdownBlock[]) => void;
+  selectionEditorMode?: "toolbar" | "mdx";
   /**
    * Ctrl/⌘+V: вставити зображення з буфера як `![](<url>)` після upload у Storage.
    * Без пропа — лише текстовий paste (як раніше).
@@ -205,7 +252,7 @@ function InactiveMarkdownLineRow({
       role="button"
       tabIndex={0}
       aria-label="Редагувати рядок markdown"
-      className="w-full cursor-text px-0 py-0.5 text-left outline-none hover:bg-foreground/[0.03] focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-inset"
+      className="w-full cursor-text px-0 py-0.5 text-left outline-none select-text hover:bg-foreground/[0.03] focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-inset"
       onPointerDown={(e) => {
         const t = e.target as HTMLElement | null;
         if (
@@ -247,6 +294,7 @@ export function NodeMarkdownBlocksEditor({
   nodeId,
   blocks,
   onBlocksChange,
+  selectionEditorMode = "toolbar",
   uploadPasteImage,
 }: NodeMarkdownBlocksEditorProps) {
   const [activeLineId, setActiveLineId] = useState<string | null>(null);
@@ -391,14 +439,42 @@ export function NodeMarkdownBlocksEditor({
     };
   }, []);
 
-  const lineTextareaClass = `w-full resize-none overflow-hidden bg-transparent px-2 py-1 text-foreground/90 outline-none placeholder:text-muted-foreground placeholder:opacity-50 ${NODE_MD_BODY_TYPO}`;
-
+  const lineTextareaClass = `w-full resize-none overflow-hidden bg-transparent px-2 py-1 text-foreground/90 outline-none placeholder:text-muted-foreground placeholder:opacity-50 select-text ${NODE_MD_BODY_TYPO}`;
+  const focusActiveOrLastLine = useCallback(() => {
+    if (activeLineId) {
+      const ta = lineRefs.current.get(activeLineId);
+      if (ta) {
+        ta.focus();
+        const pos = ta.value.length;
+        ta.setSelectionRange(pos, pos);
+        return;
+      }
+    }
+    const list = blocksRef.current;
+    const target = list[list.length - 1];
+    if (!target) return;
+    focusCaretRef.current = { id: target.id, pos: target.text.length };
+    setActiveLineId(target.id);
+  }, [activeLineId]);
   return (
     <div
       ref={rootRef}
       data-node-markdown-root={nodeId}
-      className="min-h-0 min-w-0 w-full flex-1 overflow-y-auto overflow-x-hidden text-foreground/90"
-      onPointerDown={(e) => e.stopPropagation()}
+      className="min-h-0 min-w-0 w-full flex-1 overflow-y-auto overflow-x-hidden text-foreground/90 select-none"
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        const target = e.target as HTMLElement | null;
+        if (!target) return;
+        if (
+          target.closest(
+            "textarea, input, button, a, [contenteditable='true'], [data-md-hl-toolbar], [data-md-link-popover], [data-mdx-inline-popover]",
+          )
+        ) {
+          return;
+        }
+        // Клік у порожню область редактора: одразу активуємо останній рядок для вводу.
+        focusActiveOrLastLine();
+      }}
     >
       {(() => {
         const rows: ReactNode[] = [];
@@ -422,6 +498,7 @@ export function NodeMarkdownBlocksEditor({
                 setActiveLineId={setActiveLineId}
                 focusCaretRef={focusCaretRef}
                 uploadPasteImageRef={uploadPasteImageRef}
+                selectionEditorMode={selectionEditorMode}
               />,
             );
             i++;
@@ -498,6 +575,7 @@ interface LineEditorProps {
   uploadPasteImageRef: MutableRefObject<
     ((file: File) => Promise<string>) | undefined
   >;
+  selectionEditorMode: "toolbar" | "mdx";
 }
 
 function LineEditor({
@@ -513,6 +591,7 @@ function LineEditor({
   setActiveLineId,
   focusCaretRef,
   uploadPasteImageRef,
+  selectionEditorMode,
 }: LineEditorProps) {
   const taRef = useRef<HTMLTextAreaElement | null>(null);
   const hlSelRef = useRef<{ start: number; end: number } | null>(null);
@@ -529,6 +608,8 @@ function LineEditor({
     placement: "above" | "below";
   } | null>(null);
   const [linkNonce, setLinkNonce] = useState(0);
+  const mdxRangeRef = useRef<{ start: number; end: number } | null>(null);
+  const [mdxMarkdown, setMdxMarkdown] = useState("");
 
   useTextareaAutosize(taRef, line.text);
 
@@ -554,6 +635,9 @@ function LineEditor({
     if (ae instanceof Element && ae.closest("[data-md-link-popover]")) {
       return;
     }
+    if (ae instanceof Element && ae.closest("[data-mdx-inline-popover]")) {
+      return;
+    }
     if (ae !== ta) {
       setHlBar((s) => (s.open ? { ...s, open: false } : s));
       return;
@@ -562,11 +646,13 @@ function LineEditor({
     const end = ta.selectionEnd;
     if (start === end) {
       hlSelRef.current = null;
+      mdxRangeRef.current = null;
       setHlBar((s) => ({ ...s, open: false }));
       return;
     }
     if (selectionIntersectsFencedCode(line.text, start, end)) {
       hlSelRef.current = null;
+      mdxRangeRef.current = null;
       setHlBar((s) => ({ ...s, open: false }));
       return;
     }
@@ -575,6 +661,7 @@ function LineEditor({
     const slice = line.text.slice(lo, hi);
     if (/[<>]/.test(slice)) {
       hlSelRef.current = null;
+      mdxRangeRef.current = null;
       setHlBar((s) => ({ ...s, open: false }));
       return;
     }
@@ -599,6 +686,15 @@ function LineEditor({
     }
     setHlBar({ open: true, x: centerX, y, placement });
   }, [line.text]);
+
+  useEffect(() => {
+    if (selectionEditorMode !== "mdx" || !hlBar.open) return;
+    if (mdxRangeRef.current) return;
+    const saved = hlSelRef.current;
+    if (!saved) return;
+    mdxRangeRef.current = { start: saved.start, end: saved.end };
+    setMdxMarkdown(line.text.slice(saved.start, saved.end));
+  }, [hlBar.open, line.id, selectionEditorMode]);
 
   const applyTaggedHtml = useCallback(
     (openTag: string, closeTag: string) => {
@@ -750,6 +846,8 @@ function LineEditor({
       if (t instanceof Element) {
         if (t.closest("[data-md-hl-toolbar]")) return;
         if (t.closest("[data-md-link-popover]")) return;
+        if (t.closest("[data-mdx-inline-popover]")) return;
+        if (t.closest("[data-radix-popper-content-wrapper]")) return;
       }
       const ta = taRef.current;
       if (ta?.contains(t)) {
@@ -772,7 +870,7 @@ function LineEditor({
   return (
     <div className="relative">
       <MarkdownLineHighlightToolbar
-        open={hlBar.open}
+        open={selectionEditorMode === "toolbar" && hlBar.open}
         anchorX={hlBar.x}
         anchorY={hlBar.y}
         placement={hlBar.placement}
@@ -783,13 +881,66 @@ function LineEditor({
       />
       <MarkdownLinkUrlPopover
         key={linkNonce}
-        open={linkPopover !== null}
+        open={selectionEditorMode === "toolbar" && linkPopover !== null}
         anchorX={linkPopover?.x ?? 0}
         anchorY={linkPopover?.y ?? 0}
         placement={linkPopover?.placement ?? "above"}
         onApply={commitLink}
         onDismiss={dismissLinkPopover}
       />
+      {selectionEditorMode === "mdx" && hlBar.open ? (
+        typeof document !== "undefined"
+          ? createPortal(
+              <div
+                data-mdx-inline-popover
+                className="fixed z-[10010] w-[min(42rem,90vw)] overflow-visible rounded-xl border border-zinc-700/50 bg-zinc-950/95 shadow-[0_18px_45px_-18px_rgba(0,0,0,0.8)] backdrop-blur-sm"
+                style={{
+                  left: Math.max(24, Math.min(window.innerWidth - 24, hlBar.x)),
+                  top: hlBar.y,
+                  transform:
+                    hlBar.placement === "above"
+                      ? "translate(-50%, calc(-100% - 10px))"
+                      : "translate(-50%, 10px)",
+                }}
+                onPointerDown={(e) => e.stopPropagation()}
+              >
+                <div className="p-2">
+                  <MDXEditor
+                    className="mdx-inline-toolbar-only"
+                    markdown={mdxMarkdown}
+                    plugins={INLINE_MDX_PLUGINS}
+                    contentEditableClassName="m-0 h-0 max-h-0 overflow-hidden border-0 p-0 opacity-0 pointer-events-none"
+                    onChange={(nextMarkdown) => {
+                      const range = mdxRangeRef.current;
+                      if (!range) return;
+                      const nextStart = range.start;
+                      const nextEnd = range.end;
+                      setMdxMarkdown(nextMarkdown);
+                      onBlocksChange(
+                        blocks.map((b) =>
+                          b.id === line.id
+                            ? {
+                                ...b,
+                                text:
+                                  b.text.slice(0, nextStart) +
+                                  nextMarkdown +
+                                  b.text.slice(nextEnd),
+                              }
+                            : b,
+                        ),
+                      );
+                      mdxRangeRef.current = {
+                        start: nextStart,
+                        end: nextStart + nextMarkdown.length,
+                      };
+                    }}
+                  />
+                </div>
+              </div>,
+              document.body,
+            )
+          : null
+      ) : null}
       <textarea
         ref={bindRef}
         value={line.text}
@@ -837,26 +988,41 @@ function LineEditor({
               const file = it.getAsFile();
               if (file) {
                 e.preventDefault();
-                const el = e.currentTarget;
-                const start = el.selectionStart;
-                const end = el.selectionEnd;
                 const lineId = line.id;
                 void (async () => {
                   try {
                     const httpsUrl = await upload(file);
                     const md = `![](<${httpsUrl}>)`;
                     const cur = blocksRef.current;
-                    const curLine = cur.find((b) => b.id === lineId);
-                    if (!curLine) return;
-                    const nextText =
-                      curLine.text.slice(0, start) + md + curLine.text.slice(end);
-                    onBlocksChange(
-                      cur.map((b) =>
-                        b.id === lineId ? { ...b, text: nextText } : b,
-                      ),
-                    );
-                    const caret = start + md.length;
-                    focusCaretRef.current = { id: lineId, pos: caret };
+                    const curIdx = cur.findIndex((b) => b.id === lineId);
+                    if (curIdx < 0) return;
+                    const curLine = cur[curIdx]!;
+                    const lineIsBlank = !curLine.text.trim();
+
+                    // Для pasted image не перетираємо поточний markdown:
+                    // вставляємо окремий markdown-блок із зображенням після активного рядка.
+                    let nextBlocks: NodeMarkdownBlock[];
+                    let nextActiveId: string;
+                    let caret = 0;
+                    if (lineIsBlank) {
+                      nextActiveId = lineId;
+                      caret = md.length;
+                      nextBlocks = cur.map((b) =>
+                        b.id === lineId ? { ...b, text: md } : b,
+                      );
+                    } else {
+                      nextActiveId = newMarkdownBlockId();
+                      nextBlocks = [
+                        ...cur.slice(0, curIdx + 1),
+                        { id: nextActiveId, text: md },
+                        ...cur.slice(curIdx + 1),
+                      ];
+                      caret = md.length;
+                    }
+
+                    onBlocksChange(nextBlocks);
+                    focusCaretRef.current = { id: nextActiveId, pos: caret };
+                    setActiveLineId(nextActiveId);
                     requestAnimationFrame(() => {
                       const ta = taRef.current;
                       if (!ta) return;

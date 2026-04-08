@@ -3,7 +3,12 @@ import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NODE_WRITER_WORKSPACE_SCOPE } from "@/config/node-writer-access.config";
 import { uploadNodeWriterCanvasPastedFile } from "@/services/firebase/node-writer-workspace";
-import type { Project, ProjectPatchFn, Slide, SlideBlock } from "../types/types";
+import type {
+  Project,
+  ProjectPatchFn,
+  Slide,
+  SlideBlock,
+} from "../types/types";
 import { PresentationSourcePanel } from "./PresentationSourcePanel";
 import { PresentationInspector } from "./PresentationInspector";
 import { PresentationSlideTabs } from "./PresentationSlideTabs";
@@ -179,7 +184,8 @@ export function PresentationEditor({
       let file: File | null = null;
       const files = e.clipboardData?.files;
       if (files?.length) {
-        file = Array.from(files).find((f) => f.type.startsWith("image/")) ?? null;
+        file =
+          Array.from(files).find((f) => f.type.startsWith("image/")) ?? null;
       }
       if (!file && e.clipboardData?.items) {
         for (const item of e.clipboardData.items) {
@@ -212,7 +218,9 @@ export function PresentationEditor({
             const slide = p.slides?.find((s) => s.id === slideId);
             if (!slide) return p;
             const ns = normalizeSlide(slide);
-            const blocks = [...(ns.blocks ?? [])].sort((a, b) => a.order - b.order);
+            const blocks = [...(ns.blocks ?? [])].sort(
+              (a, b) => a.order - b.order,
+            );
             const raw = payloadToBlock(
               {
                 type: "image-canvas",
@@ -307,9 +315,7 @@ export function PresentationEditor({
 
   const selectedBlock = useMemo(() => {
     if (!activeSlide || !selectedBlockId) return null;
-    return (
-      activeSlide.blocks?.find((b) => b.id === selectedBlockId) ?? null
-    );
+    return activeSlide.blocks?.find((b) => b.id === selectedBlockId) ?? null;
   }, [activeSlide, selectedBlockId]);
 
   if (readOnly && slidesNorm.length === 0) {
@@ -324,7 +330,10 @@ export function PresentationEditor({
 
   if (!readOnly && slidesNorm.length === 0) {
     return (
-      <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-background xl:flex-row xl:items-stretch">
+      <div
+        className="flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-background xl:flex-row xl:items-stretch"
+        style={{ maxHeight: `calc(100vh - ${hs}px)` }}
+      >
         <PresentationSourcePanel
           nodes={project.nodes}
           canvasImages={project.canvasImages ?? []}
@@ -356,7 +365,10 @@ export function PresentationEditor({
   }
 
   return (
-    <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-background xl:flex-row xl:items-stretch">
+    <div
+      className="flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-background xl:flex-row xl:items-stretch"
+      style={{ maxHeight: `calc(100vh - ${hs}px)` }}
+    >
       <PresentationSourcePanel
         nodes={project.nodes}
         canvasImages={project.canvasImages ?? []}
@@ -364,7 +376,7 @@ export function PresentationEditor({
         usedKeys={usedKeys}
       />
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col basis-0" style={{ height: `calc(100vh - ${hs}px)` }}>
+      <div className="flex min-h-0 min-w-0 flex-1 basis-0 flex-col">
         <header className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border/25 px-3 py-2">
           <PresentationSlideTabs
             slides={slidesNorm}
@@ -497,24 +509,21 @@ export function PresentationEditor({
                   aria-label="Наступний слайд"
                   disabled={activeIdx >= slidesNorm.length - 1}
                   onClick={() => {
-                    setActiveIdx((i) =>
-                      Math.min(slidesNorm.length - 1, i + 1),
-                    );
+                    setActiveIdx((i) => Math.min(slidesNorm.length - 1, i + 1));
                     setSelectedBlockId(null);
                   }}
                   className="flex size-12 items-center justify-center rounded-full border border-border/25 bg-muted/70 text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-25 sm:size-14"
                 >
-                  <ChevronRight className="size-7 sm:size-8" strokeWidth={1.5} />
+                  <ChevronRight
+                    className="size-7 sm:size-8"
+                    strokeWidth={1.5}
+                  />
                 </button>
               </footer>
             ) : null}
           </div>
         ) : (
-          <div
-            className={cn(
-              "flex min-h-0 min-w-0 flex-1 flex-col h-full"
-            )}
-          >
+          <div className={cn("flex min-h-0 min-w-0 flex-1 flex-col h-full")}>
             {activeSlide ? (
               <SlideBlocksCanvas
                 slide={activeSlide}

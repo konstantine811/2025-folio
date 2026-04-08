@@ -17,9 +17,7 @@ const Sidebar = ({
 }: SidebarProps) => {
   const navBtn = (active: boolean) =>
     `p-3 transition-colors ${
-      active
-        ? "text-primary"
-        : "text-muted-foreground hover:text-foreground"
+      active ? "text-primary" : "text-muted-foreground hover:text-foreground"
     }`;
 
   return (

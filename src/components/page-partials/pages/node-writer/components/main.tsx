@@ -133,9 +133,7 @@ const Main = () => {
     }) => {
       if (cancelled) return;
       setFolders((prev) => mergeServerFoldersIntoLocal(data.folders, prev));
-      setProjects((prev) =>
-        mergeProjectsByLastModified(data.projects, prev),
-      );
+      setProjects((prev) => mergeProjectsByLastModified(data.projects, prev));
       setCloudReady(true);
     };
 
@@ -432,7 +430,9 @@ const Main = () => {
   const renameFolder = (id: string, title: string) => {
     const t = title.trim();
     if (!t) return;
-    setFolders((prev) => prev.map((f) => (f.id === id ? { ...f, title: t } : f)));
+    setFolders((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, title: t } : f)),
+    );
   };
 
   const setFolderTitleColor = (id: string, color: string | null) => {
@@ -440,7 +440,8 @@ const Main = () => {
       prev.map((f) => {
         if (f.id !== id) return f;
         if (!color) {
-          const { titleColor: _removed, ...rest } = f;
+          const rest = { ...f };
+          delete rest.titleColor;
           return rest as WorkspaceFolder;
         }
         return { ...f, titleColor: color };
@@ -475,9 +476,7 @@ const Main = () => {
     setProjects((prev) =>
       prev.map((p) => (p.id === id ? { ...p, title: t } : p)),
     );
-    setCurrentProject((cur) =>
-      cur?.id === id ? { ...cur, title: t } : cur,
-    );
+    setCurrentProject((cur) => (cur?.id === id ? { ...cur, title: t } : cur));
   };
 
   const deleteProject = (id: string) => {
@@ -597,21 +596,17 @@ const Main = () => {
             />
           )}
 
-          {!showDocumentRouteLoading &&
-            view === "nodes" &&
-            currentProject && (
-              <NodesView
-                project={currentProject}
-                onProjectPatch={applyProjectPatch}
-                readOnly={!isWorkspaceAdmin}
-              />
-            )}
+          {!showDocumentRouteLoading && view === "nodes" && currentProject && (
+            <NodesView
+              project={currentProject}
+              onProjectPatch={applyProjectPatch}
+              readOnly={!isWorkspaceAdmin}
+            />
+          )}
 
-          {!showDocumentRouteLoading &&
-            view === "editor" &&
-            currentProject && (
-              <EditorView project={currentProject} />
-            )}
+          {!showDocumentRouteLoading && view === "editor" && currentProject && (
+            <EditorView project={currentProject} />
+          )}
 
           {!showDocumentRouteLoading &&
             view === "presentation" &&

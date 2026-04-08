@@ -59,7 +59,7 @@ export function MarkdownLinkUrlPopover({
       <div className="relative">
         <div
           className={cn(
-            "flex min-w-[min(260px,calc(100vw-32px))] max-w-[min(340px,calc(100vw-24px))] items-center rounded-md border border-border bg-popover px-2.5 py-2 text-popover-foreground shadow-lg backdrop-blur-md",
+            "flex min-w-[min(260px,calc(100vw-32px))] max-w-[min(340px,calc(100vw-24px))] items-center rounded-md border border-border/30 bg-popover/93 px-2.5 py-2 text-popover-foreground shadow-[0_10px_26px_-16px_rgba(0,0,0,0.6)] backdrop-blur-md",
           )}
         >
           <input
@@ -85,12 +85,12 @@ export function MarkdownLinkUrlPopover({
         {/* pointer toward selected text */}
         {placement === "above" ? (
           <span
-            className="pointer-events-none absolute left-1/2 top-full -mt-px -translate-x-1/2 h-0 w-0 border-x-[7px] border-x-transparent border-t-[8px] border-t-neutral-400/22 dark:border-t-white/14"
+            className="pointer-events-none absolute left-1/2 top-full -mt-px -translate-x-1/2 h-0 w-0 border-x-[7px] border-x-transparent border-t-[8px] border-t-border/40"
             aria-hidden
           />
         ) : (
           <span
-            className="pointer-events-none absolute bottom-full left-1/2 -mb-px -translate-x-1/2 h-0 w-0 border-x-[7px] border-x-transparent border-b-[8px] border-b-border"
+            className="pointer-events-none absolute bottom-full left-1/2 -mb-px -translate-x-1/2 h-0 w-0 border-x-[7px] border-x-transparent border-b-[8px] border-b-border/40"
             aria-hidden
           />
         )}

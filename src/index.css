@@ -563,3 +563,14 @@ textarea:-webkit-autofill:focus {
   text-decoration-color: #5e86ff;
   text-underline-offset: 3px;
 }
+
+/* MDX inline selection panel: тільки toolbar, без дублю контенту */
+[data-mdx-inline-popover] .mdx-inline-toolbar-only .mdxeditor-root-contenteditable,
+[data-mdx-inline-popover] .mdx-inline-toolbar-only [contenteditable="true"] {
+  display: none !important;
+}
+
+/* Radix dropdown з MDX-toolbar має бути над нодами/оверлеями */
+body > [data-radix-popper-content-wrapper] {
+  z-index: 11020 !important;
+}

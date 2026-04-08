@@ -39,6 +39,33 @@ export function nodeWriterRefFromPath(storagePath: string): string {
   return `${NODE_WRITER_STORAGE_PREFIX}${storagePath}`;
 }
 
+function normalizeDisplayMediaInput(url: string): string {
+  const raw = (url ?? "").trim();
+  if (!raw) return "";
+  if (isNodeWriterStorageRef(raw)) return raw;
+  if (
+    raw.startsWith("http://") ||
+    raw.startsWith("https://") ||
+    raw.startsWith("blob:") ||
+    raw.startsWith("data:")
+  ) {
+    return raw;
+  }
+
+  let decoded = raw;
+  try {
+    decoded = decodeURIComponent(raw);
+  } catch {
+    decoded = raw;
+  }
+
+  const normalized = decoded.replace(/^\/+/, "");
+  if (normalized.startsWith("node-writer/")) {
+    return nodeWriterRefFromPath(normalized);
+  }
+  return raw;
+}
+
 /** `workspaceScope` зазвичай `shared` (див. `NODE_WRITER_WORKSPACE_SCOPE`). */
 export function nodeWriterFoldersRef(workspaceScope: string) {
   return collection(db, FirebaseCollection.nodeWriter, workspaceScope, FOLDERS);
@@ -249,8 +276,18 @@ export function firebaseDownloadUrlToNwRef(url: string): string | null {
     }
     const i = u.pathname.indexOf("/o/");
     if (i < 0) return null;
-    const encoded = u.pathname.slice(i + 3);
-    const path = decodeURIComponent(encoded.split("?")[0]);
+    const encoded = u.pathname.slice(i + 3).replace(/^\/+/, "");
+    let path = encoded.split("?")[0] ?? "";
+    for (let step = 0; step < 3; step += 1) {
+      try {
+        const decoded = decodeURIComponent(path);
+        if (decoded === path) break;
+        path = decoded;
+      } catch {
+        break;
+      }
+    }
+    path = path.replace(/^\/+/, "");
     if (!path.startsWith("node-writer/")) return null;
     return nodeWriterRefFromPath(path);
   } catch {
@@ -512,23 +549,27 @@ export async function prepareProjectForFirestore(
 export async function resolveNodeWriterMediaUrlForDisplay(
   url: string,
 ): Promise<string> {
-  if (!url) return url;
-  if (isNodeWriterStorageRef(url)) {
+  const normalizedInput = normalizeDisplayMediaInput(url);
+  if (!normalizedInput) return normalizedInput;
+
+  if (isNodeWriterStorageRef(normalizedInput)) {
     try {
-      return await getDownloadURL(ref(storage, nodeWriterPathFromRef(url)));
+      return await getDownloadURL(
+        ref(storage, nodeWriterPathFromRef(normalizedInput)),
+      );
     } catch {
-      return url;
+      return normalizedInput;
     }
   }
-  const nw = firebaseDownloadUrlToNwRef(url);
+  const nw = firebaseDownloadUrlToNwRef(normalizedInput);
   if (nw) {
     try {
       return await getDownloadURL(ref(storage, nodeWriterPathFromRef(nw)));
     } catch {
-      return url;
+      return normalizedInput;
     }
   }
-  return url;
+  return normalizedInput;
 }
 
 async function resolveUrlForDisplay(url: string): Promise<string> {

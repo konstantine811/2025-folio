@@ -10,8 +10,8 @@ import {
   NODE_CANVAS_HELP_TEXT_VIEW_ONLY,
 } from "../node-canvas/constants";
 import { useEditableProjectTitle } from "../hooks/use-editable-project-title";
-import NodeCanvas from "../node-canvas";
 import type { Project, ProjectPatchFn } from "../types/types";
+import EditorCanvas from "../node-canvas/pixi-editor/EditorCanvas";
 
 interface NodesViewProps {
   project: Project;
@@ -37,7 +37,7 @@ const NodesView = ({
   return (
     <div
       ref={shortcutShellRef}
-      className="flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-hidden"
+      className="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
     >
       <div className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-border/20 bg-card px-8">
         <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -61,7 +61,9 @@ const NodesView = ({
               sideOffset={6}
               className="mono max-w-md px-3 py-2.5 text-left text-[10px] leading-relaxed font-normal tracking-normal text-balance normal-case"
             >
-              {readOnly ? NODE_CANVAS_HELP_TEXT_VIEW_ONLY : NODE_CANVAS_HELP_TEXT}
+              {readOnly
+                ? NODE_CANVAS_HELP_TEXT_VIEW_ONLY
+                : NODE_CANVAS_HELP_TEXT}
             </TooltipContent>
           </Tooltip>
           <div className="min-w-0 flex-1">
@@ -99,7 +101,7 @@ const NodesView = ({
         </div>
       </div>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <NodeCanvas
+        <EditorCanvas
           project={project}
           onProjectPatch={onProjectPatch}
           readOnly={readOnly}

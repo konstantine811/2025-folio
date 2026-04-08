@@ -65,8 +65,8 @@ export const MIN_LINK_KNIFE_PATH_LENGTH_PX = 24;
 export const PASTED_IMAGE_MAX_SIDE = 420;
 export const PASTED_IMAGE_MIN_SIDE = 80;
 
-export const CANVAS_ZOOM_MIN = 0.35;
-export const CANVAS_ZOOM_MAX = 2.25;
+export const CANVAS_ZOOM_MIN = 0.05;
+export const CANVAS_ZOOM_MAX = 200.25;
 
 /** Відступ навколо bbox при підгонці вигляду (/). Логічні одиниці полотна. */
 export const FIT_VIEW_PADDING_LOGICAL = 80;

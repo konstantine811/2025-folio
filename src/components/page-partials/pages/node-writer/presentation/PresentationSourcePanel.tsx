@@ -12,6 +12,12 @@ import {
   usedSourceKeyText,
 } from "./presentation-model";
 
+const NESTED_LENIS_SCROLL = {
+  "data-lenis-prevent": true,
+  "data-lenis-prevent-wheel": true,
+  "data-lenis-prevent-touch": true,
+} as const;
+
 function previewText(raw: string, max = 120): string {
   const t = raw.replace(/\s+/g, " ").trim();
   if (t.length <= max) return t;
@@ -51,7 +57,10 @@ export function PresentationSourcePanel({
   }
 
   return (
-    <aside className="flex min-h-0 w-full shrink-0 flex-col self-stretch border-b border-border/25 bg-muted/40 xl:w-72 xl:self-stretch xl:border-r xl:border-b-0">
+    <aside
+      {...NESTED_LENIS_SCROLL}
+      className="flex min-h-0 w-full shrink-0 flex-col self-stretch overflow-auto border-b border-border/25 bg-muted/40 xl:w-72 xl:self-stretch xl:border-r xl:border-b-0"
+    >
       <div className="shrink-0 border-b border-border/20 px-3 py-2">
         <h3 className="font-sans text-[11px] font-semibold uppercase tracking-widest text-foreground">
           З документа (ноди)
@@ -61,7 +70,10 @@ export function PresentationSourcePanel({
           Підсвічені — уже додані до презентації.
         </p>
       </div>
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-2 py-2">
+      <div
+        {...NESTED_LENIS_SCROLL}
+        className="min-h-0 flex-1 space-y-3 px-2 py-2 [-webkit-overflow-scrolling:touch]"
+      >
         {nodeSections.map(({ node, blocks }) => (
           <div
             key={node.id}
