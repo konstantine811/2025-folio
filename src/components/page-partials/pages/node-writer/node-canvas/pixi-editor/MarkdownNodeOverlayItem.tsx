@@ -56,6 +56,7 @@ type Props = {
   zoom: number;
   viewportVersion: number;
   isDark: boolean;
+  layerZIndex: number;
   readOnly: boolean;
   isSelected: boolean;
   wireSession: unknown;
@@ -94,6 +95,7 @@ const MarkdownNodeOverlayItem = ({
   zoom,
   viewportVersion,
   isDark,
+  layerZIndex,
   readOnly,
   isSelected,
   wireSession,
@@ -139,7 +141,7 @@ const MarkdownNodeOverlayItem = ({
   return (
     <div
       key={node.id}
-      style={{ left, top, width, height }}
+      style={{ left, top, width, height, zIndex: layerZIndex }}
       className="group/node-overlay pointer-events-auto absolute select-none"
       data-overlay-node-id={node.id}
       data-viewport-version={viewportVersion}

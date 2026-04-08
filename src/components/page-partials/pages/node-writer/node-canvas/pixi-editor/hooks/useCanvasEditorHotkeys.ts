@@ -12,19 +12,67 @@ type UseCanvasEditorHotkeysParams = {
   fitAllContentInView: () => boolean;
 };
 
-function moveInArray<T extends { id: string }>(
-  list: T[],
-  id: string,
+type LayerItem = {
+  kind: "node" | "canvasImage";
+  id: string;
+  z: number;
+};
+
+function reorderAcrossKinds(
+  prev: Project,
+  activeNodeId: string | null,
+  activeCanvasImageId: string | null,
   delta: -1 | 1,
-): T[] {
-  const from = list.findIndex((item) => item.id === id);
-  if (from < 0) return list;
-  const to = Math.max(0, Math.min(list.length - 1, from + delta));
-  if (to === from) return list;
-  const next = [...list];
-  const [moved] = next.splice(from, 1);
-  next.splice(to, 0, moved);
-  return next;
+): Project {
+  const nodes = prev.nodes;
+  const images = prev.canvasImages ?? [];
+  const imageCount = images.length;
+  const defaultNodeBase = imageCount;
+  const all: LayerItem[] = [
+    ...images.map((image, index) => ({
+      kind: "canvasImage" as const,
+      id: image.id,
+      z: image.zIndex ?? index,
+    })),
+    ...nodes.map((node, index) => ({
+      kind: "node" as const,
+      id: node.id,
+      z: node.zIndex ?? defaultNodeBase + index,
+    })),
+  ].sort((a, b) => a.z - b.z);
+
+  const activeKind = activeNodeId ? "node" : activeCanvasImageId ? "canvasImage" : null;
+  const activeId = activeNodeId ?? activeCanvasImageId;
+  if (!activeKind || !activeId || all.length < 2) return prev;
+
+  const from = all.findIndex((item) => item.kind === activeKind && item.id === activeId);
+  if (from < 0) return prev;
+  const to = Math.max(0, Math.min(all.length - 1, from + delta));
+  if (to === from) return prev;
+
+  const reordered = [...all];
+  const [moved] = reordered.splice(from, 1);
+  reordered.splice(to, 0, moved);
+
+  const zByNodeId = new Map<string, number>();
+  const zByImageId = new Map<string, number>();
+  for (let i = 0; i < reordered.length; i++) {
+    const item = reordered[i]!;
+    if (item.kind === "node") zByNodeId.set(item.id, i);
+    else zByImageId.set(item.id, i);
+  }
+
+  return {
+    ...prev,
+    nodes: nodes.map((node) => ({
+      ...node,
+      zIndex: zByNodeId.get(node.id) ?? node.zIndex ?? defaultNodeBase,
+    })),
+    canvasImages: images.map((image) => ({
+      ...image,
+      zIndex: zByImageId.get(image.id) ?? image.zIndex ?? 0,
+    })),
+  };
 }
 
 export function useCanvasEditorHotkeys({
@@ -84,23 +132,12 @@ export function useCanvasEditorHotkeys({
       event.stopPropagation();
 
       patchWithHistory((prev: Project) => {
-        if (activeNodeId) {
-          return {
-            ...prev,
-            nodes: moveInArray(prev.nodes, activeNodeId, delta),
-          };
-        }
-        if (activeCanvasImageId) {
-          return {
-            ...prev,
-            canvasImages: moveInArray(
-              prev.canvasImages ?? [],
-              activeCanvasImageId,
-              delta,
-            ),
-          };
-        }
-        return prev;
+        return reorderAcrossKinds(
+          prev,
+          activeNodeId,
+          activeCanvasImageId,
+          delta,
+        );
       });
       return true;
     };

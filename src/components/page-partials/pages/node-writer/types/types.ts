@@ -14,6 +14,8 @@ export interface CanvasImageItem {
   url: string;
   /** Заголовок картки; за замовчуванням порожній. */
   title?: string;
+  /** Порядок накладання на полотні (більше = вище). */
+  zIndex?: number;
 }
 
 /** Рівень заголовка ноди на полотні (h1 — найбільший, h6 — найменший). */
@@ -79,6 +81,8 @@ export interface NodeData {
   height?: number;
   /** Колір фону картки (#rrggbb); текст підбирається контрастним автоматично. */
   accentColor?: string;
+  /** Порядок накладання на полотні (більше = вище). */
+  zIndex?: number;
   fx?: number | null;
   fy?: number | null;
 }

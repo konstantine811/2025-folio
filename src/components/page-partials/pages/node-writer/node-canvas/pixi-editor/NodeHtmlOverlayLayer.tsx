@@ -376,6 +376,23 @@ const NodeHtmlOverlayLayer = ({
       })),
     [project.canvasImages, project.links],
   );
+  const orderedOverlayItems = useMemo(() => {
+    const imageCount = preparedCanvasImages.length;
+    return [
+      ...preparedCanvasImages.map((entry, index) => ({
+        kind: "canvasImage" as const,
+        layerZIndex: entry.image.zIndex ?? index,
+        ...entry,
+      })),
+      ...preparedNodes.map((entry, index) => ({
+        kind: "node" as const,
+        layerZIndex: entry.node.zIndex ?? imageCount + index,
+        ...entry,
+      })),
+    ]
+      .sort((a, b) => a.layerZIndex - b.layerZIndex)
+      .map((item, index) => ({ ...item, layerZIndex: index + 1 }));
+  }, [preparedCanvasImages, preparedNodes]);
   const uploadMarkdownPasteImage = useCallback(
     async (file: File) => {
       return uploadNodeWriterCanvasPastedFile(
@@ -1022,70 +1039,73 @@ const NodeHtmlOverlayLayer = ({
         marqueeRectLocal={marqueeRectLocal}
         onStartMarqueeSelection={startMarqueeSelection}
       />
-      {preparedCanvasImages.map(({ image, isConnected }) => (
-        <CanvasImageOverlayItem
-          key={`canvas-image-html-${image.id}`}
-          image={image}
-          isConnected={isConnected}
-          viewport={viewport}
-          worldViewBounds={worldViewBounds}
-          zoom={zoom}
-          viewportVersion={viewportVersion}
-          isDark={isDark}
-          readOnly={readOnly}
-          isSelected={
-            selectedCanvasImageId === image.id ||
-            multiSelectedCanvasImageIds.has(image.id)
-          }
-          wireSession={wireSession}
-          wireDropHighlight={wireDropHighlight}
-          onProjectPatch={onProjectPatch}
-          onSelect={selectCanvasImage}
-          onResetMultiSelection={() => {
-            setMultiSelectedNodeIds(new Set());
-            setMultiSelectedCanvasImageIds(new Set());
-          }}
-          onStartWireFromCanvasImage={startWireFromCanvasImage}
-          onStartCanvasImageDrag={startCanvasImageDrag}
-          onStartCanvasImageResize={startCanvasImageResize}
-        />
-      ))}
-      {preparedNodes.map(({ node, blocks, isConnected }) => (
-        <MarkdownNodeOverlayItem
-          key={node.id}
-          node={{
-            ...node,
-            x: node.x ?? 0,
-            y: node.y ?? 0,
-            width: node.width ?? MIN_NODE_W,
-            height: node.height ?? MIN_NODE_H,
-          }}
-          blocks={blocks}
-          isConnected={isConnected}
-          links={project.links}
-          viewport={viewport}
-          worldViewBounds={worldViewBounds}
-          zoom={zoom}
-          viewportVersion={viewportVersion}
-          isDark={isDark}
-          readOnly={readOnly}
-          isSelected={
-            selectedNodeId === node.id || multiSelectedNodeIds.has(node.id)
-          }
-          wireSession={wireSession}
-          wireDropHighlight={wireDropHighlight}
-          uploadMarkdownPasteImage={uploadMarkdownPasteImage}
-          onProjectPatch={onProjectPatch}
-          onSelect={selectNode}
-          onResetMultiSelection={() => {
-            setMultiSelectedNodeIds(new Set());
-            setMultiSelectedCanvasImageIds(new Set());
-          }}
-          onStartWireFromChildSlot={startWireFromChildSlot}
-          onStartNodeDrag={startNodeDrag}
-          onStartNodeResize={startNodeResize}
-        />
-      ))}
+      {orderedOverlayItems.map((item) =>
+        item.kind === "canvasImage" ? (
+          <CanvasImageOverlayItem
+            key={`canvas-image-html-${item.image.id}`}
+            image={item.image}
+            isConnected={item.isConnected}
+            viewport={viewport}
+            worldViewBounds={worldViewBounds}
+            zoom={zoom}
+            viewportVersion={viewportVersion}
+            isDark={isDark}
+            layerZIndex={item.layerZIndex}
+            readOnly={readOnly}
+            isSelected={
+              selectedCanvasImageId === item.image.id ||
+              multiSelectedCanvasImageIds.has(item.image.id)
+            }
+            wireSession={wireSession}
+            wireDropHighlight={wireDropHighlight}
+            onProjectPatch={onProjectPatch}
+            onSelect={selectCanvasImage}
+            onResetMultiSelection={() => {
+              setMultiSelectedNodeIds(new Set());
+              setMultiSelectedCanvasImageIds(new Set());
+            }}
+            onStartWireFromCanvasImage={startWireFromCanvasImage}
+            onStartCanvasImageDrag={startCanvasImageDrag}
+            onStartCanvasImageResize={startCanvasImageResize}
+          />
+        ) : (
+          <MarkdownNodeOverlayItem
+            key={item.node.id}
+            node={{
+              ...item.node,
+              x: item.node.x ?? 0,
+              y: item.node.y ?? 0,
+              width: item.node.width ?? MIN_NODE_W,
+              height: item.node.height ?? MIN_NODE_H,
+            }}
+            blocks={item.blocks}
+            isConnected={item.isConnected}
+            links={project.links}
+            viewport={viewport}
+            worldViewBounds={worldViewBounds}
+            zoom={zoom}
+            viewportVersion={viewportVersion}
+            isDark={isDark}
+            layerZIndex={item.layerZIndex}
+            readOnly={readOnly}
+            isSelected={
+              selectedNodeId === item.node.id || multiSelectedNodeIds.has(item.node.id)
+            }
+            wireSession={wireSession}
+            wireDropHighlight={wireDropHighlight}
+            uploadMarkdownPasteImage={uploadMarkdownPasteImage}
+            onProjectPatch={onProjectPatch}
+            onSelect={selectNode}
+            onResetMultiSelection={() => {
+              setMultiSelectedNodeIds(new Set());
+              setMultiSelectedCanvasImageIds(new Set());
+            }}
+            onStartWireFromChildSlot={startWireFromChildSlot}
+            onStartNodeDrag={startNodeDrag}
+            onStartNodeResize={startNodeResize}
+          />
+        ),
+      )}
       <WirePreviewOverlay
         wirePath={wirePath}
         rootWidth={rootRef.current?.clientWidth ?? 0}

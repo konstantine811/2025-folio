@@ -43,6 +43,7 @@ type Props = {
   zoom: number;
   viewportVersion: number;
   isDark: boolean;
+  layerZIndex: number;
   readOnly: boolean;
   isSelected: boolean;
   wireSession: unknown;
@@ -77,6 +78,7 @@ const CanvasImageOverlayItem = ({
   zoom,
   viewportVersion,
   isDark,
+  layerZIndex,
   readOnly,
   isSelected,
   wireSession,
@@ -114,7 +116,7 @@ const CanvasImageOverlayItem = ({
   return (
     <div
       key={`canvas-image-html-${image.id}`}
-      style={{ left, top, width, height }}
+      style={{ left, top, width, height, zIndex: layerZIndex }}
       className="group/canvas-image pointer-events-auto absolute select-none"
       data-overlay-canvas-image-id={image.id}
       data-viewport-version={viewportVersion}
