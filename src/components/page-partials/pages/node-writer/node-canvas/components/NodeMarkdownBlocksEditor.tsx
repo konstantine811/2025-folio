@@ -247,6 +247,21 @@ function InactiveMarkdownLineRow({
   onActivate: () => void;
 }) {
   const empty = !line.text.trim();
+  const activateIfPlainClick = (eventTarget: EventTarget | null) => {
+    const t = eventTarget as HTMLElement | null;
+    if (
+      t?.closest(
+        "a, button, input, textarea, select, [contenteditable='true']",
+      )
+    ) {
+      return;
+    }
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed) {
+      return;
+    }
+    onActivate();
+  };
   return (
     <div
       role="button"
@@ -267,9 +282,13 @@ function InactiveMarkdownLineRow({
         // Дозволяємо нативне виділення тексту по drag (без preventDefault).
         e.stopPropagation();
       }}
+      onClick={(e) => {
+        e.stopPropagation();
+        activateIfPlainClick(e.target);
+      }}
       onDoubleClick={(e) => {
         e.stopPropagation();
-        onActivate();
+        activateIfPlainClick(e.target);
       }}
       onKeyDown={(e) => {
         if (e.code !== "Enter" && e.code !== "Space") return;
