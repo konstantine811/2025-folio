@@ -1,9 +1,10 @@
-import type { PointerEvent as ReactPointerEvent } from "react";
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import type { Viewport } from "pixi-viewport";
 import { NodeMarkdownBlocksEditor } from "../components/NodeMarkdownBlocksEditor";
 import { MarkdownResolvingImg } from "../components/MarkdownResolvingImg";
 import { NODE_MD_BODY_TYPO, NODE_PORT_HANDLE_PX } from "../constants";
 import { descriptionFromBlocks } from "../utils/node-markdown-blocks";
+import { nodeTextThemeFromAccent } from "../utils/node-accent";
 import { visibleChildSlotCount } from "../utils";
 import type {
   LinkData,
@@ -108,6 +109,27 @@ const MarkdownNodeOverlayItem = ({
   onStartNodeDrag,
   onStartNodeResize,
 }: Props) => {
+  const accent = node.accentColor?.trim();
+  const themeAccent =
+    accent != null && accent !== ""
+      ? nodeTextThemeFromAccent(accent)
+      : null;
+  const outerShellStyle: CSSProperties | undefined =
+    themeAccent && accent
+      ? {
+          borderColor: themeAccent.border,
+          backgroundColor: isDark
+            ? `color-mix(in srgb, ${accent} 22%, rgba(9,9,11,0.42))`
+            : `color-mix(in srgb, ${accent} 16%, rgba(255,255,255,0.88))`,
+        }
+      : undefined;
+  const selectedGlowStyle: CSSProperties =
+    accent && themeAccent
+      ? {
+          background: `radial-gradient(ellipse 78% 68% at 28% 44%, color-mix(in srgb, ${accent} 52%, transparent) 0%, transparent 58%), radial-gradient(ellipse 70% 60% at 82% 56%, rgba(34,211,238,0.2) 0%, transparent 52%)`,
+        }
+      : rearGlowStyle(isConnected);
+
   if (
     node.x > worldViewBounds.maxX ||
     node.x + node.width < worldViewBounds.minX ||
@@ -163,15 +185,22 @@ const MarkdownNodeOverlayItem = ({
           <div
             aria-hidden
             className="pointer-events-none absolute -inset-9 -z-10 rounded-[2.25rem] opacity-[1] blur-3xl"
-            style={rearGlowStyle(isConnected)}
+            style={selectedGlowStyle}
           />
         ) : null}
         <div
           className={`absolute inset-0 overflow-hidden rounded-2xl backdrop-blur-xl backdrop-saturate-150 ${
-            isDark
-              ? "border border-border/20 bg-black/78 shadow-[0_14px_34px_-18px_rgba(0,0,0,0.85)]"
-              : "border border-border/35 bg-white/80 shadow-[0_14px_30px_-20px_rgba(15,23,42,0.35)]"
+            themeAccent
+              ? `border border-solid ${
+                  isDark
+                    ? "shadow-[0_14px_34px_-18px_rgba(0,0,0,0.85)]"
+                    : "shadow-[0_14px_30px_-20px_rgba(15,23,42,0.35)]"
+                }`
+              : isDark
+                ? "border border-border/20 bg-black/78 shadow-[0_14px_34px_-18px_rgba(0,0,0,0.85)]"
+                : "border border-border/35 bg-white/80 shadow-[0_14px_30px_-20px_rgba(15,23,42,0.35)]"
           }`}
+          style={outerShellStyle}
         />
 
         {!readOnly
@@ -230,15 +259,34 @@ const MarkdownNodeOverlayItem = ({
 
         <div
           className={`absolute left-0 right-0 top-0 flex h-11 min-h-0 items-stretch overflow-hidden rounded-t-2xl ${
-            isDark ? "border-b border-border/20" : "border-b border-border/35"
+            themeAccent
+              ? "border-b border-solid"
+              : isDark
+                ? "border-b border-border/20"
+                : "border-b border-border/35"
           }`}
+          style={
+            themeAccent
+              ? { borderBottomColor: themeAccent.border }
+              : undefined
+          }
         >
           <div
             className={`pointer-events-auto flex w-7 shrink-0 cursor-grab items-center justify-center text-[10px] text-muted-foreground active:cursor-grabbing ${
-              isDark
-                ? "border-r border-border/20 bg-zinc-900/35"
-                : "border-r border-border/35 bg-zinc-200/45"
+              themeAccent
+                ? "border-r border-solid"
+                : isDark
+                  ? "border-r border-border/20 bg-zinc-900/35"
+                  : "border-r border-border/35 bg-zinc-200/45"
             }`}
+            style={
+              themeAccent
+                ? {
+                    borderRightColor: themeAccent.border,
+                    backgroundColor: themeAccent.dragBg,
+                  }
+                : undefined
+            }
             onPointerDown={(event) =>
               onStartNodeDrag(event, node.id, node.x, node.y)
             }

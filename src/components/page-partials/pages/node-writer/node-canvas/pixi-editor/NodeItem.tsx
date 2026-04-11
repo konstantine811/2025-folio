@@ -4,7 +4,14 @@ import { Viewport } from "pixi-viewport";
 import { useEditorStore } from "./store/editorStore";
 import { FederatedPointerEvent } from "pixi.js";
 import type { ProjectPatchFn } from "../../types/types";
+import { parseHexRgb } from "../utils/node-accent";
 import { EditorNode } from "./shared/types";
+
+function hexToPixiRgb(hex: string | undefined): number | null {
+  const rgb = hex?.trim() ? parseHexRgb(hex.trim()) : null;
+  if (!rgb) return null;
+  return ((rgb[0] << 16) | (rgb[1] << 8) | rgb[2]) >>> 0;
+}
 
 type Props = {
   node: EditorNode;
@@ -156,13 +163,22 @@ const NodeItem = ({
 
           const strokeWidth = Math.max(0.8 / zoom, 0.0001);
           const radius = Math.min(18, Math.max(8, Math.min(node.width, node.height) * 0.08));
+          const accentRgb = hexToPixiRgb(node.accentColor);
           const bodyFill = isDark ? 0x0a0f17 : 0xf4f8ff;
-          const border = isDark ? 0x9bd0ff : 0x3a6ea5;
+          const border =
+            accentRgb ?? (isDark ? 0x9bd0ff : 0x3a6ea5);
           const headerFill = isDark ? 0x101827 : 0xe9f1ff;
 
           g.roundRect(0, 0, node.width, node.height, radius);
-          g.fill({ color: bodyFill, alpha: isDark ? 0.58 : 0.68 });
-          g.stroke({ color: border, alpha: isDark ? 0.44 : 0.36, width: strokeWidth });
+          g.fill({
+            color: accentRgb ?? bodyFill,
+            alpha: accentRgb ? (isDark ? 0.42 : 0.5) : isDark ? 0.58 : 0.68,
+          });
+          g.stroke({
+            color: border,
+            alpha: accentRgb ? (isDark ? 0.72 : 0.55) : isDark ? 0.44 : 0.36,
+            width: strokeWidth,
+          });
 
           const headerHeight = Math.max(16 / zoom, Math.min(node.height * 0.16, node.height));
           g.roundRect(0, 0, node.width, headerHeight, radius);

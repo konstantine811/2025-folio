@@ -1,3 +1,33 @@
+/** localStorage: масив id вузлів дерева (`fol:…`), розгорнутих у дашборді node-writer. */
+export const DASHBOARD_TREE_OPEN_IDS_STORAGE_KEY =
+  "nw-dashboard-tree-open-folder-ids-v1";
+
+export function loadDashboardTreeOpenIdsFromStorage(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(DASHBOARD_TREE_OPEN_IDS_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((id): id is string => typeof id === "string");
+  } catch {
+    return [];
+  }
+}
+
+export function saveDashboardTreeOpenIdsToStorage(
+  ids: ReadonlyArray<string | number>,
+): void {
+  try {
+    localStorage.setItem(
+      DASHBOARD_TREE_OPEN_IDS_STORAGE_KEY,
+      JSON.stringify(ids.map(String)),
+    );
+  } catch {
+    /* quota / приватний режим */
+  }
+}
+
 export const treeRowIconBtn =
   "inline-flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/90 hover:text-foreground";
 

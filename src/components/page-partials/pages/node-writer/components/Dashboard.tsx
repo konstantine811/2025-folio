@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   Tree,
   getBackendOptions,
@@ -11,7 +11,6 @@ import type { Project, WorkspaceFolder } from "../types/types";
 import {
   WORKSPACE_TREE_ROOT_ID,
   buildWorkspaceTreeData,
-  folderNodeId,
   isValidWorkspaceTreeAfterDrop,
   normalizeWorkspaceTreeAfterDnD,
   syncWorkspaceFromTree,
@@ -21,7 +20,9 @@ import {
   ROW_CLICK_DELAY_MS,
   TREE_ROW_BASE_PAD,
   TREE_ROW_INDENT,
+  loadDashboardTreeOpenIdsFromStorage,
   NativeFolderColorInput,
+  saveDashboardTreeOpenIdsToStorage,
   WorkspaceTreeRow,
   useDeferredRowClick,
   useFolderTitleColorPicker,
@@ -77,10 +78,15 @@ const Dashboard = ({
     [folders, projects],
   );
 
-  const initialOpen = useMemo(
-    () => folders.map((f) => folderNodeId(f.id)),
-    [folders],
-  );
+  /** Стабільний масив: @minoru/react-dnd-treeview скидає open state при зміні `initialOpen`. */
+  const treeInitialOpenRef = useRef<string[] | null>(null);
+  if (treeInitialOpenRef.current === null) {
+    treeInitialOpenRef.current = loadDashboardTreeOpenIdsFromStorage();
+  }
+
+  const onTreeChangeOpen = useCallback((newOpenIds: (string | number)[]) => {
+    saveDashboardTreeOpenIdsToStorage(newOpenIds);
+  }, []);
 
   const [draftTitle, setDraftTitle] = useState<{
     nodeId: string;
@@ -227,7 +233,8 @@ const Dashboard = ({
                 sort={false}
                 insertDroppableFirst={false}
                 dropTargetOffset={4}
-                initialOpen={initialOpen}
+                initialOpen={treeInitialOpenRef.current}
+                onChangeOpen={onTreeChangeOpen}
                 canDrag={allowTreeEdits ? () => true : () => false}
                 canDrop={
                   allowTreeEdits
