@@ -763,6 +763,7 @@ export async function loadWorkspaceFromFirestore(workspaceScope: string): Promis
       id: d.id,
       parentId: data.parentId ?? null,
       title: data.title ?? "",
+      isPrivate: data.isPrivate === true,
       sortOrder: data.sortOrder ?? 0,
     };
     if (data.titleColor != null && data.titleColor !== "") {

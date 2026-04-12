@@ -3,6 +3,7 @@ import type { NodeModel } from "@minoru/react-dnd-treeview";
 import type { Project, WorkspaceFolder } from "../../types/types";
 import type { WorkspaceTreeMeta } from "../../workspace/workspace-tree-utils";
 import { Icons } from "../Icons";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   PRESET_FOLDER_TITLE_COLORS,
   TREE_ROW_BASE_PAD,
@@ -37,6 +38,7 @@ export interface WorkspaceTreeRowProps {
   paletteAnchorRef: RefObject<HTMLDivElement | null>;
   openNativeFolderColorPicker: (folderId: string) => void;
   onSetFolderTitleColor: (id: string, color: string | null) => void;
+  onSetFolderPrivate: (id: string, isPrivate: boolean) => void;
   onAddChildFolder: (parentFolderId: string) => void;
   onCreateDocumentInFolder: (folderId: string) => void;
   onDeleteFolder: (id: string) => void;
@@ -65,14 +67,14 @@ export function WorkspaceTreeRow({
   paletteAnchorRef,
   openNativeFolderColorPicker,
   onSetFolderTitleColor,
+  onSetFolderPrivate,
   onAddChildFolder,
   onCreateDocumentInFolder,
   onDeleteFolder,
   onDeleteProject,
 }: WorkspaceTreeRowProps) {
   const isFolder = node.data?.kind === "folder";
-  const folderId =
-    node.data?.kind === "folder" ? node.data.folderId : null;
+  const folderId = node.data?.kind === "folder" ? node.data.folderId : null;
   const folderRow = folderId ? folderById.get(folderId) : undefined;
   const nodeIdStr = String(node.id);
   const rowPadLeft = TREE_ROW_BASE_PAD + depth * TREE_ROW_INDENT;
@@ -100,9 +102,7 @@ export function WorkspaceTreeRow({
                   onToggle();
                 } else {
                   const p = projectById.get(
-                    node.data?.kind === "project"
-                      ? node.data.projectId
-                      : "",
+                    node.data?.kind === "project" ? node.data.projectId : "",
                   );
                   if (p) onProjectSelect(p);
                 }
@@ -195,8 +195,8 @@ export function WorkspaceTreeRow({
                 className="w-full min-w-0 border-b border-primary/40 bg-transparent py-1 text-sm font-semibold text-foreground outline-none placeholder:text-muted-foreground"
                 style={{
                   color: nodeIdStr.startsWith("fol:")
-                    ? folderById.get(nodeIdStr.slice(4))?.titleColor ??
-                      undefined
+                    ? (folderById.get(nodeIdStr.slice(4))?.titleColor ??
+                      undefined)
                     : undefined,
                 }}
               />
@@ -230,6 +230,23 @@ export function WorkspaceTreeRow({
           <>
             <div className="flex shrink-0 items-center gap-px opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
               {allowAdminRowActions && isFolder && folderId ? (
+                <label
+                  className="mr-1 inline-flex h-8 items-center gap-1 rounded px-1.5 text-[9px] text-muted-foreground"
+                  title="Приватна папка (видно лише адмінам)"
+                  onClick={(e) => e.stopPropagation()}
+                  onDoubleClick={(e) => e.stopPropagation()}
+                >
+                  <Checkbox
+                    checked={folderRow?.isPrivate === true}
+                    onCheckedChange={(checked) => {
+                      onSetFolderPrivate(folderId, checked === true);
+                    }}
+                    aria-label={`Private folder ${node.text}`}
+                  />
+                  <span className="mono">Private</span>
+                </label>
+              ) : null}
+              {allowAdminRowActions && isFolder && folderId ? (
                 <div
                   ref={
                     paletteOpenForFolderId === folderId
@@ -258,8 +275,7 @@ export function WorkspaceTreeRow({
                     <span
                       className="size-3.5 shrink-0 rounded-full border border-border/70 ring-1 ring-background"
                       style={{
-                        backgroundColor:
-                          folderRow?.titleColor ?? "transparent",
+                        backgroundColor: folderRow?.titleColor ?? "transparent",
                       }}
                     />
                   </button>

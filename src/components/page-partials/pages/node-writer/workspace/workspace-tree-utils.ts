@@ -274,3 +274,39 @@ export function collectFolderSubtreeIds(
   walk(rootFolderId);
   return ids;
 }
+
+function collectHiddenFolderIdsByPrivacy(
+  folders: WorkspaceFolder[],
+): Set<string> {
+  const hidden = new Set<string>();
+  const privateRoots = folders.filter((f) => f.isPrivate === true);
+  for (const root of privateRoots) {
+    const subtree = collectFolderSubtreeIds(folders, root.id);
+    for (const id of subtree) hidden.add(id);
+  }
+  return hidden;
+}
+
+/**
+ * Для не-адміна: приховує приватні папки (і весь їхній піддерево) та документи в них.
+ * Для адміна: повертає вихідні масиви без змін.
+ */
+export function filterWorkspaceByFolderPrivacy(
+  folders: WorkspaceFolder[],
+  projects: Project[],
+  isWorkspaceAdmin: boolean,
+): { folders: WorkspaceFolder[]; projects: Project[] } {
+  if (isWorkspaceAdmin) return { folders, projects };
+
+  const hiddenFolderIds = collectHiddenFolderIdsByPrivacy(folders);
+  if (hiddenFolderIds.size === 0) return { folders, projects };
+
+  const visibleFolders = folders.filter((f) => !hiddenFolderIds.has(f.id));
+  const visibleProjects = projects.filter((p) => {
+    const folderId = p.folderId ?? null;
+    if (!folderId) return true;
+    return !hiddenFolderIds.has(folderId);
+  });
+
+  return { folders: visibleFolders, projects: visibleProjects };
+}

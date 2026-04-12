@@ -28,7 +28,7 @@ const Sidebar = ({
       style={{ height: `calc(100vh - ${hs}px)` }}
     >
       <div className="flex min-h-0 flex-1 flex-col items-center">
-        <div className="flex flex-col items-center gap-8 pt-10">
+        <div className="flex flex-col items-center gap-8 pt-2 md:pt-10">
           <button
             type="button"
             onClick={() => onViewChange("dashboard")}

@@ -16,7 +16,10 @@ import AssetsView from "./AssetsView";
 import WorkspaceAssetsView from "./WorkspaceAssetsView";
 import CreateProjectModal from "./CreateProjectModal";
 import DocumentRouteLoading from "./DocumentRouteLoading";
-import { collectFolderSubtreeIds } from "../workspace/workspace-tree-utils";
+import {
+  collectFolderSubtreeIds,
+  filterWorkspaceByFolderPrivacy,
+} from "../workspace/workspace-tree-utils";
 import { nextChildOrder } from "../workspace/next-child-order";
 import {
   collectNodeWriterStoragePaths,
@@ -79,13 +82,22 @@ const Main = () => {
     string | null
   >(null);
 
+  const visibleWorkspace = useMemo(
+    () => filterWorkspaceByFolderPrivacy(folders, projects, isWorkspaceAdmin),
+    [folders, projects, isWorkspaceAdmin],
+  );
+  const visibleFolders = visibleWorkspace.folders;
+  const visibleProjects = visibleWorkspace.projects;
+
   /** Щойно створені id: pathname-effect не робить redirect, поки projects ще не містить документ (гонка navigate vs setState). */
   const pendingLocalProjectIdsRef = useRef<Set<string>>(new Set());
 
   const createModalFolderLabel = useMemo(() => {
     if (!createTargetFolderId) return null;
-    return folders.find((f) => f.id === createTargetFolderId)?.title ?? null;
-  }, [createTargetFolderId, folders]);
+    return (
+      visibleFolders.find((f) => f.id === createTargetFolderId)?.title ?? null
+    );
+  }, [createTargetFolderId, visibleFolders]);
 
   const nodeWriterRoute = useMemo(
     () => parseNodeWriterPath(location.pathname),
@@ -280,7 +292,7 @@ const Main = () => {
       setCurrentProject(null);
       return;
     }
-    const p = projects.find((pr) => pr.id === projectId);
+    const p = visibleProjects.find((pr) => pr.id === projectId);
     if (!p) {
       if (pendingLocalProjectIdsRef.current.has(projectId)) {
         return;
@@ -295,7 +307,13 @@ const Main = () => {
     }
     setCurrentProject(p);
     setView(view);
-  }, [cloudReady, location.pathname, projects, navigate, isWorkspaceAdmin]);
+  }, [
+    cloudReady,
+    location.pathname,
+    visibleProjects,
+    navigate,
+    isWorkspaceAdmin,
+  ]);
 
   useEffect(() => {
     if (!user?.uid || !cloudReady) return;
@@ -425,7 +443,7 @@ const Main = () => {
     const id = `fld-${Date.now()}`;
     setFolders((prev) => [
       ...prev,
-      { id, parentId, title: "Нова папка", sortOrder: order },
+      { id, parentId, title: "Нова папка", isPrivate: false, sortOrder: order },
     ]);
   };
 
@@ -448,6 +466,13 @@ const Main = () => {
         }
         return { ...f, titleColor: color };
       }),
+    );
+  };
+
+  const setFolderPrivate = (id: string, isPrivate: boolean) => {
+    if (!isWorkspaceAdmin) return;
+    setFolders((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, isPrivate } : f)),
     );
   };
 
@@ -581,8 +606,8 @@ const Main = () => {
 
           {!showDocumentRouteLoading && view === "dashboard" && (
             <Dashboard
-              folders={folders}
-              projects={projects}
+              folders={visibleFolders}
+              projects={visibleProjects}
               allowWorkspaceCreate={isWorkspaceAdmin}
               allowTreeEdits={isWorkspaceAdmin}
               allowAdminRowActions={isWorkspaceAdmin}
@@ -594,6 +619,7 @@ const Main = () => {
               onAddChildFolder={addFolder}
               onRenameFolder={renameFolder}
               onSetFolderTitleColor={setFolderTitleColor}
+              onSetFolderPrivate={setFolderPrivate}
               onDeleteFolder={deleteFolder}
               onRenameProject={renameProject}
               onDeleteProject={deleteProject}

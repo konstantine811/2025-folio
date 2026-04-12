@@ -48,6 +48,7 @@ interface DashboardProps {
   onAddChildFolder: (parentFolderId: string) => void;
   onRenameFolder: (id: string, title: string) => void;
   onSetFolderTitleColor: (id: string, color: string | null) => void;
+  onSetFolderPrivate: (id: string, isPrivate: boolean) => void;
   onDeleteFolder: (id: string) => void;
   onRenameProject: (id: string, title: string) => void;
   onDeleteProject: (id: string) => void;
@@ -68,6 +69,7 @@ const Dashboard = ({
   onAddChildFolder,
   onRenameFolder,
   onSetFolderTitleColor,
+  onSetFolderPrivate,
   onDeleteFolder,
   onRenameProject,
   onDeleteProject,
@@ -283,6 +285,7 @@ const Dashboard = ({
                     paletteAnchorRef={paletteAnchorRef}
                     openNativeFolderColorPicker={openNativeFolderColorPicker}
                     onSetFolderTitleColor={onSetFolderTitleColor}
+                    onSetFolderPrivate={onSetFolderPrivate}
                     onAddChildFolder={onAddChildFolder}
                     onCreateDocumentInFolder={onCreateDocumentInFolder}
                     onDeleteFolder={onDeleteFolder}

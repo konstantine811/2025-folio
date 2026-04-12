@@ -26,6 +26,8 @@ export interface WorkspaceFolder {
   id: string;
   parentId: string | null;
   title: string;
+  /** `true` — папка прихована для не-адміна; `false`/відсутнє — public (за замовчуванням). */
+  isPrivate?: boolean;
   /**
    * Порядок серед усіх дочірніх елементів батька (папки + документи).
    * Менше — вище в списку.
