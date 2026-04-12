@@ -12,6 +12,8 @@ import { useEditorStore } from "./store/editorStore";
 import { collectCanvasContentItems, contentBoundsFromItems, fitViewportToBounds } from "./utils/canvasContent";
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemeType } from "@/config/theme-colors.config";
+import { BreakPoints } from "@/config/adaptive.config";
+import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 import "./pixi-extensions";
 
 interface EditorCanvasProps {
@@ -28,6 +30,7 @@ const EditorCanvas = ({
   shortcutShellRef,
 }: EditorCanvasProps) => {
   const selectedTheme = useThemeStore((state) => state.selectedTheme);
+  const { isAdoptiveSize: isMobileDevice } = useIsAdoptive(BreakPoints.md);
   const isDark = selectedTheme !== ThemeType.LIGHT;
   const frameRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -99,7 +102,7 @@ const EditorCanvas = ({
         readOnly={readOnly}
         isDark={isDark}
       />
-      {minimap ? <MinimapOverlay minimap={minimap} /> : null}
+      {minimap ? <MinimapOverlay minimap={minimap} isMobile={isMobileDevice} /> : null}
     </div>
   );
 };

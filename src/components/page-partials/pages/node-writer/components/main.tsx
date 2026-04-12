@@ -42,6 +42,7 @@ import {
   buildNodeWriterPath,
   parseNodeWriterPath,
 } from "../workspace/node-writer-paths";
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 
 /** Документи/папки, створені локально до відповіді сервера, не затирати при applyRemote. */
 function mergeServerFoldersIntoLocal(
@@ -55,6 +56,7 @@ function mergeServerFoldersIntoLocal(
 
 const Main = () => {
   const navigate = useNavigate();
+  const hs = useHeaderSizeStore((s) => s.size);
   const location = useLocation();
   const user = useAuthStore((s) => s.user);
   const isWorkspaceAdmin = useMemo(
@@ -550,7 +552,7 @@ const Main = () => {
   );
 
   return (
-    <div className="relative flex min-h-0 min-w-0 w-full flex-1 flex-col bg-background font-sans text-foreground md:flex-row md:items-stretch">
+    <div className="relative flex min-h-0 min-w-0 w-full flex-1 bg-background font-sans text-foreground flex-row">
       <Sidebar
         view={view}
         currentProject={currentProject}
@@ -558,7 +560,10 @@ const Main = () => {
         onViewChange={handleViewChange}
       />
 
-      <main className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <main
+        className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto"
+        style={{ height: `calc(100vh - ${hs}px)` }}
+      >
         <CreateProjectModal
           isOpen={isCreateModalOpen}
           title={newDocTitle}
@@ -571,7 +576,7 @@ const Main = () => {
           onCreate={createNewDocument}
         />
 
-        <div className="relative flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="relative flex min-h-0 w-full min-w-0 flex-1 flex-col h-full">
           {smoothDocumentRouteLoading && <DocumentRouteLoading />}
 
           {!showDocumentRouteLoading && view === "dashboard" && (

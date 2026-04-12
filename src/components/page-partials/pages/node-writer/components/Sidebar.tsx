@@ -1,3 +1,4 @@
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { AppView, Project } from "../types/types";
 import { Icons } from "./Icons";
 
@@ -15,13 +16,17 @@ const Sidebar = ({
   isWorkspaceAdmin = true,
   onViewChange,
 }: SidebarProps) => {
+  const hs = useHeaderSizeStore((s) => s.size);
   const navBtn = (active: boolean) =>
     `p-3 transition-colors ${
       active ? "text-primary" : "text-muted-foreground hover:text-foreground"
     }`;
 
   return (
-    <nav className="z-40 flex w-full shrink-0 flex-col self-stretch border-r border-border/30 bg-card md:min-h-0 md:w-20">
+    <nav
+      className="z-40 flex shrink-0 flex-col self-stretch border-r border-border/30 bg-card min-h-0 w-10 md:w-20"
+      style={{ height: `calc(100vh - ${hs}px)` }}
+    >
       <div className="flex min-h-0 flex-1 flex-col items-center">
         <div className="flex flex-col items-center gap-8 pt-10">
           <button
@@ -116,7 +121,7 @@ const Sidebar = ({
         ) : null}
       </div>
 
-      <div className="flex shrink-0 flex-col items-center gap-4 border-t border-border/30 px-6 py-5">
+      <div className="flex shrink-0 flex-col items-center gap-4 border-t border-border/30 py-5">
         <div
           className="size-1.5 shrink-0 rounded-full bg-primary shadow-[0_0_10px] shadow-primary/60"
           aria-hidden

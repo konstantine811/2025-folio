@@ -331,7 +331,7 @@ export function PresentationEditor({
   if (!readOnly && slidesNorm.length === 0) {
     return (
       <div
-        className="flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-background xl:flex-row xl:items-stretch"
+        className="flex min-h-0 w-full flex-1 flex-col bg-background xl:flex-row xl:items-stretch"
         style={{ maxHeight: `calc(100vh - ${hs}px)` }}
       >
         <PresentationSourcePanel
@@ -365,10 +365,7 @@ export function PresentationEditor({
   }
 
   return (
-    <div
-      className="flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-background xl:flex-row xl:items-stretch"
-      style={{ maxHeight: `calc(100vh - ${hs}px)` }}
-    >
+    <div className="flex min-h-0 w-full flex-1 flex-col bg-background xl:flex-row xl:items-stretch">
       <PresentationSourcePanel
         nodes={project.nodes}
         canvasImages={project.canvasImages ?? []}

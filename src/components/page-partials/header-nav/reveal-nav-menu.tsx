@@ -44,7 +44,7 @@ const RevealNavMenu = memo(() => {
             exit={{ scale: 0, opacity: 0, visibility: "hidden" }}
             transition={MOTION_FRAME_TRANSITION.spring}
             layout="size"
-            className="z-30 fixed right-0 sm:right-14 w-full translate-y-15 sm:translate-y-0 sm:w-auto sm:min-w-80 bg-background backdrop-blur-xs border border-muted-foreground/20 rounded-sm shadow-[0_0_50px_-12px_rgba(0,0,0,1)] menu-enter flex flex-col"
+            className="z-[99999] fixed right-0 sm:right-14 w-full translate-y-15 sm:translate-y-0 sm:w-auto sm:min-w-80 bg-background backdrop-blur-xs border border-muted-foreground/20 rounded-sm shadow-[0_0_50px_-12px_rgba(0,0,0,1)] menu-enter flex flex-col"
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-foreground/5 bg-card">
               <Login />
@@ -62,7 +62,7 @@ const RevealNavMenu = memo(() => {
                     .filter(
                       (route) =>
                         route.isNav &&
-                        (!route.isDev || (route.isDev && isLocalhost))
+                        (!route.isDev || (route.isDev && isLocalhost)),
                     )
                     .map((route, i) => (
                       <SoundHoverElement
@@ -89,7 +89,7 @@ const RevealNavMenu = memo(() => {
                       >
                         <div
                           className={clsx(
-                            `group-hover:${route.classes?.linkCircle} w-1 h-1 bg-muted-foreground rounded-full transition-colors`
+                            `group-hover:${route.classes?.linkCircle} w-1 h-1 bg-muted-foreground rounded-full transition-colors`,
                           )}
                         ></div>
                         <span className="font-mono font-thin text-sm">
@@ -109,7 +109,7 @@ const RevealNavMenu = memo(() => {
                 <span
                   className={clsx(
                     "w-2 h-2 rounded-full",
-                    user ? "bg-emerald-500" : "bg-red-500"
+                    user ? "bg-emerald-500" : "bg-red-500",
                   )}
                 ></span>
               </div>

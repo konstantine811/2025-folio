@@ -103,9 +103,8 @@ const Dashboard = ({
     [folders],
   );
 
-  const { schedule, clearPending: clearPendingRowClick } = useDeferredRowClick(
-    ROW_CLICK_DELAY_MS,
-  );
+  const { schedule, clearPending: clearPendingRowClick } =
+    useDeferredRowClick(ROW_CLICK_DELAY_MS);
 
   const {
     paletteOpenForFolderId,
@@ -147,7 +146,7 @@ const Dashboard = ({
   const isEmpty = folders.length === 0 && projects.length === 0;
 
   return (
-    <div className="min-h-0 w-full flex-1 overflow-y-auto bg-background p-8 lg:p-16">
+    <div className="min-h-0 w-full flex-1 overflow-y-auto bg-background p-4">
       <NativeFolderColorInput
         colorInputNonce={colorInputNonce}
         inputRef={colorInputRef}
@@ -193,7 +192,7 @@ const Dashboard = ({
         ) : null}
       </header>
 
-      <div className="mx-auto max-w-7xl pb-20">
+      <div className="mx-auto max-w-7xl">
         {isEmpty ? (
           workspaceLoading ? (
             <div
@@ -239,8 +238,11 @@ const Dashboard = ({
                 canDrop={
                   allowTreeEdits
                     ? (_, { dropTargetId }) => {
-                        if (dropTargetId === WORKSPACE_TREE_ROOT_ID) return true;
-                        const target = treeData.find((n) => n.id === dropTargetId);
+                        if (dropTargetId === WORKSPACE_TREE_ROOT_ID)
+                          return true;
+                        const target = treeData.find(
+                          (n) => n.id === dropTargetId,
+                        );
                         return !!target?.droppable;
                       }
                     : () => false
