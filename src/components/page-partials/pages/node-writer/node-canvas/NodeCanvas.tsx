@@ -853,8 +853,43 @@ const NodeCanvas = ({
   useEffect(() => {
     if (!wireSession) return;
 
+    const autoPanWhileWiring = (clientX: number, clientY: number) => {
+      const scrollEl = scrollRef.current;
+      if (!scrollEl) return;
+      const rect = scrollEl.getBoundingClientRect();
+      const edge = 84;
+      const maxStepPx = 34;
+
+      let dx = 0;
+      let dy = 0;
+
+      if (clientX < rect.left + edge) {
+        const t = (rect.left + edge - clientX) / edge;
+        dx = -Math.ceil(Math.min(1, t) * maxStepPx);
+      } else if (clientX > rect.right - edge) {
+        const t = (clientX - (rect.right - edge)) / edge;
+        dx = Math.ceil(Math.min(1, t) * maxStepPx);
+      }
+
+      if (clientY < rect.top + edge) {
+        const t = (rect.top + edge - clientY) / edge;
+        dy = -Math.ceil(Math.min(1, t) * maxStepPx);
+      } else if (clientY > rect.bottom - edge) {
+        const t = (clientY - (rect.bottom - edge)) / edge;
+        dy = Math.ceil(Math.min(1, t) * maxStepPx);
+      }
+
+      if (dx === 0 && dy === 0) return;
+
+      const maxL = Math.max(0, scrollEl.scrollWidth - scrollEl.clientWidth);
+      const maxT = Math.max(0, scrollEl.scrollHeight - scrollEl.clientHeight);
+      scrollEl.scrollLeft = Math.max(0, Math.min(maxL, scrollEl.scrollLeft + dx));
+      scrollEl.scrollTop = Math.max(0, Math.min(maxT, scrollEl.scrollTop + dy));
+    };
+
     const onMove = (e: PointerEvent) => {
       if (e.pointerId !== wireSession.pointerId) return;
+      autoPanWhileWiring(e.clientX, e.clientY);
       setWireCursor(
         clientToCanvas(
           e.clientX,

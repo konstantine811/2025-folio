@@ -507,6 +507,50 @@ textarea:-webkit-autofill:focus {
     color-mix(in oklch, var(--foreground) 12%, transparent);
 }
 
+/* Таблиці markdown у прев'ю ноди (узгоджено зі стилем сайту). */
+.markdown-node-preview .nw-md-table-wrap {
+  border: 1px solid color-mix(in oklch, var(--foreground) 20%, transparent);
+  border-radius: 0.6rem;
+  background: color-mix(in oklch, var(--background) 98%, white);
+  box-shadow: 0 8px 22px rgb(0 0 0 / 0.08);
+}
+
+.markdown-node-preview .nw-md-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.markdown-node-preview .nw-md-table :is(th, td) {
+  border: 1px solid color-mix(in oklch, var(--foreground) 18%, transparent);
+}
+
+.markdown-node-preview .nw-md-table th {
+  background: color-mix(in oklch, var(--foreground) 8%, transparent);
+  font-weight: 650;
+}
+
+.markdown-node-preview .nw-md-table tr:nth-child(even) td {
+  background: color-mix(in oklch, var(--foreground) 4%, transparent);
+}
+
+.dark .markdown-node-preview .nw-md-table-wrap {
+  border-color: color-mix(in oklch, white 20%, transparent);
+  background: color-mix(in oklch, #0a0d13 84%, var(--background));
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.45);
+}
+
+.dark .markdown-node-preview .nw-md-table :is(th, td) {
+  border-color: color-mix(in oklch, white 18%, transparent);
+}
+
+.dark .markdown-node-preview .nw-md-table th {
+  background: color-mix(in oklch, white 10%, transparent);
+}
+
+.dark .markdown-node-preview .nw-md-table tr:nth-child(even) td {
+  background: color-mix(in oklch, white 5%, transparent);
+}
+
 /* Node writer: кілька рядків «1. …» — окремий ReactMarkdown на рядок, тому один CSS-лічильник на групу */
 /* Скрол у тексті ноди: смуга 1px (WebKit); Firefox — найвужчий доступний thin */
 [data-node-markdown-root] {
@@ -617,6 +661,291 @@ body > [class*="_editorRoot_"][class*="_popupContainer_"] {
 .mdxeditor-popup-container > *,
 body > [class*="_popupContainer_"] > * {
   pointer-events: auto;
+}
+
+/* MDXEditor Dialogs (Upload image / Link / etc): стилізація під тему сайту. */
+body [class*="_dialogOverlay_"] {
+  background: rgb(2 6 14 / 0.62) !important;
+  backdrop-filter: blur(2px);
+}
+
+body :is([class*="_dialogContent_"], [class*="_largeDialogContent_"]) {
+  border: 1px solid color-mix(in oklch, var(--foreground) 20%, transparent) !important;
+  background: color-mix(in oklch, var(--background) 96%, white) !important;
+  color: color-mix(in oklch, var(--foreground) 92%, black) !important;
+  box-shadow: 0 20px 50px rgb(0 0 0 / 0.38) !important;
+  border-radius: 0.85rem !important;
+}
+
+body [class*="_dialogTitle_"] {
+  color: color-mix(in oklch, var(--foreground) 92%, black) !important;
+}
+
+body :is([class*="_dialogInput_"], [class*="_linkDialogInput_"]) {
+  border: 1px solid color-mix(in oklch, var(--foreground) 22%, transparent) !important;
+  border-radius: 0.55rem !important;
+  background: color-mix(in oklch, var(--background) 98%, white) !important;
+  color: color-mix(in oklch, var(--foreground) 90%, black) !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+body [class*="_dialogInput_"]::placeholder,
+body [class*="_linkDialogInput_"]::placeholder {
+  color: color-mix(in oklch, var(--foreground) 48%, transparent) !important;
+}
+
+body :is([class*="_dialogContent_"], [class*="_largeDialogContent_"]) input[type="file"] {
+  color: color-mix(in oklch, var(--foreground) 90%, black);
+}
+
+body :is([class*="_dialogContent_"], [class*="_largeDialogContent_"]) input[type="file"]::file-selector-button {
+  margin-right: 0.55rem;
+  border: 1px solid color-mix(in oklch, var(--foreground) 22%, transparent);
+  border-radius: 0.45rem;
+  background: color-mix(in oklch, var(--foreground) 8%, transparent);
+  color: inherit;
+  padding: 0.32rem 0.55rem;
+}
+
+body [class*="_primaryButton_"] {
+  border-radius: 0.55rem !important;
+  border-color: color-mix(in oklch, #3b82f6 50%, transparent) !important;
+  background: color-mix(in oklch, #3b82f6 76%, var(--background)) !important;
+  color: #eaf2ff !important;
+}
+
+body [class*="_secondaryButton_"] {
+  border-radius: 0.55rem !important;
+  border-color: color-mix(in oklch, var(--foreground) 20%, transparent) !important;
+  background: color-mix(in oklch, var(--foreground) 12%, transparent) !important;
+  color: color-mix(in oklch, var(--foreground) 86%, black) !important;
+}
+
+:is(
+    html.dark,
+    body.dark,
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body[data-nw-mdx-theme="dark"]
+  )
+  [class*="_dialogOverlay_"] {
+  background: rgb(0 0 0 / 0.72) !important;
+}
+
+:is(
+    html.dark,
+    body.dark,
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body[data-nw-mdx-theme="dark"],
+    body:has([data-node-markdown-root][data-nw-theme="dark"])
+  )
+  :is(
+    [class*="_dialogContent_"],
+    [class*="_largeDialogContent_"],
+    [class*="_linkDialogPopoverContent_"]
+  ) {
+  border-color: color-mix(in oklch, white 20%, transparent) !important;
+  background: color-mix(in oklch, #0b101a 88%, var(--background)) !important;
+  color: color-mix(in oklch, white 90%, var(--foreground)) !important;
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.62) !important;
+}
+
+:is(
+    html.dark,
+    body.dark,
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body[data-nw-mdx-theme="dark"]
+  )
+  [class*="_dialogTitle_"] {
+  color: color-mix(in oklch, white 92%, var(--foreground)) !important;
+}
+
+:is(
+    html.dark,
+    body.dark,
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body[data-nw-mdx-theme="dark"],
+    body:has([data-node-markdown-root][data-nw-theme="dark"])
+  )
+  :is(
+    [class*="_dialogInput_"],
+    [class*="_linkDialogInput_"],
+    [class*="_linkDialogInputWrapper_"]
+  ) {
+  border-color: color-mix(in oklch, white 20%, transparent) !important;
+  background: color-mix(in oklch, white 6%, transparent) !important;
+  color: color-mix(in oklch, white 92%, var(--foreground)) !important;
+}
+
+:is(
+    html.dark,
+    body.dark,
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body[data-nw-mdx-theme="dark"]
+  )
+  [class*="_secondaryButton_"] {
+  border-color: color-mix(in oklch, white 20%, transparent) !important;
+  background: color-mix(in oklch, white 10%, transparent) !important;
+  color: color-mix(in oklch, white 90%, var(--foreground)) !important;
+}
+
+:is(
+    html.dark,
+    body.dark,
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body[data-nw-mdx-theme="dark"],
+    body:has([data-node-markdown-root][data-nw-theme="dark"])
+  )
+  :is([class*="_dialogInput_"], [class*="_linkDialogInput_"])::placeholder {
+  color: color-mix(in oklch, white 46%, transparent) !important;
+}
+
+:is(
+    html.dark,
+    body.dark,
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body[data-nw-mdx-theme="dark"]
+  )
+  :is([class*="_dialogContent_"], [class*="_largeDialogContent_"]) input[type="file"] {
+  color: color-mix(in oklch, white 90%, var(--foreground)) !important;
+}
+
+:is(
+    html.dark,
+    body.dark,
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body[data-nw-mdx-theme="dark"]
+  )
+  :is([class*="_dialogContent_"], [class*="_largeDialogContent_"])
+  input[type="file"]::file-selector-button {
+  border-color: color-mix(in oklch, white 22%, transparent) !important;
+  background: color-mix(in oklch, white 10%, transparent) !important;
+  color: color-mix(in oklch, white 92%, var(--foreground)) !important;
+}
+
+/* MDX popup: уніфікований темний стиль для node-writer (контент + інпути). */
+:is(
+    html.dark,
+    body.dark,
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body[data-nw-mdx-theme="dark"],
+    body:has([data-node-markdown-root][data-nw-theme="dark"])
+  )
+  :is(
+    [class*="_dialogContent_"],
+    [class*="_largeDialogContent_"],
+    [class*="_linkDialogPopoverContent_"]
+  ) {
+  --basePageBg: #050506 !important;
+  --baseBgSubtle: #0a0a0c !important;
+  --baseBase: #0d0d10 !important;
+  --baseBorder: rgb(255 255 255 / 0.16) !important;
+  --baseText: #e9e9ee !important;
+  --baseTextContrast: #f7f7fa !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgb(255 255 255 / 0.16) !important;
+  background: linear-gradient(
+      180deg,
+      rgb(8 8 10 / 0.96),
+      rgb(5 5 7 / 0.96)
+    )
+    !important;
+  box-shadow:
+    0 24px 70px rgb(0 0 0 / 0.62),
+    inset 0 1px 0 rgb(255 255 255 / 0.06) !important;
+  color: #ececf1 !important;
+}
+
+:is(
+    html.dark,
+    body.dark,
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body[data-nw-mdx-theme="dark"],
+    body:has([data-node-markdown-root][data-nw-theme="dark"])
+  )
+  :is(
+    [class*="_dialogContent_"],
+    [class*="_largeDialogContent_"],
+    [class*="_linkDialogPopoverContent_"]
+  )
+  :is(
+    input:not([type="file"]),
+    textarea,
+    select,
+    [class*="_dialogInput_"],
+    [class*="_linkDialogInput_"],
+    [class*="_linkDialogInputWrapper_"]
+  ) {
+  border: 1px solid rgb(255 255 255 / 0.16) !important;
+  border-radius: 0.72rem !important;
+  background: rgb(9 9 12 / 0.86) !important;
+  color: #ececf2 !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04) !important;
+}
+
+:is(
+    html.dark,
+    body.dark,
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body[data-nw-mdx-theme="dark"],
+    body:has([data-node-markdown-root][data-nw-theme="dark"])
+  )
+  :is(
+    [class*="_dialogContent_"],
+    [class*="_largeDialogContent_"],
+    [class*="_linkDialogPopoverContent_"]
+  )
+  :is(input, textarea)::placeholder {
+  color: rgb(255 255 255 / 0.42) !important;
+}
+
+:is(
+    html.dark,
+    body.dark,
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body[data-nw-mdx-theme="dark"],
+    body:has([data-node-markdown-root][data-nw-theme="dark"])
+  )
+  :is(
+    [class*="_dialogContent_"],
+    [class*="_largeDialogContent_"],
+    [class*="_linkDialogPopoverContent_"]
+  )
+  [class*="_secondaryButton_"] {
+  background: rgb(20 20 23 / 0.92) !important;
+  border: 1px solid rgb(255 255 255 / 0.18) !important;
+  color: #e7e7ee !important;
+}
+
+:is(
+    html.dark,
+    body.dark,
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body[data-nw-mdx-theme="dark"],
+    body:has([data-node-markdown-root][data-nw-theme="dark"])
+  )
+  :is(
+    [class*="_dialogContent_"],
+    [class*="_largeDialogContent_"],
+    [class*="_linkDialogPopoverContent_"]
+  )
+  [class*="_primaryButton_"] {
+  background: linear-gradient(180deg, #e7e9ee, #d7dae1) !important;
+  border: 1px solid rgb(255 255 255 / 0.28) !important;
+  color: #0a0a0f !important;
 }
 
 /* Базова типографіка MDX editor у ноді, ближча до mdxeditor.dev demo. */
@@ -858,6 +1187,78 @@ body > [class*="_popupContainer_"] > * {
   :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[data-active="true"]
   svg {
   color: #60a5fa !important;
+}
+
+/* MDXEditor table (режим редагування): theme-aware, чисті межі, кращий контраст. */
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_tableEditor_"] {
+  border-collapse: collapse;
+  border: 1px solid color-mix(in oklch, var(--foreground) 20%, transparent);
+  border-radius: 0.6rem;
+  overflow: hidden;
+  background: color-mix(in oklch, var(--background) 98%, white);
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_tableEditor_"]
+  :is(td, th):not([class*="_toolCell_"]):not([data-tool-cell="true"]) {
+  border-color: color-mix(in oklch, var(--foreground) 18%, transparent) !important;
+  background: transparent;
+  color: color-mix(in oklch, var(--foreground) 92%, black);
+  padding: 0.34rem 0.5rem;
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_tableEditor_"]
+  thead
+  > tr
+  > th:not([class*="_toolCell_"]):not([data-tool-cell="true"]) {
+  background: color-mix(in oklch, var(--foreground) 8%, transparent);
+  font-weight: 650;
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_tableEditor_"]
+  [data-active="true"]:is(td, th):not([class*="_toolCell_"]):not([data-tool-cell="true"]) {
+  outline-color: color-mix(in oklch, #3b82f6 75%, transparent) !important;
+}
+
+.dark
+  [data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_tableEditor_"] {
+  border-color: color-mix(in oklch, white 20%, transparent);
+  background: color-mix(in oklch, #0a0d13 86%, var(--background));
+}
+
+.dark
+  [data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_tableEditor_"]
+  :is(td, th):not([class*="_toolCell_"]):not([data-tool-cell="true"]) {
+  border-color: color-mix(in oklch, white 18%, transparent) !important;
+  color: color-mix(in oklch, white 92%, var(--foreground));
+}
+
+.dark
+  [data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_tableEditor_"]
+  thead
+  > tr
+  > th:not([class*="_toolCell_"]):not([data-tool-cell="true"]) {
+  background: color-mix(in oklch, white 10%, transparent);
 }
 
 /* Theme-aware dropdown / select popups для MDXEditor (портали в body). */
@@ -1407,4 +1808,29 @@ body.dark
   .cm-editor {
   background: #0c0c0c !important;
   color: #e5e7eb;
+}
+
+/* Blog article markdown: переносимо по словах, не по символах. */
+.article-markdown-content {
+  word-break: keep-all;
+  overflow-wrap: normal;
+  hyphens: manual;
+}
+
+.article-markdown-content :is(
+    p,
+    div,
+    li,
+    blockquote,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6
+  ) {
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  white-space: normal;
+  hyphens: manual;
 }

@@ -2,7 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MIN_NODE_H, MIN_NODE_W } from "../constants";
 import { deriveMarkdownBlocks } from "../utils/node-markdown-blocks";
 import { newMarkdownBlockId } from "../utils/node-ids";
-import { linkBezierGeometry, linkUsesChildSlot } from "../utils";
+import {
+  edgeChildSlotPoint,
+  linkBezierGeometry,
+  linkUsesChildSlot,
+  visibleChildSlotCount,
+} from "../utils";
 import { isKeyboardTypingTarget } from "../utils/canvas-keyboard";
 import type {
   LinkData,
@@ -193,8 +198,43 @@ const NodeHtmlOverlayLayer = ({
   useEffect(() => {
     if (!wireSession) return;
 
+    const autoPanViewportWhileWiring = (clientX: number, clientY: number) => {
+      if (!viewport || !rootRef.current) return;
+      const rect = rootRef.current.getBoundingClientRect();
+      const edge = 84;
+      const maxStepPx = 32;
+
+      let dxPx = 0;
+      let dyPx = 0;
+
+      if (clientX < rect.left + edge) {
+        const t = (rect.left + edge - clientX) / edge;
+        dxPx = -Math.ceil(Math.min(1, t) * maxStepPx);
+      } else if (clientX > rect.right - edge) {
+        const t = (clientX - (rect.right - edge)) / edge;
+        dxPx = Math.ceil(Math.min(1, t) * maxStepPx);
+      }
+
+      if (clientY < rect.top + edge) {
+        const t = (rect.top + edge - clientY) / edge;
+        dyPx = -Math.ceil(Math.min(1, t) * maxStepPx);
+      } else if (clientY > rect.bottom - edge) {
+        const t = (clientY - (rect.bottom - edge)) / edge;
+        dyPx = Math.ceil(Math.min(1, t) * maxStepPx);
+      }
+
+      if (dxPx === 0 && dyPx === 0) return;
+
+      const zoom = Math.max(Math.abs(viewport.scale.x || 1), 0.01);
+      viewport.moveCenter(
+        viewport.center.x + dxPx / zoom,
+        viewport.center.y + dyPx / zoom,
+      );
+    };
+
     const handleWindowPointerMove = (event: PointerEvent) => {
       if (event.pointerId !== wireSession.pointerId) return;
+      autoPanViewportWhileWiring(event.clientX, event.clientY);
       setWireCursorClient({ x: event.clientX, y: event.clientY });
 
       const target = document.elementFromPoint(
@@ -503,18 +543,75 @@ const NodeHtmlOverlayLayer = ({
   let wirePath: string | null = null;
   if (wireSession && wireCursorClient && rootRef.current) {
     const rect = rootRef.current.getBoundingClientRect();
-    const ax = wireSession.startClientX - rect.left;
-    const ay = wireSession.startClientY - rect.top;
     const bx = wireCursorClient.x - rect.left;
     const by = wireCursorClient.y - rect.top;
-    const geometry = linkBezierGeometry(
-      ax,
-      ay,
-      bx,
-      by,
-      wireSession.sourcePort,
-      undefined,
+    let sourceWorldPoint: { x: number; y: number } | null = null;
+
+    if (wireSession.sourceKind === "canvasImage") {
+      const sourceImage = (project.canvasImages ?? []).find(
+        (image) => image.id === wireSession.sourceId,
+      );
+      if (sourceImage) {
+        const g = normalizeCanvasImageGeometry(sourceImage);
+        const visibleSlots = visibleChildSlotCount(
+          project.links,
+          sourceImage.id,
+          wireSession.sourcePort,
+        );
+        sourceWorldPoint = edgeChildSlotPoint(
+          {
+            id: sourceImage.id,
+            label: sourceImage.title ?? "",
+            type: "resource",
+            x: g.x,
+            y: g.y,
+          },
+          wireSession.sourcePort,
+          wireSession.sourceChildSlot,
+          visibleSlots,
+          g.width,
+          g.height,
+        );
+      }
+    } else {
+      const sourceNode = project.nodes.find(
+        (node) => node.id === wireSession.sourceId,
+      );
+      if (sourceNode) {
+        const g = normalizeNodeGeometry(sourceNode);
+        const visibleSlots = visibleChildSlotCount(
+          project.links,
+          sourceNode.id,
+          wireSession.sourcePort,
+        );
+        sourceWorldPoint = edgeChildSlotPoint(
+          sourceNode,
+          wireSession.sourcePort,
+          wireSession.sourceChildSlot,
+          visibleSlots,
+          g.width,
+          g.height,
+        );
+      }
+    }
+
+    if (!sourceWorldPoint) {
+      sourceWorldPoint = viewport.toWorld({
+        x: wireSession.startClientX - rect.left,
+        y: wireSession.startClientY - rect.top,
+      });
+    }
+
+    const sourceScreen = viewport.toScreen(
+      sourceWorldPoint.x,
+      sourceWorldPoint.y,
     );
+    // `viewport.toScreen` already returns coordinates in viewport-local space.
+    // Overlay SVG is also viewport-local, so subtracting root rect offsets
+    // the start anchor and makes the wire appear detached.
+    const ax = sourceScreen.x;
+    const ay = sourceScreen.y;
+    const geometry = linkBezierGeometry(ax, ay, bx, by, wireSession.sourcePort, undefined);
     wirePath = `M ${geometry.ax} ${geometry.ay} C ${geometry.cx1} ${geometry.cy1} ${geometry.cx2} ${geometry.cy2} ${geometry.bx} ${geometry.by}`;
   }
 

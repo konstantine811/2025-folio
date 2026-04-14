@@ -21,6 +21,12 @@ import {
 
 type DrawCreateState =
   | {
+      mode: "newNodePending";
+      pointerId: number;
+      x0: number;
+      y0: number;
+    }
+  | {
       mode: "newNode";
       pointerId: number;
       x0: number;
@@ -98,6 +104,23 @@ export function useDrawCreateSession({
           return {
             ...prev,
             points: [...prev.points, { x: world.x, y: world.y }],
+          };
+        }
+        if (prev.mode === "newNodePending") {
+          const width = Math.abs(world.x - prev.x0);
+          const height = Math.abs(world.y - prev.y0);
+          const widthPx = width * Math.max(viewport.scale.x, 0.01);
+          const heightPx = height * Math.max(viewport.scale.y, 0.01);
+          if (widthPx < MIN_DRAW_RECT && heightPx < MIN_DRAW_RECT) {
+            return prev;
+          }
+          return {
+            mode: "newNode",
+            pointerId: prev.pointerId,
+            x0: prev.x0,
+            y0: prev.y0,
+            x1: world.x,
+            y1: world.y,
           };
         }
         return {
@@ -180,7 +203,7 @@ export function useDrawCreateSession({
             });
           }
         }
-      } else if (current) {
+      } else if (current?.mode === "newNode") {
         const x0 = current.x0;
         const y0 = current.y0;
         const x1 = world.x;
@@ -315,12 +338,10 @@ export function useDrawCreateSession({
       });
     } else {
       setDrawCreate({
-        mode: "newNode",
+        mode: "newNodePending",
         pointerId: e.pointerId,
         x0: world.x,
         y0: world.y,
-        x1: world.x,
-        y1: world.y,
       });
     }
   };

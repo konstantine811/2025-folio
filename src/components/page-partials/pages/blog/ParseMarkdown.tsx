@@ -14,6 +14,17 @@ import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { remarkDefaultFenceLang } from "@/utils/remark-default-fence-lang";
 
+function normalizeBadWordWrapArtifacts(input: string): string {
+  return input
+    .replace(/<wbr\s*\/?>/gi, "")
+    .replace(/\u00AD/g, "")
+    .replace(/[\u200B-\u200D\u2060]/g, "")
+    .replace(
+      /([A-Za-zА-Яа-яЇїІіЄєҐґ])\r?\n([A-Za-zА-Яа-яЇїІіЄєҐґ])/g,
+      "$1$2",
+    );
+}
+
 const ParseMarkdown = ({
   content,
   onFormatted,
@@ -26,17 +37,18 @@ const ParseMarkdown = ({
   useEffect(() => {
     onFormatted(false);
     formatMarkdown(content, getBlogImage).then((formattedContent) => {
-      setFormattedContent(formattedContent);
+      setFormattedContent(normalizeBadWordWrapArtifacts(formattedContent));
       setTimeout(() => {
         onFormatted(true);
       }, 1000);
     });
   }, [content, onFormatted]);
   return (
-    <ReactMarkdown
-      rehypePlugins={[rehypeRaw]}
-      remarkPlugins={[remarkGfm, remarkDefaultFenceLang]}
-      components={{
+    <div className="article-markdown-content">
+      <ReactMarkdown
+        rehypePlugins={[rehypeRaw]}
+        remarkPlugins={[remarkGfm, remarkDefaultFenceLang]}
+        components={{
         img: ({ src, alt }) => <ImageWithLoader src={src} alt={alt} />,
         h1: (props) => (
           <h1
@@ -181,10 +193,11 @@ const ParseMarkdown = ({
         li: ({ children }) => <li className="ml-2">{children}</li>,
         code: CodeBlock,
         kbd: ({ children }) => <StyledKbd>{children}</StyledKbd>,
-      }}
-    >
-      {formattedContent}
-    </ReactMarkdown>
+        }}
+      >
+        {formattedContent}
+      </ReactMarkdown>
+    </div>
   );
 };
 

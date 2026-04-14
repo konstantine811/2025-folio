@@ -267,6 +267,47 @@ export function nodeMarkdownPreviewComponents(
         {children}
       </blockquote>
     ),
+    table: ({ children, ...props }) => (
+      <div className="nw-md-table-wrap my-2 overflow-x-auto">
+        <table
+          {...props}
+          className={`nw-md-table w-full border-collapse text-[0.85rem] ${props.className ?? ""}`.trim()}
+        >
+          {children}
+        </table>
+      </div>
+    ),
+    thead: ({ children, ...props }) => (
+      <thead {...props} className={`nw-md-table-head ${props.className ?? ""}`.trim()}>
+        {children}
+      </thead>
+    ),
+    tbody: ({ children, ...props }) => (
+      <tbody {...props} className={`nw-md-table-body ${props.className ?? ""}`.trim()}>
+        {children}
+      </tbody>
+    ),
+    tr: ({ children, ...props }) => (
+      <tr {...props} className={`nw-md-table-row ${props.className ?? ""}`.trim()}>
+        {children}
+      </tr>
+    ),
+    th: ({ children, ...props }) => (
+      <th
+        {...props}
+        className={`nw-md-table-th px-3 py-2 text-left font-semibold ${NODE_MD_BODY_TYPO} ${props.className ?? ""}`.trim()}
+      >
+        {children}
+      </th>
+    ),
+    td: ({ children, ...props }) => (
+      <td
+        {...props}
+        className={`nw-md-table-td px-3 py-2 align-top ${NODE_MD_BODY_TYPO} ${props.className ?? ""}`.trim()}
+      >
+        {children}
+      </td>
+    ),
     code: ({ className, children, node }) => (
       <CodeBlock className={className} node={node} variant="embedded">
         {children}
@@ -409,6 +450,22 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
     updateTheme();
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const body = document.body;
+    const owner = `node-mdx-${nodeId}`;
+
+    body.dataset.nwMdxThemeOwner = owner;
+    body.dataset.nwMdxTheme = effectiveDarkTheme ? "dark" : "light";
+
+    return () => {
+      if (body.dataset.nwMdxThemeOwner === owner) {
+        delete body.dataset.nwMdxThemeOwner;
+        delete body.dataset.nwMdxTheme;
+      }
+    };
+  }, [effectiveDarkTheme, nodeId]);
 
   const plugins = useMemo(
     () => [
