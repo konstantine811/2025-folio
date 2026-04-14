@@ -4,6 +4,7 @@ import type { Components } from "react-markdown";
 import {
   BlockTypeSelect,
   BoldItalicUnderlineToggles,
+  type CodeBlockEditorProps,
   CodeMirrorEditor,
   CodeToggle,
   CreateLink,
@@ -31,6 +32,7 @@ import {
 import { EditorView } from "@codemirror/view";
 import "@mdxeditor/editor/style.css";
 import { CodeBlock } from "@/components/ui-abc/code/code-block";
+import { Check, Copy } from "lucide-react";
 import type { NodeMarkdownBlock } from "../../types/types";
 import { newMarkdownBlockId } from "../utils/node-ids";
 import { MarkdownResolvingImg } from "./MarkdownResolvingImg";
@@ -125,6 +127,58 @@ const CODE_BLOCK_LANGUAGES = {
 const SUPPORTED_CODE_BLOCK_LANGS = new Set<string>(
   Object.keys(CODE_BLOCK_LANGUAGES),
 );
+
+function CodeMirrorEditorWithCopy(props: CodeBlockEditorProps) {
+  const [copied, setCopied] = useState(false);
+  const copyTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current !== null) {
+        window.clearTimeout(copyTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(props.code ?? "");
+      setCopied(true);
+      if (copyTimerRef.current !== null) {
+        window.clearTimeout(copyTimerRef.current);
+      }
+      copyTimerRef.current = window.setTimeout(() => {
+        setCopied(false);
+        copyTimerRef.current = null;
+      }, 1400);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  return (
+    <div className="nw-cm-editor-with-copy">
+      <CodeMirrorEditor {...props} />
+      <button
+        type="button"
+        className="nw-cm-copy-btn"
+        aria-label="Copy code"
+        title="Copy code"
+        onPointerDown={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+        onMouseDown={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+        onClick={handleCopy}
+      >
+        {copied ? <Check size={13} strokeWidth={2} /> : <Copy size={13} strokeWidth={2} />}
+      </button>
+    </div>
+  );
+}
 
 const lightCodeMirrorTheme = EditorView.theme(
   {
@@ -397,9 +451,13 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
       const inEditorBySelection = !!anchorNode && editable.contains(anchorNode);
       const activeEl = document.activeElement;
       const inEditorByFocus = !!activeEl && editable.contains(activeEl);
-      const hasExpandedSelection =
-        !!selection && selection.rangeCount > 0 && !selection.isCollapsed;
-      const next = inEditorByFocus || (inEditorBySelection && hasExpandedSelection);
+      const inToolbarOrPopup =
+        activeEl instanceof HTMLElement &&
+        !!activeEl.closest(
+          ".nw-global-mdx-toolbar, [data-radix-popper-content-wrapper], [class*='_toolbarNodeKindSelectContainer_'], [class*='_toolbarButtonDropdownContainer_'], [class*='_selectContainer_'], [class*='_popoverContent_']",
+        );
+      // Keep toolbar visible while caret is in editor OR while interacting with toolbar/dropdowns.
+      const next = inEditorByFocus || inEditorBySelection || inToolbarOrPopup;
       setIsToolbarActive((prev) => (prev === next ? prev : next));
     };
 
@@ -489,7 +547,7 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
                 SUPPORTED_CODE_BLOCK_LANGS.has(normalized)
               );
             },
-            Editor: CodeMirrorEditor,
+            Editor: CodeMirrorEditorWithCopy,
           },
         ],
       }),

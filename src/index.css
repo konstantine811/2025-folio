@@ -1565,6 +1565,13 @@ body.dark
 [data-node-markdown-root]
   .node-mdx-editor-basic
   .node-mdx-editor-content
+  .nw-cm-editor-with-copy {
+  position: relative;
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
   [class*="_codeMirrorToolbar_"] {
   position: relative;
   top: auto;
@@ -1577,6 +1584,7 @@ body.dark
   border-bottom: 1px solid color-mix(in oklch, var(--foreground) 14%, transparent);
   border-bottom-left-radius: 0;
   background: #ececec;
+  padding-right: 2.6rem;
 }
 
 [data-node-markdown-root]
@@ -1657,6 +1665,37 @@ body.dark
 [data-node-markdown-root]
   .node-mdx-editor-basic
   .node-mdx-editor-content
+  .nw-cm-copy-btn {
+  position: absolute;
+  right: 0.55rem;
+  top: 0.42rem;
+  z-index: 3;
+  display: inline-flex;
+  height: 1.55rem;
+  width: 1.55rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.42rem;
+  border: 1px solid color-mix(in oklch, var(--foreground) 18%, transparent);
+  background: color-mix(in oklch, var(--background) 96%, white);
+  color: color-mix(in oklch, var(--foreground) 78%, black);
+  transition:
+    background-color 0.16s ease,
+    color 0.16s ease,
+    border-color 0.16s ease;
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  .nw-cm-copy-btn:hover {
+  background: color-mix(in oklch, var(--foreground) 10%, transparent);
+  color: color-mix(in oklch, var(--foreground) 90%, black);
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
   [class*="_codeMirrorWrapper_"]
   .cm-editor {
   background: #ffffff !important;
@@ -1711,6 +1750,39 @@ body.dark
   [class*="_codeMirrorToolbar_"] {
   border-bottom-color: rgb(255 255 255 / 0.06);
   background: #141414;
+}
+
+:is(
+    .dark,
+    html.dark,
+    body.dark,
+    [data-theme="dark"],
+    [data-node-markdown-root][data-nw-theme="dark"],
+    [data-node-markdown-root] [data-nw-theme="dark"]
+  )
+  [data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  .nw-cm-copy-btn {
+  border-color: color-mix(in oklch, white 20%, transparent);
+  background: color-mix(in oklch, white 8%, transparent);
+  color: color-mix(in oklch, white 88%, var(--foreground));
+}
+
+:is(
+    .dark,
+    html.dark,
+    body.dark,
+    [data-theme="dark"],
+    [data-node-markdown-root][data-nw-theme="dark"],
+    [data-node-markdown-root] [data-nw-theme="dark"]
+  )
+  [data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  .nw-cm-copy-btn:hover {
+  background: color-mix(in oklch, white 14%, transparent);
+  color: color-mix(in oklch, white 96%, var(--foreground));
 }
 
 :is(
