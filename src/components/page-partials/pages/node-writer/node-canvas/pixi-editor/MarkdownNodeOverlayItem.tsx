@@ -457,6 +457,7 @@ const MarkdownNodeOverlayItem = ({
                     blocks={blocks}
                     selectionEditorMode="toolbar"
                     isDarkMode={isDark}
+                    isSelectionOwner={isSelected}
                     uploadPasteImage={uploadMarkdownPasteImage}
                     onBlocksChange={(nextBlocks) =>
                       updateNodeBlocks(onProjectPatch, node.id, nextBlocks)

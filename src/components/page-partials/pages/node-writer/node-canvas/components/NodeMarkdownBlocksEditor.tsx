@@ -406,10 +406,19 @@ interface NodeMarkdownBlocksEditorProps {
   selectionEditorMode?: "toolbar" | "mdx";
   uploadPasteImage?: (file: File) => Promise<string>;
   isDarkMode?: boolean;
+  /** Чи редактор належить поточно виділеній ноді (для показу глобальної панелі). */
+  isSelectionOwner?: boolean;
 }
 
 export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
-  const { nodeId, blocks, onBlocksChange, uploadPasteImage, isDarkMode } = props;
+  const {
+    nodeId,
+    blocks,
+    onBlocksChange,
+    uploadPasteImage,
+    isDarkMode,
+    isSelectionOwner = true,
+  } = props;
   const rootRef = useRef<HTMLDivElement | null>(null);
   const currentMarkdown = useMemo(
     () => blocks.map((b) => b.text ?? "").join("\n"),
@@ -441,6 +450,10 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
     if (!root) return;
 
     const syncActiveState = () => {
+      if (!isSelectionOwner) {
+        setIsToolbarActive(false);
+        return;
+      }
       const editable = root.querySelector<HTMLElement>(".node-mdx-editor-content");
       if (!editable) {
         setIsToolbarActive(false);
@@ -482,7 +495,7 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
       document.removeEventListener("selectionchange", scheduleSync);
       document.removeEventListener("pointerdown", scheduleSync);
     };
-  }, []);
+  }, [isSelectionOwner]);
 
   useEffect(() => {
     const html = document.documentElement;
