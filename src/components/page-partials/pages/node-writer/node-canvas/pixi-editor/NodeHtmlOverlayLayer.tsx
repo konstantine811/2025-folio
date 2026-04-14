@@ -473,6 +473,7 @@ const NodeHtmlOverlayLayer = ({
     event: React.PointerEvent<HTMLButtonElement>,
     imageId: string,
     sourcePort: NodePort,
+    sourceChildSlot: number,
   ) => {
     if (readOnly) return;
     event.preventDefault();
@@ -481,7 +482,8 @@ const NodeHtmlOverlayLayer = ({
     onProjectPatch((prev) => ({
       ...prev,
       links: prev.links.filter(
-        (link) => !linkUsesChildSlot(link, imageId, sourcePort, 1),
+        (link) =>
+          !linkUsesChildSlot(link, imageId, sourcePort, sourceChildSlot),
       ),
     }));
 
@@ -491,7 +493,7 @@ const NodeHtmlOverlayLayer = ({
       sourceKind: "canvasImage",
       sourceId: imageId,
       sourcePort,
-      sourceChildSlot: 1,
+      sourceChildSlot,
       startClientX: event.clientX,
       startClientY: event.clientY,
     });
@@ -1045,6 +1047,7 @@ const NodeHtmlOverlayLayer = ({
             key={`canvas-image-html-${item.image.id}`}
             image={item.image}
             isConnected={item.isConnected}
+            links={project.links}
             viewport={viewport}
             worldViewBounds={worldViewBounds}
             zoom={zoom}

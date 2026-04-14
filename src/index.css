@@ -374,11 +374,8 @@ textarea:-webkit-autofill:focus {
 }
 
 .blueprint-grid {
-  background-image: linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0.03) 1px,
-      transparent 1px
-    ),
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 20px 20px;
 }
@@ -481,12 +478,14 @@ textarea:-webkit-autofill:focus {
   padding: 0.1em 0.38em;
   border-radius: 0.3rem;
   background: color-mix(in oklch, var(--muted) 72%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--border) 70%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--border) 70%, transparent);
 }
 
 .dark .markdown-node-preview .md-font-mono {
   background: color-mix(in oklch, var(--muted) 55%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--foreground) 12%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--foreground) 12%, transparent);
 }
 
 /* Інлайн `code` у прев’ю ноди (не fenced-блок) */
@@ -498,19 +497,22 @@ textarea:-webkit-autofill:focus {
   padding: 0.1em 0.4em;
   border-radius: 0.3rem;
   background: color-mix(in oklch, var(--muted) 72%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--border) 70%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--border) 70%, transparent);
 }
 
 .dark .markdown-node-preview .node-md-inline-code {
   background: color-mix(in oklch, var(--muted) 55%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--foreground) 12%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--foreground) 12%, transparent);
 }
 
 /* Node writer: кілька рядків «1. …» — окремий ReactMarkdown на рядок, тому один CSS-лічильник на групу */
 /* Скрол у тексті ноди: смуга 1px (WebKit); Firefox — найвужчий доступний thin */
 [data-node-markdown-root] {
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in oklch, var(--foreground) 38%, transparent) transparent;
+  scrollbar-color: color-mix(in oklch, var(--foreground) 38%, transparent)
+    transparent;
 }
 
 [data-node-markdown-root]::-webkit-scrollbar {
@@ -546,7 +548,11 @@ textarea:-webkit-autofill:focus {
   padding-left: 1.4rem;
 }
 
-[data-node-markdown-root] .md-node-ol-run .markdown-node-preview ol > li::before {
+[data-node-markdown-root]
+  .md-node-ol-run
+  .markdown-node-preview
+  ol
+  > li::before {
   content: counter(node-md-ol) ". ";
   position: absolute;
   left: 0;
@@ -565,12 +571,840 @@ textarea:-webkit-autofill:focus {
 }
 
 /* MDX inline selection panel: тільки toolbar, без дублю контенту */
-[data-mdx-inline-popover] .mdx-inline-toolbar-only .mdxeditor-root-contenteditable,
+[data-mdx-inline-popover]
+  .mdx-inline-toolbar-only
+  .mdxeditor-root-contenteditable,
 [data-mdx-inline-popover] .mdx-inline-toolbar-only [contenteditable="true"] {
   display: none !important;
 }
 
 /* Radix dropdown з MDX-toolbar має бути над нодами/оверлеями */
 body > [data-radix-popper-content-wrapper] {
-  z-index: 11020 !important;
+  z-index: 999999 !important;
+}
+
+/* Portal попапи MDXEditor: базові змінні (light). */
+body > [data-radix-popper-content-wrapper] {
+  --basePageBg: color-mix(in oklch, var(--background) 98%, white);
+  --baseBg: color-mix(in oklch, var(--foreground) 10%, transparent);
+  --baseText: color-mix(in oklch, var(--foreground) 86%, black);
+  --baseTextContrast: color-mix(in oklch, var(--foreground) 94%, black);
+  --baseBorder: color-mix(in oklch, var(--foreground) 18%, transparent);
+}
+
+/* Portal попапи MDXEditor: dark-токени, щоб dropdown не був білим. */
+.dark body > [data-radix-popper-content-wrapper],
+body.dark > [data-radix-popper-content-wrapper] {
+  --basePageBg: color-mix(in oklch, #0a0d13 92%, var(--background));
+  --baseBg: color-mix(in oklch, #3b82f6 18%, transparent);
+  --baseText: color-mix(in oklch, white 88%, var(--foreground));
+  --baseTextContrast: color-mix(in oklch, white 96%, var(--foreground));
+  --baseBorder: color-mix(in oklch, white 22%, transparent);
+}
+
+/* MDXEditor popup-root має бути вище рамки ноди (інакше dropdown перекривається). */
+.mdxeditor-popup-container {
+  z-index: 999999 !important;
+  pointer-events: none;
+}
+
+body > [class*="_popupContainer_"],
+body > [class*="_editorRoot_"][class*="_popupContainer_"] {
+  z-index: 999999 !important;
+  pointer-events: none;
+}
+
+.mdxeditor-popup-container > *,
+body > [class*="_popupContainer_"] > * {
+  pointer-events: auto;
+}
+
+/* Базова типографіка MDX editor у ноді, ближча до mdxeditor.dev demo. */
+[data-node-markdown-root] .node-mdx-editor-basic {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  --basePageBg: color-mix(in oklch, var(--background) 98%, white);
+  --baseBg: color-mix(in oklch, var(--foreground) 8%, transparent);
+  --baseText: color-mix(in oklch, var(--foreground) 86%, black);
+  --baseTextContrast: color-mix(in oklch, var(--foreground) 94%, black);
+  --baseBorder: color-mix(in oklch, var(--foreground) 18%, transparent);
+}
+
+.dark [data-node-markdown-root] .node-mdx-editor-basic {
+  --basePageBg: color-mix(in oklch, #0a0d13 92%, var(--background));
+  --baseBg: color-mix(in oklch, #223047 70%, transparent);
+  --baseText: color-mix(in oklch, white 88%, var(--foreground));
+  --baseTextContrast: color-mix(in oklch, white 96%, var(--foreground));
+  --baseBorder: color-mix(in oklch, white 22%, transparent);
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .mdxeditor-toolbar {
+  position: static;
+  height: 0;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.nw-global-mdx-toolbar {
+  position: fixed;
+  left: 50%;
+  bottom: 1rem;
+  z-index: 1000002;
+  width: max-content;
+  max-width: min(calc(100vw - 2rem), 1200px);
+  border: 1px solid color-mix(in oklch, var(--foreground) 20%, transparent);
+  border-radius: 0.7rem;
+  background: color-mix(in oklch, var(--background) 94%, white);
+  box-shadow: 0 14px 38px rgb(0 0 0 / 0.38);
+  backdrop-filter: blur(8px);
+  transform: translate3d(-50%, 0, 0);
+}
+
+.nw-global-mdx-toolbar .nw-custom-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  min-height: 2.5rem;
+  overflow-x: auto;
+  padding: 0.15rem 0.2rem;
+}
+
+.nw-global-mdx-toolbar .nw-custom-toolbar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  white-space: nowrap;
+}
+
+.nw-global-mdx-toolbar .nw-custom-toolbar-sep {
+  width: 1px;
+  height: 1.2rem;
+  background: color-mix(in oklch, var(--foreground) 20%, transparent);
+  flex: 0 0 auto;
+}
+
+.dark .nw-global-mdx-toolbar {
+  border-color: color-mix(in oklch, white 24%, transparent);
+  background: color-mix(in oklch, #07090d 82%, var(--background));
+  box-shadow: 0 16px 44px rgb(0 0 0 / 0.62);
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .nw-custom-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  width: 100%;
+  min-height: 2.5rem;
+  overflow-x: auto;
+  padding: 0.15rem 0.2rem;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .nw-custom-toolbar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  white-space: nowrap;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .nw-custom-toolbar-sep {
+  width: 1px;
+  height: 1.2rem;
+  background: color-mix(in oklch, var(--foreground) 20%, transparent);
+  flex: 0 0 auto;
+}
+
+/* Виразніші кнопки панелі редагування (особливо для dark mode). */
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  :is(
+    [class*="_toolbarToggleItem_"],
+    [class*="_toolbarButton_"],
+    [class*="_toolbarButtonSelectTrigger_"],
+    [class*="_selectTrigger_"]
+  ) {
+  color: color-mix(in oklch, var(--foreground) 88%, black);
+  border-radius: 0.45rem;
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"]):hover {
+  background: color-mix(in oklch, var(--foreground) 16%, transparent);
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])
+  svg {
+  opacity: 0.96;
+}
+
+.dark
+  [data-node-markdown-root]
+  .node-mdx-editor-basic
+  :is(
+    [class*="_toolbarToggleItem_"],
+    [class*="_toolbarButton_"],
+    [class*="_toolbarButtonSelectTrigger_"],
+    [class*="_selectTrigger_"]
+  ) {
+  color: color-mix(in oklch, white 98%, var(--foreground));
+}
+
+.dark
+  .nw-global-mdx-toolbar
+  :is(
+    [class*="_toolbarToggleItem_"],
+    [class*="_toolbarButton_"],
+    [class*="_toolbarButtonSelectTrigger_"],
+    [class*="_selectTrigger_"]
+  ) {
+  color: color-mix(in oklch, white 98%, var(--foreground));
+}
+
+.nw-global-mdx-toolbar
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[data-state="on"],
+.nw-global-mdx-toolbar
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[class*="_activeToolbarButton_"],
+.nw-global-mdx-toolbar
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[aria-checked="true"],
+.nw-global-mdx-toolbar
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[aria-pressed="true"],
+.nw-global-mdx-toolbar
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[data-active="true"] {
+  background: color-mix(in oklch, #3b82f6 24%, transparent) !important;
+  color: #60a5fa !important;
+}
+
+.nw-global-mdx-toolbar
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[data-state="on"]
+  svg,
+.nw-global-mdx-toolbar
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[class*="_activeToolbarButton_"]
+  svg,
+.nw-global-mdx-toolbar
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[aria-checked="true"]
+  svg,
+.nw-global-mdx-toolbar
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[aria-pressed="true"]
+  svg,
+.nw-global-mdx-toolbar
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[data-active="true"]
+  svg {
+  color: #60a5fa !important;
+}
+
+.dark
+  [data-node-markdown-root]
+  .node-mdx-editor-basic
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"]):hover {
+  background: color-mix(in oklch, white 18%, transparent);
+}
+
+.dark
+  [data-node-markdown-root]
+  .node-mdx-editor-basic
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])
+  svg {
+  color: color-mix(in oklch, white 96%, var(--foreground)) !important;
+  opacity: 1;
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[data-state="on"],
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[class*="_activeToolbarButton_"],
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[aria-checked="true"],
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[aria-pressed="true"],
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[data-active="true"] {
+  background: color-mix(in oklch, #3b82f6 24%, transparent) !important;
+  color: #60a5fa !important;
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[data-state="on"]
+  svg,
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[class*="_activeToolbarButton_"]
+  svg,
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[aria-checked="true"]
+  svg,
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[aria-pressed="true"]
+  svg,
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  :is([class*="_toolbarToggleItem_"], [class*="_toolbarButton_"])[data-active="true"]
+  svg {
+  color: #60a5fa !important;
+}
+
+/* Theme-aware dropdown / select popups для MDXEditor (портали в body). */
+body :is(
+    [class*="_toolbarNodeKindSelectContainer_"],
+    [class*="_toolbarButtonDropdownContainer_"],
+    [class*="_toolbarCodeBlockLanguageSelectContent_"],
+    [class*="_selectContainer_"],
+    [class*="_popoverContent_"]
+  ) {
+  z-index: 1000003 !important;
+  border: 1px solid color-mix(in oklch, var(--foreground) 18%, transparent);
+  background: color-mix(in oklch, var(--background) 98%, white);
+  color: color-mix(in oklch, var(--foreground) 92%, black);
+  box-shadow: 0 14px 36px rgb(0 0 0 / 0.22);
+}
+
+body :is([class*="_toolbarNodeKindSelectItem_"], [class*="_selectItem_"]) {
+  color: inherit;
+}
+
+body [class*="_toolbarCodeBlockLanguageSelectContent_"] {
+  min-width: 9.25rem !important;
+  max-width: 12rem;
+  font-size: 0.8rem;
+}
+
+body [class*="_toolbarCodeBlockLanguageSelectContent_"] [class*="_selectItem_"] {
+  min-height: 1.72rem;
+  padding: 0.2rem 0.55rem;
+}
+
+body :is([class*="_toolbarNodeKindSelectItem_"], [class*="_selectItem_"])[data-highlighted] {
+  background: color-mix(in oklch, var(--foreground) 10%, transparent);
+}
+
+.dark
+  body
+  :is(
+    [class*="_toolbarNodeKindSelectContainer_"],
+    [class*="_toolbarButtonDropdownContainer_"],
+    [class*="_toolbarCodeBlockLanguageSelectContent_"],
+    [class*="_selectContainer_"],
+    [class*="_popoverContent_"]
+  ) {
+  border-color: color-mix(in oklch, white 20%, transparent);
+  background: color-mix(in oklch, #0a0d13 90%, var(--background)) !important;
+  color: color-mix(in oklch, white 94%, var(--foreground)) !important;
+  box-shadow: 0 18px 46px rgb(0 0 0 / 0.58);
+}
+
+.dark
+  body
+  > [data-radix-popper-content-wrapper]
+  :is(
+    [class*="_toolbarNodeKindSelectContainer_"],
+    [class*="_toolbarButtonDropdownContainer_"],
+    [class*="_toolbarCodeBlockLanguageSelectContent_"],
+    [class*="_selectContainer_"],
+    [class*="_popoverContent_"]
+  ),
+body.dark
+  > [data-radix-popper-content-wrapper]
+  :is(
+    [class*="_toolbarNodeKindSelectContainer_"],
+    [class*="_toolbarButtonDropdownContainer_"],
+    [class*="_toolbarCodeBlockLanguageSelectContent_"],
+    [class*="_selectContainer_"],
+    [class*="_popoverContent_"]
+  ) {
+  background: var(--basePageBg) !important;
+  color: var(--baseTextContrast) !important;
+  border-color: var(--baseBorder) !important;
+}
+
+.dark
+  body
+  :is([class*="_toolbarNodeKindSelectItem_"], [class*="_selectItem_"])[data-highlighted] {
+  background: color-mix(in oklch, #3b82f6 24%, transparent) !important;
+  color: #bfdbfe !important;
+}
+
+.dark
+  body
+  :is([class*="_toolbarNodeKindSelectItem_"], [class*="_selectItem_"])[data-state="checked"] {
+  background: color-mix(in oklch, #3b82f6 28%, transparent) !important;
+  color: #93c5fd !important;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .nw-block-type-select-wrap {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .nw-block-type-select-trigger {
+  height: 2rem;
+  min-width: 9.2rem;
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in oklch, var(--foreground) 18%, transparent);
+  background: color-mix(in oklch, var(--background) 98%, white);
+  padding: 0 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+  color: color-mix(in oklch, var(--foreground) 94%, black);
+  cursor: pointer;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .nw-block-type-select-trigger:focus {
+  outline: 2px solid color-mix(in oklch, var(--ring) 66%, transparent);
+  outline-offset: 1px;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .nw-block-type-caret {
+  opacity: 0.75;
+  font-size: 0.85rem;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .nw-block-type-menu {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  z-index: 1000010;
+  display: flex;
+  min-width: 11rem;
+  flex-direction: column;
+  border-radius: 0.55rem;
+  border: 1px solid color-mix(in oklch, var(--foreground) 16%, transparent);
+  background: color-mix(in oklch, var(--background) 98%, white);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+  padding: 0.25rem;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .nw-block-type-option {
+  border: 0;
+  background: transparent;
+  text-align: left;
+  border-radius: 0.4rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.9rem;
+  color: color-mix(in oklch, var(--foreground) 94%, black);
+  cursor: pointer;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .nw-block-type-option:hover {
+  background: color-mix(in oklch, var(--foreground) 10%, transparent);
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .nw-block-type-option.is-active {
+  background: color-mix(in oklch, var(--foreground) 14%, transparent);
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content {
+  min-height: 100%;
+  padding: 0.6rem 0.75rem 0.8rem;
+  font-family: var(--font-sans, Inter, system-ui, sans-serif);
+  font-size: 1.02rem;
+  line-height: 1.72;
+  color: color-mix(in oklch, var(--foreground) 96%, black);
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content p {
+  margin: 0 0 0.9rem;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content h1,
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content h2,
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content h3,
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content h4,
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content h5,
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content h6 {
+  margin: 0.25rem 0 0.75rem;
+  line-height: 1.32;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content h1 {
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content h2 {
+  font-size: 1.7rem;
+  font-weight: 750;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content h3 {
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content h4 {
+  font-size: 1.25rem;
+  font-weight: 650;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content h5 {
+  font-size: 1.1rem;
+  font-weight: 620;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content h6 {
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content ul,
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content ol {
+  margin: 0.25rem 0 1rem;
+  padding-left: 1.8rem;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content ul {
+  list-style-type: disc;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content ol {
+  list-style-type: decimal;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content li {
+  display: list-item;
+  margin: 0.34rem 0;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content a {
+  color: #cc178a;
+  text-decoration: none;
+}
+
+[data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content code {
+  border-radius: 0.24rem;
+  border: 1px solid color-mix(in oklch, var(--foreground) 16%, transparent);
+  background: color-mix(in oklch, var(--foreground) 8%, transparent);
+  padding: 0.08rem 0.34rem;
+  font-family: var(
+    --font-mono-code,
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace
+  );
+  font-size: 0.92em;
+  color: color-mix(in oklch, var(--foreground) 92%, black);
+}
+
+.dark [data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content code {
+  border-color: color-mix(in oklch, white 16%, transparent);
+  background: color-mix(in oklch, #0e1525 74%, transparent);
+  color: color-mix(in oklch, white 90%, var(--foreground));
+}
+
+/* Inline-code форматування від MDXEditor (внутрішній клас Lexical), без білого фону в dark. */
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_code_"] {
+  border-radius: 0.24rem;
+  border: 1px solid color-mix(in oklch, var(--foreground) 16%, transparent);
+  background: color-mix(in oklch, var(--foreground) 8%, transparent) !important;
+  color: color-mix(in oklch, var(--foreground) 92%, black);
+  padding: 0.08rem 0.34rem;
+}
+
+.dark
+  [data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_code_"] {
+  border-color: color-mix(in oklch, white 16%, transparent);
+  background: color-mix(in oklch, #0e1525 82%, transparent) !important;
+  color: color-mix(in oklch, white 90%, var(--foreground));
+}
+
+/* У режимі редагування MDX інлайн-код може бути вкладеним:
+   code > span._code_* або навпаки. Прибираємо зовнішню "другу" рамку. */
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  code:has([class*="_code_"]) {
+  border: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+/* MDXEditor code-block (CodeMirror) — наближено до стилю блогу. */
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorWrapper_"] {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid color-mix(in oklch, var(--foreground) 16%, transparent);
+  background: #f8fafc;
+  box-shadow: 0 8px 26px rgb(0 0 0 / 0.08);
+  padding: 0;
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorToolbar_"] {
+  position: relative;
+  top: auto;
+  right: auto;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.6rem 0.4rem 3.6rem;
+  border-bottom: 1px solid color-mix(in oklch, var(--foreground) 14%, transparent);
+  border-bottom-left-radius: 0;
+  background: #ececec;
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorToolbar_"]::before {
+  content: none;
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorToolbar_"]
+  > [class*="_iconButton_"] {
+  position: absolute;
+  left: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.74rem;
+  min-width: 0.74rem;
+  height: 0.74rem;
+  border-radius: 999px;
+  border: 1px solid rgb(248 113 113 / 0.8);
+  background: rgb(239 68 68 / 0.95);
+  color: transparent;
+  box-shadow:
+    0.96rem 0 0 rgb(245 158 11 / 0.95),
+    1.92rem 0 0 rgb(34 197 94 / 0.95);
+  z-index: 2;
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorToolbar_"]
+  > [class*="_iconButton_"]:hover {
+  filter: brightness(1.08);
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorToolbar_"]
+  > [class*="_iconButton_"]
+  svg {
+  display: none;
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorToolbar_"]
+  > [class*="_selectTrigger_"] {
+  order: 1;
+  min-width: 7.2rem;
+  max-width: 9rem;
+  height: 1.72rem;
+  border-radius: 0.5rem;
+  padding: 0 0.58rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorToolbar_"]
+  > [class*="_selectTrigger_"]
+  [class*="_selectDropdownArrow_"] {
+  transform: scale(0.86);
+  opacity: 0.9;
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorWrapper_"]
+  .cm-editor {
+  background: #ffffff !important;
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorWrapper_"]
+  .cm-scroller {
+  padding: 0.85rem 0.95rem 1rem;
+  font-family: var(--font-mono-code, ui-monospace, monospace);
+  font-size: 0.86rem;
+  line-height: 1.58;
+}
+
+.dark
+  [data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorWrapper_"] {
+  border-color: rgb(38 38 38 / 0.85);
+  background: #0f0f0f;
+  box-shadow: 0 12px 40px -10px rgb(0 0 0 / 0.55);
+}
+
+:is(
+    [data-node-markdown-root][data-nw-theme="dark"],
+    [data-node-markdown-root] [data-nw-theme="dark"]
+  )
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorWrapper_"] {
+  border-color: rgb(38 38 38 / 0.85);
+  background: #0f0f0f;
+  box-shadow: 0 12px 40px -10px rgb(0 0 0 / 0.55);
+}
+
+:is(.dark, html.dark, body.dark, [data-theme="dark"])
+  [data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorWrapper_"] {
+  border-color: rgb(38 38 38 / 0.85);
+  background: #0f0f0f;
+}
+
+.dark
+  [data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorToolbar_"] {
+  border-bottom-color: rgb(255 255 255 / 0.06);
+  background: #141414;
+}
+
+:is(
+    [data-node-markdown-root][data-nw-theme="dark"],
+    [data-node-markdown-root] [data-nw-theme="dark"]
+  )
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorToolbar_"] {
+  border-bottom-color: rgb(255 255 255 / 0.06);
+  background: #141414;
+}
+
+:is(.dark, html.dark, body.dark, [data-theme="dark"])
+  [data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorToolbar_"] {
+  border-bottom-color: rgb(255 255 255 / 0.06);
+  background: #141414;
+}
+
+.dark
+  [data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorToolbar_"]::before {
+  background:
+    radial-gradient(circle at 5px 5px, #ff5f57 0 4px, transparent 4.2px),
+    radial-gradient(circle at 17px 5px, #febc2e 0 4px, transparent 4.2px),
+    radial-gradient(circle at 29px 5px, #28c840 0 4px, transparent 4.2px);
+}
+
+:is(
+    [data-node-markdown-root][data-nw-theme="dark"],
+    [data-node-markdown-root] [data-nw-theme="dark"]
+  )
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorToolbar_"]::before {
+  content: none;
+}
+
+.dark
+  [data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorWrapper_"]
+  .cm-editor {
+  background: #0c0c0c !important;
+}
+
+:is(
+    [data-node-markdown-root][data-nw-theme="dark"],
+    [data-node-markdown-root] [data-nw-theme="dark"]
+  )
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorWrapper_"]
+  .cm-editor {
+  background: #0c0c0c !important;
+  color: #e5e7eb;
+}
+
+:is(
+    [data-node-markdown-root][data-nw-theme="dark"],
+    [data-node-markdown-root] [data-nw-theme="dark"]
+  )
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorWrapper_"]
+  .cm-gutters {
+  background: #101725 !important;
+  color: #8b97ad !important;
+  border-right: 1px solid rgb(255 255 255 / 0.06) !important;
+}
+
+:is(
+    [data-node-markdown-root][data-nw-theme="dark"],
+    [data-node-markdown-root] [data-nw-theme="dark"]
+  )
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorWrapper_"]
+  .cm-activeLineGutter {
+  background: #172038 !important;
+  color: #cbd5e1 !important;
+}
+
+:is(.dark, html.dark, body.dark, [data-theme="dark"])
+  [data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorWrapper_"]
+  .cm-editor {
+  background: #0c0c0c !important;
+  color: #e5e7eb;
 }

@@ -10,6 +10,7 @@ import "@mdxeditor/editor/style.css";
 import { startTransition, useEffect, useMemo } from "react";
 import { descriptionFromBlocks } from "../utils/node-markdown-blocks";
 import { newMarkdownBlockId } from "../utils/node-ids";
+import { normalizeMultiLineListItems } from "../utils/normalize-list-lines";
 import type {
   NodeMarkdownBlock,
   Project,
@@ -191,6 +192,7 @@ const SelectionMdxPanel = ({
           contentEditableClassName="min-h-full px-2 py-1 text-[12px] leading-[1.45] text-zinc-100 focus:outline-none"
           onChange={(nextMarkdown) => {
             if (readOnly) return;
+            const normalized = normalizeMultiLineListItems(nextMarkdown);
 
             if (editingNode) {
               startTransition(() => {
@@ -199,7 +201,7 @@ const SelectionMdxPanel = ({
                   nodes: prev.nodes.map((candidate) => {
                     if (candidate.id !== editingNode.id) return candidate;
                     const nextBlocks = markdownToBlocks(
-                      nextMarkdown,
+                      normalized,
                       candidate.markdownBlocks,
                     );
                     return {
@@ -214,7 +216,7 @@ const SelectionMdxPanel = ({
             }
 
             if (editingCanvasImage) {
-              const nextTitle = nextMarkdown.trim();
+              const nextTitle = normalized.trim();
               startTransition(() => {
                 onProjectPatch((prev) => ({
                   ...prev,
@@ -222,7 +224,7 @@ const SelectionMdxPanel = ({
                     candidate.id === editingCanvasImage.id
                       ? {
                           ...candidate,
-                          title: nextTitle ? nextMarkdown : undefined,
+                          title: nextTitle ? normalized : undefined,
                         }
                       : candidate,
                   ),

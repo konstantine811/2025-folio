@@ -2,6 +2,8 @@ import type { PointerEvent as ReactPointerEvent } from "react";
 import type { Viewport } from "pixi-viewport";
 import { MarkdownResolvingImg } from "../components/MarkdownResolvingImg";
 import { NODE_PORT_HANDLE_PX } from "../constants";
+import { visibleChildSlotCount } from "../utils";
+import type { LinkData } from "../../types/types";
 import type {
   CanvasImageItem,
   NodePort,
@@ -10,6 +12,8 @@ import type {
 import {
   EDGE_PORT_RING,
   EDGES,
+  SLOT_FLEX_GAP_PX,
+  edgeGroupLayoutClass,
   edgeGroupPositionStyle,
   rearGlowStyle,
   removeCanvasImage,
@@ -38,6 +42,7 @@ type Props = {
     height: number;
   };
   isConnected: boolean;
+  links: LinkData[];
   viewport: Viewport;
   worldViewBounds: { minX: number; maxX: number; minY: number; maxY: number };
   zoom: number;
@@ -55,6 +60,7 @@ type Props = {
     event: ReactPointerEvent<HTMLButtonElement>,
     imageId: string,
     edge: NodePort,
+    slot: number,
   ) => void;
   onStartCanvasImageDrag: (
     event: ReactPointerEvent<HTMLDivElement>,
@@ -73,6 +79,7 @@ type Props = {
 const CanvasImageOverlayItem = ({
   image,
   isConnected,
+  links,
   viewport,
   worldViewBounds,
   zoom,
@@ -136,38 +143,54 @@ const CanvasImageOverlayItem = ({
         }}
       >
         {EDGES.map((edge) => {
-          const isHighlighted =
-            wireDropHighlight?.targetKind === "canvasImage" &&
-            wireDropHighlight.imageId === image.id &&
-            wireDropHighlight.port === edge;
-          const isAllowed = wireDropHighlight?.dropAllowed ?? true;
+          const count = visibleChildSlotCount(links, image.id, edge);
+          const slots = Array.from({ length: count }, (_, idx) => idx + 1);
           return (
-            <button
+            <div
               key={`${image.id}-${edge}`}
-              type="button"
-              data-canvas-image-id={image.id}
-              data-link-port={edge}
-              className={`pointer-events-auto absolute z-[45] flex cursor-crosshair touch-manipulation items-center justify-center rounded-full border border-solid p-0 font-mono text-[6px] font-bold leading-none transition-all hover:scale-110 ${EDGE_PORT_RING[edge]} ${
-                isHighlighted
-                  ? isAllowed
-                    ? "z-[55] scale-110 opacity-100 ring-2 ring-white/90 ring-offset-2 ring-offset-background"
-                    : "z-[55] scale-110 opacity-100 ring-2 ring-red-500 ring-offset-2 ring-offset-background shadow-[0_0_12px_rgba(239,68,68,0.45)]"
-                  : wireSession
-                    ? "opacity-100"
-                    : "opacity-0 group-hover/canvas-image:opacity-100"
-              }`}
+              className={`pointer-events-none absolute z-[45] ${edgeGroupLayoutClass(edge)}`}
               style={{
                 ...edgeGroupPositionStyle(edge),
-                width: NODE_PORT_HANDLE_PX,
-                minWidth: NODE_PORT_HANDLE_PX,
-                height: NODE_PORT_HANDLE_PX,
+                gap: SLOT_FLEX_GAP_PX,
               }}
-              onPointerDown={(event) =>
-                onStartWireFromCanvasImage(event, image.id, edge)
-              }
             >
-              1
-            </button>
+              {slots.map((slot) => {
+                const isHighlighted =
+                  wireDropHighlight?.targetKind === "canvasImage" &&
+                  wireDropHighlight.imageId === image.id &&
+                  wireDropHighlight.port === edge;
+                const isAllowed = wireDropHighlight?.dropAllowed ?? true;
+                return (
+                  <button
+                    key={`${edge}-${slot}`}
+                    type="button"
+                    data-canvas-image-id={image.id}
+                    data-link-port={edge}
+                    data-source-child-edge={edge}
+                    data-source-child-slot={String(slot)}
+                    className={`pointer-events-auto flex cursor-crosshair touch-manipulation items-center justify-center rounded-full border border-solid p-0 font-mono text-[6px] font-bold leading-none transition-all hover:scale-110 ${EDGE_PORT_RING[edge]} ${
+                      isHighlighted
+                        ? isAllowed
+                          ? "z-[55] scale-110 opacity-100 ring-2 ring-white/90 ring-offset-2 ring-offset-background"
+                          : "z-[55] scale-110 opacity-100 ring-2 ring-red-500 ring-offset-2 ring-offset-background shadow-[0_0_12px_rgba(239,68,68,0.45)]"
+                        : wireSession
+                          ? "opacity-100"
+                          : "opacity-0 group-hover/canvas-image:opacity-100"
+                    }`}
+                    style={{
+                      width: NODE_PORT_HANDLE_PX,
+                      minWidth: NODE_PORT_HANDLE_PX,
+                      height: NODE_PORT_HANDLE_PX,
+                    }}
+                    onPointerDown={(event) =>
+                      onStartWireFromCanvasImage(event, image.id, edge, slot)
+                    }
+                  >
+                    {slot}
+                  </button>
+                );
+              })}
+            </div>
           );
         })}
 

@@ -255,6 +255,29 @@ export function useDrawCreateSession({
     viewport,
   ]);
 
+  useEffect(() => {
+    if (!drawCreate) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (readOnly) return;
+      if (event.target instanceof Element) {
+        const isTypingTarget = event.target.closest(
+          "input,textarea,[contenteditable='true']",
+        );
+        if (isTypingTarget) return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      setDrawCreate(null);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [drawCreate, readOnly]);
+
   const drawPreviewRect =
     drawCreate?.mode === "newNode"
       ? {

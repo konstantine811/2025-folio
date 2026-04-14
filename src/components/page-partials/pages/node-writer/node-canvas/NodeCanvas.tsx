@@ -1279,6 +1279,23 @@ const NodeCanvas = ({
     };
   }, [drawCreate]);
 
+  useEffect(() => {
+    if (!drawCreate) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (isKeyboardTypingTarget(e.target)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setDrawCreate(null);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [drawCreate]);
+
   const onCanvasPointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0) return;
     if (drag) setDrag(null);

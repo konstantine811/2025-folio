@@ -5,6 +5,7 @@ import { MarkdownResolvingImg } from "../components/MarkdownResolvingImg";
 import { NODE_MD_BODY_TYPO, NODE_PORT_HANDLE_PX } from "../constants";
 import { descriptionFromBlocks } from "../utils/node-markdown-blocks";
 import { nodeTextThemeFromAccent } from "../utils/node-accent";
+import { parseHexRgb, relativeLuminance } from "../utils/node-accent";
 import { visibleChildSlotCount } from "../utils";
 import type {
   LinkData,
@@ -109,18 +110,43 @@ const MarkdownNodeOverlayItem = ({
   onStartNodeDrag,
   onStartNodeResize,
 }: Props) => {
+  const computeAccentBorderColor = (hex: string, darkMode: boolean): string => {
+    const rgb = parseHexRgb(hex);
+    if (!rgb) {
+      return darkMode
+        ? "rgba(224, 231, 255, 0.22)"
+        : "rgba(15, 23, 42, 0.2)";
+    }
+    const [r, g, b] = rgb;
+    const lum = relativeLuminance(r, g, b);
+
+    // Keep node borders visible even when accent is near-black/near-white.
+    if (darkMode) {
+      if (lum < 0.08) return "rgba(203, 213, 225, 0.32)";
+      if (lum < 0.18) return `rgba(${r}, ${g}, ${b}, 0.44)`;
+      return `rgba(${r}, ${g}, ${b}, 0.34)`;
+    }
+
+    if (lum > 0.9) return "rgba(15, 23, 42, 0.24)";
+    if (lum > 0.78) return `rgba(${r}, ${g}, ${b}, 0.34)`;
+    return `rgba(${r}, ${g}, ${b}, 0.26)`;
+  };
+
   const accent = node.accentColor?.trim();
   const themeAccent =
-    accent != null && accent !== ""
-      ? nodeTextThemeFromAccent(accent)
-      : null;
+    accent != null && accent !== "" ? nodeTextThemeFromAccent(accent) : null;
+  const accentBorderColor =
+    accent && themeAccent ? computeAccentBorderColor(accent, isDark) : undefined;
   const outerShellStyle: CSSProperties | undefined =
     themeAccent && accent
       ? {
-          borderColor: themeAccent.border,
+          borderColor: accentBorderColor,
           backgroundColor: isDark
             ? `color-mix(in srgb, ${accent} 22%, rgba(9,9,11,0.42))`
             : `color-mix(in srgb, ${accent} 16%, rgba(255,255,255,0.88))`,
+          boxShadow: isDark
+            ? "inset 0 0 0 1px rgba(255,255,255,0.08)"
+            : "inset 0 0 0 1px rgba(15,23,42,0.05)",
         }
       : undefined;
   const selectedGlowStyle: CSSProperties =
@@ -266,9 +292,7 @@ const MarkdownNodeOverlayItem = ({
                 : "border-b border-border/35"
           }`}
           style={
-            themeAccent
-              ? { borderBottomColor: themeAccent.border }
-              : undefined
+            themeAccent ? { borderBottomColor: themeAccent.border } : undefined
           }
         >
           <div
@@ -415,19 +439,24 @@ const MarkdownNodeOverlayItem = ({
               ) : readOnly ? (
                 <div
                   data-node-overlay-scroll="true"
-                  className={`h-full overflow-auto px-5 py-2 whitespace-pre-wrap text-foreground/85 ${NODE_MD_BODY_TYPO}`}
+                  className={`h-full overflow-auto px-5 py-2 whitespace-pre-wrap text-foreground/85 ${
+                    isSelected ? "pointer-events-auto" : "pointer-events-none"
+                  } ${NODE_MD_BODY_TYPO}`}
                 >
                   {descriptionFromBlocks(blocks)}
                 </div>
               ) : (
                 <div
                   data-node-overlay-scroll="true"
-                  className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden pl-5 pr-2 pt-2"
+                  className={`flex min-h-0 min-w-0 flex-1 flex-col pl-5 pr-2 pt-2 overflow-auto h-full ${
+                    isSelected ? "pointer-events-auto" : "pointer-events-none"
+                  }`}
                 >
                   <NodeMarkdownBlocksEditor
                     nodeId={node.id}
                     blocks={blocks}
                     selectionEditorMode="toolbar"
+                    isDarkMode={isDark}
                     uploadPasteImage={uploadMarkdownPasteImage}
                     onBlocksChange={(nextBlocks) =>
                       updateNodeBlocks(onProjectPatch, node.id, nextBlocks)

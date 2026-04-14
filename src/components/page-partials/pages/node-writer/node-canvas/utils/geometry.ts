@@ -122,16 +122,15 @@ export function visibleChildSlotCount(
 }
 
 /** Точка виходу для n-го слота на заданому боці (1-based). */
-export function edgeChildSlotPoint(
-  node: NodeData,
+function bboxEdgeChildSlotPoint(
+  x: number,
+  y: number,
+  w: number,
+  h: number,
   edge: NodePort,
   slot: number,
   visibleSlotCount: number,
-  w: number,
-  h: number,
 ): { x: number; y: number } {
-  const x = node.x ?? 0;
-  const y = node.y ?? 0;
   const d = portAnchorDepthFromEdge();
   const gap = NODE_PORT_SLOT_GAP;
   const n = Math.max(1, visibleSlotCount);
@@ -147,6 +146,20 @@ export function edgeChildSlotPoint(
     case "s":
       return { x: x + w / 2 + off, y: y + h - d };
   }
+}
+
+/** Точка виходу для n-го слота на заданому боці (1-based). */
+export function edgeChildSlotPoint(
+  node: NodeData,
+  edge: NodePort,
+  slot: number,
+  visibleSlotCount: number,
+  w: number,
+  h: number,
+): { x: number; y: number } {
+  const x = node.x ?? 0;
+  const y = node.y ?? 0;
+  return bboxEdgeChildSlotPoint(x, y, w, h, edge, slot, visibleSlotCount);
 }
 
 export function linkUsesChildSlot(
@@ -283,13 +296,28 @@ export function getLinkEndpoints(
   if (srcIsImg) {
     const img = canvasImages.find((i) => i.id === link.source);
     if (!img) return null;
-    a = bboxPortPoint(
-      img.x,
-      img.y,
-      img.width,
-      img.height,
-      link.sourcePort,
-    );
+    a =
+      link.sourceChildSlot != null
+        ? bboxEdgeChildSlotPoint(
+            img.x,
+            img.y,
+            img.width,
+            img.height,
+            link.sourcePort ?? "e",
+            link.sourceChildSlot,
+            visibleChildSlotCount(
+              allLinks,
+              link.source,
+              link.sourcePort ?? "e",
+            ),
+          )
+        : bboxPortPoint(
+            img.x,
+            img.y,
+            img.width,
+            img.height,
+            link.sourcePort,
+          );
   } else {
     const sa = nodes.find((n) => n.id === link.source);
     if (!sa) return null;
