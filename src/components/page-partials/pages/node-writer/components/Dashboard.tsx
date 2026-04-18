@@ -198,7 +198,7 @@ const Dashboard = ({
         {isEmpty ? (
           workspaceLoading ? (
             <div
-              className="flex min-h-[180px] flex-col overflow-hidden rounded-xl border border-border/10 bg-card/40 animate-in fade-in duration-500 fill-mode-both"
+              className="flex min-h-[180px] flex-col rounded-xl border border-border/10 bg-card/40 animate-in fade-in duration-500 fill-mode-both"
               role="status"
               aria-live="polite"
               aria-busy="true"
