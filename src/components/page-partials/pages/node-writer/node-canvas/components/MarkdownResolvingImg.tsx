@@ -11,7 +11,7 @@ type Props = {
  * Markdown `![]()` / raw `<img>`: оновлює застарілі Firebase Storage https (токен) та `nw-storage:`.
  */
 export function MarkdownResolvingImg({ src, alt, className }: Props) {
-  const [resolved, setResolved] = useState(src ?? "");
+  const [resolved, setResolved] = useState("");
 
   useEffect(() => {
     const s = src?.trim() ?? "";
@@ -19,6 +19,7 @@ export function MarkdownResolvingImg({ src, alt, className }: Props) {
       setResolved("");
       return;
     }
+    setResolved("");
     let cancelled = false;
     void resolveNodeWriterMediaUrlForDisplay(s).then((out) => {
       if (!cancelled) setResolved(out);

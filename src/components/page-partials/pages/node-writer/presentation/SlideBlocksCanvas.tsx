@@ -18,6 +18,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MarkdownResolvingImg } from "../node-canvas/components/MarkdownResolvingImg";
 import { MarkdownResolvingZoomableImg } from "../node-canvas/components/MarkdownResolvingZoomableImg";
 import type {
   Slide,
@@ -145,14 +146,13 @@ function SlideBlockBody({
       className="!max-h-[min(72vh,min(96vw,960px))] w-full max-w-full rounded-lg object-contain"
     />
   ) : (
-    <img
+    <MarkdownResolvingImg
       src={block.url}
-      alt=""
+      alt={block.caption ?? ""}
       className={cn(
         "w-full max-w-full rounded-lg object-contain",
         SLIDE_IMAGE_MAX_H,
       )}
-      draggable={false}
     />
   );
 

@@ -22,7 +22,7 @@ export function MarkdownResolvingZoomableImg({
   compact = true,
   fitContent = false,
 }: Props) {
-  const [resolved, setResolved] = useState(src ?? "");
+  const [resolved, setResolved] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -32,6 +32,7 @@ export function MarkdownResolvingZoomableImg({
       setResolved("");
       return;
     }
+    setResolved("");
     let cancelled = false;
     void resolveNodeWriterMediaUrlForDisplay(s).then((out) => {
       if (!cancelled) setResolved(out);

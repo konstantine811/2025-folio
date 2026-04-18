@@ -789,9 +789,5 @@ export async function loadWorkspaceFromFirestore(workspaceScope: string): Promis
     };
   });
 
-  const projects = await Promise.all(
-    projectsRaw.map((p) => resolveProjectMediaUrls(p)),
-  );
-
-  return { folders, projects };
+  return { folders, projects: projectsRaw };
 }

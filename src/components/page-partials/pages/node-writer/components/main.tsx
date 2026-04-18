@@ -26,7 +26,6 @@ import {
   collectRemovedNodeWriterStoragePaths,
   deleteNodeWriterStorageObjectsByPaths,
   loadWorkspaceFromFirestore,
-  resolveProjectMediaUrls,
   syncWorkspaceToFirestore,
 } from "@/services/firebase/node-writer-workspace";
 import {
@@ -151,29 +150,23 @@ const Main = () => {
       setCloudReady(true);
     };
 
-    const applyCachedProjects = async (entry: {
+    const applyCachedProjects = (entry: {
       folders: WorkspaceFolder[];
       projects: Project[];
     }) => {
-      const resolvedProjects = await Promise.all(
-        entry.projects.map((p) => resolveProjectMediaUrls(p)),
-      );
       if (cancelled) return;
       setFolders(entry.folders);
-      setProjects(resolvedProjects);
+      setProjects(entry.projects);
       setCurrentProject((cur) => {
         if (!cur) return null;
-        return resolvedProjects.find((p) => p.id === cur.id) ?? null;
+        return entry.projects.find((p) => p.id === cur.id) ?? null;
       });
       setCloudReady(true);
     };
 
     if (cached && fresh) {
-      void applyCachedProjects(cached)
-        .then(() => {
-          if (cancelled) return;
-          return loadWorkspaceFromFirestore(scope);
-        })
+      applyCachedProjects(cached);
+      void loadWorkspaceFromFirestore(scope)
         .then((data) => {
           if (cancelled || !data) return;
           applyRemote(data);
@@ -196,11 +189,8 @@ const Main = () => {
     }
 
     if (cached && !fresh) {
-      void applyCachedProjects(cached)
-        .then(() => {
-          if (cancelled) return;
-          return loadWorkspaceFromFirestore(scope);
-        })
+      applyCachedProjects(cached);
+      void loadWorkspaceFromFirestore(scope)
         .then((data) => {
           if (cancelled || !data) return;
           applyRemote(data);
