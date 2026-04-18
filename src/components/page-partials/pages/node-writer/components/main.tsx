@@ -50,10 +50,16 @@ import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 function mergeServerFoldersIntoLocal(
   server: WorkspaceFolder[],
   local: WorkspaceFolder[],
+  preferLocalIds: ReadonlySet<string> = new Set(),
 ): WorkspaceFolder[] {
+  const localById = new Map(local.map((f) => [f.id, f]));
+  const merged = server.map((f) => {
+    if (!preferLocalIds.has(f.id)) return f;
+    return localById.get(f.id) ?? f;
+  });
   const remoteIds = new Set(server.map((f) => f.id));
   const localOnly = local.filter((f) => !remoteIds.has(f.id));
-  return localOnly.length === 0 ? server : [...server, ...localOnly];
+  return localOnly.length === 0 ? merged : [...merged, ...localOnly];
 }
 
 const Main = () => {
@@ -90,6 +96,8 @@ const Main = () => {
 
   /** Щойно створені id: pathname-effect не робить redirect, поки projects ще не містить документ (гонка navigate vs setState). */
   const pendingLocalProjectIdsRef = useRef<Set<string>>(new Set());
+  /** Локально змінені папки тимчасово мають пріоритет над фоновим pull з Firestore. */
+  const dirtyFolderIdsRef = useRef<Set<string>>(new Set());
 
   const createModalFolderLabel = useMemo(() => {
     if (!createTargetFolderId) return null;
@@ -145,7 +153,13 @@ const Main = () => {
       projects: Project[];
     }) => {
       if (cancelled) return;
-      setFolders((prev) => mergeServerFoldersIntoLocal(data.folders, prev));
+      setFolders((prev) =>
+        mergeServerFoldersIntoLocal(
+          data.folders,
+          prev,
+          dirtyFolderIdsRef.current,
+        ),
+      );
       setProjects((prev) => mergeProjectsByLastModified(data.projects, prev));
       setCloudReady(true);
     };
@@ -232,7 +246,11 @@ const Main = () => {
           .then((data) => {
             if (cancelled) return;
             setFolders((prev) =>
-              mergeServerFoldersIntoLocal(data.folders, prev),
+              mergeServerFoldersIntoLocal(
+                data.folders,
+                prev,
+                dirtyFolderIdsRef.current,
+              ),
             );
             setProjects((prev) =>
               mergeProjectsByLastModified(data.projects, prev),
@@ -313,9 +331,13 @@ const Main = () => {
         folders,
         projects,
         isWorkspaceAdmin,
-      ).catch((err) => {
-        console.error("Node writer: не вдалося зберегти в Firestore", err);
-      });
+      )
+        .then(() => {
+          dirtyFolderIdsRef.current.clear();
+        })
+        .catch((err) => {
+          console.error("Node writer: не вдалося зберегти в Firestore", err);
+        });
     }, 900);
     return () => clearTimeout(timer);
   }, [user?.uid, cloudReady, folders, projects, isWorkspaceAdmin]);
@@ -431,6 +453,7 @@ const Main = () => {
     if (!isWorkspaceAdmin) return;
     const order = nextChildOrder(folders, projects, parentId);
     const id = `fld-${Date.now()}`;
+    dirtyFolderIdsRef.current.add(id);
     setFolders((prev) => [
       ...prev,
       { id, parentId, title: "Нова папка", isPrivate: false, sortOrder: order },
@@ -440,12 +463,14 @@ const Main = () => {
   const renameFolder = (id: string, title: string) => {
     const t = title.trim();
     if (!t) return;
+    dirtyFolderIdsRef.current.add(id);
     setFolders((prev) =>
       prev.map((f) => (f.id === id ? { ...f, title: t } : f)),
     );
   };
 
   const setFolderTitleColor = (id: string, color: string | null) => {
+    dirtyFolderIdsRef.current.add(id);
     setFolders((prev) =>
       prev.map((f) => {
         if (f.id !== id) return f;
@@ -461,6 +486,7 @@ const Main = () => {
 
   const setFolderPrivate = (id: string, isPrivate: boolean) => {
     if (!isWorkspaceAdmin) return;
+    dirtyFolderIdsRef.current.add(id);
     setFolders((prev) =>
       prev.map((f) => (f.id === id ? { ...f, isPrivate } : f)),
     );
