@@ -1,11 +1,13 @@
 import { useCallback, useRef } from "react";
-import { Crosshair, Info } from "lucide-react";
+import { Crosshair, Info, Minus, Plus } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
+  CANVAS_ZOOM_MAX,
+  CANVAS_ZOOM_MIN,
   NODE_CANVAS_HELP_TEXT,
   NODE_CANVAS_HELP_TEXT_VIEW_ONLY,
 } from "../node-canvas/constants";
@@ -19,6 +21,8 @@ import {
   contentBoundsFromItems,
   fitViewportToBounds,
 } from "../node-canvas/pixi-editor/utils/canvasContent";
+
+const TOUCH_ZOOM_STEP = 1.25;
 
 interface NodesViewProps {
   project: Project;
@@ -57,6 +61,22 @@ const NodesView = ({
     bumpViewportVersion();
   }, [bumpViewportVersion, project, viewport]);
 
+  const stepZoom = useCallback(
+    (direction: 1 | -1) => {
+      if (!viewport) return;
+      const currentZoom = viewport.scale.x || 1;
+      const factor = direction > 0 ? TOUCH_ZOOM_STEP : 1 / TOUCH_ZOOM_STEP;
+      const nextZoom = Math.min(
+        CANVAS_ZOOM_MAX,
+        Math.max(CANVAS_ZOOM_MIN, currentZoom * factor),
+      );
+      if (nextZoom === currentZoom) return;
+      viewport.setZoom(nextZoom, true);
+      bumpViewportVersion();
+    },
+    [bumpViewportVersion, viewport],
+  );
+
   return (
     <div
       ref={shortcutShellRef}
@@ -67,28 +87,30 @@ const NodesView = ({
           <span className="mono shrink-0 text-[10px] tracking-wide text-primary">
             Документ
           </span>
-          <Tooltip delayDuration={250}>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                className="text-muted-foreground hover:text-foreground -m-1 shrink-0 rounded p-1 transition-colors"
-                aria-label="Інформація про полотно нод"
+          {!isTouchDevice ? (
+            <Tooltip delayDuration={250}>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="text-muted-foreground hover:text-foreground -m-1 shrink-0 rounded p-1 transition-colors"
+                  aria-label="Інформація про полотно нод"
+                >
+                  <Info className="size-4" strokeWidth={1.75} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent
+                variant="dark"
+                side="bottom"
+                align="start"
+                sideOffset={6}
+                className="mono max-w-md px-3 py-2.5 text-left text-[10px] leading-relaxed font-normal tracking-normal text-balance normal-case"
               >
-                <Info className="size-4" strokeWidth={1.75} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent
-              variant="dark"
-              side="bottom"
-              align="start"
-              sideOffset={6}
-              className="mono max-w-md px-3 py-2.5 text-left text-[10px] leading-relaxed font-normal tracking-normal text-balance normal-case"
-            >
-              {effectiveReadOnly
-                ? NODE_CANVAS_HELP_TEXT_VIEW_ONLY
-                : NODE_CANVAS_HELP_TEXT}
-            </TooltipContent>
-          </Tooltip>
+                {effectiveReadOnly
+                  ? NODE_CANVAS_HELP_TEXT_VIEW_ONLY
+                  : NODE_CANVAS_HELP_TEXT}
+              </TooltipContent>
+            </Tooltip>
+          ) : null}
           {isTouchDevice ? (
             <button
               type="button"
@@ -135,13 +157,43 @@ const NodesView = ({
           {effectiveReadOnly ? "Лише перегляд" : "Ноди · звʼязки · текст"}
         </div>
       </div>
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <EditorCanvas
           project={project}
           onProjectPatch={onProjectPatch}
           readOnly={effectiveReadOnly}
           shortcutShellRef={shortcutShellRef}
         />
+        {isTouchDevice ? (
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-[150] flex justify-center pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
+            aria-hidden={!viewport}
+          >
+            <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-border/50 bg-card px-1.5 py-1 shadow-[0_8px_24px_rgba(0,0,0,0.45)]">
+              <button
+                type="button"
+                onClick={() => stepZoom(-1)}
+                disabled={!viewport}
+                className="inline-flex size-9 items-center justify-center rounded-full text-foreground/90 transition-colors active:bg-muted disabled:pointer-events-none disabled:opacity-35"
+                aria-label="Зменшити масштаб"
+                title="Зменшити"
+              >
+                <Minus className="size-4" strokeWidth={2} />
+              </button>
+              <div className="h-5 w-px bg-border/60" aria-hidden />
+              <button
+                type="button"
+                onClick={() => stepZoom(1)}
+                disabled={!viewport}
+                className="inline-flex size-9 items-center justify-center rounded-full text-foreground/90 transition-colors active:bg-muted disabled:pointer-events-none disabled:opacity-35"
+                aria-label="Збільшити масштаб"
+                title="Збільшити"
+              >
+                <Plus className="size-4" strokeWidth={2} />
+              </button>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );
