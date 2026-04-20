@@ -7,8 +7,8 @@ import {
 } from "@/services/firebase/statusWork";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { APP_VERSION } from "@/config/versions";
 
-const APP_VERSION = "1.0.3";
 const Portfolio = () => {
   const hs = useHeaderSizeStore((state) => state.size);
   const [t] = useTranslation();

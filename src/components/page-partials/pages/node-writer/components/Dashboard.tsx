@@ -248,7 +248,7 @@ const Dashboard = ({
         ) : null}
       </header>
 
-      <div className="mx-auto max-w-7xl grow overflow-y-auto">
+      <div className="mx-auto max-w-7xl grow overflow-y-auto w-full">
         {isEmpty ? (
           workspaceLoading ? (
             <div
