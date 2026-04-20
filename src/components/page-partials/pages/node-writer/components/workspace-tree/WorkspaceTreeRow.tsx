@@ -21,6 +21,11 @@ export interface WorkspaceTreeRowProps {
   onToggle: () => void;
   isDragging: boolean;
   isDropTarget: boolean;
+  /** На touch drag стартує лише з іконки файлу/папки, щоб скрол не хапав рядок. */
+  useIconAsTouchDragHandle?: boolean;
+  onTouchDragHandleStart?: (nodeId: NodeModel["id"]) => void;
+  onTouchDragNonHandleStart?: () => void;
+  onTouchDragEnd?: (nodeId: NodeModel["id"]) => void;
   /** Перейменування, видалення, колір — лише для адміна. */
   allowAdminRowActions?: boolean;
   /** Дочірня папка та новий документ у папці. */
@@ -52,6 +57,10 @@ export function WorkspaceTreeRow({
   onToggle,
   isDragging,
   isDropTarget,
+  useIconAsTouchDragHandle = false,
+  onTouchDragHandleStart,
+  onTouchDragNonHandleStart,
+  onTouchDragEnd,
   allowAdminRowActions = true,
   allowCreateRowActions = true,
   folderById,
@@ -92,6 +101,34 @@ export function WorkspaceTreeRow({
           : ""
       } ${!isRowEditing ? "cursor-pointer" : ""}`}
       style={{ paddingLeft: rowPadLeft }}
+      onTouchStartCapture={
+        useIconAsTouchDragHandle
+          ? (e) => {
+              const target = e.target;
+              const startedOnDragHandle =
+                target instanceof Element &&
+                target.closest("[data-workspace-tree-drag-handle='true']");
+
+              if (startedOnDragHandle) {
+                onTouchDragHandleStart?.(node.id);
+                return;
+              }
+
+              onTouchDragNonHandleStart?.();
+              e.stopPropagation();
+            }
+          : undefined
+      }
+      onTouchEndCapture={
+        useIconAsTouchDragHandle
+          ? () => onTouchDragEnd?.(node.id)
+          : undefined
+      }
+      onTouchCancelCapture={
+        useIconAsTouchDragHandle
+          ? () => onTouchDragEnd?.(node.id)
+          : undefined
+      }
       onClick={
         isRowEditing
           ? undefined
@@ -154,9 +191,11 @@ export function WorkspaceTreeRow({
           )}
 
           <div
-            className={`flex shrink-0 ${
+            data-workspace-tree-drag-handle="true"
+            className={`flex shrink-0 select-none touch-none cursor-grab active:cursor-grabbing ${
               isFolder ? "text-primary drop-shadow-sm" : "drop-shadow-sm"
             }`}
+            title="Затисніть і потягніть"
           >
             {isFolder ? (
               <Icons.WorkspaceTreeFolderSolid />

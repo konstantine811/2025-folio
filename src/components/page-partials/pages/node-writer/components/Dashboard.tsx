@@ -86,6 +86,50 @@ const Dashboard = ({
     treeInitialOpenRef.current = loadDashboardTreeOpenIdsFromStorage();
   }
 
+  const touchTreeDragGateRef = useRef<{
+    nodeId: NodeModel["id"] | null;
+    startedAt: number;
+  } | null>(null);
+
+  const allowTouchTreeDragFromHandle = useCallback((nodeId: NodeModel["id"]) => {
+    touchTreeDragGateRef.current = {
+      nodeId,
+      startedAt: Date.now(),
+    };
+  }, []);
+
+  const blockTouchTreeDragFromRow = useCallback(() => {
+    touchTreeDragGateRef.current = {
+      nodeId: null,
+      startedAt: Date.now(),
+    };
+  }, []);
+
+  const clearTouchTreeDragGate = useCallback((nodeId: NodeModel["id"]) => {
+    const gate = touchTreeDragGateRef.current;
+    if (!gate) return;
+    if (gate.nodeId === null || gate.nodeId === nodeId) {
+      touchTreeDragGateRef.current = null;
+    }
+  }, []);
+
+  const canDragTreeNode = useCallback(
+    (node: NodeModel<WorkspaceTreeMeta> | undefined) => {
+      if (!allowTreeEdits || !node) return false;
+
+      const gate = touchTreeDragGateRef.current;
+      if (!gate) return true;
+
+      if (Date.now() - gate.startedAt > 5000) {
+        touchTreeDragGateRef.current = null;
+        return true;
+      }
+
+      return gate.nodeId === node.id;
+    },
+    [allowTreeEdits],
+  );
+
   const onTreeChangeOpen = useCallback((newOpenIds: (string | number)[]) => {
     saveDashboardTreeOpenIdsToStorage(newOpenIds);
   }, []);
@@ -236,7 +280,7 @@ const Dashboard = ({
                 dropTargetOffset={4}
                 initialOpen={treeInitialOpenRef.current}
                 onChangeOpen={onTreeChangeOpen}
-                canDrag={allowTreeEdits ? () => true : () => false}
+                canDrag={canDragTreeNode}
                 canDrop={
                   allowTreeEdits
                     ? (_, { dropTargetId }) => {
@@ -270,6 +314,10 @@ const Dashboard = ({
                     onToggle={treeProps.onToggle}
                     isDragging={treeProps.isDragging}
                     isDropTarget={treeProps.isDropTarget}
+                    useIconAsTouchDragHandle={allowTreeEdits}
+                    onTouchDragHandleStart={allowTouchTreeDragFromHandle}
+                    onTouchDragNonHandleStart={blockTouchTreeDragFromRow}
+                    onTouchDragEnd={clearTouchTreeDragGate}
                     allowAdminRowActions={allowAdminRowActions}
                     allowCreateRowActions={allowCreateRowActions}
                     folderById={folderById}
