@@ -60,6 +60,7 @@ type Props = {
   isDark: boolean;
   layerZIndex: number;
   readOnly: boolean;
+  touchNavigationMode?: boolean;
   isSelected: boolean;
   wireSession: unknown;
   wireDropHighlight: NodeDropHighlight;
@@ -85,6 +86,10 @@ type Props = {
     originWidth: number,
     originHeight: number,
   ) => void;
+  onStartTouchReadOnlyNavigation?: (
+    event: ReactPointerEvent<HTMLElement>,
+    selectTarget: () => void,
+  ) => boolean;
 };
 
 const MarkdownNodeOverlayItem = ({
@@ -99,6 +104,7 @@ const MarkdownNodeOverlayItem = ({
   isDark,
   layerZIndex,
   readOnly,
+  touchNavigationMode = false,
   isSelected,
   wireSession,
   wireDropHighlight,
@@ -109,6 +115,7 @@ const MarkdownNodeOverlayItem = ({
   onStartWireFromChildSlot,
   onStartNodeDrag,
   onStartNodeResize,
+  onStartTouchReadOnlyNavigation,
 }: Props) => {
   const computeAccentBorderColor = (hex: string, darkMode: boolean): string => {
     const rgb = parseHexRgb(hex);
@@ -193,7 +200,17 @@ const MarkdownNodeOverlayItem = ({
       className="group/node-overlay pointer-events-auto absolute select-none"
       data-overlay-node-id={node.id}
       data-viewport-version={viewportVersion}
-      onPointerDown={() => {
+      onPointerDown={(event) => {
+        if (
+          touchNavigationMode &&
+          readOnly &&
+          onStartTouchReadOnlyNavigation?.(event, () => {
+            onResetMultiSelection();
+            onSelect(node.id);
+          })
+        ) {
+          return;
+        }
         onResetMultiSelection();
         onSelect(node.id);
       }}
@@ -296,7 +313,7 @@ const MarkdownNodeOverlayItem = ({
           }
         >
           <div
-            className={`pointer-events-auto flex w-7 shrink-0 cursor-grab items-center justify-center text-[10px] text-muted-foreground active:cursor-grabbing ${
+            className={`pointer-events-auto flex w-7 shrink-0 ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} items-center justify-center text-[10px] text-muted-foreground ${
               themeAccent
                 ? "border-r border-solid"
                 : isDark
@@ -326,12 +343,19 @@ const MarkdownNodeOverlayItem = ({
                 updateNodeLabel(onProjectPatch, node.id, event.target.value)
               }
               onPointerDown={(event) => {
+                if (touchNavigationMode && readOnly) return;
                 event.stopPropagation();
               }}
-              className={`min-w-0 flex-1 border-0 bg-transparent px-1 py-0.5 outline-none select-text placeholder:text-muted-foreground/80 ${titleClass}`}
+              className={`min-w-0 flex-1 border-0 bg-transparent px-1 py-0.5 outline-none select-text placeholder:text-muted-foreground/80 ${
+                touchNavigationMode && readOnly ? "pointer-events-none" : ""
+              } ${titleClass}`}
               spellCheck={false}
             />
-            <div className="flex shrink-0 items-center gap-1 text-muted-foreground">
+            <div
+              className={`flex shrink-0 items-center gap-1 text-muted-foreground ${
+                touchNavigationMode && readOnly ? "hidden" : ""
+              }`}
+            >
               <button
                 type="button"
                 disabled={readOnly || headingLevel >= 6}
@@ -439,6 +463,11 @@ const MarkdownNodeOverlayItem = ({
               ) : readOnly ? (
                 <div
                   data-node-overlay-scroll="true"
+                  onPointerDown={(event) => {
+                    if (touchNavigationMode && isSelected) {
+                      event.stopPropagation();
+                    }
+                  }}
                   className={`h-full overflow-auto px-5 py-2 whitespace-pre-wrap text-foreground/85 ${
                     isSelected ? "pointer-events-auto" : "pointer-events-none"
                   } ${NODE_MD_BODY_TYPO}`}

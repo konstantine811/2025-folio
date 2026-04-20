@@ -25,11 +25,29 @@ const Header = memo(() => {
   const pathName = location.pathname.split("/")[1] || "home";
   const pageName = t(`pages.${pathName}`, { defaultValue: pathName });
   useEffect(() => {
-    if (headerRef.current) {
-      const headerHeight = headerRef.current.getBoundingClientRect().height;
-      setHeaderSize(headerHeight);
-    }
-  }, [headerRef, setHeaderSize]);
+    const el = headerRef.current;
+    if (!el) return;
+
+    let frameId: number | null = null;
+    const measure = () => {
+      if (frameId !== null) cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(() => {
+        frameId = null;
+        setHeaderSize(el.getBoundingClientRect().height);
+      });
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    window.addEventListener("resize", measure);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+      if (frameId !== null) cancelAnimationFrame(frameId);
+    };
+  }, [setHeaderSize]);
   return (
     <>
       <header

@@ -12,6 +12,7 @@ import {
 import { useEditableProjectTitle } from "../hooks/use-editable-project-title";
 import type { Project, ProjectPatchFn } from "../types/types";
 import EditorCanvas from "../node-canvas/pixi-editor/EditorCanvas";
+import { isTouchDevice } from "@/utils/touch-inspect";
 
 interface NodesViewProps {
   project: Project;
@@ -24,6 +25,7 @@ const NodesView = ({
   onProjectPatch,
   readOnly = false,
 }: NodesViewProps) => {
+  const effectiveReadOnly = readOnly || isTouchDevice;
   const shortcutShellRef = useRef<HTMLDivElement>(null);
   const {
     editingTitle,
@@ -61,13 +63,13 @@ const NodesView = ({
               sideOffset={6}
               className="mono max-w-md px-3 py-2.5 text-left text-[10px] leading-relaxed font-normal tracking-normal text-balance normal-case"
             >
-              {readOnly
+              {effectiveReadOnly
                 ? NODE_CANVAS_HELP_TEXT_VIEW_ONLY
                 : NODE_CANVAS_HELP_TEXT}
             </TooltipContent>
           </Tooltip>
           <div className="min-w-0 flex-1">
-            {readOnly ? (
+            {effectiveReadOnly ? (
               <h2 className="truncate text-sm font-medium tracking-normal text-foreground/90">
                 {project.title}
               </h2>
@@ -97,14 +99,14 @@ const NodesView = ({
           </div>
         </div>
         <div className="mono ml-4 shrink-0 text-[8px] tracking-wide text-muted-foreground">
-          {readOnly ? "Лише перегляд" : "Ноди · звʼязки · текст"}
+          {effectiveReadOnly ? "Лише перегляд" : "Ноди · звʼязки · текст"}
         </div>
       </div>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <EditorCanvas
           project={project}
           onProjectPatch={onProjectPatch}
-          readOnly={readOnly}
+          readOnly={effectiveReadOnly}
           shortcutShellRef={shortcutShellRef}
         />
       </div>

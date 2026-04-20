@@ -28,6 +28,7 @@ import {
   useFolderTitleColorPicker,
 } from "./workspace-tree";
 import WorkspaceCloudPreloader from "./WorkspaceCloudPreloader";
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 
 interface DashboardProps {
   folders: WorkspaceFolder[];
@@ -75,6 +76,7 @@ const Dashboard = ({
   onDeleteProject,
   onProjectSelect,
 }: DashboardProps) => {
+  const hs = useHeaderSizeStore((s) => s.size);
   const treeData = useMemo(
     () => buildWorkspaceTreeData(folders, projects),
     [folders, projects],
@@ -91,12 +93,15 @@ const Dashboard = ({
     startedAt: number;
   } | null>(null);
 
-  const allowTouchTreeDragFromHandle = useCallback((nodeId: NodeModel["id"]) => {
-    touchTreeDragGateRef.current = {
-      nodeId,
-      startedAt: Date.now(),
-    };
-  }, []);
+  const allowTouchTreeDragFromHandle = useCallback(
+    (nodeId: NodeModel["id"]) => {
+      touchTreeDragGateRef.current = {
+        nodeId,
+        startedAt: Date.now(),
+      };
+    },
+    [],
+  );
 
   const blockTouchTreeDragFromRow = useCallback(() => {
     touchTreeDragGateRef.current = {
@@ -192,7 +197,12 @@ const Dashboard = ({
   const isEmpty = folders.length === 0 && projects.length === 0;
 
   return (
-    <div className="min-h-0 w-full flex-1 overflow-y-auto bg-background p-4">
+    <div
+      className="min-h-0 w-full flex-1 bg-background p-4 flex flex-col"
+      style={{
+        maxHeight: `calc(100vh - ${hs}px)`,
+      }}
+    >
       <NativeFolderColorInput
         colorInputNonce={colorInputNonce}
         inputRef={colorInputRef}
@@ -238,7 +248,7 @@ const Dashboard = ({
         ) : null}
       </header>
 
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-7xl grow overflow-y-auto">
         {isEmpty ? (
           workspaceLoading ? (
             <div
@@ -266,7 +276,7 @@ const Dashboard = ({
           )
         ) : (
           <DndProvider backend={MultiBackend} options={getBackendOptions()}>
-            <div className="flex min-h-[180px] flex-col overflow-hidden rounded-xl border border-border/10 bg-card/40">
+            <div className="flex min-h-[180px] flex-col rounded-xl border border-border/10 bg-card/40">
               {workspaceLoading && (
                 <div className="animate-in fade-in duration-500 fill-mode-both">
                   <WorkspaceCloudPreloader />

@@ -81,7 +81,7 @@ const Home = () => {
           <CaseStadies openProject={openProject} />,
         ]}
         className="relative z-10 bg-background/50 backdrop-blur-xs"
-        style={{ top: `${hs}px`, paddingBottom: "20vh" }}
+        style={{ paddingTop: `${hs}px`, paddingBottom: "20vh" }}
         pageIndexRef={pageIndexRef}
         sectionProgressRef={sectionProgressRef}
       />

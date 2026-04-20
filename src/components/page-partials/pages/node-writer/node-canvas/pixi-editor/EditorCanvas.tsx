@@ -14,6 +14,7 @@ import { useThemeStore } from "@/storage/themeStore";
 import { ThemeType } from "@/config/theme-colors.config";
 import { BreakPoints } from "@/config/adaptive.config";
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
+import { isTouchDevice } from "@/utils/touch-inspect";
 import "./pixi-extensions";
 
 interface EditorCanvasProps {
@@ -29,6 +30,8 @@ const EditorCanvas = ({
   readOnly = false,
   shortcutShellRef,
 }: EditorCanvasProps) => {
+  const touchReadOnlyMode = isTouchDevice;
+  const effectiveReadOnly = readOnly || touchReadOnlyMode;
   const selectedTheme = useThemeStore((state) => state.selectedTheme);
   const { isAdoptiveSize: isMobileDevice } = useIsAdoptive(BreakPoints.md);
   const isDark = selectedTheme !== ThemeType.LIGHT;
@@ -62,7 +65,7 @@ const EditorCanvas = ({
   }, [bumpViewportVersion, project.canvasImages, project.nodes, viewport]);
 
   useCanvasEditorHotkeys({
-    readOnly,
+    readOnly: effectiveReadOnly,
     selectedNodeId,
     selectedCanvasImageId,
     patchWithHistory,
@@ -90,7 +93,7 @@ const EditorCanvas = ({
           <EditorWorld
             project={project}
             onProjectPatch={patchWithHistory}
-            readOnly={readOnly}
+            readOnly={effectiveReadOnly}
             shortcutShellRef={shortcutShellRef}
             isDark={isDark}
           />
@@ -99,7 +102,8 @@ const EditorCanvas = ({
       <NodeHtmlOverlayLayer
         project={project}
         onProjectPatch={patchWithHistory}
-        readOnly={readOnly}
+        readOnly={effectiveReadOnly}
+        touchNavigationMode={touchReadOnlyMode}
         isDark={isDark}
       />
       {minimap ? <MinimapOverlay minimap={minimap} isMobile={isMobileDevice} /> : null}

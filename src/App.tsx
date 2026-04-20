@@ -30,7 +30,10 @@ function App() {
   useEffect(() => {
     setIsTouch(isTouchDevice);
   }, []);
-  const hideFooter = location.pathname.startsWith("/three-") || location.pathname.startsWith(RoutPath.NODE_WRITER);
+  const hideFooter =
+    location.pathname.startsWith("/three-") ||
+    location.pathname.startsWith(RoutPath.NODE_WRITER);
+  const useFullViewportShell = hideFooter;
   // Завантажуємо звуки тільки після першої взаємодії користувача
   useLayoutEffect(() => {
     let soundsLoaded = false;
@@ -91,11 +94,29 @@ function App() {
           {/* <MouseTrail /> */}
         </>
       )}
-      <div className="flex h-full min-h-0 min-h-screen w-full flex-1 flex-col justify-between">
+      <div
+        className={
+          useFullViewportShell
+            ? "flex h-full min-h-0 min-h-screen w-full flex-1 flex-col justify-between"
+            : "flex min-h-screen w-full flex-1 flex-col justify-between"
+        }
+      >
         <Header />
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div
+          className={
+            useFullViewportShell
+              ? "flex min-h-0 min-w-0 flex-1 flex-col"
+              : "flex min-w-0 flex-1 flex-col"
+          }
+        >
           <Suspense fallback={<Preloader />}>
-            <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
+            <div
+              className={
+                useFullViewportShell
+                  ? "flex min-h-0 w-full min-w-0 flex-1 flex-col"
+                  : "flex w-full min-w-0 flex-1 flex-col"
+              }
+            >
               <RouteWrapper>
                 <Routes>{renderRoutes(router)}</Routes>
               </RouteWrapper>

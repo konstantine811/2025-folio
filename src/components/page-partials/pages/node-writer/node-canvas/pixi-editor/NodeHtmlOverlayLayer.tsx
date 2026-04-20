@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { MIN_NODE_H, MIN_NODE_W } from "../constants";
 import { deriveMarkdownBlocks } from "../utils/node-markdown-blocks";
 import { newMarkdownBlockId } from "../utils/node-ids";
@@ -32,6 +39,7 @@ type Props = {
   project: Project;
   onProjectPatch: (fn: ProjectPatchFn) => void;
   readOnly?: boolean;
+  touchNavigationMode?: boolean;
   isDark?: boolean;
 };
 
@@ -39,6 +47,7 @@ const NodeHtmlOverlayLayer = ({
   project,
   onProjectPatch,
   readOnly = false,
+  touchNavigationMode = false,
   isDark = true,
 }: Props) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -128,6 +137,25 @@ const NodeHtmlOverlayLayer = ({
     originHeight: number;
   } | null>(null);
   const detachImageResizeListenersRef = useRef<(() => void) | null>(null);
+  const touchReadOnlyNavigationRef = useRef<{
+    pointers: Map<
+      number,
+      {
+        startClientX: number;
+        startClientY: number;
+        clientX: number;
+        clientY: number;
+      }
+    >;
+    startCenter: { x: number; y: number };
+    startScale: number;
+    startDistance: number | null;
+    startMidWorld: { x: number; y: number } | null;
+    didMove: boolean;
+    didMultiTouch: boolean;
+    selectTarget: () => void;
+    detach: (() => void) | null;
+  } | null>(null);
 
   const detachDragListeners = () => {
     if (!detachDragListenersRef.current) return;
@@ -148,6 +176,14 @@ const NodeHtmlOverlayLayer = ({
     if (!detachImageResizeListenersRef.current) return;
     detachImageResizeListenersRef.current();
     detachImageResizeListenersRef.current = null;
+  };
+  const detachTouchReadOnlyNavigation = () => {
+    const session = touchReadOnlyNavigationRef.current;
+    if (!session?.detach) return;
+    session.detach();
+    if (touchReadOnlyNavigationRef.current) {
+      touchReadOnlyNavigationRef.current.detach = null;
+    }
   };
 
   useEffect(() => {
@@ -186,6 +222,8 @@ const NodeHtmlOverlayLayer = ({
       detachImageDragListeners();
       imageResizeSessionRef.current = null;
       detachImageResizeListeners();
+      detachTouchReadOnlyNavigation();
+      touchReadOnlyNavigationRef.current = null;
     };
   }, []);
 
@@ -1128,6 +1166,224 @@ const NodeHtmlOverlayLayer = ({
     window.addEventListener("blur", handleWindowBlur);
   };
 
+  const startTouchReadOnlyNavigation = (
+    event: ReactPointerEvent<HTMLElement>,
+    selectTarget: () => void,
+  ): boolean => {
+      if (!touchNavigationMode || !readOnly || !viewport) return false;
+      if (event.pointerType !== "touch") return false;
+
+      event.stopPropagation();
+
+      const root = rootRef.current;
+      const toLocalClientPoint = (clientX: number, clientY: number) => {
+        const rect = root?.getBoundingClientRect();
+        return {
+          x: clientX - (rect?.left ?? 0),
+          y: clientY - (rect?.top ?? 0),
+        };
+      };
+      const emitMoved = () => {
+        viewport.emit("moved", { viewport, type: "drag" });
+      };
+      const emitZoomed = () => {
+        viewport.emit("zoomed", { viewport, type: "pinch" });
+      };
+      const pointersToArray = (
+        pointers: NonNullable<
+          typeof touchReadOnlyNavigationRef.current
+        >["pointers"],
+      ) => Array.from(pointers.values());
+      const distance = (
+        a: { clientX: number; clientY: number },
+        b: { clientX: number; clientY: number },
+      ) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      const midpoint = (
+        a: { clientX: number; clientY: number },
+        b: { clientX: number; clientY: number },
+      ) => ({
+        clientX: (a.clientX + b.clientX) / 2,
+        clientY: (a.clientY + b.clientY) / 2,
+      });
+      const resetSingleTouchStart = (
+        session: NonNullable<typeof touchReadOnlyNavigationRef.current>,
+      ) => {
+        const [onlyPointer] = pointersToArray(session.pointers);
+        if (!onlyPointer) return;
+        onlyPointer.startClientX = onlyPointer.clientX;
+        onlyPointer.startClientY = onlyPointer.clientY;
+        session.startCenter = { x: viewport.center.x, y: viewport.center.y };
+        session.startScale = Math.max(viewport.scale.x || 1, 0.01);
+        session.startDistance = null;
+        session.startMidWorld = null;
+      };
+      const resetPinchStart = (
+        session: NonNullable<typeof touchReadOnlyNavigationRef.current>,
+      ) => {
+        const [first, second] = pointersToArray(session.pointers);
+        if (!first || !second) return;
+        const mid = midpoint(first, second);
+        const localMid = toLocalClientPoint(mid.clientX, mid.clientY);
+        const worldMid = viewport.toWorld(localMid);
+        session.startCenter = { x: viewport.center.x, y: viewport.center.y };
+        session.startScale = Math.max(viewport.scale.x || 1, 0.01);
+        session.startDistance = Math.max(distance(first, second), 1);
+        session.startMidWorld = { x: worldMid.x, y: worldMid.y };
+        session.didMultiTouch = true;
+      };
+      const cleanup = () => {
+        const session = touchReadOnlyNavigationRef.current;
+        if (!session) return;
+        detachTouchReadOnlyNavigation();
+        touchReadOnlyNavigationRef.current = null;
+      };
+
+      let session = touchReadOnlyNavigationRef.current;
+      if (!session) {
+        session = {
+          pointers: new Map(),
+          startCenter: { x: viewport.center.x, y: viewport.center.y },
+          startScale: Math.max(viewport.scale.x || 1, 0.01),
+          startDistance: null,
+          startMidWorld: null,
+          didMove: false,
+          didMultiTouch: false,
+          selectTarget,
+          detach: null,
+        };
+        touchReadOnlyNavigationRef.current = session;
+
+        const handlePointerMove = (moveEvent: PointerEvent) => {
+          const active = touchReadOnlyNavigationRef.current;
+          if (!active) return;
+          const pointer = active.pointers.get(moveEvent.pointerId);
+          if (!pointer) return;
+
+          pointer.clientX = moveEvent.clientX;
+          pointer.clientY = moveEvent.clientY;
+
+          const activePointers = pointersToArray(active.pointers);
+          if (activePointers.length >= 2) {
+            if (moveEvent.cancelable) moveEvent.preventDefault();
+            const [first, second] = activePointers;
+            if (!first || !second) return;
+            if (!active.startDistance || !active.startMidWorld) {
+              resetPinchStart(active);
+              return;
+            }
+
+            const nextDistance = Math.max(distance(first, second), 1);
+            const nextScale = active.startScale * (nextDistance / active.startDistance);
+            const mid = midpoint(first, second);
+            const localMid = toLocalClientPoint(mid.clientX, mid.clientY);
+            const movedMidPx = Math.hypot(
+              mid.clientX -
+                (first.startClientX + second.startClientX) / 2,
+              mid.clientY -
+                (first.startClientY + second.startClientY) / 2,
+            );
+            if (
+              Math.abs(nextDistance - active.startDistance) > 3 ||
+              movedMidPx > 3
+            ) {
+              active.didMove = true;
+            }
+
+            viewport.setZoom(nextScale, false);
+            const anchoredScreen = viewport.toScreen(
+              active.startMidWorld.x,
+              active.startMidWorld.y,
+            );
+            viewport.x += localMid.x - anchoredScreen.x;
+            viewport.y += localMid.y - anchoredScreen.y;
+            viewport.plugins.reset();
+            emitZoomed();
+            emitMoved();
+            return;
+          }
+
+          const dx = pointer.clientX - pointer.startClientX;
+          const dy = pointer.clientY - pointer.startClientY;
+          if (Math.hypot(dx, dy) <= 4) return;
+          if (moveEvent.cancelable) moveEvent.preventDefault();
+          active.didMove = true;
+          const scaleNow = Math.max(active.startScale, 0.01);
+          viewport.moveCenter(
+            active.startCenter.x - dx / scaleNow,
+            active.startCenter.y - dy / scaleNow,
+          );
+          emitMoved();
+        };
+
+        const handlePointerUp = (upEvent: PointerEvent) => {
+          const active = touchReadOnlyNavigationRef.current;
+          if (!active) return;
+          if (!active.pointers.has(upEvent.pointerId)) return;
+
+          active.pointers.delete(upEvent.pointerId);
+
+          if (active.pointers.size === 0) {
+            const shouldSelect = !active.didMove && !active.didMultiTouch;
+            const select = active.selectTarget;
+            cleanup();
+            if (shouldSelect) select();
+            return;
+          }
+
+          if (active.pointers.size === 1) {
+            resetSingleTouchStart(active);
+          } else {
+            resetPinchStart(active);
+          }
+        };
+
+        const handleWindowBlur = () => {
+          cleanup();
+        };
+
+        window.addEventListener("pointermove", handlePointerMove, {
+          capture: true,
+          passive: false,
+        });
+        window.addEventListener("pointerup", handlePointerUp, {
+          capture: true,
+        });
+        window.addEventListener("pointercancel", handlePointerUp, {
+          capture: true,
+        });
+        window.addEventListener("blur", handleWindowBlur);
+
+        session.detach = () => {
+          window.removeEventListener("pointermove", handlePointerMove, {
+            capture: true,
+          });
+          window.removeEventListener("pointerup", handlePointerUp, {
+            capture: true,
+          });
+          window.removeEventListener("pointercancel", handlePointerUp, {
+            capture: true,
+          });
+          window.removeEventListener("blur", handleWindowBlur);
+        };
+      }
+
+      session.selectTarget = selectTarget;
+      session.pointers.set(event.pointerId, {
+        startClientX: event.clientX,
+        startClientY: event.clientY,
+        clientX: event.clientX,
+        clientY: event.clientY,
+      });
+
+      if (session.pointers.size >= 2) {
+        resetPinchStart(session);
+      } else {
+        resetSingleTouchStart(session);
+      }
+
+      return true;
+  };
+
   return (
     <div
       ref={rootRef}
@@ -1152,6 +1408,7 @@ const NodeHtmlOverlayLayer = ({
             isDark={isDark}
             layerZIndex={item.layerZIndex}
             readOnly={readOnly}
+            touchNavigationMode={touchNavigationMode}
             isSelected={
               selectedCanvasImageId === item.image.id ||
               multiSelectedCanvasImageIds.has(item.image.id)
@@ -1167,6 +1424,7 @@ const NodeHtmlOverlayLayer = ({
             onStartWireFromCanvasImage={startWireFromCanvasImage}
             onStartCanvasImageDrag={startCanvasImageDrag}
             onStartCanvasImageResize={startCanvasImageResize}
+            onStartTouchReadOnlyNavigation={startTouchReadOnlyNavigation}
           />
         ) : (
           <MarkdownNodeOverlayItem
@@ -1188,6 +1446,7 @@ const NodeHtmlOverlayLayer = ({
             isDark={isDark}
             layerZIndex={item.layerZIndex}
             readOnly={readOnly}
+            touchNavigationMode={touchNavigationMode}
             isSelected={
               selectedNodeId === item.node.id || multiSelectedNodeIds.has(item.node.id)
             }
@@ -1203,6 +1462,7 @@ const NodeHtmlOverlayLayer = ({
             onStartWireFromChildSlot={startWireFromChildSlot}
             onStartNodeDrag={startNodeDrag}
             onStartNodeResize={startNodeResize}
+            onStartTouchReadOnlyNavigation={startTouchReadOnlyNavigation}
           />
         ),
       )}

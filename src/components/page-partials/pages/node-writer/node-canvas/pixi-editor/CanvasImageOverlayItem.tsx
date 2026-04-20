@@ -50,6 +50,7 @@ type Props = {
   isDark: boolean;
   layerZIndex: number;
   readOnly: boolean;
+  touchNavigationMode?: boolean;
   isSelected: boolean;
   wireSession: unknown;
   wireDropHighlight: CanvasImageDropHighlight;
@@ -74,6 +75,10 @@ type Props = {
     originWidth: number,
     originHeight: number,
   ) => void;
+  onStartTouchReadOnlyNavigation?: (
+    event: ReactPointerEvent<HTMLElement>,
+    selectTarget: () => void,
+  ) => boolean;
 };
 
 const CanvasImageOverlayItem = ({
@@ -87,6 +92,7 @@ const CanvasImageOverlayItem = ({
   isDark,
   layerZIndex,
   readOnly,
+  touchNavigationMode = false,
   isSelected,
   wireSession,
   wireDropHighlight,
@@ -96,6 +102,7 @@ const CanvasImageOverlayItem = ({
   onStartWireFromCanvasImage,
   onStartCanvasImageDrag,
   onStartCanvasImageResize,
+  onStartTouchReadOnlyNavigation,
 }: Props) => {
   if (
     image.x > worldViewBounds.maxX ||
@@ -128,6 +135,16 @@ const CanvasImageOverlayItem = ({
       data-overlay-canvas-image-id={image.id}
       data-viewport-version={viewportVersion}
       onPointerDown={(event) => {
+        if (
+          touchNavigationMode &&
+          readOnly &&
+          onStartTouchReadOnlyNavigation?.(event, () => {
+            onResetMultiSelection();
+            onSelect(image.id);
+          })
+        ) {
+          return;
+        }
         event.stopPropagation();
         onResetMultiSelection();
         onSelect(image.id);
@@ -215,7 +232,7 @@ const CanvasImageOverlayItem = ({
           }`}
         >
           <div
-            className={`pointer-events-auto flex w-7 shrink-0 cursor-grab items-center justify-center text-[10px] text-muted-foreground active:cursor-grabbing ${
+            className={`pointer-events-auto flex w-7 shrink-0 ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} items-center justify-center text-[10px] text-muted-foreground ${
               isDark
                 ? "border-r border-border/20 bg-zinc-900/35"
                 : "border-r border-border/35 bg-zinc-200/45"
@@ -252,21 +269,25 @@ const CanvasImageOverlayItem = ({
                   }))
                 }
                 onPointerDown={(event) => event.stopPropagation()}
-                className="min-w-0 flex-1 border-0 bg-transparent px-1 py-0.5 font-sans text-[16px] font-semibold text-foreground placeholder:text-muted-foreground/80 outline-none"
+                className={`min-w-0 flex-1 border-0 bg-transparent px-1 py-0.5 font-sans text-[16px] font-semibold text-foreground placeholder:text-muted-foreground/80 outline-none ${
+                  touchNavigationMode && readOnly ? "pointer-events-none" : ""
+                }`}
                 placeholder="image"
                 spellCheck={false}
               />
             </div>
-            <button
-              type="button"
-              disabled={readOnly}
-              onPointerDown={(event) => event.stopPropagation()}
-              onClick={() => removeCanvasImage(onProjectPatch, image.id)}
-              className="mono px-1.5 py-0.5 text-[15px] text-muted-foreground transition-colors hover:text-rose-400 disabled:opacity-40"
-              title="Видалити зображення"
-            >
-              ×
-            </button>
+            {touchNavigationMode && readOnly ? null : (
+              <button
+                type="button"
+                disabled={readOnly}
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={() => removeCanvasImage(onProjectPatch, image.id)}
+                className="mono px-1.5 py-0.5 text-[15px] text-muted-foreground transition-colors hover:text-rose-400 disabled:opacity-40"
+                title="Видалити зображення"
+              >
+                ×
+              </button>
+            )}
           </div>
         </div>
         <div
