@@ -2,9 +2,9 @@ import { spawnSync } from "node:child_process";
 
 const VERSION_PREFIX = "1.0";
 const BASE_PATCH = 3;
-// Commit b7a77e4 introduced automated versioning while the public version was 1.0.3.
-// The next pushed commit should therefore become 1.0.4.
-const BASE_COMMIT_COUNT = 620;
+// Commit a2bf0a3 made Vite inject the version everywhere while the public
+// version was still stuck at 1.0.3. Treat it as the 1.0.4 baseline.
+const BASE_COMMIT_COUNT = 621;
 
 export const FALLBACK_APP_VERSION = "1.0.4";
 

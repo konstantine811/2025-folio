@@ -23,6 +23,14 @@ export default defineConfig({
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
+        globIgnores: ["**/index.html"],
+        navigateFallback: null,
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === "navigate",
+            handler: "NetworkOnly",
+          },
+        ],
         // Без мініфікації workbox-бандла через terser: у великих білдах інколи падає
         // «Unfinished hook action(s) on exit: (terser) renderChunk» при generateSW.
         mode: "development",
