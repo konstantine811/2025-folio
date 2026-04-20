@@ -356,6 +356,23 @@ textarea:-webkit-autofill:focus {
   background: color-mix(in srgb, var(--foreground) 38%, transparent);
 }
 
+/* Node writer tree: на touch немає hover-меню, тому віддаємо ширину назві. */
+@media (hover: none), (pointer: coarse) {
+  .workspace-tree-row-main,
+  .workspace-tree-row-title {
+    flex: 1 1 0%;
+  }
+
+  .workspace-tree-row-title {
+    max-width: none;
+  }
+
+  .workspace-tree-row-actions,
+  .workspace-tree-row-filler {
+    display: none;
+  }
+}
+
 .has-tasks::after {
   content: "";
   display: block;

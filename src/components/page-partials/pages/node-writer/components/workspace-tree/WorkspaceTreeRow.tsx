@@ -161,7 +161,7 @@ export function WorkspaceTreeRow({
     >
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <div
-          className={`flex min-w-0 items-center gap-2 transition-opacity duration-200 ${
+          className={`workspace-tree-row-main flex min-w-0 items-center gap-2 transition-opacity duration-200 ${
             folderLabelMuted ? "opacity-70" : "opacity-100"
           } ${isRowEditing ? "min-w-0 flex-1" : ""}`}
         >
@@ -207,8 +207,8 @@ export function WorkspaceTreeRow({
           <div
             className={
               isRowEditing
-                ? "min-w-0 flex-1"
-                : "min-w-0 max-w-[min(100%,20rem)]"
+                ? "workspace-tree-row-title min-w-0 flex-1"
+                : "workspace-tree-row-title min-w-0 max-w-[min(100%,20rem)]"
             }
           >
             {draftTitle?.nodeId === nodeIdStr ? (
@@ -267,7 +267,7 @@ export function WorkspaceTreeRow({
 
         {!isRowEditing ? (
           <>
-            <div className="flex shrink-0 items-center gap-px opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+            <div className="workspace-tree-row-actions flex shrink-0 items-center gap-px opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
               {allowAdminRowActions && isFolder && folderId ? (
                 <label
                   className="mr-1 inline-flex h-8 items-center gap-1 rounded px-1.5 text-[9px] text-muted-foreground"
@@ -428,7 +428,10 @@ export function WorkspaceTreeRow({
                 </>
               ) : null}
             </div>
-            <div className="min-h-8 min-w-0 flex-1" aria-hidden />
+            <div
+              className="workspace-tree-row-filler min-h-8 min-w-0 flex-1"
+              aria-hidden
+            />
           </>
         ) : null}
       </div>
