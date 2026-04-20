@@ -4,9 +4,15 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import { VitePWA } from "vite-plugin-pwa";
 import glsl from "vite-plugin-glsl";
+import { resolveAppVersion } from "./scripts/app-version.mjs";
+
+const appVersion = resolveAppVersion();
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    "import.meta.env.VITE_APP_VERSION": JSON.stringify(appVersion),
+  },
   plugins: [
     react(),
     tailwindcss(),
