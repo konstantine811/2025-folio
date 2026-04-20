@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import { Info } from "lucide-react";
+import { useCallback, useRef } from "react";
+import { Crosshair, Info } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -13,6 +13,12 @@ import { useEditableProjectTitle } from "../hooks/use-editable-project-title";
 import type { Project, ProjectPatchFn } from "../types/types";
 import EditorCanvas from "../node-canvas/pixi-editor/EditorCanvas";
 import { isTouchDevice } from "@/utils/touch-inspect";
+import { useEditorStore } from "../node-canvas/pixi-editor/store/editorStore";
+import {
+  collectCanvasContentItems,
+  contentBoundsFromItems,
+  fitViewportToBounds,
+} from "../node-canvas/pixi-editor/utils/canvasContent";
 
 interface NodesViewProps {
   project: Project;
@@ -27,6 +33,8 @@ const NodesView = ({
 }: NodesViewProps) => {
   const effectiveReadOnly = readOnly || isTouchDevice;
   const shortcutShellRef = useRef<HTMLDivElement>(null);
+  const viewport = useEditorStore((s) => s.viewport);
+  const bumpViewportVersion = useEditorStore((s) => s.bumpViewportVersion);
   const {
     editingTitle,
     setEditingTitle,
@@ -35,6 +43,19 @@ const NodesView = ({
     titleInputRef,
     commitTitle,
   } = useEditableProjectTitle(project.title, onProjectPatch);
+  const centerCanvasInView = useCallback(() => {
+    if (!viewport) return;
+
+    const items = collectCanvasContentItems(project);
+    const bounds = contentBoundsFromItems(items);
+    if (bounds) {
+      fitViewportToBounds(viewport, bounds, isTouchDevice ? 96 : 180);
+    } else {
+      viewport.setZoom(1, true);
+      viewport.moveCenter(0, 0);
+    }
+    bumpViewportVersion();
+  }, [bumpViewportVersion, project, viewport]);
 
   return (
     <div
@@ -68,6 +89,18 @@ const NodesView = ({
                 : NODE_CANVAS_HELP_TEXT}
             </TooltipContent>
           </Tooltip>
+          {isTouchDevice ? (
+            <button
+              type="button"
+              onClick={centerCanvasInView}
+              disabled={!viewport}
+              className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-border/20 bg-background/40 text-muted-foreground transition-colors active:bg-muted disabled:pointer-events-none disabled:opacity-35"
+              aria-label="Центрувати ноди в області перегляду"
+              title="Центрувати ноди"
+            >
+              <Crosshair className="size-4" strokeWidth={1.75} />
+            </button>
+          ) : null}
           <div className="min-w-0 flex-1">
             {effectiveReadOnly ? (
               <h2 className="truncate text-sm font-medium tracking-normal text-foreground/90">

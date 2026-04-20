@@ -25,7 +25,7 @@ const Sidebar = ({
   return (
     <nav
       className="z-40 flex shrink-0 flex-col self-stretch border-r border-border/30 bg-card min-h-0 w-10 md:w-20"
-      style={{ height: `calc(100vh - ${hs}px)` }}
+      style={{ height: `calc(100dvh - ${hs}px)` }}
     >
       <div className="flex min-h-0 flex-1 flex-col items-center">
         <div className="flex flex-col items-center gap-8 pt-2 md:pt-10">

@@ -602,8 +602,8 @@ const Main = () => {
       />
 
       <main
-        className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto"
-        style={{ height: `calc(100vh - ${hs}px)` }}
+        className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
+        style={{ height: `calc(100dvh - ${hs}px)` }}
       >
         <CreateProjectModal
           isOpen={isCreateModalOpen}

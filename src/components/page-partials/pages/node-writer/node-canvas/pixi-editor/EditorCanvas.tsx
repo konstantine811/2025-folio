@@ -5,6 +5,7 @@ import EditorWorld from "./EditorWorld";
 import NodeHtmlOverlayLayer from "./NodeHtmlOverlayLayer";
 import MinimapOverlay from "./MinimapOverlay";
 import { useCanvasEditorHotkeys } from "./hooks/useCanvasEditorHotkeys";
+import { useCanvasTouchGestureCapture } from "./hooks/useCanvasTouchGestureCapture";
 import { useCanvasWheelCapture } from "./hooks/useCanvasWheelCapture";
 import { useMinimapData } from "./hooks/useMinimapData";
 import { useProjectHistory } from "./hooks/useProjectHistory";
@@ -52,6 +53,10 @@ const EditorCanvas = ({
     viewport,
     bumpViewportVersion,
   });
+  useCanvasTouchGestureCapture({
+    frameRef,
+    enabled: touchReadOnlyMode,
+  });
 
   const fitAllContentInView = useCallback(() => {
     if (!viewport) return false;
@@ -80,9 +85,19 @@ const EditorCanvas = ({
     <div
       ref={frameRef}
       className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden bg-background"
-      style={{ maxHeight: `calc(100vh - ${115}px)` }}
+      style={{
+        maxHeight: `calc(100vh - ${115}px)`,
+        overscrollBehavior: touchReadOnlyMode ? "contain" : undefined,
+      }}
     >
-      <div ref={containerRef} className="min-h-0 min-w-0 flex-1 overflow-hidden bg-background">
+      <div
+        ref={containerRef}
+        className="min-h-0 min-w-0 flex-1 overflow-hidden bg-background"
+        style={{
+          touchAction: touchReadOnlyMode ? "none" : undefined,
+          overscrollBehavior: touchReadOnlyMode ? "contain" : undefined,
+        }}
+      >
         <Application
           resizeTo={containerRef}
           backgroundColor={isDark ? 0x000000 : 0xf8fafc}

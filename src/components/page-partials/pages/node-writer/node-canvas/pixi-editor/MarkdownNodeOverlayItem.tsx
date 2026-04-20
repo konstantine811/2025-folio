@@ -468,6 +468,12 @@ const MarkdownNodeOverlayItem = ({
                       event.stopPropagation();
                     }
                   }}
+                  style={{
+                    touchAction:
+                      touchNavigationMode && isSelected ? "pan-y" : undefined,
+                    overscrollBehavior:
+                      touchNavigationMode && isSelected ? "contain" : undefined,
+                  }}
                   className={`h-full overflow-auto px-5 py-2 whitespace-pre-wrap text-foreground/85 ${
                     isSelected ? "pointer-events-auto" : "pointer-events-none"
                   } ${NODE_MD_BODY_TYPO}`}
@@ -477,6 +483,12 @@ const MarkdownNodeOverlayItem = ({
               ) : (
                 <div
                   data-node-overlay-scroll="true"
+                  style={{
+                    touchAction:
+                      touchNavigationMode && isSelected ? "pan-y" : undefined,
+                    overscrollBehavior:
+                      touchNavigationMode && isSelected ? "contain" : undefined,
+                  }}
                   className={`flex min-h-0 min-w-0 flex-1 flex-col pl-5 pr-2 pt-2 overflow-auto h-full ${
                     isSelected ? "pointer-events-auto" : "pointer-events-none"
                   }`}

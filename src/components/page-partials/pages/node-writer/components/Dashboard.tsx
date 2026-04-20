@@ -198,9 +198,9 @@ const Dashboard = ({
 
   return (
     <div
-      className="min-h-0 w-full flex-1 bg-background p-4 flex flex-col"
+      className="box-border flex min-h-0 w-full flex-1 flex-col bg-background p-4"
       style={{
-        maxHeight: `calc(100vh - ${hs}px)`,
+        height: `calc(100dvh - ${hs}px)`,
       }}
     >
       <NativeFolderColorInput
@@ -248,7 +248,7 @@ const Dashboard = ({
         ) : null}
       </header>
 
-      <div className="mx-auto max-w-7xl grow overflow-y-auto w-full">
+      <div className="mx-auto min-h-0 w-full max-w-7xl flex-1 basis-0 overflow-y-auto overscroll-contain pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
         {isEmpty ? (
           workspaceLoading ? (
             <div
