@@ -21,7 +21,7 @@ const readGitCommitCount = () => {
 };
 
 export const resolveAppVersion = () => {
-  if (process.env.VITE_APP_VERSION) return process.env.VITE_APP_VERSION;
+  if (process.env.APP_VERSION_OVERRIDE) return process.env.APP_VERSION_OVERRIDE;
 
   const commitCount = readGitCommitCount();
   if (commitCount === null) return FALLBACK_APP_VERSION;
