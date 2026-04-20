@@ -4,6 +4,7 @@ import "./index.css";
 import App from "./App.tsx";
 import { BrowserRouter } from "react-router";
 import "./i18n"; // <- додали
+import "./register-service-worker";
 import { inject } from "@vercel/analytics";
 
 inject(); // 👈 Це підключає трекінг

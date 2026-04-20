@@ -14,6 +14,9 @@ export default defineConfig({
     VitePWA({
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         // Без мініфікації workbox-бандла через terser: у великих білдах інколи падає
         // «Unfinished hook action(s) on exit: (terser) renderChunk» при generateSW.
         mode: "development",
