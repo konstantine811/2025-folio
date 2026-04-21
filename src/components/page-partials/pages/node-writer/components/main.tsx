@@ -98,6 +98,8 @@ const Main = () => {
   const pendingLocalProjectIdsRef = useRef<Set<string>>(new Set());
   /** Локально змінені папки тимчасово мають пріоритет над фоновим pull з Firestore. */
   const dirtyFolderIdsRef = useRef<Set<string>>(new Set());
+  /** Ідентифікатор останнього запланованого sync-циклу (захист від stale-success). */
+  const latestWorkspaceSyncRunRef = useRef(0);
 
   const createModalFolderLabel = useMemo(() => {
     if (!createTargetFolderId) return null;
@@ -325,6 +327,7 @@ const Main = () => {
 
   useEffect(() => {
     if (!user?.uid || !cloudReady) return;
+    const syncRunId = ++latestWorkspaceSyncRunRef.current;
     const timer = window.setTimeout(() => {
       syncWorkspaceToFirestore(
         NODE_WRITER_WORKSPACE_SCOPE,
@@ -333,6 +336,10 @@ const Main = () => {
         isWorkspaceAdmin,
       )
         .then(() => {
+          // Скидаємо dirty лише для найсвіжішого sync-запиту.
+          // Інакше старий успішний запит може "розблокувати" merge занадто рано
+          // і локальна назва папки тимчасово відкотиться до старої з Firestore.
+          if (syncRunId !== latestWorkspaceSyncRunRef.current) return;
           dirtyFolderIdsRef.current.clear();
         })
         .catch((err) => {
