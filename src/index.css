@@ -1505,6 +1505,38 @@ body.dark
   margin: 0.34rem 0;
 }
 
+/* Task-list: вирівнюємо checkbox і перший рядок тексту по горизонталі. */
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  :is([class*="_listItemUnchecked_"], [class*="_listItemChecked_"])::before {
+  top: 0.33em;
+}
+
+[data-node-markdown-root]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_listItemChecked_"]::after {
+  top: calc(0.33em + var(--spacing-0_5));
+}
+
+[data-node-markdown-root]
+  .markdown-node-preview
+  :is(ul.contains-task-list, ol.contains-task-list)
+  > li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+[data-node-markdown-root]
+  .markdown-node-preview
+  :is(ul.contains-task-list, ol.contains-task-list)
+  > li
+  > input[type="checkbox"] {
+  margin-top: 0.24em;
+}
+
 [data-node-markdown-root] .node-mdx-editor-basic .node-mdx-editor-content a {
   color: #cc178a;
   text-decoration: none;
