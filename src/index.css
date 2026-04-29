@@ -1004,6 +1004,11 @@ body [class*="_secondaryButton_"] {
   overflow: hidden;
 }
 
+[data-node-markdown-root] .node-mdx-editor-basic,
+[data-node-markdown-root] .node-mdx-editor-basic [class*="_editorWrapper_"] {
+  overflow: visible !important;
+}
+
 .nw-global-mdx-toolbar {
   position: fixed;
   left: 50%;
@@ -1041,6 +1046,29 @@ body [class*="_secondaryButton_"] {
   height: 1.2rem;
   background: color-mix(in oklch, var(--foreground) 20%, transparent);
   flex: 0 0 auto;
+}
+
+.nw-mdx-native-select {
+  height: 2rem;
+  min-width: 9.2rem;
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in oklch, var(--foreground) 18%, transparent);
+  background: color-mix(in oklch, var(--background) 98%, black);
+  color: color-mix(in oklch, var(--foreground) 94%, white);
+  font: inherit;
+  line-height: 1;
+  padding: 0 2rem 0 0.55rem;
+}
+
+.nw-mdx-native-select:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.dark .nw-mdx-native-select {
+  border-color: color-mix(in oklch, white 24%, transparent);
+  background: #050505;
+  color: color-mix(in oklch, white 94%, var(--foreground));
 }
 
 .dark .nw-global-mdx-toolbar {
@@ -1761,25 +1789,25 @@ body.dark
   .node-mdx-editor-content
   [class*="_codeMirrorToolbar_"]
   > [class*="_selectTrigger_"] {
-  order: 1;
-  min-width: 7.2rem;
-  max-width: 9rem;
-  height: 1.72rem;
-  border-radius: 0.5rem;
-  padding: 0 0.58rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  line-height: 1.1;
+  display: none !important;
 }
 
 [data-node-markdown-root]
   .node-mdx-editor-basic
   .node-mdx-editor-content
-  [class*="_codeMirrorToolbar_"]
-  > [class*="_selectTrigger_"]
-  [class*="_selectDropdownArrow_"] {
-  transform: scale(0.86);
-  opacity: 0.9;
+  .nw-cm-language-select {
+  position: absolute;
+  left: 3.95rem;
+  top: 0.42rem;
+  z-index: 4;
+  height: 1.72rem;
+  min-width: 7.2rem;
+  max-width: 9rem;
+  border-radius: 0.5rem;
+  padding: 0 1.55rem 0 0.58rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.1;
 }
 
 [data-node-markdown-root]

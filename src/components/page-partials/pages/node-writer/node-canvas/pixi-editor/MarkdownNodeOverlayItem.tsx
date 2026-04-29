@@ -483,6 +483,16 @@ const MarkdownNodeOverlayItem = ({
               ) : (
                 <div
                   data-node-overlay-scroll="true"
+                  onPointerDown={(event) => {
+                    if (isSelected) {
+                      event.stopPropagation();
+                    }
+                  }}
+                  onMouseDown={(event) => {
+                    if (isSelected) {
+                      event.stopPropagation();
+                    }
+                  }}
                   style={{
                     touchAction:
                       touchNavigationMode && isSelected ? "pan-y" : undefined,

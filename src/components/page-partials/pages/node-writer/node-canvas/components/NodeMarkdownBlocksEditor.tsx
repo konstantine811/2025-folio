@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text";
+import { $createParagraphNode } from "lexical";
 import type { Components } from "react-markdown";
 import {
-  BlockTypeSelect,
   BoldItalicUnderlineToggles,
   type CodeBlockEditorProps,
   CodeMirrorEditor,
@@ -16,8 +17,13 @@ import {
   MDXEditor,
   StrikeThroughSupSubToggles,
   UndoRedo,
+  activePlugins$,
+  allowedHeadingLevels$,
   codeBlockPlugin,
+  codeBlockLanguages$,
   codeMirrorPlugin,
+  convertSelectionToNode$,
+  currentBlockType$,
   headingsPlugin,
   imagePlugin,
   linkDialogPlugin,
@@ -28,6 +34,9 @@ import {
   tablePlugin,
   thematicBreakPlugin,
   toolbarPlugin,
+  useCellValue,
+  useCodeBlockEditorContext,
+  usePublisher,
 } from "@mdxeditor/editor";
 import { EditorView } from "@codemirror/view";
 import "@mdxeditor/editor/style.css";
@@ -53,6 +62,136 @@ function markdownToBlocks(
   }));
 }
 
+const MDX_PORTAL_INTERACTION_SELECTOR = [
+  ".nw-global-mdx-toolbar",
+  "[data-radix-popper-content-wrapper]",
+  "[class*='_toolbarNodeKindSelectContainer_']",
+  "[class*='_toolbarButtonDropdownContainer_']",
+  "[class*='_toolbarCodeBlockLanguageSelectContent_']",
+  "[class*='_toolbarCodeBlockLanguageSelectTrigger_']",
+  "[class*='_selectContainer_']",
+  "[class*='_selectContent_']",
+  "[class*='_selectTrigger_']",
+  "[class*='_popoverContent_']",
+  "[role='listbox']",
+].join(", ");
+
+const MDX_SELECT_TRIGGER_SELECTOR = [
+  "[class*='_toolbarNodeKindSelectTrigger_']",
+  "[class*='_toolbarButtonSelectTrigger_']",
+  "[class*='_toolbarCodeBlockLanguageSelectTrigger_']",
+  "[class*='_selectTrigger_']",
+  "[role='combobox']",
+].join(", ");
+
+function markMdxPortalInteraction() {
+  if (typeof document === "undefined") return;
+  document.body.dataset.nwMdxPortalInteraction = "true";
+  window.setTimeout(() => {
+    if (document.body.dataset.nwMdxPortalInteraction === "true") {
+      delete document.body.dataset.nwMdxPortalInteraction;
+    }
+  }, 250);
+}
+
+function isMdxPortalInteractionTarget(target: EventTarget | null) {
+  return (
+    target instanceof HTMLElement &&
+    !!target.closest(MDX_PORTAL_INTERACTION_SELECTOR)
+  );
+}
+
+function isMdxSelectTriggerTarget(target: EventTarget | null) {
+  return (
+    target instanceof HTMLElement &&
+    !!target.closest(MDX_SELECT_TRIGGER_SELECTOR)
+  );
+}
+
+const MDX_EMPTY_CODE_LANGUAGE_VALUE = "__EMPTY_VALUE__";
+
+function NodeBlockTypeSelect() {
+  const convertSelectionToNode = usePublisher(convertSelectionToNode$);
+  const currentBlockType = useCellValue(currentBlockType$);
+  const activePlugins = useCellValue(activePlugins$);
+  const allowedHeadingLevels = useCellValue(allowedHeadingLevels$);
+  const hasQuote = activePlugins.includes("quote");
+  const hasHeadings = activePlugins.includes("headings");
+
+  if (!hasQuote && !hasHeadings) return null;
+
+  const items = [
+    { label: "Paragraph", value: "paragraph" },
+    ...(hasQuote ? [{ label: "Quote", value: "quote" }] : []),
+    ...(hasHeadings
+      ? allowedHeadingLevels.map((level) => ({
+          label: `Heading ${level}`,
+          value: `h${level}`,
+        }))
+      : []),
+  ];
+
+  const handleChange = (blockType: string) => {
+    switch (blockType) {
+      case "paragraph":
+        convertSelectionToNode(() => $createParagraphNode());
+        break;
+      case "quote":
+        convertSelectionToNode(() => $createQuoteNode());
+        break;
+      case "":
+        break;
+      default:
+        if (blockType.startsWith("h")) {
+          convertSelectionToNode(() => $createHeadingNode(blockType as never));
+        }
+    }
+  };
+
+  return (
+    <select
+      className="nw-mdx-native-select nw-mdx-block-select"
+      aria-label="Select block type"
+      value={currentBlockType}
+      onPointerDown={(event) => event.stopPropagation()}
+      onMouseDown={(event) => event.stopPropagation()}
+      onChange={(event) => handleChange(event.target.value)}
+    >
+      {items.map((item) => (
+        <option key={item.value} value={item.value}>
+          {item.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function NodeCodeLanguageSelect({ language }: { language: string }) {
+  const { setLanguage } = useCodeBlockEditorContext();
+  const codeBlockLanguages = useCellValue(codeBlockLanguages$);
+  const value = codeBlockLanguages.keyMap[language] ?? language;
+
+  return (
+    <select
+      className="nw-mdx-native-select nw-cm-language-select"
+      aria-label="Select code block language"
+      value={value}
+      onPointerDown={(event) => event.stopPropagation()}
+      onMouseDown={(event) => event.stopPropagation()}
+      onChange={(event) => {
+        const next = event.target.value;
+        setLanguage(next === MDX_EMPTY_CODE_LANGUAGE_VALUE ? "" : next);
+      }}
+    >
+      {codeBlockLanguages.items.map((item) => (
+        <option key={item.value} value={item.value}>
+          {item.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 function GlobalInlineMdxToolbar({ active }: { active: boolean }) {
   const [host, setHost] = useState<HTMLElement | null>(null);
 
@@ -68,29 +207,24 @@ function GlobalInlineMdxToolbar({ active }: { active: boolean }) {
 
   if (!active || !host) return null;
 
-  const markPortalInteraction = () => {
-    if (typeof document === "undefined") return;
-    document.body.dataset.nwMdxPortalInteraction = "true";
-    window.setTimeout(() => {
-      if (document.body.dataset.nwMdxPortalInteraction === "true") {
-        delete document.body.dataset.nwMdxPortalInteraction;
-      }
-    }, 250);
-  };
-
   return createPortal(
     <div
       className="nw-global-mdx-toolbar"
       data-nw-mdx-portal-interaction="true"
-      onPointerDownCapture={(e) => {
-        markPortalInteraction();
+      onPointerDownCapture={() => {
+        markMdxPortalInteraction();
+      }}
+      onPointerDown={(e) => {
         e.stopPropagation();
       }}
-      onMouseDownCapture={(e) => {
-        markPortalInteraction();
+      onMouseDownCapture={() => {
+        markMdxPortalInteraction();
+      }}
+      onMouseDown={(e) => {
+        const isSelectTrigger = isMdxSelectTriggerTarget(e.target);
         e.stopPropagation();
         // Keep editor selection active while clicking toolbar controls.
-        if (!(e.target instanceof HTMLInputElement)) {
+        if (!isSelectTrigger && !(e.target instanceof HTMLInputElement)) {
           e.preventDefault();
         }
       }}
@@ -111,7 +245,7 @@ function GlobalInlineMdxToolbar({ active }: { active: boolean }) {
         </div>
         <div className="nw-custom-toolbar-sep" />
         <div className="nw-custom-toolbar-group">
-          <BlockTypeSelect />
+          <NodeBlockTypeSelect />
         </div>
         <div className="nw-custom-toolbar-sep" />
         <div className="nw-custom-toolbar-group">
@@ -178,6 +312,7 @@ function CodeMirrorEditorWithCopy(props: CodeBlockEditorProps) {
   return (
     <div className="nw-cm-editor-with-copy">
       <CodeMirrorEditor {...props} />
+      <NodeCodeLanguageSelect language={props.language ?? ""} />
       <button
         type="button"
         className="nw-cm-copy-btn"
@@ -500,9 +635,7 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
       const inToolbarOrPopup =
         document.body.dataset.nwMdxPortalInteraction === "true" ||
         (activeEl instanceof HTMLElement &&
-          !!activeEl.closest(
-          ".nw-global-mdx-toolbar, [data-radix-popper-content-wrapper], [class*='_toolbarNodeKindSelectContainer_'], [class*='_toolbarButtonDropdownContainer_'], [class*='_selectContainer_'], [class*='_popoverContent_']",
-          ));
+          !!activeEl.closest(MDX_PORTAL_INTERACTION_SELECTOR));
       // Keep toolbar visible while caret is in editor OR while interacting with toolbar/dropdowns.
       const next = inEditorByFocus || inEditorBySelection || inToolbarOrPopup;
       setIsToolbarActive((prev) => (prev === next ? prev : next));
@@ -512,12 +645,19 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
       requestAnimationFrame(syncActiveState);
     };
 
+    const handleDocumentPointerDown = (event: PointerEvent) => {
+      if (isMdxPortalInteractionTarget(event.target)) {
+        markMdxPortalInteraction();
+      }
+      scheduleSync();
+    };
+
     root.addEventListener("focusin", scheduleSync);
     root.addEventListener("focusout", scheduleSync);
     root.addEventListener("keyup", scheduleSync, true);
     root.addEventListener("mouseup", scheduleSync, true);
     document.addEventListener("selectionchange", scheduleSync);
-    document.addEventListener("pointerdown", scheduleSync);
+    document.addEventListener("pointerdown", handleDocumentPointerDown, true);
 
     scheduleSync();
 
@@ -527,7 +667,7 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
       root.removeEventListener("keyup", scheduleSync, true);
       root.removeEventListener("mouseup", scheduleSync, true);
       document.removeEventListener("selectionchange", scheduleSync);
-      document.removeEventListener("pointerdown", scheduleSync);
+      document.removeEventListener("pointerdown", handleDocumentPointerDown, true);
     };
   }, [isSelectionOwner]);
 
@@ -630,6 +770,16 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
       data-nw-selection-owner={isSelectionOwner ? "true" : "false"}
       data-nw-theme={effectiveDarkTheme ? "dark" : "light"}
       className="relative min-h-0 min-w-0 w-full flex-1 overflow-visible text-foreground/90"
+      onPointerDown={(event) => {
+        if (isSelectionOwner) {
+          event.stopPropagation();
+        }
+      }}
+      onMouseDown={(event) => {
+        if (isSelectionOwner) {
+          event.stopPropagation();
+        }
+      }}
     >
       <MDXEditor
         className="node-mdx-editor-basic"
