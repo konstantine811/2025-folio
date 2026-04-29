@@ -68,10 +68,27 @@ function GlobalInlineMdxToolbar({ active }: { active: boolean }) {
 
   if (!active || !host) return null;
 
+  const markPortalInteraction = () => {
+    if (typeof document === "undefined") return;
+    document.body.dataset.nwMdxPortalInteraction = "true";
+    window.setTimeout(() => {
+      if (document.body.dataset.nwMdxPortalInteraction === "true") {
+        delete document.body.dataset.nwMdxPortalInteraction;
+      }
+    }, 250);
+  };
+
   return createPortal(
     <div
       className="nw-global-mdx-toolbar"
+      data-nw-mdx-portal-interaction="true"
+      onPointerDownCapture={(e) => {
+        markPortalInteraction();
+        e.stopPropagation();
+      }}
       onMouseDownCapture={(e) => {
+        markPortalInteraction();
+        e.stopPropagation();
         // Keep editor selection active while clicking toolbar controls.
         if (!(e.target instanceof HTMLInputElement)) {
           e.preventDefault();
@@ -481,10 +498,11 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
       const activeEl = document.activeElement;
       const inEditorByFocus = !!activeEl && editable.contains(activeEl);
       const inToolbarOrPopup =
-        activeEl instanceof HTMLElement &&
-        !!activeEl.closest(
+        document.body.dataset.nwMdxPortalInteraction === "true" ||
+        (activeEl instanceof HTMLElement &&
+          !!activeEl.closest(
           ".nw-global-mdx-toolbar, [data-radix-popper-content-wrapper], [class*='_toolbarNodeKindSelectContainer_'], [class*='_toolbarButtonDropdownContainer_'], [class*='_selectContainer_'], [class*='_popoverContent_']",
-        );
+          ));
       // Keep toolbar visible while caret is in editor OR while interacting with toolbar/dropdowns.
       const next = inEditorByFocus || inEditorBySelection || inToolbarOrPopup;
       setIsToolbarActive((prev) => (prev === next ? prev : next));
