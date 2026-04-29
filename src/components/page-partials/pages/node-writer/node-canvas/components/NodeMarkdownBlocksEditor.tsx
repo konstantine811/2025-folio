@@ -33,11 +33,13 @@ import { EditorView } from "@codemirror/view";
 import "@mdxeditor/editor/style.css";
 import { CodeBlock } from "@/components/ui-abc/code/code-block";
 import { Check, Copy } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { NodeMarkdownBlock } from "../../types/types";
 import { newMarkdownBlockId } from "../utils/node-ids";
 import { MarkdownResolvingImg } from "./MarkdownResolvingImg";
 import { NODE_MD_BODY_TYPO } from "../constants";
 import { normalizeMultiLineListItems } from "../utils/normalize-list-lines";
+import { clearNodeWriterMarkdownSelection } from "../utils/clear-markdown-selection";
 
 function markdownToBlocks(
   markdown: string,
@@ -313,6 +315,19 @@ export function nodeMarkdownPreviewComponents(
         {children}
       </li>
     ),
+    input: ({ checked, type }) => {
+      if (type !== "checkbox") return <input type={type} checked={checked} readOnly />;
+
+      return (
+        <Checkbox
+          checked={checked === true}
+          aria-readonly="true"
+          tabIndex={-1}
+          className="nw-md-task-checkbox pointer-events-none size-5"
+          onCheckedChange={() => {}}
+        />
+      );
+    },
     blockquote: ({ children }) => (
       <blockquote
         className={`my-0 border-l-2 pl-2 italic opacity-90 ${NODE_MD_BODY_TYPO}`}
@@ -451,6 +466,7 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
 
     const syncActiveState = () => {
       if (!isSelectionOwner) {
+        clearNodeWriterMarkdownSelection(root);
         setIsToolbarActive(false);
         return;
       }
@@ -496,6 +512,12 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
       document.removeEventListener("pointerdown", scheduleSync);
     };
   }, [isSelectionOwner]);
+
+  useEffect(() => {
+    if (isSelectionOwner) return;
+    clearNodeWriterMarkdownSelection(rootRef.current);
+    setIsToolbarActive(false);
+  }, [isSelectionOwner, nodeId]);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -587,6 +609,7 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
       ref={rootRef}
       data-node-markdown-root={nodeId}
       data-nw-fixed-toolbar={isToolbarActive ? "true" : "false"}
+      data-nw-selection-owner={isSelectionOwner ? "true" : "false"}
       data-nw-theme={effectiveDarkTheme ? "dark" : "light"}
       className="relative min-h-0 min-w-0 w-full flex-1 overflow-visible text-foreground/90"
     >

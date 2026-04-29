@@ -34,6 +34,7 @@ import WirePreviewOverlay from "./WirePreviewOverlay";
 import { inferPortFromClientPoint } from "./nodeOverlayHelpers";
 import { NODE_WRITER_WORKSPACE_SCOPE } from "@/config/node-writer-access.config";
 import { uploadNodeWriterCanvasPastedFile } from "@/services/firebase/node-writer-workspace";
+import { clearNodeWriterMarkdownSelection } from "../utils/clear-markdown-selection";
 
 type Props = {
   project: Project;
@@ -231,7 +232,23 @@ const NodeHtmlOverlayLayer = ({
     if (selectedNodeId || selectedCanvasImageId) return;
     setMultiSelectedNodeIds(new Set());
     setMultiSelectedCanvasImageIds(new Set());
-  }, [selectedNodeId, selectedCanvasImageId]);
+    clearNodeWriterMarkdownSelection(rootRef.current);
+  }, [selectedNodeId, selectedCanvasImageId, viewportVersion]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const body = document.body;
+
+    if (selectedNodeId) {
+      body.dataset.nwNodeMarkdownSelected = "true";
+    } else {
+      delete body.dataset.nwNodeMarkdownSelected;
+    }
+
+    return () => {
+      delete body.dataset.nwNodeMarkdownSelected;
+    };
+  }, [selectedNodeId]);
 
   useEffect(() => {
     if (!wireSession) return;
