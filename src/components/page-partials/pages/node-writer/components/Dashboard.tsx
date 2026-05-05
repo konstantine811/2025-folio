@@ -1,17 +1,9 @@
-import { useCallback, useMemo, useRef, useState } from "react";
-import {
-  Tree,
-  getBackendOptions,
-  MultiBackend,
-  type DropOptions,
-  type NodeModel,
-} from "@minoru/react-dnd-treeview";
-import { DndProvider } from "react-dnd";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import type { NodeModel } from "@minoru/react-dnd-treeview";
 import type { Project, WorkspaceFolder } from "../types/types";
 import {
   WORKSPACE_TREE_ROOT_ID,
   buildWorkspaceTreeData,
-  isValidWorkspaceTreeAfterDrop,
   normalizeWorkspaceTreeAfterDnD,
   syncWorkspaceFromTree,
   type WorkspaceTreeMeta,
@@ -29,6 +21,31 @@ import {
 } from "./workspace-tree";
 import WorkspaceCloudPreloader from "./WorkspaceCloudPreloader";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
+
+const NESTED_LENIS_SCROLL_PROPS = {
+  "data-lenis-prevent": true,
+  "data-lenis-prevent-wheel": true,
+  "data-lenis-prevent-touch": true,
+} as const;
+
+type DropPos = "before" | "inside" | "after";
+
+interface DropInfo {
+  overId: string;
+  pos: DropPos;
+}
+
+/** DFS rebuild of flat tree array from a children map. */
+function rebuildTreeDfs(
+  childrenMap: Map<string, NodeModel<WorkspaceTreeMeta>[]>,
+  parentId: string,
+): NodeModel<WorkspaceTreeMeta>[] {
+  const children = childrenMap.get(parentId) ?? [];
+  return children.flatMap((node) => [
+    node,
+    ...rebuildTreeDfs(childrenMap, String(node.id)),
+  ]);
+}
 
 interface DashboardProps {
   folders: WorkspaceFolder[];
@@ -81,63 +98,258 @@ const Dashboard = ({
     () => buildWorkspaceTreeData(folders, projects),
     [folders, projects],
   );
+  const treeDataRef = useRef(treeData);
+  treeDataRef.current = treeData;
 
-  /** Стабільний масив: @minoru/react-dnd-treeview скидає open state при зміні `initialOpen`. */
-  const treeInitialOpenRef = useRef<string[] | null>(null);
-  if (treeInitialOpenRef.current === null) {
-    treeInitialOpenRef.current = loadDashboardTreeOpenIdsFromStorage();
-  }
+  // ── open/close state ──────────────────────────────────────────
+  const [openIds, setOpenIds] = useState<string[]>(() =>
+    loadDashboardTreeOpenIdsFromStorage(),
+  );
+  const openIdSet = useMemo(() => new Set(openIds), [openIds]);
 
-  const touchTreeDragGateRef = useRef<{
-    nodeId: NodeModel["id"] | null;
-    startedAt: number;
-  } | null>(null);
+  const toggleTreeNode = useCallback((nodeId: NodeModel["id"]) => {
+    const id = String(nodeId);
+    setOpenIds((prev) => {
+      const next = prev.includes(id)
+        ? prev.filter((o) => o !== id)
+        : [...prev, id];
+      saveDashboardTreeOpenIdsToStorage(next);
+      return next;
+    });
+  }, []);
 
-  const allowTouchTreeDragFromHandle = useCallback(
-    (nodeId: NodeModel["id"]) => {
-      touchTreeDragGateRef.current = {
-        nodeId,
-        startedAt: Date.now(),
-      };
+  // ── Native HTML5 DnD ─────────────────────────────────────────
+  /**
+   * Ref замість state для синхронної перевірки "чи це наш drag"
+   * всередині обробників dragover/drop (state — async).
+   */
+  const activeDragIdRef = useRef<string | null>(null);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dropInfo, setDropInfo] = useState<DropInfo | null>(null);
+
+  const isDescendantOf = useCallback(
+    (candidateId: string, ancestorId: string): boolean => {
+      const byParent = new Map<string, string[]>();
+      for (const n of treeDataRef.current) {
+        const p = String(n.parent);
+        const bucket = byParent.get(p) ?? [];
+        bucket.push(String(n.id));
+        byParent.set(p, bucket);
+      }
+      const stack = [...(byParent.get(ancestorId) ?? [])];
+      while (stack.length > 0) {
+        const id = stack.pop()!;
+        if (id === candidateId) return true;
+        stack.push(...(byParent.get(id) ?? []));
+      }
+      return false;
     },
     [],
   );
 
-  const blockTouchTreeDragFromRow = useCallback(() => {
-    touchTreeDragGateRef.current = {
-      nodeId: null,
-      startedAt: Date.now(),
-    };
-  }, []);
+  const applyDrop = useCallback(
+    (activeId: string, info: DropInfo) => {
+      console.log("[DnD] applyDrop →", { activeId, info });
+      if (activeId === info.overId) { console.log("[DnD] SKIP: same node"); return; }
+      const tree = treeDataRef.current;
+      const dragNode = tree.find((n) => String(n.id) === activeId);
+      if (!dragNode) { console.log("[DnD] SKIP: dragNode not found"); return; }
 
-  const clearTouchTreeDragGate = useCallback((nodeId: NodeModel["id"]) => {
-    const gate = touchTreeDragGateRef.current;
-    if (!gate) return;
-    if (gate.nodeId === null || gate.nodeId === nodeId) {
-      touchTreeDragGateRef.current = null;
-    }
-  }, []);
+      const rootId = String(WORKSPACE_TREE_ROOT_ID);
+      const isRootTarget = info.overId === rootId;
+      const overNode = isRootTarget
+        ? null
+        : tree.find((n) => String(n.id) === info.overId);
 
-  const canDragTreeNode = useCallback(
-    (node: NodeModel<WorkspaceTreeMeta> | undefined) => {
-      if (!allowTreeEdits || !node) return false;
+      let newParentId: string;
+      let insertBeforeId: string | null = null;
 
-      const gate = touchTreeDragGateRef.current;
-      if (!gate) return true;
-
-      if (Date.now() - gate.startedAt > 5000) {
-        touchTreeDragGateRef.current = null;
-        return true;
+      if (isRootTarget || !overNode) {
+        newParentId = rootId;
+      } else if (info.pos === "inside" && overNode.data?.kind === "folder") {
+        newParentId = info.overId;
+      } else {
+        newParentId = String(overNode.parent);
+        const siblings = tree.filter(
+          (n) => String(n.parent) === newParentId,
+        );
+        const idx = siblings.findIndex((n) => String(n.id) === info.overId);
+        if (info.pos === "before") {
+          insertBeforeId = info.overId;
+        } else {
+          insertBeforeId =
+            idx >= 0 && idx + 1 < siblings.length
+              ? String(siblings[idx + 1].id)
+              : null;
+        }
       }
 
-      return gate.nodeId === node.id;
+      console.log("[DnD] newParentId:", newParentId, "insertBeforeId:", insertBeforeId);
+      if (newParentId === activeId) { console.log("[DnD] SKIP: parent=self"); return; }
+      if (newParentId !== rootId && isDescendantOf(newParentId, activeId)) {
+        console.log("[DnD] SKIP: drop into own descendant"); return;
+      }
+
+      // Build children map (without dragged node)
+      const without = tree.filter((n) => String(n.id) !== activeId);
+      const moved: NodeModel<WorkspaceTreeMeta> = {
+        ...dragNode,
+        parent: newParentId,
+      };
+
+      const childrenMap = new Map<string, NodeModel<WorkspaceTreeMeta>[]>();
+      for (const n of without) {
+        const p = String(n.parent);
+        if (!childrenMap.has(p)) childrenMap.set(p, []);
+        childrenMap.get(p)!.push(n);
+      }
+
+      const newSiblings = [...(childrenMap.get(newParentId) ?? [])];
+      if (insertBeforeId) {
+        const idx = newSiblings.findIndex(
+          (n) => String(n.id) === insertBeforeId,
+        );
+        if (idx >= 0) newSiblings.splice(idx, 0, moved);
+        else newSiblings.push(moved);
+      } else {
+        newSiblings.push(moved);
+      }
+      childrenMap.set(newParentId, newSiblings);
+
+      // Auto-open the target folder
+      if (info.pos === "inside" && overNode?.data?.kind === "folder") {
+        setOpenIds((prev) => {
+          if (prev.includes(info.overId)) return prev;
+          const next = [...prev, info.overId];
+          saveDashboardTreeOpenIdsToStorage(next);
+          return next;
+        });
+      }
+
+      const newTree = rebuildTreeDfs(childrenMap, rootId);
+
+      // isValidWorkspaceTreeAfterDrop порівнює з folders.length+projects.length,
+      // але в базі можуть бути «orphan» вузли (батько видалений), які
+      // buildWorkspaceTreeData не включає в дерево — тому підрахунок завжди не збігається.
+      // Замість цього перевіряємо що rebuilt-tree містить рівно ті ж ID що й поточне дерево.
+      const originalIdSet = new Set(treeDataRef.current.map((n) => String(n.id)));
+      const newIdSet = new Set(newTree.map((n) => String(n.id)));
+      if (originalIdSet.size !== newIdSet.size) {
+        console.log("[DnD] SKIP: size mismatch", originalIdSet.size, "vs", newIdSet.size);
+        return;
+      }
+      for (const id of newIdSet) {
+        if (!originalIdSet.has(id)) {
+          console.log("[DnD] SKIP: unknown id in new tree:", id);
+          return;
+        }
+      }
+      // Перевірка батьків: кожен non-root батько має бути папкою
+      const normalized = normalizeWorkspaceTreeAfterDnD(newTree);
+      for (const n of normalized) {
+        const p = String(n.parent);
+        if (p !== rootId && !p.startsWith("fol:")) {
+          console.log("[DnD] SKIP: non-folder parent", { id: n.id, parent: p });
+          return;
+        }
+      }
+
+      console.log("[DnD] validation ✓, syncing...");
+      const synced = syncWorkspaceFromTree(normalized, folders, projects);
+      console.log("[DnD] onWorkspaceSync ✓", { folders: synced.folders.length, projects: synced.projects.length });
+      onWorkspaceSync(synced.folders, synced.projects);
     },
-    [allowTreeEdits],
+    [folders, isDescendantOf, onWorkspaceSync, projects],
   );
 
-  const onTreeChangeOpen = useCallback((newOpenIds: (string | number)[]) => {
-    saveDashboardTreeOpenIdsToStorage(newOpenIds);
+  const onRowDragStart = useCallback(
+    (e: React.DragEvent, nodeId: string) => {
+      console.log("[DnD] dragstart", { nodeId, target: (e.target as HTMLElement).tagName, currentTarget: (e.currentTarget as HTMLElement).className.slice(0, 60) });
+      e.stopPropagation();
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", nodeId);
+      activeDragIdRef.current = nodeId;
+      setTimeout(() => setDragId(nodeId), 0);
+    },
+    [],
+  );
+
+  const onRowDragOver = useCallback(
+    (e: React.DragEvent, nodeId: string, isFolder: boolean) => {
+      if (!activeDragIdRef.current) {
+        console.log("[DnD] dragover SKIP — activeDragIdRef is null", { nodeId });
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      const ratio = (e.clientY - rect.top) / rect.height;
+      let pos: DropPos;
+      if (isFolder) {
+        pos = ratio < 0.28 ? "before" : ratio > 0.72 ? "after" : "inside";
+      } else {
+        pos = ratio < 0.5 ? "before" : "after";
+      }
+      setDropInfo((prev) =>
+        prev?.overId === nodeId && prev.pos === pos
+          ? prev
+          : { overId: nodeId, pos },
+      );
+      e.dataTransfer.dropEffect = "move";
+    },
+    [],
+  );
+
+  const onRowDrop = useCallback(
+    (e: React.DragEvent) => {
+      const activeId = activeDragIdRef.current;
+      console.log("[DnD] drop", { activeId, dropInfo, target: (e.target as HTMLElement).tagName });
+      if (!activeId) return;
+      e.preventDefault();
+      e.stopPropagation();
+      activeDragIdRef.current = null;
+      const info = dropInfo;
+      setDragId(null);
+      setDropInfo(null);
+      if (!info) return;
+      applyDrop(activeId, info);
+    },
+    [applyDrop, dropInfo],
+  );
+
+  const onDragEnd = useCallback(() => {
+    console.log("[DnD] dragend", { activeDragIdRef: activeDragIdRef.current });
+    activeDragIdRef.current = null;
+    setDragId(null);
+    setDropInfo(null);
   }, []);
+
+  // Drop на порожній зоні (нижче всіх рядків) — переміщує в корінь.
+  const onRootDragOver = useCallback((e: React.DragEvent) => {
+    if (!activeDragIdRef.current) return;
+    e.preventDefault();
+    setDropInfo({ overId: String(WORKSPACE_TREE_ROOT_ID), pos: "inside" });
+    e.dataTransfer.dropEffect = "move";
+  }, []);
+
+  const onRootDrop = useCallback(
+    (e: React.DragEvent) => {
+      const activeId = activeDragIdRef.current;
+      if (!activeId) return;
+      e.preventDefault();
+      activeDragIdRef.current = null;
+      setDragId(null);
+      setDropInfo(null);
+      applyDrop(activeId, {
+        overId: String(WORKSPACE_TREE_ROOT_ID),
+        pos: "inside",
+      });
+    },
+    [applyDrop],
+  );
+  // ── end DnD ──────────────────────────────────────────────────
+
+  const treeScrollRef = useRef<HTMLDivElement | null>(null);
 
   const [draftTitle, setDraftTitle] = useState<{
     nodeId: string;
@@ -148,7 +360,6 @@ const Dashboard = ({
     () => new Map(projects.map((p) => [p.id, p])),
     [projects],
   );
-
   const folderById = useMemo(
     () => new Map(folders.map((f) => [f.id, f])),
     [folders],
@@ -174,24 +385,101 @@ const Dashboard = ({
     setDraftTitle(null);
     const trimmed = value.trim();
     if (!trimmed) return;
-    if (nodeId.startsWith("fol:")) {
-      onRenameFolder(nodeId.slice(4), trimmed);
-    } else if (nodeId.startsWith("doc:")) {
+    if (nodeId.startsWith("fol:")) onRenameFolder(nodeId.slice(4), trimmed);
+    else if (nodeId.startsWith("doc:"))
       onRenameProject(nodeId.slice(4), trimmed);
-    }
   };
 
-  const handleDrop = (
-    newTree: NodeModel<WorkspaceTreeMeta>[],
-    options: DropOptions<WorkspaceTreeMeta>,
-  ) => {
-    if (!options.dragSource) return;
-    const normalized = normalizeWorkspaceTreeAfterDnD(newTree);
-    if (!isValidWorkspaceTreeAfterDrop(normalized, folders, projects)) {
-      return;
-    }
-    const synced = syncWorkspaceFromTree(normalized, folders, projects);
-    onWorkspaceSync(synced.folders, synced.projects);
+  // Lenis: явно перехоплюємо wheel, щоб глобальний smooth scroll не їв події.
+  useEffect(() => {
+    const el = treeScrollRef.current;
+    if (!el) return;
+    const onWheel = (event: globalThis.WheelEvent) => {
+      event.stopPropagation();
+      if (el.scrollHeight <= el.clientHeight + 1) return;
+      el.scrollTop += event.deltaY;
+      event.preventDefault();
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
+  const renderNodes = (
+    parentId: string | number,
+    depth: number,
+  ): ReactNode[] => {
+    return treeData
+      .filter((node) => String(node.parent) === String(parentId))
+      .flatMap((node) => {
+        const nodeId = String(node.id);
+        const isOpen = openIdSet.has(nodeId);
+        const isFolder = node.data?.kind === "folder";
+        const isDraggingThis = dragId === nodeId;
+        const info = dropInfo?.overId === nodeId ? dropInfo : null;
+        const indentPx = TREE_ROW_BASE_PAD + depth * TREE_ROW_INDENT;
+
+        const row = (
+          <div key={nodeId}>
+            {info?.pos === "before" && (
+              <div
+                className="h-0.5 rounded-full bg-primary/70"
+                style={{ marginLeft: indentPx, marginRight: 8 }}
+                aria-hidden
+              />
+            )}
+            <WorkspaceTreeRow
+              node={node}
+              depth={depth}
+              isOpen={isOpen}
+              onToggle={() => toggleTreeNode(node.id)}
+              isDragging={isDraggingThis}
+              isDropTarget={info?.pos === "inside"}
+              isDraggable={allowTreeEdits}
+              onRowDragStart={
+                allowTreeEdits ? (e) => onRowDragStart(e, nodeId) : undefined
+              }
+              onRowDragOver={
+                allowTreeEdits
+                  ? (e) => onRowDragOver(e, nodeId, isFolder)
+                  : undefined
+              }
+              onRowDrop={allowTreeEdits ? onRowDrop : undefined}
+              onRowDragEnd={onDragEnd}
+              useIconAsTouchDragHandle={false}
+              allowAdminRowActions={allowAdminRowActions}
+              allowCreateRowActions={allowCreateRowActions}
+              folderById={folderById}
+              projectById={projectById}
+              draftTitle={draftTitle}
+              setDraftTitle={setDraftTitle}
+              commitDraft={commitDraft}
+              clearPendingRowClick={clearPendingRowClick}
+              schedulePrimaryAction={schedule}
+              onProjectSelect={onProjectSelect}
+              paletteOpenForFolderId={paletteOpenForFolderId}
+              setPaletteOpenForFolderId={setPaletteOpenForFolderId}
+              paletteAnchorRef={paletteAnchorRef}
+              openNativeFolderColorPicker={openNativeFolderColorPicker}
+              onSetFolderTitleColor={onSetFolderTitleColor}
+              onSetFolderPrivate={onSetFolderPrivate}
+              onAddChildFolder={onAddChildFolder}
+              onCreateDocumentInFolder={onCreateDocumentInFolder}
+              onDeleteFolder={onDeleteFolder}
+              onDeleteProject={onDeleteProject}
+            />
+            {info?.pos === "after" && (
+              <div
+                className="h-0.5 rounded-full bg-primary/70"
+                style={{ marginLeft: indentPx, marginRight: 8 }}
+                aria-hidden
+              />
+            )}
+          </div>
+        );
+
+        if (!isFolder || !isOpen) return [row];
+        return [row, ...renderNodes(node.id, depth + 1)];
+      });
   };
 
   const isEmpty = folders.length === 0 && projects.length === 0;
@@ -199,9 +487,7 @@ const Dashboard = ({
   return (
     <div
       className="box-border flex min-h-0 w-full flex-1 flex-col bg-background p-4"
-      style={{
-        height: `calc(100dvh - ${hs}px)`,
-      }}
+      style={{ height: `calc(100dvh - ${hs}px)` }}
     >
       <NativeFolderColorInput
         colorInputNonce={colorInputNonce}
@@ -213,6 +499,7 @@ const Dashboard = ({
         }
         onPick={applyNativePickerColor}
       />
+
       <header className="mx-auto mb-8 flex max-w-7xl flex-col justify-between gap-5 md:flex-row md:items-end">
         <div>
           <div className="mb-4 flex items-center gap-2">
@@ -248,7 +535,11 @@ const Dashboard = ({
         ) : null}
       </header>
 
-      <div className="mx-auto min-h-0 w-full max-w-7xl flex-1 basis-0 overflow-y-auto overscroll-contain pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]">
+      <div
+        ref={treeScrollRef}
+        className="mx-auto min-h-0 w-full max-w-7xl flex-1 basis-0 overflow-y-auto overscroll-contain pb-[calc(env(safe-area-inset-bottom)+1rem)] [-webkit-overflow-scrolling:touch]"
+        {...NESTED_LENIS_SCROLL_PROPS}
+      >
         {isEmpty ? (
           workspaceLoading ? (
             <div
@@ -275,84 +566,21 @@ const Dashboard = ({
             </div>
           )
         ) : (
-          <DndProvider backend={MultiBackend} options={getBackendOptions()}>
-            <div className="flex min-h-[180px] flex-col rounded-xl border border-border/10 bg-card/40">
-              {workspaceLoading && (
-                <div className="animate-in fade-in duration-500 fill-mode-both">
-                  <WorkspaceCloudPreloader />
-                </div>
-              )}
-              <Tree<WorkspaceTreeMeta>
-                tree={treeData}
-                rootId={WORKSPACE_TREE_ROOT_ID}
-                sort={false}
-                insertDroppableFirst={false}
-                dropTargetOffset={4}
-                initialOpen={treeInitialOpenRef.current}
-                onChangeOpen={onTreeChangeOpen}
-                canDrag={canDragTreeNode}
-                canDrop={
-                  allowTreeEdits
-                    ? (_, { dropTargetId }) => {
-                        if (dropTargetId === WORKSPACE_TREE_ROOT_ID)
-                          return true;
-                        const target = treeData.find(
-                          (n) => n.id === dropTargetId,
-                        );
-                        return !!target?.droppable;
-                      }
-                    : () => false
-                }
-                onDrop={handleDrop}
-                placeholderRender={(_, { depth }) => (
-                  <div
-                    className="rounded-full bg-primary/45"
-                    style={{
-                      marginLeft: TREE_ROW_BASE_PAD + depth * TREE_ROW_INDENT,
-                      height: 3,
-                    }}
-                  />
-                )}
-                rootProps={{
-                  className: "min-h-0 flex-1 px-2 py-2",
-                }}
-                render={(node, treeProps) => (
-                  <WorkspaceTreeRow
-                    node={node}
-                    depth={treeProps.depth}
-                    isOpen={treeProps.isOpen}
-                    onToggle={treeProps.onToggle}
-                    isDragging={treeProps.isDragging}
-                    isDropTarget={treeProps.isDropTarget}
-                    useIconAsTouchDragHandle={allowTreeEdits}
-                    onTouchDragHandleStart={allowTouchTreeDragFromHandle}
-                    onTouchDragNonHandleStart={blockTouchTreeDragFromRow}
-                    onTouchDragEnd={clearTouchTreeDragGate}
-                    allowAdminRowActions={allowAdminRowActions}
-                    allowCreateRowActions={allowCreateRowActions}
-                    folderById={folderById}
-                    projectById={projectById}
-                    draftTitle={draftTitle}
-                    setDraftTitle={setDraftTitle}
-                    commitDraft={commitDraft}
-                    clearPendingRowClick={clearPendingRowClick}
-                    schedulePrimaryAction={schedule}
-                    onProjectSelect={onProjectSelect}
-                    paletteOpenForFolderId={paletteOpenForFolderId}
-                    setPaletteOpenForFolderId={setPaletteOpenForFolderId}
-                    paletteAnchorRef={paletteAnchorRef}
-                    openNativeFolderColorPicker={openNativeFolderColorPicker}
-                    onSetFolderTitleColor={onSetFolderTitleColor}
-                    onSetFolderPrivate={onSetFolderPrivate}
-                    onAddChildFolder={onAddChildFolder}
-                    onCreateDocumentInFolder={onCreateDocumentInFolder}
-                    onDeleteFolder={onDeleteFolder}
-                    onDeleteProject={onDeleteProject}
-                  />
-                )}
-              />
+          <div className="flex min-h-[180px] flex-col rounded-xl border border-border/10 bg-card/40">
+            {workspaceLoading && (
+              <div className="animate-in fade-in duration-500 fill-mode-both">
+                <WorkspaceCloudPreloader />
+              </div>
+            )}
+            {/* Головна зона рендерингу дерева */}
+            <div
+              className="min-h-0 flex-1 px-2 py-2"
+              onDragOver={allowTreeEdits ? onRootDragOver : undefined}
+              onDrop={allowTreeEdits ? onRootDrop : undefined}
+            >
+              {renderNodes(WORKSPACE_TREE_ROOT_ID, 0)}
             </div>
-          </DndProvider>
+          </div>
         )}
       </div>
     </div>

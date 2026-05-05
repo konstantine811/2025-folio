@@ -21,6 +21,12 @@ export interface WorkspaceTreeRowProps {
   onToggle: () => void;
   isDragging: boolean;
   isDropTarget: boolean;
+  /** Нативний HTML5 DnD — ставить draggable="true" безпосередньо на root div рядка. */
+  isDraggable?: boolean;
+  onRowDragStart?: React.DragEventHandler<HTMLDivElement>;
+  onRowDragOver?: React.DragEventHandler<HTMLDivElement>;
+  onRowDrop?: React.DragEventHandler<HTMLDivElement>;
+  onRowDragEnd?: React.DragEventHandler<HTMLDivElement>;
   /** На touch drag стартує лише з іконки файлу/папки, щоб скрол не хапав рядок. */
   useIconAsTouchDragHandle?: boolean;
   onTouchDragHandleStart?: (nodeId: NodeModel["id"]) => void;
@@ -57,6 +63,11 @@ export function WorkspaceTreeRow({
   onToggle,
   isDragging,
   isDropTarget,
+  isDraggable = false,
+  onRowDragStart,
+  onRowDragOver,
+  onRowDrop,
+  onRowDragEnd,
   useIconAsTouchDragHandle = false,
   onTouchDragHandleStart,
   onTouchDragNonHandleStart,
@@ -93,13 +104,18 @@ export function WorkspaceTreeRow({
 
   return (
     <div
+      draggable={isDraggable || undefined}
+      onDragStart={isDraggable ? onRowDragStart : undefined}
+      onDragOver={isDraggable ? onRowDragOver : undefined}
+      onDrop={isDraggable ? onRowDrop : undefined}
+      onDragEnd={isDraggable ? onRowDragEnd : undefined}
       className={`group flex min-h-9 w-full min-w-0 items-center gap-2 rounded-lg py-1 pr-1 transition-all duration-200 ${
         isDragging ? "opacity-45" : ""
       } hover:bg-muted/45 ${
         isDropTarget
           ? "bg-accent/25 ring-1 ring-ring/50 ring-offset-0 ring-offset-background"
           : ""
-      } ${!isRowEditing ? "cursor-pointer" : ""}`}
+      } ${!isRowEditing ? "cursor-pointer" : ""} ${isDraggable ? "select-none" : ""}`}
       style={{ paddingLeft: rowPadLeft }}
       onTouchStartCapture={
         useIconAsTouchDragHandle

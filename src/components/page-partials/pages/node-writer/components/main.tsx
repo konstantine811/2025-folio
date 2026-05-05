@@ -543,6 +543,9 @@ const Main = () => {
 
   const syncWorkspaceFromTreeDrop = useCallback(
     (nextFolders: WorkspaceFolder[], nextProjects: Project[]) => {
+      for (const folder of nextFolders) {
+        dirtyFolderIdsRef.current.add(folder.id);
+      }
       setFolders(nextFolders);
       setProjects(nextProjects);
       setCurrentProject((cur) => {
