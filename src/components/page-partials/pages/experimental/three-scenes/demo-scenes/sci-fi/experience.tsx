@@ -1,6 +1,7 @@
 import { CameraControls, Stars } from "@react-three/drei";
 import { ShipContainer } from "./ship/ship-container";
 import Earth from "./ship/earth";
+import { Character } from "./character/character";
 
 const Experience = () => {
   return (
@@ -8,7 +9,10 @@ const Experience = () => {
       <ambientLight intensity={1.7} />
       <directionalLight castShadow position={[1, 3, 1]} intensity={3} />
       {/* <Environment preset="sunset" /> */}
-      <ShipContainer />
+      <group>
+        <ShipContainer />
+        <Character />
+      </group>
       <Stars
         radius={1}
         depth={500}
