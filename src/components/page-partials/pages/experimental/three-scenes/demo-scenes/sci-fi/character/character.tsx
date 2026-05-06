@@ -2,6 +2,7 @@ import { JSX, useEffect, useRef } from "react";
 import { useAnimations, useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { Group, LoopOnce, LoopRepeat, MathUtils, SkinnedMesh } from "three";
+import { SholomModel } from "./sholom";
 
 const characterPath = "/3d-models/sci-fi/character.glb";
 const sitToStandAnimation = "sit-to-stand";
@@ -33,7 +34,7 @@ export function Character({ scrollProgress, ...props }: CharacterProps) {
       console.warn(
         `Character animations are missing. Available clips: ${animations
           .map(({ name }) => name)
-          .join(", ")}`
+          .join(", ")}`,
       );
       return;
     }
@@ -62,12 +63,12 @@ export function Character({ scrollProgress, ...props }: CharacterProps) {
     const walkProgress = normalizeRange(
       scrollOffset,
       walkScrollStart,
-      walkScrollEnd
+      walkScrollEnd,
     );
     const transitionToWalk = normalizeRange(
       scrollOffset,
       walkScrollStart,
-      standScrollEnd
+      standScrollEnd,
     );
 
     sitToStand.time = sitToStand.getClip().duration * standProgress;
@@ -83,6 +84,7 @@ export function Character({ scrollProgress, ...props }: CharacterProps) {
 
   return (
     <group ref={group} {...props} dispose={null}>
+      <SholomModel />
       <group ref={modelRoot} name="Scene">
         <group
           name="Armature008"
