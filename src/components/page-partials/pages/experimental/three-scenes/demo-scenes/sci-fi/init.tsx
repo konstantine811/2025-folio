@@ -3,9 +3,21 @@ import { Canvas } from "@react-three/fiber";
 import Experience from "./experience";
 import { Suspense, UIEvent, useCallback, useState } from "react";
 import { Perf } from "r3f-perf";
+import { useControls } from "leva";
+
+export type CameraMode = "Scroll" | "CameraControls";
 
 const Init = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
+  const { cameraMode } = useControls("Sci-fi camera", {
+    cameraMode: {
+      label: "Mode",
+      options: ["Scroll", "CameraControls"] satisfies CameraMode[],
+      value: "Scroll" satisfies CameraMode,
+    },
+  });
+  const selectedCameraMode = cameraMode as CameraMode;
+  const isCameraControlsMode = selectedCameraMode === "CameraControls";
 
   const handleScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
@@ -24,7 +36,10 @@ const Init = () => {
       >
         <Suspense fallback={null}>
           <Perf position="top-left" />
-          <Experience scrollProgress={scrollProgress} />
+          <Experience
+            cameraMode={selectedCameraMode}
+            scrollProgress={scrollProgress}
+          />
         </Suspense>
       </Canvas>
       <div
@@ -38,6 +53,7 @@ const Init = () => {
         style={{
           WebkitOverflowScrolling: "touch",
           overscrollBehavior: "contain",
+          pointerEvents: isCameraControlsMode ? "none" : "auto",
           touchAction: "pan-y",
         }}
       >

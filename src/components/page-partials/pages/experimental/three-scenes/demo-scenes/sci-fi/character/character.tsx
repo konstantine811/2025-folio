@@ -1,7 +1,14 @@
 import { JSX, useEffect, useRef } from "react";
 import { useAnimations, useGLTF } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
-import { Group, LoopOnce, LoopRepeat, MathUtils, SkinnedMesh } from "three";
+import { createPortal, useFrame } from "@react-three/fiber";
+import {
+  Group,
+  LoopOnce,
+  LoopRepeat,
+  MathUtils,
+  Object3D,
+  SkinnedMesh,
+} from "three";
 import { SholomModel } from "./sholom";
 
 const characterPath = "/3d-models/sci-fi/character.glb";
@@ -12,6 +19,9 @@ const walkScrollStart = 0.26;
 const walkScrollEnd = 1;
 const walkDistance = 4.5;
 const walkCycles = 3.6;
+const helmetHeadPosition: [number, number, number] = [0, 15, 1.5];
+const helmetHeadRotation: [number, number, number] = [0, 0, 0];
+const helmetHeadScale = 90;
 
 const normalizeRange = (value: number, start: number, end: number) =>
   MathUtils.clamp((value - start) / (end - start), 0, 1);
@@ -25,6 +35,7 @@ export function Character({ scrollProgress, ...props }: CharacterProps) {
   const modelRoot = useRef<Group>(null);
   const { nodes, materials, animations } = useGLTF(characterPath);
   const { actions, mixer } = useAnimations(animations, group);
+  const head = nodes.mixamorigHead as Object3D | undefined;
 
   useEffect(() => {
     const sitToStand = actions[sitToStandAnimation];
@@ -84,7 +95,16 @@ export function Character({ scrollProgress, ...props }: CharacterProps) {
 
   return (
     <group ref={group} {...props} dispose={null}>
-      <SholomModel />
+      {head &&
+        createPortal(
+          <SholomModel
+            centered
+            position={helmetHeadPosition}
+            rotation={helmetHeadRotation}
+            scale={helmetHeadScale}
+          />,
+          head,
+        )}
       <group ref={modelRoot} name="Scene">
         <group
           name="Armature008"
