@@ -6,6 +6,7 @@ import {
   MeshStandardMaterial,
 } from "three";
 import { useControls } from "leva";
+import { RigidBody } from "@react-three/rapier";
 
 const modelPath = "/3d-models/sci-fi/ship-container.glb";
 const texturePath = "/3d-models/sci-fi/ship_baking.jpg";
@@ -103,13 +104,15 @@ export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
         material={materials.shop_top}
         position={[0, 5.272, 17.861]}
       />
-      <mesh
-        castShadow
-        receiveShadow
-        geometry={(nodes.ship_floor as Mesh).geometry}
-        material={materials.floor}
-        position={[0, 0.057, 17.861]}
-      />
+      <RigidBody type="fixed" colliders="trimesh" friction={1}>
+        <mesh
+          castShadow
+          receiveShadow
+          geometry={(nodes.ship_floor as Mesh).geometry}
+          material={materials.floor}
+          position={[0, 0.057, 17.861]}
+        />
+      </RigidBody>
       <mesh
         castShadow
         receiveShadow

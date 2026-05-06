@@ -1,4 +1,5 @@
 import { useGLTF } from "@react-three/drei";
+import { RigidBody } from "@react-three/rapier";
 import { JSX } from "react";
 import { Mesh } from "three";
 
@@ -248,14 +249,16 @@ export function SholomModel({ centered = false, ...props }: SholomModelProps) {
           rotation={[2.148, -0.058, -1.554]}
           scale={[0.146, 0.094, 0.146]}
         />
-        <mesh
-          castShadow
-          receiveShadow
-          visible={false}
-          geometry={(nodes.collision_plane_2 as Mesh).geometry}
-          position={[-0.019, 1.58, 6.563]}
-          rotation={[1.575, -0.025, -3.124]}
-        />
+        <RigidBody type="kinematicPosition" colliders="trimesh" friction={1}>
+          <mesh
+            castShadow
+            receiveShadow
+            visible={false}
+            geometry={(nodes.collision_plane_2 as Mesh).geometry}
+            position={[-0.019, 1.58, 6.563]}
+            rotation={[1.575, -0.025, -3.124]}
+          />
+        </RigidBody>
       </group>
     </group>
   );

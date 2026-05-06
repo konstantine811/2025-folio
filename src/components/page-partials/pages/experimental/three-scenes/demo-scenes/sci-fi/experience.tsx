@@ -1,5 +1,6 @@
 import { CameraControls, Stars } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
+import { Physics } from "@react-three/rapier";
 import { useEffect, useRef } from "react";
 import { MathUtils, Vector3 } from "three";
 import { ShipContainer } from "./ship/ship-container";
@@ -76,10 +77,10 @@ const Experience = ({ cameraMode, scrollProgress }: ExperienceProps) => {
       <ambientLight intensity={1.7} />
       <directionalLight castShadow position={[1, 3, 1]} intensity={3} />
       {/* <Environment preset="sunset" /> */}
-      <group>
+      <Physics timeStep="vary" gravity={[0, -9.81, 0]}>
         <ShipContainer />
         <Character scrollProgress={scrollProgress} />
-      </group>
+      </Physics>
       <Stars
         radius={1}
         depth={500}

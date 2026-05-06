@@ -9,7 +9,7 @@ import {
   Object3D,
   SkinnedMesh,
 } from "three";
-import { CablesModel } from "./cables";
+import { HelmetCableRopes } from "./helmet-cable-ropes";
 import { SholomModel } from "./sholom";
 
 const characterPath = "/3d-models/sci-fi/character.glb";
@@ -23,9 +23,6 @@ const walkCycles = 3.6;
 const helmetHeadPosition: [number, number, number] = [0, 15, 1.5];
 const helmetHeadRotation: [number, number, number] = [0, 0, 0];
 const helmetHeadScale = 90;
-const cablesHeadPosition: [number, number, number] = [0, 20, -265.5];
-const cablesHeadRotation: [number, number, number] = [0, Math.PI, 0];
-const cablesHeadScale = 90;
 const stableWalkBoneTracks = ["mixamorighead", "mixamorigneck", "headtopend"];
 
 const normalizeRange = (value: number, start: number, end: number) =>
@@ -122,22 +119,22 @@ export function Character({ scrollProgress, ...props }: CharacterProps) {
     <group ref={group} {...props} dispose={null}>
       {head &&
         createPortal(
-          <>
-            <SholomModel
-              centered
-              position={helmetHeadPosition}
-              rotation={helmetHeadRotation}
-              scale={helmetHeadScale}
-            />
-            <CablesModel
-              centered
-              position={cablesHeadPosition}
-              rotation={cablesHeadRotation}
-              scale={cablesHeadScale}
-            />
-          </>,
+          <SholomModel
+            centered
+            position={helmetHeadPosition}
+            rotation={helmetHeadRotation}
+            scale={helmetHeadScale}
+          />,
           head,
         )}
+      {head && (
+        <HelmetCableRopes
+          head={head}
+          helmetPosition={helmetHeadPosition}
+          helmetRotation={helmetHeadRotation}
+          helmetScale={helmetHeadScale}
+        />
+      )}
       <group ref={modelRoot} name="Scene">
         <group
           name="Armature008"
