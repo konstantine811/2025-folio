@@ -1,4 +1,4 @@
-import { JSX, useEffect, useRef } from "react";
+import { JSX, useEffect, useMemo, useRef } from "react";
 import { useAnimations, useGLTF } from "@react-three/drei";
 import { createPortal, useFrame } from "@react-three/fiber";
 import {
@@ -9,6 +9,7 @@ import {
   Object3D,
   SkinnedMesh,
 } from "three";
+import { CablesModel } from "./cables";
 import { SholomModel } from "./sholom";
 
 const characterPath = "/3d-models/sci-fi/character.glb";
@@ -22,6 +23,10 @@ const walkCycles = 3.6;
 const helmetHeadPosition: [number, number, number] = [0, 15, 1.5];
 const helmetHeadRotation: [number, number, number] = [0, 0, 0];
 const helmetHeadScale = 90;
+const cablesHeadPosition: [number, number, number] = [0, 20, -265.5];
+const cablesHeadRotation: [number, number, number] = [0, Math.PI, 0];
+const cablesHeadScale = 90;
+const stableWalkBoneTracks = ["mixamorighead", "mixamorigneck", "headtopend"];
 
 const normalizeRange = (value: number, start: number, end: number) =>
   MathUtils.clamp((value - start) / (end - start), 0, 1);
@@ -34,7 +39,27 @@ export function Character({ scrollProgress, ...props }: CharacterProps) {
   const group = useRef<Group>(null);
   const modelRoot = useRef<Group>(null);
   const { nodes, materials, animations } = useGLTF(characterPath);
-  const { actions, mixer } = useAnimations(animations, group);
+  const characterAnimations = useMemo(
+    () =>
+      animations.map((clip) => {
+        if (clip.name !== walkAnimation) {
+          return clip;
+        }
+
+        const stableWalkClip = clip.clone();
+        stableWalkClip.tracks = stableWalkClip.tracks.filter(({ name }) => {
+          const normalizedTrackName = name.replace(/[^a-z0-9]/gi, "").toLowerCase();
+
+          return !stableWalkBoneTracks.some((boneName) =>
+            normalizedTrackName.includes(boneName),
+          );
+        });
+
+        return stableWalkClip;
+      }),
+    [animations],
+  );
+  const { actions, mixer } = useAnimations(characterAnimations, group);
   const head = nodes.mixamorigHead as Object3D | undefined;
 
   useEffect(() => {
@@ -97,12 +122,20 @@ export function Character({ scrollProgress, ...props }: CharacterProps) {
     <group ref={group} {...props} dispose={null}>
       {head &&
         createPortal(
-          <SholomModel
-            centered
-            position={helmetHeadPosition}
-            rotation={helmetHeadRotation}
-            scale={helmetHeadScale}
-          />,
+          <>
+            <SholomModel
+              centered
+              position={helmetHeadPosition}
+              rotation={helmetHeadRotation}
+              scale={helmetHeadScale}
+            />
+            <CablesModel
+              centered
+              position={cablesHeadPosition}
+              rotation={cablesHeadRotation}
+              scale={cablesHeadScale}
+            />
+          </>,
           head,
         )}
       <group ref={modelRoot} name="Scene">

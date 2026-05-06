@@ -3,28 +3,34 @@ import { JSX } from "react";
 import { Mesh } from "three";
 
 const cablesPath = "/3d-models/sci-fi/cables.glb";
+const cablesOrigin: [number, number, number] = [0, -1.6, -9.63];
 
-export function CablesModel(props: JSX.IntrinsicElements["group"]) {
+type CablesModelProps = JSX.IntrinsicElements["group"] & {
+  centered?: boolean;
+};
+
+export function CablesModel({ centered = false, ...props }: CablesModelProps) {
   const { nodes, materials } = useGLTF(cablesPath);
   return (
     <group {...props} dispose={null}>
-      <mesh
-        castShadow
-        receiveShadow
-        geometry={(nodes.Cable_1 as Mesh).geometry}
-        material={materials["Material.002"]}
-        position={[-0.77, 0.827, 22.09]}
-      />
-      <mesh
-        castShadow
-        receiveShadow
-        geometry={(nodes.Cable_2 as Mesh).geometry}
-        material={materials["Material.002"]}
-        position={[0.069, 1.592, 9.634]}
-        rotation={[0, Math.PI / 2, 0]}
-        scale={[2.775, 1, 1]}
-      />
-      <mesh
+      <group position={centered ? cablesOrigin : undefined}>
+        <mesh
+          castShadow
+          receiveShadow
+          geometry={(nodes.Cable_1 as Mesh).geometry}
+          material={materials["Material.002"]}
+          position={[-0.77, 0.827, 22.09]}
+        />
+        <mesh
+          castShadow
+          receiveShadow
+          geometry={(nodes.Cable_2 as Mesh).geometry}
+          material={materials["Material.002"]}
+          position={[0.069, 1.592, 9.634]}
+          rotation={[0, Math.PI / 2, 0]}
+          scale={[2.775, 1, 1]}
+        />
+        <mesh
         castShadow
         receiveShadow
         geometry={(nodes.Cable_3 as Mesh).geometry}
@@ -78,8 +84,9 @@ export function CablesModel(props: JSX.IntrinsicElements["group"]) {
         rotation={[0, Math.PI / 2, 0]}
         scale={[2.775, 1, 1]}
       />
+      </group>
     </group>
   );
 }
 
-useGLTF.preload("/cables.glb");
+useGLTF.preload(cablesPath);
