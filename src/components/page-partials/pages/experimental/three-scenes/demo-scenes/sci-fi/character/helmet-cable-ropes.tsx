@@ -28,6 +28,14 @@ type RopeState = {
   points: RopePoint[];
 };
 
+type FloorScatterConfig = {
+  sideSlope: number;
+  backSlope: number;
+  waveAmplitude: number;
+  waveFrequency: number;
+  wavePhase: number;
+};
+
 const cableRadius = 0.018;
 const floorY = 0.08;
 const gravity = new Vector3(0, -5.5, 0);
@@ -35,6 +43,13 @@ const segmentCount = 64;
 const segmentLength = 0.14;
 const constraintIterations = 5;
 const damping = 0.965;
+const pinnedArcPhysicsPointCount = 2;
+const pinnedArcRenderPointCount = 30;
+const pinnedArcStartOffset: [number, number, number] = [0, 0, 0];
+const pinnedArcBackDistance = -0.012;
+const pinnedArcLift = 0.0045;
+const pinnedArcEndDrop = 0.003;
+const pinnedArcRoundness = 1;
 const helmetColliderRadius = 0.16;
 const helmetCollisionPlaneRadius = 0.22;
 const initialFloorBackSlope = 0.18;
@@ -48,14 +63,73 @@ const helmetCollisionPlaneRotation: [number, number, number] = [
 ];
 
 const connectorLocalPositions: [number, number, number][] = [
-  [-0.117, 2.089, 6.636],
-  [-0.101, 2.115, 6.565],
+  [-0.107, 2.139, 6.636],
+  [-0.101, 2.145, 6.565],
   [-0.055, 2.133, 6.547],
-  [-0.001, 2.135, 6.542],
+  [-0.001, 2.135, 6.562],
   [0.059, 2.134, 6.549],
-  [0.116, 2.089, 6.605],
-  [0.117, 2.093, 6.684],
+  [0.106, 2.129, 6.605],
+  [0.117, 2.133, 6.684],
   [-0.116, 2.138, 6.712],
+];
+
+const floorScatterConfigs: FloorScatterConfig[] = [
+  {
+    sideSlope: -0.52,
+    backSlope: 0.72,
+    waveAmplitude: 0.18,
+    waveFrequency: 1.4,
+    wavePhase: 0.2,
+  },
+  {
+    sideSlope: -0.34,
+    backSlope: 0.94,
+    waveAmplitude: 0.22,
+    waveFrequency: 1.8,
+    wavePhase: 1.1,
+  },
+  {
+    sideSlope: -0.16,
+    backSlope: 0.58,
+    waveAmplitude: 0.14,
+    waveFrequency: 2.2,
+    wavePhase: 2.4,
+  },
+  {
+    sideSlope: 0.06,
+    backSlope: 1.08,
+    waveAmplitude: 0.2,
+    waveFrequency: 1.6,
+    wavePhase: 3.2,
+  },
+  {
+    sideSlope: 0.22,
+    backSlope: 0.66,
+    waveAmplitude: 0.16,
+    waveFrequency: 2,
+    wavePhase: 4.1,
+  },
+  {
+    sideSlope: 0.42,
+    backSlope: 0.9,
+    waveAmplitude: 0.24,
+    waveFrequency: 1.5,
+    wavePhase: 5,
+  },
+  {
+    sideSlope: 0.58,
+    backSlope: 0.5,
+    waveAmplitude: 0.2,
+    waveFrequency: 1.9,
+    wavePhase: 5.8,
+  },
+  {
+    sideSlope: -0.7,
+    backSlope: 0.44,
+    waveAmplitude: 0.26,
+    waveFrequency: 1.7,
+    wavePhase: 2.9,
+  },
 ];
 
 const tmpHeadCenter = new Vector3();
@@ -64,6 +138,93 @@ const tmpDelta = new Vector3();
 const tmpDirection = new Vector3();
 const tmpPlanePoint = new Vector3();
 const tmpPlaneNormal = new Vector3();
+const tmpArcPoint = new Vector3();
+
+const smoothStep = (value: number) => value * value * (3 - 2 * value);
+
+const getFloorScatterOffset = (ropeIndex: number, floorDistance: number) => {
+  const config = floorScatterConfigs[ropeIndex % floorScatterConfigs.length];
+  const wave =
+    Math.sin(floorDistance * config.waveFrequency + config.wavePhase) *
+    config.waveAmplitude;
+
+  return {
+    x: floorDistance * config.sideSlope + wave,
+    z: floorDistance * config.backSlope,
+  };
+};
+
+const getPinnedArcLocalPoint = (t: number, ropeIndex: number) => {
+  const easedT = smoothStep(t);
+  const roundT = Math.sin(t * Math.PI) * pinnedArcRoundness;
+  const ropeSpread =
+    (ropeIndex - (connectorLocalPositions.length - 1) / 2) * 0.012;
+
+  return tmpArcPoint.set(
+    pinnedArcStartOffset[0] + ropeSpread * roundT,
+    pinnedArcStartOffset[1] +
+      roundT * pinnedArcLift -
+      easedT * pinnedArcEndDrop,
+    pinnedArcStartOffset[2] + easedT * pinnedArcBackDistance,
+  );
+};
+
+const pinArcPoints = (
+  points: RopePoint[],
+  anchor: Group,
+  ropeIndex: number,
+) => {
+  for (let index = 0; index < pinnedArcPhysicsPointCount; index += 1) {
+    const t = index / (pinnedArcPhysicsPointCount - 1);
+    const point = points[index];
+    const arcPoint = getPinnedArcLocalPoint(t, ropeIndex).applyMatrix4(
+      anchor.matrixWorld,
+    );
+
+    point.current.copy(arcPoint);
+    point.previous.copy(arcPoint);
+  }
+};
+
+const resetDynamicTail = (points: RopePoint[], ropeIndex: number) => {
+  const tailAnchor = points[pinnedArcPhysicsPointCount - 1].current;
+  const spread = (ropeIndex - (connectorLocalPositions.length - 1) / 2) * 0.035;
+  const floorPointY = floorY + cableRadius;
+  const dropDistance = Math.max(tailAnchor.y - floorPointY, 0);
+
+  for (
+    let index = pinnedArcPhysicsPointCount;
+    index < points.length;
+    index += 1
+  ) {
+    const distanceAlongCable =
+      segmentLength * (index - pinnedArcPhysicsPointCount + 1);
+    const isOnFloor = distanceAlongCable > dropDistance;
+    const floorDistance = Math.max(distanceAlongCable - dropDistance, 0);
+    const floorScatter = getFloorScatterOffset(ropeIndex, floorDistance);
+    const point = tmpDirection.set(
+      tailAnchor.x + spread + floorScatter.x,
+      isOnFloor ? floorPointY : tailAnchor.y - distanceAlongCable,
+      tailAnchor.z +
+        Math.min(distanceAlongCable, dropDistance) *
+          initialFloorBackSlope *
+          initialFloorDirection +
+        floorScatter.z,
+    );
+
+    points[index].current.copy(point);
+    points[index].previous.copy(point);
+  }
+};
+
+const createPinnedArcRenderPoints = (anchor: Group, ropeIndex: number) =>
+  Array.from({ length: pinnedArcRenderPointCount }, (_, index) => {
+    const t = index / (pinnedArcRenderPointCount - 1);
+
+    return getPinnedArcLocalPoint(t, ropeIndex)
+      .applyMatrix4(anchor.matrixWorld)
+      .clone();
+  });
 
 const createInitialPoints = (anchor: Vector3, index: number) => {
   const spread = (index - (connectorLocalPositions.length - 1) / 2) * 0.035;
@@ -74,13 +235,15 @@ const createInitialPoints = (anchor: Vector3, index: number) => {
     const distanceAlongCable = segmentLength * pointIndex;
     const isOnFloor = distanceAlongCable > dropDistance;
     const floorDistance = Math.max(distanceAlongCable - dropDistance, 0);
+    const floorScatter = getFloorScatterOffset(index, floorDistance);
     const point = new Vector3(
-      anchor.x + spread,
+      anchor.x + spread + floorScatter.x,
       isOnFloor ? floorPointY : anchor.y - distanceAlongCable,
       anchor.z +
-        (Math.min(distanceAlongCable, dropDistance) * initialFloorBackSlope +
-          floorDistance) *
-          initialFloorDirection,
+        Math.min(distanceAlongCable, dropDistance) *
+          initialFloorBackSlope *
+          initialFloorDirection +
+        floorScatter.z,
     );
 
     return {
@@ -158,7 +321,9 @@ export function HelmetCableRopes({
     collisionPlaneRef.current?.getWorldPosition(tmpPlanePoint);
     tmpPlaneNormal
       .set(0, 0, 1)
-      .transformDirection(collisionPlaneRef.current?.matrixWorld ?? head.matrixWorld);
+      .transformDirection(
+        collisionPlaneRef.current?.matrixWorld ?? head.matrixWorld,
+      );
 
     anchorRefs.current.forEach((anchorRef, ropeIndex) => {
       const anchor = anchorRef.current;
@@ -174,14 +339,19 @@ export function HelmetCableRopes({
 
       if (!rope.initialized) {
         rope.points = createInitialPoints(tmpAnchor, ropeIndex);
+        pinArcPoints(rope.points, anchor, ropeIndex);
+        resetDynamicTail(rope.points, ropeIndex);
         rope.initialized = true;
       }
 
       const { points } = rope;
-      points[0].current.copy(tmpAnchor);
-      points[0].previous.copy(tmpAnchor);
+      pinArcPoints(points, anchor, ropeIndex);
 
-      for (let index = 1; index < points.length; index += 1) {
+      for (
+        let index = pinnedArcPhysicsPointCount;
+        index < points.length;
+        index += 1
+      ) {
         const point = points[index];
         const velocity = tmpDelta
           .subVectors(point.current, point.previous)
@@ -196,23 +366,34 @@ export function HelmetCableRopes({
         iteration < constraintIterations;
         iteration += 1
       ) {
-        points[0].current.copy(tmpAnchor);
+        pinArcPoints(points, anchor, ropeIndex);
 
-        for (let index = 0; index < points.length - 1; index += 1) {
-          if (index === 0) {
-            tmpDelta.subVectors(points[1].current, points[0].current);
+        for (
+          let index = pinnedArcPhysicsPointCount - 1;
+          index < points.length - 1;
+          index += 1
+        ) {
+          if (index === pinnedArcPhysicsPointCount - 1) {
+            tmpDelta.subVectors(
+              points[index + 1].current,
+              points[index].current,
+            );
             const distance = tmpDelta.length();
 
             if (distance > 0) {
               tmpDelta.multiplyScalar((distance - segmentLength) / distance);
-              points[1].current.sub(tmpDelta);
+              points[index + 1].current.sub(tmpDelta);
             }
           } else {
             satisfyDistance(points[index], points[index + 1], segmentLength);
           }
         }
 
-        for (let index = 1; index < points.length; index += 1) {
+        for (
+          let index = pinnedArcPhysicsPointCount;
+          index < points.length;
+          index += 1
+        ) {
           const point = points[index];
 
           if (point.current.y < floorY + cableRadius) {
@@ -249,9 +430,14 @@ export function HelmetCableRopes({
       }
 
       const curve = new CatmullRomCurve3(
-        points.map(({ current }) => current.clone()),
+        [
+          ...createPinnedArcRenderPoints(anchor, ropeIndex),
+          ...points
+            .slice(pinnedArcPhysicsPointCount)
+            .map(({ current }) => current.clone()),
+        ],
       );
-      const geometry = new TubeGeometry(curve, 18, cableRadius, 7);
+      const geometry = new TubeGeometry(curve, 80, cableRadius, 7);
 
       mesh.geometry.dispose();
       mesh.geometry = geometry;
