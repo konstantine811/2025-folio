@@ -108,6 +108,24 @@ export function SholomModel({ centered = false, ...props }: SholomModelProps) {
         <mesh
           castShadow
           receiveShadow
+          geometry={(nodes.Sphere036 as Mesh).geometry}
+          material={materials["Scratched Metal"]}
+          position={[-0.069, 2.165, 6.583]}
+          rotation={[2.878, 0.569, 2.909]}
+          scale={[0.243, 0.156, 0.243]}
+        />
+        <mesh
+          castShadow
+          receiveShadow
+          geometry={(nodes.Sphere037 as Mesh).geometry}
+          material={materials["Scratched Metal"]}
+          position={[-0.085, 2.176, 6.641]}
+          rotation={[-3.058, 0.476, 2.65]}
+          scale={[0.243, 0.156, 0.243]}
+        />
+        <mesh
+          castShadow
+          receiveShadow
           geometry={(nodes.Sphere038 as Mesh).geometry}
           material={materials["Scratched Metal"]}
           position={[0.085, 2.175, 6.639]}

@@ -38,17 +38,17 @@ type FloorScatterConfig = {
 
 const cableRadius = 0.018;
 const floorY = 0.08;
-const gravity = new Vector3(0, -5.5, 0);
+const gravity = new Vector3(0, -9.8, 0);
 const segmentCount = 64;
 const segmentLength = 0.14;
 const constraintIterations = 5;
-const damping = 0.965;
+const damping = 0.93;
 const pinnedArcPhysicsPointCount = 2;
 const pinnedArcRenderPointCount = 30;
 const pinnedArcStartOffset: [number, number, number] = [0, 0, 0];
-const pinnedArcBackDistance = -0.012;
-const pinnedArcLift = 0.0045;
-const pinnedArcEndDrop = 0.003;
+const pinnedArcBackDistance = -0.112;
+const pinnedArcLift = 0.0115;
+const pinnedArcEndDrop = 0.113;
 const pinnedArcRoundness = 1;
 const helmetColliderRadius = 0.16;
 const helmetCollisionPlaneRadius = 0.22;
@@ -63,13 +63,13 @@ const helmetCollisionPlaneRotation: [number, number, number] = [
 ];
 
 const connectorLocalPositions: [number, number, number][] = [
-  [-0.107, 2.139, 6.636],
-  [-0.101, 2.145, 6.565],
-  [-0.055, 2.133, 6.547],
-  [-0.001, 2.135, 6.562],
-  [0.059, 2.134, 6.549],
-  [0.106, 2.129, 6.605],
-  [0.117, 2.133, 6.684],
+  [-0.107, 2.159, 6.636],
+  [-0.101, 2.145, 6.595],
+  [-0.055, 2.163, 6.587],
+  [-0.001, 2.165, 6.582],
+  [0.059, 2.164, 6.589],
+  [0.09, 2.169, 6.605],
+  [0.107, 2.163, 6.684],
   [-0.116, 2.138, 6.712],
 ];
 
@@ -429,14 +429,12 @@ export function HelmetCableRopes({
         }
       }
 
-      const curve = new CatmullRomCurve3(
-        [
-          ...createPinnedArcRenderPoints(anchor, ropeIndex),
-          ...points
-            .slice(pinnedArcPhysicsPointCount)
-            .map(({ current }) => current.clone()),
-        ],
-      );
+      const curve = new CatmullRomCurve3([
+        ...createPinnedArcRenderPoints(anchor, ropeIndex),
+        ...points
+          .slice(pinnedArcPhysicsPointCount)
+          .map(({ current }) => current.clone()),
+      ]);
       const geometry = new TubeGeometry(curve, 80, cableRadius, 7);
 
       mesh.geometry.dispose();
