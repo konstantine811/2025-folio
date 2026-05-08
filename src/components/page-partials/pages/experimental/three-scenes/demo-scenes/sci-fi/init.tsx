@@ -4,6 +4,8 @@ import Experience from "./experience";
 import { Suspense, UIEvent, useCallback, useState } from "react";
 import { Perf } from "r3f-perf";
 import { useControls } from "leva";
+import ThreeLoader from "../../common/three-loader";
+import { isDev } from "@/utils/check-env";
 
 export type CameraMode = "Scroll" | "CameraControls";
 
@@ -28,14 +30,14 @@ const Init = () => {
 
   return (
     <MainWrapperOffset>
-      {/* <ThreeLoader /> */}
+      {!isDev && <ThreeLoader />}
       <Canvas
         shadows
         camera={{ position: [15, 10, -5], fov: 30 }}
         style={{ height: "100%" }}
       >
         <Suspense fallback={null}>
-          <Perf position="top-left" />
+          {isDev && <Perf position="top-left" />}
           <Experience
             cameraMode={selectedCameraMode}
             scrollProgress={scrollProgress}
