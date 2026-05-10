@@ -748,6 +748,11 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
         codeBlockLanguages: CODE_BLOCK_LANGUAGES,
         codeMirrorExtensions: [
           effectiveDarkTheme ? darkCodeMirrorTheme : lightCodeMirrorTheme,
+          EditorView.editable.of(isSelectionOwner),
+          EditorView.contentAttributes.of({
+            tabindex: isSelectionOwner ? "0" : "-1",
+            "aria-readonly": isSelectionOwner ? "false" : "true",
+          }),
         ],
       }),
       imagePlugin({
@@ -759,7 +764,7 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
         toolbarContents: () => <GlobalInlineMdxToolbar active={isToolbarActive} />,
       }),
     ],
-    [uploadPasteImage, isToolbarActive, effectiveDarkTheme],
+    [uploadPasteImage, isToolbarActive, effectiveDarkTheme, isSelectionOwner],
   );
 
   return (

@@ -39,6 +39,15 @@ export function useCanvasWheelCapture({
     const frame = frameRef.current;
     if (!frame) return;
 
+    let viewportFrameId: number | null = null;
+    const scheduleViewportBump = () => {
+      if (viewportFrameId !== null) return;
+      viewportFrameId = window.requestAnimationFrame(() => {
+        viewportFrameId = null;
+        bumpViewportVersion();
+      });
+    };
+
     const handleWheelCapture = (event: WheelEvent) => {
       if (!viewport) return;
 
@@ -65,7 +74,7 @@ export function useCanvasWheelCapture({
           Math.max(CANVAS_ZOOM_MIN, currentZoom * zoomFactor),
         );
         viewport.setZoom(nextZoom, true);
-        bumpViewportVersion();
+        scheduleViewportBump();
         return;
       }
 
@@ -75,7 +84,7 @@ export function useCanvasWheelCapture({
         viewport.center.x + worldDx,
         viewport.center.y + worldDy,
       );
-      bumpViewportVersion();
+      scheduleViewportBump();
     };
 
     frame.addEventListener("wheel", handleWheelCapture, {
@@ -83,6 +92,9 @@ export function useCanvasWheelCapture({
       passive: false,
     });
     return () => {
+      if (viewportFrameId !== null) {
+        window.cancelAnimationFrame(viewportFrameId);
+      }
       frame.removeEventListener("wheel", handleWheelCapture, true);
     };
   }, [bumpViewportVersion, frameRef, viewport]);

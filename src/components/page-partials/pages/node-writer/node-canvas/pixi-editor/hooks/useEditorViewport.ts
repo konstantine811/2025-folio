@@ -51,8 +51,16 @@ export function useEditorViewport() {
       );
       bumpViewportVersion();
     };
+    let viewportFrameId: number | null = null;
+    const scheduleViewportBump = () => {
+      if (viewportFrameId !== null) return;
+      viewportFrameId = window.requestAnimationFrame(() => {
+        viewportFrameId = null;
+        bumpViewportVersion();
+      });
+    };
     const handleViewportChanged = () => {
-      bumpViewportVersion();
+      scheduleViewportBump();
     };
 
     viewport.on("moved", handleViewportChanged);
@@ -60,6 +68,9 @@ export function useEditorViewport() {
     handleResize();
 
     return () => {
+      if (viewportFrameId !== null) {
+        window.cancelAnimationFrame(viewportFrameId);
+      }
       viewport.off("moved", handleViewportChanged);
       viewport.off("zoomed", handleViewportChanged);
       setViewport(null);

@@ -1708,6 +1708,7 @@ body.dark
   background: #f8fafc;
   box-shadow: 0 8px 26px rgb(0 0 0 / 0.08);
   padding: 0;
+  contain: layout paint style;
 }
 
 [data-node-markdown-root]
@@ -1715,6 +1716,15 @@ body.dark
   .node-mdx-editor-content
   .nw-cm-editor-with-copy {
   position: relative;
+  contain: layout paint style;
+}
+
+[data-node-markdown-root][data-nw-selection-owner="false"]
+  .node-mdx-editor-basic
+  .node-mdx-editor-content
+  [class*="_codeMirrorWrapper_"] {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 14rem;
 }
 
 [data-node-markdown-root]
@@ -1847,6 +1857,7 @@ body.dark
   [class*="_codeMirrorWrapper_"]
   .cm-editor {
   background: #ffffff !important;
+  contain: layout paint style;
 }
 
 [data-node-markdown-root]
