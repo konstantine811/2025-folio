@@ -1,4 +1,9 @@
-import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
+import {
+  memo,
+  type ComponentProps,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import type { Viewport } from "pixi-viewport";
 import { NodeMarkdownBlocksEditor } from "../components/NodeMarkdownBlocksEditor";
 import { MarkdownResolvingImg } from "../components/MarkdownResolvingImg";
@@ -32,6 +37,24 @@ import {
   updateNodeHeadingLevel,
   updateNodeLabel,
 } from "./nodeOverlayHelpers";
+
+type NodeMarkdownBlocksEditorProps = ComponentProps<
+  typeof NodeMarkdownBlocksEditor
+>;
+
+const MemoNodeMarkdownBlocksEditor = memo(
+  NodeMarkdownBlocksEditor,
+  (
+    prev: Readonly<NodeMarkdownBlocksEditorProps>,
+    next: Readonly<NodeMarkdownBlocksEditorProps>,
+  ) =>
+    prev.nodeId === next.nodeId &&
+    prev.blocks === next.blocks &&
+    prev.selectionEditorMode === next.selectionEditorMode &&
+    prev.isDarkMode === next.isDarkMode &&
+    prev.isSelectionOwner === next.isSelectionOwner &&
+    prev.uploadPasteImage === next.uploadPasteImage,
+);
 
 type NodeDropHighlight =
   | {
@@ -196,7 +219,14 @@ const MarkdownNodeOverlayItem = ({
   return (
     <div
       key={node.id}
-      style={{ left, top, width, height, zIndex: layerZIndex }}
+      style={{
+        left,
+        top,
+        width,
+        height,
+        zIndex: layerZIndex,
+        contain: "layout paint style",
+      }}
       className="group/node-overlay pointer-events-auto absolute select-none"
       data-overlay-node-id={node.id}
       data-viewport-version={viewportVersion}
@@ -503,7 +533,7 @@ const MarkdownNodeOverlayItem = ({
                     isSelected ? "pointer-events-auto" : "pointer-events-none"
                   }`}
                 >
-                  <NodeMarkdownBlocksEditor
+                  <MemoNodeMarkdownBlocksEditor
                     nodeId={node.id}
                     blocks={blocks}
                     selectionEditorMode="toolbar"

@@ -448,28 +448,33 @@ const NodeHtmlOverlayLayer = ({
     };
   }, [onProjectPatch, wireSession]);
 
+  const connectedItemIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const link of project.links) {
+      ids.add(link.source);
+      ids.add(link.target);
+    }
+    return ids;
+  }, [project.links]);
+
   const preparedNodes = useMemo(
     () =>
       project.nodes.map((node) => ({
         node,
         geometry: normalizeNodeGeometry(node),
         blocks: deriveMarkdownBlocks(node),
-        isConnected: project.links.some(
-          (link) => link.source === node.id || link.target === node.id,
-        ),
+        isConnected: connectedItemIds.has(node.id),
       })),
-    [project.links, project.nodes],
+    [connectedItemIds, project.nodes],
   );
   const preparedCanvasImages = useMemo(
     () =>
       (project.canvasImages ?? []).map((image) => ({
         image,
         geometry: normalizeCanvasImageGeometry(image),
-        isConnected: project.links.some(
-          (link) => link.source === image.id || link.target === image.id,
-        ),
+        isConnected: connectedItemIds.has(image.id),
       })),
-    [project.canvasImages, project.links],
+    [connectedItemIds, project.canvasImages],
   );
   const orderedOverlayItems = useMemo(() => {
     const imageCount = preparedCanvasImages.length;
