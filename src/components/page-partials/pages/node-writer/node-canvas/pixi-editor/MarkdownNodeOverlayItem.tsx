@@ -2,6 +2,7 @@ import {
   memo,
   useEffect,
   useRef,
+  useState,
   type ComponentProps,
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
@@ -109,6 +110,14 @@ type InlineTextUnit = {
   isItalic: boolean;
   isStrike: boolean;
   width: number;
+};
+
+type CanvasCodeCopyButton = {
+  id: string;
+  code: string;
+  left: number;
+  top: number;
+  size: number;
 };
 
 function drawRoundedRect(
@@ -219,6 +228,24 @@ function labelForCodeFenceLanguage(language: string) {
     return "Shell";
   }
   return language.trim() || "TypeScript JSX";
+}
+
+async function copyCanvasPreviewText(text: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return;
+  } catch {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "true");
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    textarea.style.top = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    textarea.remove();
+  }
 }
 
 function drawMarkdownCanvasCodeLine(
@@ -587,6 +614,10 @@ function MarkdownCanvasPreview({
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const spacerRef = useRef<HTMLDivElement | null>(null);
+  const copyButtonsSignatureRef = useRef("");
+  const [codeCopyButtons, setCodeCopyButtons] = useState<
+    CanvasCodeCopyButton[]
+  >([]);
   const imageCacheRef = useRef<
     Map<
       string,
@@ -736,6 +767,7 @@ function MarkdownCanvasPreview({
       let codeLines: string[] = [];
       let codeLanguage = "";
       let paragraphLines: string[] = [];
+      const nextCodeCopyButtons: CanvasCodeCopyButton[] = [];
 
       const lines = descriptionFromBlocks(blocks).split("\n");
 
@@ -894,8 +926,8 @@ function MarkdownCanvasPreview({
 
       if (scrollable && spacerRef.current) {
         spacerRef.current.style.height = `${Math.max(
-          cssHeight,
-          estimateContentHeight(),
+          0,
+          estimateContentHeight() - cssHeight,
         )}px`;
       }
 
@@ -1024,6 +1056,16 @@ function MarkdownCanvasPreview({
         ctx.lineWidth = 1.2;
         ctx.strokeRect(copyX + 3, copyY + 4, 9, 10);
         ctx.strokeRect(copyX, copyY, 9, 10);
+
+        if (scrollable) {
+          nextCodeCopyButtons.push({
+            id: `${nextCodeCopyButtons.length}-${Math.round(blockY + scrollTop)}`,
+            code: codeLines.join("\n"),
+            left: copyX - 4,
+            top: copyY - 4 + scrollTop,
+            size: 22,
+          });
+        }
 
         ctx.font = `400 ${MDX_CANVAS_TYPO.codeSize}px ${MDX_CANVAS_CODE_FONT}`;
         for (const [lineIndex, codeLine] of (codeLines.length > 0
@@ -1309,6 +1351,25 @@ function MarkdownCanvasPreview({
       if (inCode) {
         flushCodeBlock();
       }
+
+      if (scrollable) {
+        const nextSignature = JSON.stringify(
+          nextCodeCopyButtons.map(({ id, code, left, top, size }) => [
+            id,
+            code,
+            Math.round(left),
+            Math.round(top),
+            size,
+          ]),
+        );
+        if (copyButtonsSignatureRef.current !== nextSignature) {
+          copyButtonsSignatureRef.current = nextSignature;
+          setCodeCopyButtons(nextCodeCopyButtons);
+        }
+      } else if (copyButtonsSignatureRef.current !== "") {
+        copyButtonsSignatureRef.current = "";
+        setCodeCopyButtons([]);
+      }
     };
 
     draw();
@@ -1339,6 +1400,31 @@ function MarkdownCanvasPreview({
           aria-hidden="true"
           className="pointer-events-none sticky top-0 z-10 block h-full w-full select-none"
         />
+        {codeCopyButtons.map((button) => (
+          <button
+            key={button.id}
+            type="button"
+            aria-label="Copy code"
+            title="Copy code"
+            className="absolute z-30 rounded-md outline-none transition-colors hover:bg-zinc-950/5 focus-visible:ring-2 focus-visible:ring-sky-400/60"
+            style={{
+              left: button.left,
+              top: button.top,
+              width: button.size,
+              height: button.size,
+            }}
+            onPointerDown={(event) => {
+              event.stopPropagation();
+            }}
+            onMouseDown={(event) => {
+              event.stopPropagation();
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              void copyCanvasPreviewText(button.code);
+            }}
+          />
+        ))}
         <div ref={spacerRef} aria-hidden="true" className="w-px" />
       </div>
     );
