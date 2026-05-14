@@ -62,11 +62,11 @@ const MemoNodeMarkdownBlocksEditor = memo(
 
 const MDX_CANVAS_TYPO = {
   contentPaddingX: 32,
-  contentPaddingTop: 18,
+  contentPaddingTop: 24.5,
   contentPaddingBottom: 12,
   bodySize: 16.32,
   bodyLineHeight: 28.1,
-  paragraphGap: 14.4,
+  paragraphGap: 14.3,
   headingGapTop: 4,
   headingGapBottom: 12,
   heading: {
@@ -81,7 +81,7 @@ const MDX_CANVAS_TYPO = {
   listMarginTop: 4,
   listMarginBottom: 16,
   listPaddingLeft: 28.8,
-  listMarkerGap: 16,
+  listMarkerGap: 4,
   listItemGap: 5.4,
   codeSize: 13.76,
   codeLineHeight: 22,
@@ -153,15 +153,14 @@ function splitMarkdownCanvasIndent(text: string) {
   }
 
   return {
-    indent:
-      Math.ceil(leadingSpaces / 2) * MDX_CANVAS_TYPO.listPaddingLeft,
+    indent: Math.ceil(leadingSpaces / 2) * MDX_CANVAS_TYPO.listPaddingLeft,
     text: text.slice(leadingSpaces),
   };
 }
 
-function extractMarkdownCanvasImage(line: string):
-  | { src: string; alt: string }
-  | null {
+function extractMarkdownCanvasImage(
+  line: string,
+): { src: string; alt: string } | null {
   const trimmed = line.trim();
   if (!trimmed) return null;
 
@@ -359,8 +358,7 @@ function parseStyledInlineText(
         const inner = text.slice(index + delimiter.length, closeIndex);
         const nextStyle = {
           ...style,
-          isBold:
-            style.isBold || delimiter === "**" || delimiter === "__",
+          isBold: style.isBold || delimiter === "**" || delimiter === "__",
           isItalic: style.isItalic || delimiter === "*" || delimiter === "_",
           isStrike: style.isStrike || delimiter === "~~",
         };
@@ -546,7 +544,11 @@ function MarkdownBlocksPreview({
   nodeId: string;
 }) {
   return blocksContainMarkdownImage(blocks) ? (
-    <MarkdownReadonlyMdxPreview blocks={blocks} isDark={isDark} nodeId={nodeId} />
+    <MarkdownReadonlyMdxPreview
+      blocks={blocks}
+      isDark={isDark}
+      nodeId={nodeId}
+    />
   ) : (
     <MarkdownCanvasPreview blocks={blocks} isDark={isDark} />
   );
@@ -667,11 +669,21 @@ function MarkdownCanvasPreview({
       const fg = isDark ? "rgba(244,244,245,0.86)" : "rgba(24,24,27,0.82)";
       const muted = isDark ? "rgba(212,212,216,0.58)" : "rgba(63,63,70,0.62)";
       const codeBg = isDark ? "rgba(8,13,24,0.82)" : "rgba(244,247,252,0.94)";
-      const codeBorder = isDark ? "rgba(148,163,184,0.16)" : "rgba(15,23,42,0.12)";
-      const codeHeaderBg = isDark ? "rgba(24,24,27,0.92)" : "rgba(232,232,232,0.94)";
-      const codeBodyBg = isDark ? "rgba(8,13,24,0.72)" : "rgba(255,255,255,0.94)";
-      const codeGutterBg = isDark ? "rgba(30,41,59,0.72)" : "rgba(239,245,255,0.88)";
-      const codeHeaderControlBg = isDark ? "rgba(3,7,18,0.72)" : "rgba(255,251,252,0.86)";
+      const codeBorder = isDark
+        ? "rgba(148,163,184,0.16)"
+        : "rgba(15,23,42,0.12)";
+      const codeHeaderBg = isDark
+        ? "rgba(24,24,27,0.92)"
+        : "rgba(232,232,232,0.94)";
+      const codeBodyBg = isDark
+        ? "rgba(8,13,24,0.72)"
+        : "rgba(255,255,255,0.94)";
+      const codeGutterBg = isDark
+        ? "rgba(30,41,59,0.72)"
+        : "rgba(239,245,255,0.88)";
+      const codeHeaderControlBg = isDark
+        ? "rgba(3,7,18,0.72)"
+        : "rgba(255,251,252,0.86)";
       const codeSyntax = isDark
         ? {
             fg: "rgba(226,232,240,0.9)",
@@ -699,12 +711,22 @@ function MarkdownCanvasPreview({
             comment: "rgba(100,116,139,0.74)",
             string: "rgba(184,118,62,0.9)",
           };
-      const taskCheckedBg = isDark ? "rgba(96,165,250,0.92)" : "rgba(59, 102, 222, 0.95)";
-      const taskUncheckedBg = isDark ? "rgba(24,24,27,0.56)" : "rgba(255,255,255,0.9)";
-      const taskUncheckedBorder = isDark ? "rgba(244,244,245,0.18)" : "rgba(15,23,42,0.14)";
-      const taskStrike = isDark ? "rgba(244,244,245,0.72)" : "rgba(24,24,27,0.72)";
+      const taskCheckedBg = isDark
+        ? "rgba(96,165,250,0.92)"
+        : "rgba(59, 102, 222, 0.95)";
+      const taskUncheckedBg = isDark
+        ? "rgba(24,24,27,0.56)"
+        : "rgba(255,255,255,0.9)";
+      const taskUncheckedBorder = isDark
+        ? "rgba(244,244,245,0.18)"
+        : "rgba(15,23,42,0.14)";
+      const taskStrike = isDark
+        ? "rgba(244,244,245,0.72)"
+        : "rgba(24,24,27,0.72)";
       const imageBg = isDark ? "rgba(8,13,24,0.45)" : "rgba(255,255,255,0.7)";
-      const imageBorder = isDark ? "rgba(125,211,252,0.18)" : "rgba(14,165,233,0.18)";
+      const imageBorder = isDark
+        ? "rgba(125,211,252,0.18)"
+        : "rgba(14,165,233,0.18)";
 
       let y: number = MDX_CANVAS_TYPO.contentPaddingTop;
       const x = MDX_CANVAS_TYPO.contentPaddingX;
@@ -749,7 +771,9 @@ function MarkdownCanvasPreview({
           MDX_CANVAS_TYPO.codePaddingY * 2 +
           Math.max(1, codeLines.length) * MDX_CANVAS_TYPO.codeLineHeight;
         const textX =
-          blockX + MDX_CANVAS_TYPO.codeGutterWidth + MDX_CANVAS_TYPO.codePaddingX;
+          blockX +
+          MDX_CANVAS_TYPO.codeGutterWidth +
+          MDX_CANVAS_TYPO.codePaddingX;
         let textY = bodyY + MDX_CANVAS_TYPO.codePaddingY;
 
         drawRoundedRect(ctx, blockX, blockY, blockWidth, blockHeight, 8);
@@ -770,7 +794,12 @@ function MarkdownCanvasPreview({
         );
         ctx.clip();
         ctx.fillStyle = codeHeaderBg;
-        ctx.fillRect(blockX, blockY, blockWidth, MDX_CANVAS_TYPO.codeHeaderHeight);
+        ctx.fillRect(
+          blockX,
+          blockY,
+          blockWidth,
+          MDX_CANVAS_TYPO.codeHeaderHeight,
+        );
         ctx.restore();
 
         ctx.strokeStyle = codeBorder;
@@ -833,8 +862,9 @@ function MarkdownCanvasPreview({
         ctx.strokeRect(copyX, copyY, 9, 10);
 
         ctx.font = `400 ${MDX_CANVAS_TYPO.codeSize}px ${MDX_CANVAS_CODE_FONT}`;
-        for (const [lineIndex, codeLine] of (
-          codeLines.length > 0 ? codeLines : [""]
+        for (const [lineIndex, codeLine] of (codeLines.length > 0
+          ? codeLines
+          : [""]
         ).entries()) {
           if (textY <= maxY) {
             ctx.fillStyle = muted;
@@ -1015,7 +1045,9 @@ function MarkdownCanvasPreview({
         if (bullet || ordered) {
           flushParagraph();
           const sourceIndent = bullet?.[1] ?? ordered?.[1] ?? "";
-          const nestedIndent = Math.floor(sourceIndent.length / 2) * MDX_CANVAS_TYPO.listPaddingLeft;
+          const nestedIndent =
+            Math.floor(sourceIndent.length / 2) *
+            MDX_CANVAS_TYPO.listPaddingLeft;
           const indent = MDX_CANVAS_TYPO.listPaddingLeft + nestedIndent;
           const textX = x + indent;
           const rawText = bullet?.[2] ?? ordered?.[3] ?? "";
@@ -1058,20 +1090,21 @@ function MarkdownCanvasPreview({
             }
 
             ctx.fillStyle = fg;
-            y = drawWrappedText(
-              ctx,
-              task[2]!,
-              taskTextX,
-              y,
-              maxWidth - (taskTextX - x),
-              MDX_CANVAS_TYPO.bodyLineHeight,
-              maxY,
-              {
-                codeBg,
-                codeBorder,
-                strike: checked ? taskStrike : undefined,
-              },
-            ) + MDX_CANVAS_TYPO.listItemGap;
+            y =
+              drawWrappedText(
+                ctx,
+                task[2]!,
+                taskTextX,
+                y,
+                maxWidth - (taskTextX - x),
+                MDX_CANVAS_TYPO.bodyLineHeight,
+                maxY,
+                {
+                  codeBg,
+                  codeBorder,
+                  strike: checked ? taskStrike : undefined,
+                },
+              ) + MDX_CANVAS_TYPO.listItemGap;
             continue;
           }
 
@@ -1085,16 +1118,17 @@ function MarkdownCanvasPreview({
             y,
           );
           ctx.fillStyle = fg;
-          y = drawWrappedText(
-            ctx,
-            text,
-            textX,
-            y,
-            maxWidth - indent,
-            MDX_CANVAS_TYPO.bodyLineHeight,
-            maxY,
-            { codeBg, codeBorder },
-          ) + MDX_CANVAS_TYPO.listItemGap;
+          y =
+            drawWrappedText(
+              ctx,
+              text,
+              textX,
+              y,
+              maxWidth - indent,
+              MDX_CANVAS_TYPO.bodyLineHeight,
+              maxY,
+              { codeBg, codeBorder },
+            ) + MDX_CANVAS_TYPO.listItemGap;
           continue;
         }
 
@@ -1220,9 +1254,7 @@ const MarkdownNodeOverlayItem = ({
   const computeAccentBorderColor = (hex: string, darkMode: boolean): string => {
     const rgb = parseHexRgb(hex);
     if (!rgb) {
-      return darkMode
-        ? "rgba(224, 231, 255, 0.22)"
-        : "rgba(15, 23, 42, 0.2)";
+      return darkMode ? "rgba(224, 231, 255, 0.22)" : "rgba(15, 23, 42, 0.2)";
     }
     const [r, g, b] = rgb;
     const lum = relativeLuminance(r, g, b);
@@ -1243,7 +1275,9 @@ const MarkdownNodeOverlayItem = ({
   const themeAccent =
     accent != null && accent !== "" ? nodeTextThemeFromAccent(accent) : null;
   const accentBorderColor =
-    accent && themeAccent ? computeAccentBorderColor(accent, isDark) : undefined;
+    accent && themeAccent
+      ? computeAccentBorderColor(accent, isDark)
+      : undefined;
   const outerShellStyle: CSSProperties | undefined =
     themeAccent && accent
       ? {
