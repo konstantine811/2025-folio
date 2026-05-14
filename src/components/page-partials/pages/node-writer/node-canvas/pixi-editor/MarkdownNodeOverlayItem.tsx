@@ -727,17 +727,17 @@ function MarkdownCanvasPreview({
       const imageBorder = isDark
         ? "rgba(125,211,252,0.18)"
         : "rgba(14,165,233,0.18)";
-
-      let y: number = MDX_CANVAS_TYPO.contentPaddingTop;
       const x = MDX_CANVAS_TYPO.contentPaddingX;
       const maxWidth = Math.max(20, cssWidth - x - 16);
-      const maxY = cssHeight - MDX_CANVAS_TYPO.contentPaddingBottom;
       let inCode = false;
       let codeLines: string[] = [];
       let codeLanguage = "";
       let paragraphLines: string[] = [];
 
       const lines = descriptionFromBlocks(blocks).split("\n");
+
+      let y: number = MDX_CANVAS_TYPO.contentPaddingTop;
+      const maxY = cssHeight - MDX_CANVAS_TYPO.contentPaddingBottom;
 
       const flushParagraph = () => {
         if (paragraphLines.length === 0) return;
@@ -1603,6 +1603,27 @@ const MarkdownNodeOverlayItem = ({
                       className="pointer-events-none h-full w-full select-none object-contain object-center"
                     />
                   </div>
+                </div>
+              ) : readOnly && isSelected ? (
+                <div
+                  data-node-overlay-scroll="true"
+                  data-lenis-prevent-wheel
+                  onPointerDown={(event) => {
+                    event.stopPropagation();
+                  }}
+                  onMouseDown={(event) => {
+                    event.stopPropagation();
+                  }}
+                  style={{
+                    overscrollBehavior: "contain",
+                  }}
+                  className="h-full overflow-auto pointer-events-auto"
+                >
+                  <MarkdownReadonlyMdxPreview
+                    blocks={blocks}
+                    isDark={isDark}
+                    nodeId={node.id}
+                  />
                 </div>
               ) : readOnly ? (
                 <div
