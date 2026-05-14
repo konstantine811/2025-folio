@@ -579,11 +579,14 @@ function MarkdownReadonlyMdxPreview({
 function MarkdownCanvasPreview({
   blocks,
   isDark,
+  scrollable = false,
 }: {
   blocks: NodeMarkdownBlock[];
   isDark: boolean;
+  scrollable?: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const spacerRef = useRef<HTMLDivElement | null>(null);
   const imageCacheRef = useRef<
     Map<
       string,
@@ -736,7 +739,168 @@ function MarkdownCanvasPreview({
 
       const lines = descriptionFromBlocks(blocks).split("\n");
 
-      let y: number = MDX_CANVAS_TYPO.contentPaddingTop;
+      const estimateWrappedTextHeight = (
+        text: string,
+        availableWidth: number,
+        lineHeight: number,
+        baseFont: string,
+      ) => {
+        ctx.font = baseFont;
+        const inlineUnits = toInlineTextUnits(ctx, text);
+        if (inlineUnits.length === 0) return lineHeight;
+
+        let lineWidth = 0;
+        let lineCount = 1;
+        for (const inlineUnit of inlineUnits) {
+          const canWrap = inlineUnit.text !== " ";
+          if (canWrap && lineWidth + inlineUnit.width > availableWidth) {
+            lineCount += 1;
+            lineWidth = inlineUnit.text === " " ? 0 : inlineUnit.width;
+          } else {
+            lineWidth += inlineUnit.width;
+          }
+        }
+
+        return lineCount * lineHeight;
+      };
+
+      const estimateContentHeight = () => {
+        let estimatedY = MDX_CANVAS_TYPO.contentPaddingTop;
+        let estimatingCode = false;
+        let estimatingCodeLines = 0;
+        let estimatingParagraphLines: string[] = [];
+        const bodyFont = `${MDX_CANVAS_TYPO.bodySize}px Inter, ui-sans-serif, system-ui, sans-serif`;
+
+        const flushEstimatedParagraph = () => {
+          if (estimatingParagraphLines.length === 0) return;
+          for (const paragraphLine of estimatingParagraphLines) {
+            const { indent, text } = splitMarkdownCanvasIndent(paragraphLine);
+            estimatedY += estimateWrappedTextHeight(
+              text,
+              maxWidth - indent,
+              MDX_CANVAS_TYPO.bodyLineHeight,
+              bodyFont,
+            );
+          }
+          estimatedY += MDX_CANVAS_TYPO.paragraphGap;
+          estimatingParagraphLines = [];
+        };
+
+        const flushEstimatedCodeBlock = () => {
+          estimatedY +=
+            MDX_CANVAS_TYPO.codeHeaderHeight +
+            MDX_CANVAS_TYPO.codePaddingY * 2 +
+            Math.max(1, estimatingCodeLines) *
+              MDX_CANVAS_TYPO.codeLineHeight +
+            MDX_CANVAS_TYPO.paragraphGap;
+          estimatingCodeLines = 0;
+        };
+
+        for (const rawLine of lines) {
+          const sourceLine = decodeMarkdownCanvasEntities(rawLine).replace(
+            /\t/g,
+            "  ",
+          );
+          const line = unescapeMarkdownCanvasText(sourceLine);
+          const hasEscapedBulletMarker = /^\s*\\[-*+]\s+/.test(sourceLine);
+          const fence = line.trim().match(/^```(\S*)/);
+          if (fence) {
+            flushEstimatedParagraph();
+            if (!estimatingCode) {
+              estimatingCode = true;
+              estimatingCodeLines = 0;
+            } else {
+              flushEstimatedCodeBlock();
+              estimatingCode = false;
+            }
+            continue;
+          }
+
+          if (estimatingCode) {
+            estimatingCodeLines += 1;
+            continue;
+          }
+
+          const previewImage = extractMarkdownCanvasImage(line);
+          if (previewImage) {
+            flushEstimatedParagraph();
+            estimatedY += 220 + MDX_CANVAS_TYPO.paragraphGap;
+            continue;
+          }
+
+          if (!line.trim()) {
+            flushEstimatedParagraph();
+            continue;
+          }
+
+          if (isMarkdownCanvasThematicBreak(line)) {
+            flushEstimatedParagraph();
+            estimatedY +=
+              MDX_CANVAS_TYPO.thematicBreakGapTop +
+              MDX_CANVAS_TYPO.thematicBreakGapBottom;
+            continue;
+          }
+
+          const heading = line.match(/^(#{1,6})\s+(.+)$/);
+          if (heading) {
+            flushEstimatedParagraph();
+            const level = Math.min(
+              6,
+              heading[1]!.length,
+            ) as keyof typeof MDX_CANVAS_TYPO.heading;
+            const { size, weight } = MDX_CANVAS_TYPO.heading[level];
+            estimatedY += MDX_CANVAS_TYPO.headingGapTop;
+            estimatedY += estimateWrappedTextHeight(
+              heading[2]!,
+              maxWidth,
+              size * MDX_CANVAS_TYPO.headingLineHeight,
+              `${weight} ${size}px Inter, ui-sans-serif, system-ui, sans-serif`,
+            );
+            estimatedY += MDX_CANVAS_TYPO.headingGapBottom;
+            continue;
+          }
+
+          const bullet = hasEscapedBulletMarker
+            ? null
+            : line.match(/^(\s*)[-*+]\s+(.+)$/);
+          const ordered = line.match(/^(\s*)(\d+)[.)]\s+(.+)$/);
+          if (bullet || ordered) {
+            flushEstimatedParagraph();
+            const sourceIndent = bullet?.[1] ?? ordered?.[1] ?? "";
+            const nestedIndent =
+              Math.floor(sourceIndent.length / 2) *
+              MDX_CANVAS_TYPO.listPaddingLeft;
+            const indent = MDX_CANVAS_TYPO.listPaddingLeft + nestedIndent;
+            const rawText = bullet?.[2] ?? ordered?.[3] ?? "";
+            const task = rawText.match(/^\[([ xX])]\s+(.+)$/);
+            estimatedY +=
+              estimateWrappedTextHeight(
+                task && bullet ? task[2]! : rawText,
+                maxWidth - indent,
+                MDX_CANVAS_TYPO.bodyLineHeight,
+                bodyFont,
+              ) + MDX_CANVAS_TYPO.listItemGap;
+            continue;
+          }
+
+          const quote = line.match(/^>\s?(.+)$/);
+          estimatingParagraphLines.push(quote?.[1] ?? line);
+        }
+
+        flushEstimatedParagraph();
+        if (estimatingCode) flushEstimatedCodeBlock();
+        return Math.ceil(estimatedY + MDX_CANVAS_TYPO.contentPaddingBottom);
+      };
+
+      if (scrollable && spacerRef.current) {
+        spacerRef.current.style.height = `${Math.max(
+          cssHeight,
+          estimateContentHeight(),
+        )}px`;
+      }
+
+      const scrollTop = scrollable ? parent.scrollTop : 0;
+      let y: number = MDX_CANVAS_TYPO.contentPaddingTop - scrollTop;
       const maxY = cssHeight - MDX_CANVAS_TYPO.contentPaddingBottom;
 
       const flushParagraph = () => {
@@ -1151,12 +1315,34 @@ function MarkdownCanvasPreview({
 
     const observer = new ResizeObserver(draw);
     observer.observe(parent);
+    parent.addEventListener("scroll", requestRedraw, { passive: true });
     return () => {
       disposed = true;
       window.cancelAnimationFrame(redrawFrame);
       observer.disconnect();
+      parent.removeEventListener("scroll", requestRedraw);
     };
-  }, [blocks, isDark]);
+  }, [blocks, isDark, scrollable]);
+
+  if (scrollable) {
+    return (
+      <div
+        data-lenis-prevent-wheel
+        className="relative h-full w-full overflow-auto"
+        style={{
+          overscrollBehavior: "contain",
+          scrollbarGutter: "stable",
+        }}
+      >
+        <canvas
+          ref={canvasRef}
+          aria-hidden="true"
+          className="pointer-events-none sticky top-0 z-10 block h-full w-full select-none"
+        />
+        <div ref={spacerRef} aria-hidden="true" className="w-px" />
+      </div>
+    );
+  }
 
   return (
     <canvas
@@ -1617,13 +1803,9 @@ const MarkdownNodeOverlayItem = ({
                   style={{
                     overscrollBehavior: "contain",
                   }}
-                  className="h-full overflow-auto pointer-events-auto"
+                  className="h-full overflow-hidden pointer-events-auto"
                 >
-                  <MarkdownReadonlyMdxPreview
-                    blocks={blocks}
-                    isDark={isDark}
-                    nodeId={node.id}
-                  />
+                  <MarkdownCanvasPreview blocks={blocks} isDark={isDark} scrollable />
                 </div>
               ) : readOnly ? (
                 <div
