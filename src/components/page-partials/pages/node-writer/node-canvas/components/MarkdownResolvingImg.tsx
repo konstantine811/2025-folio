@@ -1,16 +1,27 @@
 import { useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 import { resolveNodeWriterMediaUrlForDisplay } from "@/services/firebase/node-writer-workspace";
 
 type Props = {
   src?: string;
   alt?: string;
   className?: string;
+  width?: string | number;
+  height?: string | number;
+  style?: CSSProperties;
 };
 
 /**
  * Markdown `![]()` / raw `<img>`: оновлює застарілі Firebase Storage https (токен) та `nw-storage:`.
  */
-export function MarkdownResolvingImg({ src, alt, className }: Props) {
+export function MarkdownResolvingImg({
+  src,
+  alt,
+  className,
+  width,
+  height,
+  style,
+}: Props) {
   const [resolved, setResolved] = useState("");
 
   useEffect(() => {
@@ -36,6 +47,9 @@ export function MarkdownResolvingImg({ src, alt, className }: Props) {
       src={resolved}
       alt={alt ?? ""}
       className={className}
+      width={width}
+      height={height}
+      style={style}
       loading="lazy"
       decoding="async"
     />

@@ -7,6 +7,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import type { Viewport } from "pixi-viewport";
+import { resolveNodeWriterMediaUrlForDisplay } from "@/services/firebase/node-writer-workspace";
 import { NodeMarkdownBlocksEditor } from "../components/NodeMarkdownBlocksEditor";
 import { MarkdownResolvingImg } from "../components/MarkdownResolvingImg";
 import { NODE_MD_BODY_TYPO, NODE_PORT_HANDLE_PX } from "../constants";
@@ -34,6 +35,7 @@ import {
   rearGlowStyle,
   removeNode,
   toDisplayImageUrlCandidate,
+  unwrapMarkdownImageCandidate,
   updateNodeAccentColor,
   updateNodeBlocks,
   updateNodeHeadingLevel,
@@ -150,6 +152,40 @@ function splitMarkdownCanvasIndent(text: string) {
       Math.ceil(leadingSpaces / 2) * MDX_CANVAS_TYPO.listPaddingLeft,
     text: text.slice(leadingSpaces),
   };
+}
+
+function extractMarkdownCanvasImage(line: string):
+  | { src: string; alt: string }
+  | null {
+  const trimmed = line.trim();
+  if (!trimmed) return null;
+
+  const markdownImage = trimmed.match(/^!\[([^\]]*)]\((.+?)\)$/);
+  if (markdownImage) {
+    return {
+      alt: markdownImage[1] ?? "",
+      src: unwrapMarkdownImageCandidate(markdownImage[2] ?? ""),
+    };
+  }
+
+  const rawImage = trimmed.match(
+    /^<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["'][^>]*>/i,
+  );
+  if (rawImage) {
+    const alt = trimmed.match(/\balt\s*=\s*["']([^"']*)["']/i)?.[1] ?? "";
+    return {
+      alt,
+      src: rawImage[1] ?? "",
+    };
+  }
+
+  return null;
+}
+
+function blocksContainMarkdownImage(blocks: NodeMarkdownBlock[]): boolean {
+  return descriptionFromBlocks(blocks)
+    .split("\n")
+    .some((line) => extractMarkdownCanvasImage(line) !== null);
 }
 
 function labelForCodeFenceLanguage(language: string) {
@@ -469,6 +505,44 @@ function drawWrappedText(
   return y + lineHeight;
 }
 
+function MarkdownBlocksPreview({
+  blocks,
+  isDark,
+  nodeId,
+}: {
+  blocks: NodeMarkdownBlock[];
+  isDark: boolean;
+  nodeId: string;
+}) {
+  return blocksContainMarkdownImage(blocks) ? (
+    <MarkdownReadonlyMdxPreview blocks={blocks} isDark={isDark} nodeId={nodeId} />
+  ) : (
+    <MarkdownCanvasPreview blocks={blocks} isDark={isDark} />
+  );
+}
+
+function MarkdownReadonlyMdxPreview({
+  blocks,
+  isDark,
+  nodeId,
+}: {
+  blocks: NodeMarkdownBlock[];
+  isDark: boolean;
+  nodeId: string;
+}) {
+  return (
+    <MemoNodeMarkdownBlocksEditor
+      nodeId={`${nodeId}-preview`}
+      blocks={blocks}
+      selectionEditorMode="toolbar"
+      isDarkMode={isDark}
+      isSelectionOwner={false}
+      uploadPasteImage={async () => ""}
+      onBlocksChange={() => {}}
+    />
+  );
+}
+
 function MarkdownCanvasPreview({
   blocks,
   isDark,
@@ -477,11 +551,71 @@ function MarkdownCanvasPreview({
   isDark: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const imageCacheRef = useRef<
+    Map<
+      string,
+      | { status: "loading" }
+      | { status: "loaded"; image: HTMLImageElement }
+      | { status: "error" }
+    >
+  >(new Map());
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const parent = canvas?.parentElement;
     if (!canvas || !parent) return;
+    let disposed = false;
+    let redrawFrame = 0;
+
+    const requestRedraw = () => {
+      if (disposed) return;
+      window.cancelAnimationFrame(redrawFrame);
+      redrawFrame = window.requestAnimationFrame(draw);
+    };
+
+    const loadPreviewImage = (src: string) => {
+      const candidate = unwrapMarkdownImageCandidate(src);
+      if (!candidate) return null;
+
+      const cached = imageCacheRef.current.get(candidate);
+      if (cached) return cached;
+
+      const loading = { status: "loading" as const };
+      imageCacheRef.current.set(candidate, loading);
+
+      void resolveNodeWriterMediaUrlForDisplay(candidate)
+        .then((resolved) => {
+          if (disposed) return;
+          if (!resolved) {
+            imageCacheRef.current.set(candidate, { status: "error" });
+            requestRedraw();
+            return;
+          }
+
+          const image = new Image();
+          image.onload = () => {
+            imageCacheRef.current.set(candidate, { status: "loaded", image });
+            requestRedraw();
+          };
+          image.onerror = () => {
+            imageCacheRef.current.set(candidate, { status: "error" });
+            requestRedraw();
+          };
+          image.src = resolved;
+          if (image.complete && image.naturalWidth > 0) {
+            imageCacheRef.current.set(candidate, { status: "loaded", image });
+            requestRedraw();
+          }
+        })
+        .catch(() => {
+          if (!disposed) {
+            imageCacheRef.current.set(candidate, { status: "error" });
+            requestRedraw();
+          }
+        });
+
+      return loading;
+    };
 
     const draw = () => {
       const cssWidth = Math.max(1, Math.floor(parent.clientWidth));
@@ -530,6 +664,8 @@ function MarkdownCanvasPreview({
       const taskUncheckedBg = isDark ? "rgba(24,24,27,0.56)" : "rgba(255,255,255,0.9)";
       const taskUncheckedBorder = isDark ? "rgba(244,244,245,0.18)" : "rgba(15,23,42,0.14)";
       const taskStrike = isDark ? "rgba(244,244,245,0.72)" : "rgba(24,24,27,0.72)";
+      const imageBg = isDark ? "rgba(8,13,24,0.45)" : "rgba(255,255,255,0.7)";
+      const imageBorder = isDark ? "rgba(125,211,252,0.18)" : "rgba(14,165,233,0.18)";
 
       let y: number = MDX_CANVAS_TYPO.contentPaddingTop;
       const x = MDX_CANVAS_TYPO.contentPaddingX;
@@ -689,6 +825,69 @@ function MarkdownCanvasPreview({
         codeLanguage = "";
       };
 
+      const drawImageBlock = (imageLine: { src: string; alt: string }) => {
+        flushParagraph();
+        const imageState = loadPreviewImage(imageLine.src);
+        const blockX = x - 8;
+        const blockWidth = maxWidth + 16;
+        const maxBlockHeight = Math.max(72, Math.min(320, maxY - y));
+        if (maxBlockHeight <= 0) return;
+
+        let blockHeight = Math.min(220, maxBlockHeight);
+        if (imageState?.status === "loaded") {
+          const naturalW =
+            imageState.image.naturalWidth || imageState.image.width || 1;
+          const naturalH =
+            imageState.image.naturalHeight || imageState.image.height || 1;
+          blockHeight = Math.min(
+            maxBlockHeight,
+            Math.max(72, blockWidth * (naturalH / naturalW)),
+          );
+        }
+
+        drawRoundedRect(ctx, blockX, y, blockWidth, blockHeight, 12);
+        ctx.fillStyle = imageBg;
+        ctx.fill();
+        ctx.strokeStyle = imageBorder;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        if (imageState?.status === "loaded") {
+          const image = imageState.image;
+          const naturalW = image.naturalWidth || image.width || 1;
+          const naturalH = image.naturalHeight || image.height || 1;
+          const fitScale = Math.min(
+            blockWidth / naturalW,
+            blockHeight / naturalH,
+          );
+          const drawW = naturalW * fitScale;
+          const drawH = naturalH * fitScale;
+          ctx.save();
+          drawRoundedRect(ctx, blockX, y, blockWidth, blockHeight, 12);
+          ctx.clip();
+          ctx.drawImage(
+            image,
+            blockX + (blockWidth - drawW) / 2,
+            y + (blockHeight - drawH) / 2,
+            drawW,
+            drawH,
+          );
+          ctx.restore();
+        } else {
+          ctx.font = `600 13px Inter, ui-sans-serif, system-ui, sans-serif`;
+          ctx.fillStyle = muted;
+          ctx.fillText(
+            imageState?.status === "error"
+              ? imageLine.alt || "Image failed to load"
+              : imageLine.alt || "Loading image...",
+            blockX + 16,
+            y + 16,
+          );
+        }
+
+        y += blockHeight + MDX_CANVAS_TYPO.paragraphGap;
+      };
+
       for (const rawLine of lines) {
         if (y > maxY) break;
 
@@ -714,6 +913,12 @@ function MarkdownCanvasPreview({
 
         if (inCode) {
           codeLines.push(line);
+          continue;
+        }
+
+        const previewImage = extractMarkdownCanvasImage(line);
+        if (previewImage) {
+          drawImageBlock(previewImage);
           continue;
         }
 
@@ -856,7 +1061,11 @@ function MarkdownCanvasPreview({
 
     const observer = new ResizeObserver(draw);
     observer.observe(parent);
-    return () => observer.disconnect();
+    return () => {
+      disposed = true;
+      window.cancelAnimationFrame(redrawFrame);
+      observer.disconnect();
+    };
   }, [blocks, isDark]);
 
   return (
@@ -1365,7 +1574,11 @@ const MarkdownNodeOverlayItem = ({
                   data-node-overlay-scroll="true"
                   className="h-full overflow-hidden pointer-events-none"
                 >
-                  <MarkdownCanvasPreview blocks={blocks} isDark={isDark} />
+                  <MarkdownBlocksPreview
+                    blocks={blocks}
+                    isDark={isDark}
+                    nodeId={node.id}
+                  />
                 </div>
               )}
             </div>

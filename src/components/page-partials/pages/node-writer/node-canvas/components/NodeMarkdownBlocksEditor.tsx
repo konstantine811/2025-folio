@@ -553,16 +553,29 @@ export function nodeMarkdownPreviewComponents(
     span: ({ className, children }) => (
       <span className={className}>{children}</span>
     ),
-    img: ({ src, alt, className }) => (
-      <MarkdownResolvingImg
-        src={src}
-        alt={alt}
-        className={
-          className ??
-          "my-2 block w-full max-w-full max-h-[min(72vh,40rem)] rounded border border-border/20 object-contain"
-        }
-      />
-    ),
+    img: ({ src, alt, className, width, height, style }) => {
+      const hasExplicitSize =
+        width != null ||
+        height != null ||
+        (style != null &&
+          (style.width != null || style.height != null || style.maxWidth != null));
+
+      return (
+        <MarkdownResolvingImg
+          src={src}
+          alt={alt}
+          width={width}
+          height={height}
+          style={style}
+            className={
+              className ??
+              (hasExplicitSize
+                ? "my-2 block max-w-full rounded border border-border/20 object-contain"
+                : "my-2 block h-auto max-w-full rounded border border-border/20 object-contain")
+            }
+          />
+        );
+    },
   };
 }
 
