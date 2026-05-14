@@ -95,6 +95,8 @@ const MDX_CANVAS_TYPO = {
   taskBoxSize: 18,
   taskBoxRadius: 4,
   taskTextGap: 18,
+  thematicBreakGapTop: 8,
+  thematicBreakGapBottom: 14,
 } as const;
 
 type InlineTextUnit = {
@@ -180,6 +182,15 @@ function extractMarkdownCanvasImage(line: string):
   }
 
   return null;
+}
+
+function isMarkdownCanvasThematicBreak(line: string): boolean {
+  const trimmed = line.trim();
+  return (
+    /^(?:\*\s*){3,}$/.test(trimmed) ||
+    /^(?:-\s*){3,}$/.test(trimmed) ||
+    /^(?:_\s*){3,}$/.test(trimmed)
+  );
 }
 
 function blocksContainMarkdownImage(blocks: NodeMarkdownBlock[]): boolean {
@@ -924,6 +935,21 @@ function MarkdownCanvasPreview({
 
         if (!line.trim()) {
           flushParagraph();
+          continue;
+        }
+
+        if (isMarkdownCanvasThematicBreak(line)) {
+          flushParagraph();
+          y += MDX_CANVAS_TYPO.thematicBreakGapTop;
+          ctx.strokeStyle = isDark
+            ? "rgba(212,212,216,0.36)"
+            : "rgba(63,63,70,0.42)";
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + maxWidth, y);
+          ctx.stroke();
+          y += MDX_CANVAS_TYPO.thematicBreakGapBottom;
           continue;
         }
 
