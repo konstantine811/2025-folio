@@ -83,7 +83,7 @@ const MDX_CANVAS_TYPO = {
   listPaddingLeft: 28.8,
   listMarkerGap: 16,
   listItemGap: 5.4,
-  codeSize: 14,
+  codeSize: 13.76,
   codeLineHeight: 22,
   codePaddingX: 10,
   codePaddingY: 9,
@@ -98,6 +98,9 @@ const MDX_CANVAS_TYPO = {
   thematicBreakGapTop: 8,
   thematicBreakGapBottom: 14,
 } as const;
+
+const MDX_CANVAS_CODE_FONT =
+  '"Roboto Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
 
 type InlineTextUnit = {
   text: string;
@@ -248,7 +251,7 @@ function drawMarkdownCanvasCodeLine(
 
   const drawToken = (text: string, fill: string, italic = false) => {
     if (!text || cursorX > x + maxWidth) return;
-    ctx.font = `${italic ? "italic " : ""}400 ${MDX_CANVAS_TYPO.codeSize}px var(--font-mono-code, ui-monospace, SFMono-Regular, Menlo, monospace)`;
+    ctx.font = `${italic ? "italic " : ""}400 ${MDX_CANVAS_TYPO.codeSize}px ${MDX_CANVAS_CODE_FONT}`;
     ctx.fillStyle = fill;
     const clipped =
       cursorX + ctx.measureText(text).width > x + maxWidth
@@ -301,7 +304,7 @@ function fontForInlineUnit(unit: InlineTextStyle, baseFont: string) {
   if (unit.isCode) {
     return `${unit.isItalic ? "italic " : ""}${
       unit.isBold ? "700 " : ""
-    }${MDX_CANVAS_TYPO.codeSize}px var(--font-mono-code, ui-monospace, SFMono-Regular, Menlo, monospace)`;
+    }${MDX_CANVAS_TYPO.codeSize}px ${MDX_CANVAS_CODE_FONT}`;
   }
 
   let font = baseFont;
@@ -827,7 +830,7 @@ function MarkdownCanvasPreview({
         ctx.strokeRect(copyX + 3, copyY + 4, 9, 10);
         ctx.strokeRect(copyX, copyY, 9, 10);
 
-        ctx.font = `${MDX_CANVAS_TYPO.codeSize}px var(--font-mono-code, ui-monospace, SFMono-Regular, Menlo, monospace)`;
+        ctx.font = `400 ${MDX_CANVAS_TYPO.codeSize}px ${MDX_CANVAS_CODE_FONT}`;
         for (const [lineIndex, codeLine] of (
           codeLines.length > 0 ? codeLines : [""]
         ).entries()) {
