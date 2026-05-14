@@ -809,7 +809,9 @@ function MarkdownCanvasPreview({
         ctx.strokeStyle = codeBorder;
         ctx.stroke();
         ctx.fillStyle = fg;
-        ctx.fillText(label, labelX + 14, blockY + 11);
+        ctx.textBaseline = "middle";
+        ctx.fillText(label, labelX + 14, blockY + 19);
+        ctx.textBaseline = "top";
         ctx.strokeStyle = muted;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
