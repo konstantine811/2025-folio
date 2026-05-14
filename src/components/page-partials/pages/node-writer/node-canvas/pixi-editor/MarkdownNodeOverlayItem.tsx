@@ -86,13 +86,15 @@ const MDX_CANVAS_TYPO = {
   listItemGap: 5.4,
   codeSize: 13.76,
   /** Вирівняно з `.cm-scroller` у MDX (~1.58 × codeSize, компактні паддінги). */
-  codeLineHeight: 21.5,
+  codeLineHeight: 20.5,
   codePaddingX: 7,
   codePaddingY: 7,
   codeHeaderHeight: 40,
-  codeGutterWidth: 40,
+  codeGutterWidth: 25,
+  /** Розмір цифр у gutter (тіло коду — `codeSize`). */
+  codeLineNumberSize: 10,
   /** Dropdown мови у шапці code block (не повна capsule). */
-  codeLangSelectRadius: 8,
+  codeLangSelectRadius: 10,
   inlineCodePaddingX: 5.6,
   inlineCodeHeight: 22,
   inlineCodeRadius: 4,
@@ -129,9 +131,9 @@ const MDX_CANVAS_CODE_CHROME = {
     toolbarBg: "#141414",
     toolbarDivider: "rgba(255,255,255,0.06)",
     editorBg: "#0c0c0c",
-    gutterBg: "#101725",
+    gutterBg: "#1a1e2a",
     gutterDivider: "rgba(255,255,255,0.06)",
-    gutterText: "#8b97ad",
+    gutterText: "#92a3b9",
     langBg: "#000000",
     langBorder: "rgba(255,255,255,0.14)",
     langFg: "#f4f4f5",
@@ -143,7 +145,7 @@ const MDX_CANVAS_CODE_CHROME = {
 } as const;
 
 const MDX_CANVAS_CODE_FONT =
-  '"Roboto Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+  '"JetBrains Mono", "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
 
 type InlineTextUnit = {
   text: string;
@@ -372,6 +374,7 @@ function drawMarkdownCanvasCodeLine(
   }
 
   drawToken(line.slice(index), colors.fg);
+  ctx.font = `400 ${MDX_CANVAS_TYPO.codeSize}px ${MDX_CANVAS_CODE_FONT}`;
 }
 
 type InlineTextStyle = Pick<
@@ -1029,7 +1032,9 @@ function MarkdownCanvasPreview({
       };
 
       const flushCodeBlock = () => {
-        const chrome = isDark ? MDX_CANVAS_CODE_CHROME.dark : MDX_CANVAS_CODE_CHROME.light;
+        const chrome = isDark
+          ? MDX_CANVAS_CODE_CHROME.dark
+          : MDX_CANVAS_CODE_CHROME.light;
         const rr = MDX_CANVAS_CODE_CHROME.radius;
         const blockX = x - 8;
         const blockY = y;
@@ -1042,10 +1047,7 @@ function MarkdownCanvasPreview({
           Math.max(1, codeLines.length) * MDX_CANVAS_TYPO.codeLineHeight;
         const bodyH = blockHeight - headerH;
         const gutterW = MDX_CANVAS_TYPO.codeGutterWidth;
-        const textX =
-          blockX +
-          gutterW +
-          MDX_CANVAS_TYPO.codePaddingX;
+        const textX = blockX + gutterW + MDX_CANVAS_TYPO.codePaddingX;
         let textY = bodyY + MDX_CANVAS_TYPO.codePaddingY;
 
         drawRoundedRect(ctx, blockX, blockY, blockWidth, blockHeight, rr);
@@ -1176,31 +1178,32 @@ function MarkdownCanvasPreview({
           });
         }
 
-        ctx.font = `400 ${MDX_CANVAS_TYPO.codeSize}px ${MDX_CANVAS_CODE_FONT}`;
+        const codeUiFont = `400 ${MDX_CANVAS_TYPO.codeSize}px ${MDX_CANVAS_CODE_FONT}`;
+        const codeLineNumFont = `400 ${MDX_CANVAS_TYPO.codeLineNumberSize}px ${MDX_CANVAS_CODE_FONT}`;
+        ctx.font = codeUiFont;
         for (const [lineIndex, codeLine] of (codeLines.length > 0
           ? codeLines
           : [""]
         ).entries()) {
           if (textY <= maxY) {
+            ctx.font = codeLineNumFont;
             ctx.fillStyle = chrome.gutterText;
-            ctx.textBaseline = "top";
+            ctx.textBaseline = "middle";
             const lineNumber = String(lineIndex + 1);
+            const numW = ctx.measureText(lineNumber).width;
             ctx.fillText(
               lineNumber,
-              blockX +
-                gutterW -
-                MDX_CANVAS_TYPO.codePaddingX -
-                ctx.measureText(lineNumber).width,
-              textY,
+              blockX + gutterW - MDX_CANVAS_TYPO.codePaddingX - numW,
+              textY + MDX_CANVAS_TYPO.codeLineHeight / 2,
             );
+            ctx.textBaseline = "top";
+            ctx.font = codeUiFont;
             drawMarkdownCanvasCodeLine(
               ctx,
               codeLine,
               textX,
               textY,
-              blockWidth -
-                gutterW -
-                MDX_CANVAS_TYPO.codePaddingX * 2,
+              blockWidth - gutterW - MDX_CANVAS_TYPO.codePaddingX * 2,
               codeSyntax,
             );
           }
