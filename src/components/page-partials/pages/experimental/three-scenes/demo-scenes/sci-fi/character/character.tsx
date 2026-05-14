@@ -1,16 +1,10 @@
 import { JSX, useEffect, useMemo, useRef } from "react";
 import { useAnimations, useGLTF } from "@react-three/drei";
 import { createPortal, useFrame } from "@react-three/fiber";
-import {
-  Group,
-  LoopOnce,
-  LoopRepeat,
-  MathUtils,
-  Object3D,
-  SkinnedMesh,
-} from "three";
+import { Group, LoopOnce, LoopRepeat, Object3D, SkinnedMesh } from "three";
 import { HelmetCableRopes } from "./helmet-cable-ropes";
 import { SholomModel } from "./sholom";
+import { normalizeRange } from "@/utils/math/normalize";
 
 const characterPath = "/3d-models/sci-fi/character.glb";
 const sitToStandAnimation = "sit-to-stand";
@@ -24,9 +18,6 @@ const helmetHeadPosition: [number, number, number] = [0, 15, 1.5];
 const helmetHeadRotation: [number, number, number] = [0, 0, 0];
 const helmetHeadScale = 90;
 const stableWalkBoneTracks = ["mixamorighead", "mixamorigneck", "headtopend"];
-
-const normalizeRange = (value: number, start: number, end: number) =>
-  MathUtils.clamp((value - start) / (end - start), 0, 1);
 
 type CharacterProps = JSX.IntrinsicElements["group"] & {
   scrollProgress: number;
@@ -45,7 +36,9 @@ export function Character({ scrollProgress, ...props }: CharacterProps) {
 
         const stableWalkClip = clip.clone();
         stableWalkClip.tracks = stableWalkClip.tracks.filter(({ name }) => {
-          const normalizedTrackName = name.replace(/[^a-z0-9]/gi, "").toLowerCase();
+          const normalizedTrackName = name
+            .replace(/[^a-z0-9]/gi, "")
+            .toLowerCase();
 
           return !stableWalkBoneTracks.some((boneName) =>
             normalizedTrackName.includes(boneName),

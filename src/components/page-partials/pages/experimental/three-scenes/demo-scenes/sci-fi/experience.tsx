@@ -2,11 +2,12 @@ import { CameraControls, Stars } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
 import { useEffect, useRef } from "react";
-import { MathUtils, Vector3 } from "three";
+import { Vector3 } from "three";
 import { ShipContainer } from "./ship/ship-container";
 import Earth from "./ship/earth";
 import { Character } from "./character/character";
 import type { CameraMode } from "./init";
+import { normalizeRange } from "@/utils/math/normalize";
 
 type ExperienceProps = {
   cameraMode: CameraMode;
@@ -18,14 +19,13 @@ const walkScrollStart = 0.26;
 const walkScrollEnd = 1;
 const walkDistance = 4.5;
 
-const normalizeRange = (value: number, start: number, end: number) =>
-  MathUtils.clamp((value - start) / (end - start), 0, 1);
-
 type FollowCharacterCameraProps = {
   scrollProgress: number;
 };
 
-const FollowCharacterCamera = ({ scrollProgress }: FollowCharacterCameraProps) => {
+const FollowCharacterCamera = ({
+  scrollProgress,
+}: FollowCharacterCameraProps) => {
   const { camera } = useThree();
   const cameraPosition = useRef(new Vector3());
   const lookAtTarget = useRef(new Vector3());
