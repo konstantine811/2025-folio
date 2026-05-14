@@ -826,8 +826,7 @@ function MarkdownCanvasPreview({
           estimatedY +=
             MDX_CANVAS_TYPO.codeHeaderHeight +
             MDX_CANVAS_TYPO.codePaddingY * 2 +
-            Math.max(1, estimatingCodeLines) *
-              MDX_CANVAS_TYPO.codeLineHeight +
+            Math.max(1, estimatingCodeLines) * MDX_CANVAS_TYPO.codeLineHeight +
             MDX_CANVAS_TYPO.paragraphGap;
           estimatingCodeLines = 0;
         };
@@ -1419,9 +1418,7 @@ function MarkdownCanvasPreview({
             aria-label={
               copiedCodeButtonId === button.id ? "Code copied" : "Copy code"
             }
-            title={
-              copiedCodeButtonId === button.id ? "Copied" : "Copy code"
-            }
+            title={copiedCodeButtonId === button.id ? "Copied" : "Copy code"}
             className={`absolute z-30 inline-flex items-center justify-center rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sky-400/60 ${
               copiedCodeButtonId === button.id
                 ? "bg-emerald-500/95 text-white shadow-sm"
@@ -1928,7 +1925,11 @@ const MarkdownNodeOverlayItem = ({
                   }}
                   className="h-full overflow-hidden pointer-events-auto"
                 >
-                  <MarkdownCanvasPreview blocks={blocks} isDark={isDark} scrollable />
+                  <MarkdownCanvasPreview
+                    blocks={blocks}
+                    isDark={isDark}
+                    scrollable
+                  />
                 </div>
               ) : readOnly ? (
                 <div
