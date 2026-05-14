@@ -10,7 +10,7 @@ import type { Viewport } from "pixi-viewport";
 import { resolveNodeWriterMediaUrlForDisplay } from "@/services/firebase/node-writer-workspace";
 import { NodeMarkdownBlocksEditor } from "../components/NodeMarkdownBlocksEditor";
 import { MarkdownResolvingImg } from "../components/MarkdownResolvingImg";
-import { NODE_MD_BODY_TYPO, NODE_PORT_HANDLE_PX } from "../constants";
+import { NODE_PORT_HANDLE_PX } from "../constants";
 import { descriptionFromBlocks } from "../utils/node-markdown-blocks";
 import { nodeTextThemeFromAccent } from "../utils/node-accent";
 import { parseHexRgb, relativeLuminance } from "../utils/node-accent";
@@ -1517,22 +1517,13 @@ const MarkdownNodeOverlayItem = ({
               ) : readOnly ? (
                 <div
                   data-node-overlay-scroll="true"
-                  onPointerDown={(event) => {
-                    if (touchNavigationMode && isSelected) {
-                      event.stopPropagation();
-                    }
-                  }}
-                  style={{
-                    touchAction:
-                      touchNavigationMode && isSelected ? "pan-y" : undefined,
-                    overscrollBehavior:
-                      touchNavigationMode && isSelected ? "contain" : undefined,
-                  }}
-                  className={`h-full overflow-auto px-5 py-2 whitespace-pre-wrap text-foreground/85 ${
-                    isSelected ? "pointer-events-auto" : "pointer-events-none"
-                  } ${NODE_MD_BODY_TYPO}`}
+                  className="h-full overflow-hidden pointer-events-none"
                 >
-                  {descriptionFromBlocks(blocks)}
+                  <MarkdownBlocksPreview
+                    blocks={blocks}
+                    isDark={isDark}
+                    nodeId={node.id}
+                  />
                 </div>
               ) : shouldRenderLiveEditor ? (
                 <div
