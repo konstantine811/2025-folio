@@ -85,11 +85,14 @@ const MDX_CANVAS_TYPO = {
   listMarkerGap: 4,
   listItemGap: 5.4,
   codeSize: 13.76,
-  codeLineHeight: 22,
-  codePaddingX: 10,
-  codePaddingY: 9,
-  codeHeaderHeight: 38,
-  codeGutterWidth: 44,
+  /** Вирівняно з `.cm-scroller` у MDX (~1.58 × codeSize, компактні паддінги). */
+  codeLineHeight: 21.5,
+  codePaddingX: 7,
+  codePaddingY: 7,
+  codeHeaderHeight: 40,
+  codeGutterWidth: 40,
+  /** Dropdown мови у шапці code block (не повна capsule). */
+  codeLangSelectRadius: 8,
   inlineCodePaddingX: 5.6,
   inlineCodeHeight: 22,
   inlineCodeRadius: 4,
@@ -98,6 +101,45 @@ const MDX_CANVAS_TYPO = {
   taskTextGap: 18,
   thematicBreakGapTop: 8,
   thematicBreakGapBottom: 14,
+} as const;
+
+/** Вирівняно з fenced CodeMirror блоком MDX (`index.css` → `_codeMirrorWrapper_`). */
+const MDX_CANVAS_CODE_CHROME = {
+  radius: 10,
+  light: {
+    wrapperBg: "#f8fafc",
+    border: "rgba(15,23,42,0.13)",
+    toolbarBg: "#ececec",
+    toolbarDivider: "rgba(63,63,70,0.13)",
+    editorBg: "#ffffff",
+    gutterBg: "#f8fafc",
+    gutterDivider: "rgba(63,63,70,0.1)",
+    gutterText: "#64748b",
+    langBg: "#ffffff",
+    langBorder: "rgba(63,63,70,0.15)",
+    langFg: "#0f172a",
+    copyBg: "#ffffff",
+    copyBorder: "rgba(63,63,70,0.15)",
+    copyIcon: "#334155",
+    trafficColors: ["#ff5f57", "#febc2e", "#28c840"] as const,
+  },
+  dark: {
+    wrapperBg: "#0f0f0f",
+    border: "rgba(38,38,38,0.85)",
+    toolbarBg: "#141414",
+    toolbarDivider: "rgba(255,255,255,0.06)",
+    editorBg: "#0c0c0c",
+    gutterBg: "#101725",
+    gutterDivider: "rgba(255,255,255,0.06)",
+    gutterText: "#8b97ad",
+    langBg: "#000000",
+    langBorder: "rgba(255,255,255,0.14)",
+    langFg: "#f4f4f5",
+    copyBg: "#0a0a0a",
+    copyBorder: "rgba(255,255,255,0.14)",
+    copyIcon: "rgba(212,212,216,0.78)",
+    trafficColors: ["#ff5f57", "#febc2e", "#28c840"] as const,
+  },
 } as const;
 
 const MDX_CANVAS_CODE_FONT =
@@ -136,6 +178,18 @@ function drawRoundedRect(
   ctx.arcTo(x, y + height, x, y, r);
   ctx.arcTo(x, y, x + width, y, r);
   ctx.closePath();
+}
+
+function strokeRoundedRectOutline(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+) {
+  drawRoundedRect(ctx, x, y, width, height, radius);
+  ctx.stroke();
 }
 
 function decodeMarkdownCanvasEntities(text: string) {
@@ -224,9 +278,8 @@ function labelForCodeFenceLanguage(language: string) {
   if (normalized === "json") return "JSON";
   if (normalized === "css") return "CSS";
   if (normalized === "html") return "HTML";
-  if (normalized === "bash" || normalized === "sh" || normalized === "shell") {
-    return "Shell";
-  }
+  if (normalized === "bash" || normalized === "sh") return "Bash";
+  if (normalized === "shell") return "Shell";
   return language.trim() || "TypeScript JSX";
 }
 
@@ -710,21 +763,9 @@ function MarkdownCanvasPreview({
       const codeBorder = isDark
         ? "rgba(148,163,184,0.16)"
         : "rgba(15,23,42,0.12)";
-      const codeHeaderBg = isDark
-        ? "rgba(24,24,27,0.92)"
-        : "rgba(232,232,232,0.94)";
-      const codeBodyBg = isDark
-        ? "rgba(8,13,24,0.72)"
-        : "rgba(255,255,255,0.94)";
-      const codeGutterBg = isDark
-        ? "rgba(30,41,59,0.72)"
-        : "rgba(239,245,255,0.88)";
-      const codeHeaderControlBg = isDark
-        ? "rgba(3,7,18,0.72)"
-        : "rgba(255,251,252,0.86)";
       const codeSyntax = isDark
         ? {
-            fg: "rgba(226,232,240,0.9)",
+            fg: "rgba(229,231,235,0.94)",
             keyword: "rgba(147,197,253,0.92)",
             variable: "rgba(252,165,165,0.9)",
             type: "rgba(253,224,171,0.92)",
@@ -988,112 +1029,150 @@ function MarkdownCanvasPreview({
       };
 
       const flushCodeBlock = () => {
+        const chrome = isDark ? MDX_CANVAS_CODE_CHROME.dark : MDX_CANVAS_CODE_CHROME.light;
+        const rr = MDX_CANVAS_CODE_CHROME.radius;
         const blockX = x - 8;
         const blockY = y;
         const blockWidth = maxWidth + 16;
-        const bodyY = blockY + MDX_CANVAS_TYPO.codeHeaderHeight;
+        const headerH = MDX_CANVAS_TYPO.codeHeaderHeight;
+        const bodyY = blockY + headerH;
         const blockHeight =
-          MDX_CANVAS_TYPO.codeHeaderHeight +
+          headerH +
           MDX_CANVAS_TYPO.codePaddingY * 2 +
           Math.max(1, codeLines.length) * MDX_CANVAS_TYPO.codeLineHeight;
+        const bodyH = blockHeight - headerH;
+        const gutterW = MDX_CANVAS_TYPO.codeGutterWidth;
         const textX =
           blockX +
-          MDX_CANVAS_TYPO.codeGutterWidth +
+          gutterW +
           MDX_CANVAS_TYPO.codePaddingX;
         let textY = bodyY + MDX_CANVAS_TYPO.codePaddingY;
 
-        drawRoundedRect(ctx, blockX, blockY, blockWidth, blockHeight, 8);
-        ctx.fillStyle = codeBodyBg;
-        ctx.fill();
-        ctx.strokeStyle = codeBorder;
-        ctx.lineWidth = 1;
-        ctx.stroke();
+        drawRoundedRect(ctx, blockX, blockY, blockWidth, blockHeight, rr);
 
         ctx.save();
-        drawRoundedRect(
-          ctx,
-          blockX,
-          blockY,
-          blockWidth,
-          MDX_CANVAS_TYPO.codeHeaderHeight,
-          8,
-        );
+        drawRoundedRect(ctx, blockX, blockY, blockWidth, blockHeight, rr);
         ctx.clip();
-        ctx.fillStyle = codeHeaderBg;
-        ctx.fillRect(
-          blockX,
-          blockY,
-          blockWidth,
-          MDX_CANVAS_TYPO.codeHeaderHeight,
-        );
-        ctx.restore();
 
-        ctx.strokeStyle = codeBorder;
+        ctx.fillStyle = chrome.wrapperBg;
+        ctx.fillRect(blockX, blockY, blockWidth, blockHeight);
+
+        ctx.fillStyle = chrome.toolbarBg;
+        ctx.fillRect(blockX, blockY, blockWidth, headerH);
+
+        ctx.strokeStyle = chrome.toolbarDivider;
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(blockX, bodyY);
-        ctx.lineTo(blockX + blockWidth, bodyY);
+        ctx.moveTo(blockX, bodyY + 0.5);
+        ctx.lineTo(blockX + blockWidth, bodyY + 0.5);
         ctx.stroke();
 
-        ctx.fillStyle = codeGutterBg;
-        ctx.fillRect(
-          blockX,
-          bodyY,
-          MDX_CANVAS_TYPO.codeGutterWidth,
-          blockHeight - MDX_CANVAS_TYPO.codeHeaderHeight,
-        );
+        ctx.fillStyle = chrome.editorBg;
+        ctx.fillRect(blockX, bodyY, blockWidth, bodyH);
 
-        const dotY = blockY + 18;
-        for (const [dotIndex, color] of [
-          "rgba(255,95,87,0.96)",
-          "rgba(255,189,46,0.96)",
-          "rgba(39,201,63,0.96)",
-        ].entries()) {
-          ctx.fillStyle = color;
+        ctx.fillStyle = chrome.gutterBg;
+        ctx.fillRect(blockX, bodyY, gutterW, bodyH);
+        ctx.strokeStyle = chrome.gutterDivider;
+        ctx.beginPath();
+        ctx.moveTo(blockX + gutterW + 0.5, bodyY);
+        ctx.lineTo(blockX + gutterW + 0.5, bodyY + bodyH);
+        ctx.stroke();
+
+        ctx.restore();
+
+        ctx.strokeStyle = chrome.border;
+        ctx.lineWidth = 1;
+        drawRoundedRect(ctx, blockX, blockY, blockWidth, blockHeight, rr);
+        ctx.stroke();
+
+        const dotY = blockY + headerH / 2;
+        const dotR = 4.45;
+        const dotStep = 12.5;
+        const dot0 = blockX + 10.5;
+        for (const [i, trafficColor] of chrome.trafficColors.entries()) {
+          ctx.fillStyle = trafficColor;
           ctx.beginPath();
-          ctx.arc(blockX + 18 + dotIndex * 14, dotY, 5.2, 0, Math.PI * 2);
+          ctx.arc(dot0 + i * dotStep, dotY, dotR, 0, Math.PI * 2);
           ctx.fill();
         }
 
         const label = labelForCodeFenceLanguage(codeLanguage);
-        ctx.font = `600 13px Inter, ui-sans-serif, system-ui, sans-serif`;
-        const labelWidth = Math.min(150, ctx.measureText(label).width + 42);
-        const labelX = blockX + 58;
-        drawRoundedRect(ctx, labelX, blockY + 7, labelWidth, 24, 7);
-        ctx.fillStyle = codeHeaderControlBg;
+        const langH = 26;
+        const langR = MDX_CANVAS_TYPO.codeLangSelectRadius;
+        ctx.font = `600 12px Inter, ui-sans-serif, system-ui, sans-serif`;
+        const chevronSlot = 24;
+        const labelPadX = 11;
+        const textW = ctx.measureText(label).width;
+        const labelWidth = Math.min(
+          170,
+          Math.max(118, textW + labelPadX + chevronSlot),
+        );
+        const afterDots = dot0 + 2 * dotStep + dotR + 10;
+        const labelX = Math.round(Math.max(blockX + afterDots, blockX + 52));
+        const langTop = Math.round(blockY + (headerH - langH) / 2);
+        drawRoundedRect(ctx, labelX, langTop, labelWidth, langH, langR);
+        ctx.fillStyle = chrome.langBg;
         ctx.fill();
-        ctx.strokeStyle = codeBorder;
+        ctx.strokeStyle = chrome.langBorder;
+        ctx.lineWidth = 1;
+        drawRoundedRect(ctx, labelX, langTop, labelWidth, langH, langR);
         ctx.stroke();
-        ctx.fillStyle = fg;
+        ctx.fillStyle = chrome.langFg;
         ctx.textBaseline = "middle";
-        ctx.fillText(label, labelX + 14, blockY + 19);
+        ctx.fillText(label, labelX + labelPadX, langTop + langH / 2 + 0.25);
         ctx.textBaseline = "top";
-        ctx.strokeStyle = muted;
-        ctx.lineWidth = 1.5;
+
+        ctx.strokeStyle = chrome.langFg;
+        ctx.lineWidth = 1.05;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        const chevronCx = labelX + labelWidth - 15;
+        const chevronCy = langTop + langH / 2 + 0.25;
         ctx.beginPath();
-        ctx.moveTo(labelX + labelWidth - 18, blockY + 17);
-        ctx.lineTo(labelX + labelWidth - 13, blockY + 22);
-        ctx.lineTo(labelX + labelWidth - 8, blockY + 17);
+        ctx.moveTo(chevronCx - 3.75, chevronCy - 2.25);
+        ctx.lineTo(chevronCx, chevronCy + 1.35);
+        ctx.lineTo(chevronCx + 3.75, chevronCy - 2.25);
         ctx.stroke();
 
-        const copyX = blockX + blockWidth - 28;
-        const copyY = blockY + 10;
-        drawRoundedRect(ctx, copyX - 4, copyY - 4, 22, 22, 6);
-        ctx.fillStyle = codeHeaderControlBg;
+        const copySz = 26;
+        const copyR = 6.5;
+        const copyX = Math.round(blockX + blockWidth - copySz - 10);
+        const copyY = Math.round(blockY + (headerH - copySz) / 2);
+        drawRoundedRect(ctx, copyX, copyY, copySz, copySz, copyR);
+        ctx.fillStyle = chrome.copyBg;
         ctx.fill();
-        ctx.strokeStyle = codeBorder;
+        ctx.strokeStyle = chrome.copyBorder;
+        ctx.lineWidth = 1;
+        drawRoundedRect(ctx, copyX, copyY, copySz, copySz, copyR);
         ctx.stroke();
-        ctx.strokeStyle = fg;
-        ctx.lineWidth = 1.2;
-        ctx.strokeRect(copyX + 3, copyY + 4, 9, 10);
-        ctx.strokeRect(copyX, copyY, 9, 10);
+
+        ctx.strokeStyle = chrome.copyIcon;
+        ctx.lineWidth = 1.08;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        const copyCx = copyX + copySz / 2;
+        const copyCy = copyY + copySz / 2;
+        const dw = 9;
+        const dh = 10;
+        const dr = 2.1;
+        const backX = copyCx - dw / 2 - 2.85;
+        const backY = copyCy - dh / 2 - 2.55;
+        const frontX = backX + 3.65;
+        const frontY = backY + 3.55;
+        strokeRoundedRectOutline(ctx, backX, backY, dw, dh, dr);
+        drawRoundedRect(ctx, frontX, frontY, dw, dh, dr);
+        ctx.fillStyle = chrome.copyBg;
+        ctx.fill();
+        drawRoundedRect(ctx, frontX, frontY, dw, dh, dr);
+        ctx.stroke();
 
         if (scrollable) {
           nextCodeCopyButtons.push({
             id: `${nextCodeCopyButtons.length}-${Math.round(blockY + scrollTop)}`,
             code: codeLines.join("\n"),
-            left: copyX - 4,
-            top: copyY - 4 + scrollTop,
-            size: 22,
+            left: copyX,
+            top: copyY + scrollTop,
+            size: copySz,
           });
         }
 
@@ -1103,12 +1182,13 @@ function MarkdownCanvasPreview({
           : [""]
         ).entries()) {
           if (textY <= maxY) {
-            ctx.fillStyle = muted;
+            ctx.fillStyle = chrome.gutterText;
+            ctx.textBaseline = "top";
             const lineNumber = String(lineIndex + 1);
             ctx.fillText(
               lineNumber,
               blockX +
-                MDX_CANVAS_TYPO.codeGutterWidth -
+                gutterW -
                 MDX_CANVAS_TYPO.codePaddingX -
                 ctx.measureText(lineNumber).width,
               textY,
@@ -1119,7 +1199,7 @@ function MarkdownCanvasPreview({
               textX,
               textY,
               blockWidth -
-                MDX_CANVAS_TYPO.codeGutterWidth -
+                gutterW -
                 MDX_CANVAS_TYPO.codePaddingX * 2,
               codeSyntax,
             );
