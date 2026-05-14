@@ -68,8 +68,8 @@ const MDX_CANVAS_TYPO = {
   bodySize: 16.32,
   bodyLineHeight: 28.1,
   paragraphGap: 14.3,
-  headingGapTop: 4,
-  headingGapBottom: 12,
+  headingGapTop: -2,
+  headingGapBottom: 14,
   heading: {
     1: { size: 32, weight: 800 },
     2: { size: 27.2, weight: 750 },
@@ -79,8 +79,8 @@ const MDX_CANVAS_TYPO = {
     6: { size: 15.68, weight: 600 },
   },
   headingLineHeight: 1.32,
-  listMarginTop: 4,
-  listMarginBottom: 16,
+  listMarginTop: 0,
+  listMarginBottom: 10,
   listPaddingLeft: 28.8,
   listMarkerGap: 4,
   listItemGap: 5.4,
@@ -805,10 +805,18 @@ function MarkdownCanvasPreview({
         let estimatingCode = false;
         let estimatingCodeLines = 0;
         let estimatingParagraphLines: string[] = [];
+        let wasListLine = false;
         const bodyFont = `${MDX_CANVAS_TYPO.bodySize}px Inter, ui-sans-serif, system-ui, sans-serif`;
+
+        const finalizeEstimatedList = () => {
+          if (!wasListLine) return;
+          estimatedY += MDX_CANVAS_TYPO.listMarginBottom;
+          wasListLine = false;
+        };
 
         const flushEstimatedParagraph = () => {
           if (estimatingParagraphLines.length === 0) return;
+          finalizeEstimatedList();
           for (const paragraphLine of estimatingParagraphLines) {
             const { indent, text } = splitMarkdownCanvasIndent(paragraphLine);
             estimatedY += estimateWrappedTextHeight(
@@ -840,6 +848,7 @@ function MarkdownCanvasPreview({
           const hasEscapedBulletMarker = /^\s*\\[-*+]\s+/.test(sourceLine);
           const fence = line.trim().match(/^```(\S*)/);
           if (fence) {
+            finalizeEstimatedList();
             flushEstimatedParagraph();
             if (!estimatingCode) {
               estimatingCode = true;
@@ -858,17 +867,20 @@ function MarkdownCanvasPreview({
 
           const previewImage = extractMarkdownCanvasImage(line);
           if (previewImage) {
+            finalizeEstimatedList();
             flushEstimatedParagraph();
             estimatedY += 220 + MDX_CANVAS_TYPO.paragraphGap;
             continue;
           }
 
           if (!line.trim()) {
+            finalizeEstimatedList();
             flushEstimatedParagraph();
             continue;
           }
 
           if (isMarkdownCanvasThematicBreak(line)) {
+            finalizeEstimatedList();
             flushEstimatedParagraph();
             estimatedY +=
               MDX_CANVAS_TYPO.thematicBreakGapTop +
@@ -878,6 +890,7 @@ function MarkdownCanvasPreview({
 
           const heading = line.match(/^(#{1,6})\s+(.+)$/);
           if (heading) {
+            finalizeEstimatedList();
             flushEstimatedParagraph();
             const level = Math.min(
               6,
@@ -901,6 +914,9 @@ function MarkdownCanvasPreview({
           const ordered = line.match(/^(\s*)(\d+)[.)]\s+(.+)$/);
           if (bullet || ordered) {
             flushEstimatedParagraph();
+            if (!wasListLine) {
+              estimatedY += MDX_CANVAS_TYPO.listMarginTop;
+            }
             const sourceIndent = bullet?.[1] ?? ordered?.[1] ?? "";
             const nestedIndent =
               Math.floor(sourceIndent.length / 2) *
@@ -915,13 +931,16 @@ function MarkdownCanvasPreview({
                 MDX_CANVAS_TYPO.bodyLineHeight,
                 bodyFont,
               ) + MDX_CANVAS_TYPO.listItemGap;
+            wasListLine = true;
             continue;
           }
 
           const quote = line.match(/^>\s?(.+)$/);
+          if (wasListLine) finalizeEstimatedList();
           estimatingParagraphLines.push(quote?.[1] ?? line);
         }
 
+        finalizeEstimatedList();
         flushEstimatedParagraph();
         if (estimatingCode) flushEstimatedCodeBlock();
         return Math.ceil(estimatedY + MDX_CANVAS_TYPO.contentPaddingBottom);
@@ -937,6 +956,14 @@ function MarkdownCanvasPreview({
       const scrollTop = scrollable ? parent.scrollTop : 0;
       let y: number = MDX_CANVAS_TYPO.contentPaddingTop - scrollTop;
       const maxY = cssHeight - MDX_CANVAS_TYPO.contentPaddingBottom;
+
+      let wasListDrawing = false;
+
+      const finalizeDrawingListRun = () => {
+        if (!wasListDrawing) return;
+        y += MDX_CANVAS_TYPO.listMarginBottom;
+        wasListDrawing = false;
+      };
 
       const flushParagraph = () => {
         if (paragraphLines.length === 0) return;
@@ -1179,6 +1206,7 @@ function MarkdownCanvasPreview({
         const hasEscapedBulletMarker = /^\s*\\[-*+]\s+/.test(sourceLine);
         const fence = line.trim().match(/^```(\S*)/);
         if (fence) {
+          finalizeDrawingListRun();
           flushParagraph();
           if (!inCode) {
             inCode = true;
@@ -1198,16 +1226,19 @@ function MarkdownCanvasPreview({
 
         const previewImage = extractMarkdownCanvasImage(line);
         if (previewImage) {
+          finalizeDrawingListRun();
           drawImageBlock(previewImage);
           continue;
         }
 
         if (!line.trim()) {
+          finalizeDrawingListRun();
           flushParagraph();
           continue;
         }
 
         if (isMarkdownCanvasThematicBreak(line)) {
+          finalizeDrawingListRun();
           flushParagraph();
           y += MDX_CANVAS_TYPO.thematicBreakGapTop;
           ctx.strokeStyle = isDark
@@ -1224,6 +1255,7 @@ function MarkdownCanvasPreview({
 
         const heading = line.match(/^(#{1,6})\s+(.+)$/);
         if (heading) {
+          finalizeDrawingListRun();
           flushParagraph();
           const level = Math.min(
             6,
@@ -1253,6 +1285,9 @@ function MarkdownCanvasPreview({
         const ordered = line.match(/^(\s*)(\d+)[.)]\s+(.+)$/);
         if (bullet || ordered) {
           flushParagraph();
+          if (!wasListDrawing) {
+            y += MDX_CANVAS_TYPO.listMarginTop;
+          }
           const sourceIndent = bullet?.[1] ?? ordered?.[1] ?? "";
           const nestedIndent =
             Math.floor(sourceIndent.length / 2) *
@@ -1314,6 +1349,7 @@ function MarkdownCanvasPreview({
                   strike: checked ? taskStrike : undefined,
                 },
               ) + MDX_CANVAS_TYPO.listItemGap;
+            wasListDrawing = true;
             continue;
           }
 
@@ -1338,18 +1374,22 @@ function MarkdownCanvasPreview({
               maxY,
               { codeBg, codeBorder },
             ) + MDX_CANVAS_TYPO.listItemGap;
+          wasListDrawing = true;
           continue;
         }
 
         const quote = line.match(/^>\s?(.+)$/);
         if (quote) {
+          if (wasListDrawing) finalizeDrawingListRun();
           paragraphLines.push(quote[1]!);
           continue;
         }
 
+        if (wasListDrawing) finalizeDrawingListRun();
         paragraphLines.push(line);
       }
 
+      finalizeDrawingListRun();
       flushParagraph();
       if (inCode) {
         flushCodeBlock();
