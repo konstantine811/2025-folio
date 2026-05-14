@@ -229,20 +229,26 @@ function drawMarkdownCanvasCodeLine(
     fg: string;
     keyword: string;
     variable: string;
+    type: string;
+    property: string;
+    tag: string;
     number: string;
     operator: string;
+    punctuation: string;
     comment: string;
     string: string;
   },
 ) {
   const tokenPattern =
-    /(\/\/.*$|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b(?:const|let|var|type|interface|return|if|else|for|while|function|import|from|export|default|as|new|extends|number|string|boolean|void|null|undefined|true|false)\b|\b\d+(?:\.\d+)?\b|[=:+\-*/<>.,;{}()[\]])/g;
+    /(\/\/.*$|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b[A-Za-z_$][\w$]*\b|\b\d+(?:\.\d+)?\b|[=:+\-*/<>.,;{}()[\]])/g;
   let cursorX = x;
   let index = 0;
+  const keywordPattern =
+    /^(?:const|let|var|type|interface|return|if|else|for|while|function|import|from|export|default|as|new|extends|number|string|boolean|void|null|undefined|true|false)$/;
 
   const drawToken = (text: string, fill: string, italic = false) => {
     if (!text || cursorX > x + maxWidth) return;
-    ctx.font = `${italic ? "italic " : ""}${MDX_CANVAS_TYPO.codeSize}px var(--font-mono-code, ui-monospace, SFMono-Regular, Menlo, monospace)`;
+    ctx.font = `${italic ? "italic " : ""}400 ${MDX_CANVAS_TYPO.codeSize}px var(--font-mono-code, ui-monospace, SFMono-Regular, Menlo, monospace)`;
     ctx.fillStyle = fill;
     const clipped =
       cursorX + ctx.measureText(text).width > x + maxWidth
@@ -263,16 +269,27 @@ function drawMarkdownCanvasCodeLine(
       drawToken(matchText, colors.string);
     } else if (/^\d/.test(matchText)) {
       drawToken(matchText, colors.number);
-    } else if (/^[=:+\-*/<>.,;{}()[\]]$/.test(matchText)) {
+    } else if (/^[=:+\-*/]$/.test(matchText)) {
       drawToken(matchText, colors.operator);
-    } else {
+    } else if (/^[<>]$/.test(matchText)) {
+      drawToken(matchText, colors.tag);
+    } else if (/^[.,;{}()[\]]$/.test(matchText)) {
+      drawToken(matchText, colors.punctuation);
+    } else if (keywordPattern.test(matchText)) {
       drawToken(matchText, colors.keyword);
+    } else if (/^[A-Z]/.test(matchText)) {
+      const before = line.slice(0, matchIndex).trimEnd();
+      drawToken(matchText, before.endsWith("<") ? colors.tag : colors.type);
+    } else if (/^\s*=/.test(line.slice(matchIndex + matchText.length))) {
+      drawToken(matchText, colors.property);
+    } else {
+      drawToken(matchText, colors.variable);
     }
 
     index = matchIndex + matchText.length;
   }
 
-  drawToken(line.slice(index), colors.variable);
+  drawToken(line.slice(index), colors.fg);
 }
 
 type InlineTextStyle = Pick<
@@ -654,21 +671,29 @@ function MarkdownCanvasPreview({
       const codeHeaderControlBg = isDark ? "rgba(3,7,18,0.72)" : "rgba(255,251,252,0.86)";
       const codeSyntax = isDark
         ? {
-            fg: "rgba(226,232,240,0.82)",
+            fg: "rgba(226,232,240,0.9)",
             keyword: "rgba(147,197,253,0.92)",
             variable: "rgba(252,165,165,0.9)",
+            type: "rgba(253,224,171,0.92)",
+            property: "rgba(251,191,36,0.9)",
+            tag: "rgba(216,180,254,0.9)",
             number: "rgba(125,211,252,0.92)",
             operator: "rgba(190,242,100,0.78)",
+            punctuation: "rgba(226,232,240,0.86)",
             comment: "rgba(148,163,184,0.82)",
             string: "rgba(253,186,116,0.9)",
           }
         : {
-            fg: "rgba(51,65,85,0.84)",
-            keyword: "rgba(72,112,176,0.9)",
-            variable: "rgba(204,104,80,0.9)",
-            number: "rgba(88,171,198,0.9)",
-            operator: "rgba(112,147,76,0.86)",
-            comment: "rgba(71,85,105,0.82)",
+            fg: "rgba(17,24,39,0.92)",
+            keyword: "rgba(82,120,172,0.9)",
+            variable: "rgba(207,122,98,0.9)",
+            type: "rgba(232,196,120,0.9)",
+            property: "rgba(228,190,107,0.92)",
+            tag: "rgba(177,130,171,0.88)",
+            number: "rgba(116,188,207,0.9)",
+            operator: "rgba(127,161,91,0.86)",
+            punctuation: "rgba(17,24,39,0.9)",
+            comment: "rgba(100,116,139,0.74)",
             string: "rgba(184,118,62,0.9)",
           };
       const taskCheckedBg = isDark ? "rgba(96,165,250,0.92)" : "rgba(59, 102, 222, 0.95)";
