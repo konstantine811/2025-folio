@@ -615,9 +615,13 @@ function MarkdownCanvasPreview({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const spacerRef = useRef<HTMLDivElement | null>(null);
   const copyButtonsSignatureRef = useRef("");
+  const copiedCodeTimeoutRef = useRef<number | null>(null);
   const [codeCopyButtons, setCodeCopyButtons] = useState<
     CanvasCodeCopyButton[]
   >([]);
+  const [copiedCodeButtonId, setCopiedCodeButtonId] = useState<string | null>(
+    null,
+  );
   const imageCacheRef = useRef<
     Map<
       string,
@@ -1385,6 +1389,14 @@ function MarkdownCanvasPreview({
     };
   }, [blocks, isDark, scrollable]);
 
+  useEffect(() => {
+    return () => {
+      if (copiedCodeTimeoutRef.current !== null) {
+        window.clearTimeout(copiedCodeTimeoutRef.current);
+      }
+    };
+  }, []);
+
   if (scrollable) {
     return (
       <div
@@ -1404,9 +1416,17 @@ function MarkdownCanvasPreview({
           <button
             key={button.id}
             type="button"
-            aria-label="Copy code"
-            title="Copy code"
-            className="absolute z-30 rounded-md outline-none transition-colors hover:bg-zinc-950/5 focus-visible:ring-2 focus-visible:ring-sky-400/60"
+            aria-label={
+              copiedCodeButtonId === button.id ? "Code copied" : "Copy code"
+            }
+            title={
+              copiedCodeButtonId === button.id ? "Copied" : "Copy code"
+            }
+            className={`absolute z-30 inline-flex items-center justify-center rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sky-400/60 ${
+              copiedCodeButtonId === button.id
+                ? "bg-emerald-500/95 text-white shadow-sm"
+                : "text-transparent hover:bg-zinc-950/5"
+            }`}
             style={{
               left: button.left,
               top: button.top,
@@ -1421,9 +1441,26 @@ function MarkdownCanvasPreview({
             }}
             onClick={(event) => {
               event.stopPropagation();
-              void copyCanvasPreviewText(button.code);
+              void copyCanvasPreviewText(button.code).then(() => {
+                setCopiedCodeButtonId(button.id);
+                if (copiedCodeTimeoutRef.current !== null) {
+                  window.clearTimeout(copiedCodeTimeoutRef.current);
+                }
+                copiedCodeTimeoutRef.current = window.setTimeout(() => {
+                  setCopiedCodeButtonId((current) =>
+                    current === button.id ? null : current,
+                  );
+                  copiedCodeTimeoutRef.current = null;
+                }, 1100);
+              });
             }}
-          />
+          >
+            {copiedCodeButtonId === button.id ? (
+              <span aria-hidden="true" className="text-[15px] leading-none">
+                ✓
+              </span>
+            ) : null}
+          </button>
         ))}
         <div ref={spacerRef} aria-hidden="true" className="w-px" />
       </div>
