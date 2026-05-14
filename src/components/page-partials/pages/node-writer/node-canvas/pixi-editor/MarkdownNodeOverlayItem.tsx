@@ -1,5 +1,7 @@
 import {
   memo,
+  useEffect,
+  useRef,
   type ComponentProps,
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
@@ -55,6 +57,816 @@ const MemoNodeMarkdownBlocksEditor = memo(
     prev.isSelectionOwner === next.isSelectionOwner &&
     prev.uploadPasteImage === next.uploadPasteImage,
 );
+
+const MDX_CANVAS_TYPO = {
+  contentPaddingX: 32,
+  contentPaddingTop: 18,
+  contentPaddingBottom: 12,
+  bodySize: 16.32,
+  bodyLineHeight: 28.1,
+  paragraphGap: 14.4,
+  headingGapTop: 4,
+  headingGapBottom: 12,
+  heading: {
+    1: { size: 32, weight: 800 },
+    2: { size: 27.2, weight: 750 },
+    3: { size: 23.2, weight: 700 },
+    4: { size: 20, weight: 650 },
+    5: { size: 17.6, weight: 620 },
+    6: { size: 15.68, weight: 600 },
+  },
+  headingLineHeight: 1.32,
+  listMarginTop: 4,
+  listMarginBottom: 16,
+  listPaddingLeft: 28.8,
+  listMarkerGap: 16,
+  listItemGap: 5.4,
+  codeSize: 14,
+  codeLineHeight: 22,
+  codePaddingX: 10,
+  codePaddingY: 9,
+  codeHeaderHeight: 38,
+  codeGutterWidth: 44,
+  inlineCodePaddingX: 5.6,
+  inlineCodeHeight: 22,
+  inlineCodeRadius: 4,
+  taskBoxSize: 18,
+  taskBoxRadius: 4,
+  taskTextGap: 18,
+} as const;
+
+type InlineTextUnit = {
+  text: string;
+  isCode: boolean;
+  isBold: boolean;
+  isItalic: boolean;
+  isStrike: boolean;
+  width: number;
+};
+
+function drawRoundedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + width, y, x + width, y + height, r);
+  ctx.arcTo(x + width, y + height, x, y + height, r);
+  ctx.arcTo(x, y + height, x, y, r);
+  ctx.arcTo(x, y, x + width, y, r);
+  ctx.closePath();
+}
+
+function decodeMarkdownCanvasEntities(text: string) {
+  return text
+    .replace(/&amp;/gi, "&")
+    .replace(/&#x20;|&#32;|&nbsp;/gi, " ")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'");
+}
+
+function unescapeMarkdownCanvasText(text: string) {
+  return decodeMarkdownCanvasEntities(text).replace(
+    /\\([\\`*_[\]{}()#+\-.!|=<>])/g,
+    "$1",
+  );
+}
+
+function splitMarkdownCanvasIndent(text: string) {
+  const leadingSpaces = text.match(/^ +/)?.[0].length ?? 0;
+  if (leadingSpaces === 0) {
+    return { indent: 0, text };
+  }
+
+  return {
+    indent:
+      Math.ceil(leadingSpaces / 2) * MDX_CANVAS_TYPO.listPaddingLeft,
+    text: text.slice(leadingSpaces),
+  };
+}
+
+function labelForCodeFenceLanguage(language: string) {
+  const normalized = language.trim().toLowerCase();
+  if (
+    normalized === "tsx" ||
+    normalized === "jsx" ||
+    normalized === "typescriptreact"
+  ) {
+    return "TypeScript JSX";
+  }
+  if (normalized === "ts" || normalized === "typescript") return "TypeScript";
+  if (normalized === "js" || normalized === "javascript") return "JavaScript";
+  if (normalized === "json") return "JSON";
+  if (normalized === "css") return "CSS";
+  if (normalized === "html") return "HTML";
+  if (normalized === "bash" || normalized === "sh" || normalized === "shell") {
+    return "Shell";
+  }
+  return language.trim() || "TypeScript JSX";
+}
+
+function drawMarkdownCanvasCodeLine(
+  ctx: CanvasRenderingContext2D,
+  line: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  colors: {
+    fg: string;
+    keyword: string;
+    variable: string;
+    number: string;
+    operator: string;
+    comment: string;
+    string: string;
+  },
+) {
+  const tokenPattern =
+    /(\/\/.*$|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b(?:const|let|var|type|interface|return|if|else|for|while|function|import|from|export|default|as|new|extends|number|string|boolean|void|null|undefined|true|false)\b|\b\d+(?:\.\d+)?\b|[=:+\-*/<>.,;{}()[\]])/g;
+  let cursorX = x;
+  let index = 0;
+
+  const drawToken = (text: string, fill: string, italic = false) => {
+    if (!text || cursorX > x + maxWidth) return;
+    ctx.font = `${italic ? "italic " : ""}${MDX_CANVAS_TYPO.codeSize}px var(--font-mono-code, ui-monospace, SFMono-Regular, Menlo, monospace)`;
+    ctx.fillStyle = fill;
+    const clipped =
+      cursorX + ctx.measureText(text).width > x + maxWidth
+        ? text.slice(0, Math.max(0, Math.floor((x + maxWidth - cursorX) / 8)))
+        : text;
+    ctx.fillText(clipped, cursorX, y);
+    cursorX += ctx.measureText(clipped).width;
+  };
+
+  for (const match of line.matchAll(tokenPattern)) {
+    const matchText = match[0];
+    const matchIndex = match.index ?? 0;
+    drawToken(line.slice(index, matchIndex), colors.fg);
+
+    if (matchText.startsWith("//")) {
+      drawToken(matchText, colors.comment, true);
+    } else if (/^["'`]/.test(matchText)) {
+      drawToken(matchText, colors.string);
+    } else if (/^\d/.test(matchText)) {
+      drawToken(matchText, colors.number);
+    } else if (/^[=:+\-*/<>.,;{}()[\]]$/.test(matchText)) {
+      drawToken(matchText, colors.operator);
+    } else {
+      drawToken(matchText, colors.keyword);
+    }
+
+    index = matchIndex + matchText.length;
+  }
+
+  drawToken(line.slice(index), colors.variable);
+}
+
+type InlineTextStyle = Pick<
+  InlineTextUnit,
+  "isCode" | "isBold" | "isItalic" | "isStrike"
+>;
+
+function fontForInlineUnit(unit: InlineTextStyle, baseFont: string) {
+  if (unit.isCode) {
+    return `${unit.isItalic ? "italic " : ""}${
+      unit.isBold ? "700 " : ""
+    }${MDX_CANVAS_TYPO.codeSize}px var(--font-mono-code, ui-monospace, SFMono-Regular, Menlo, monospace)`;
+  }
+
+  let font = baseFont;
+  if (unit.isBold) {
+    if (/^(italic\s+)?(normal|400)\s+/i.test(font)) {
+      font = font.replace(/^(italic\s+)?(normal|400)\s+/i, "$1700 ");
+    } else if (/^(italic\s+)?[1-5]00\s+/i.test(font)) {
+      font = font.replace(/^(italic\s+)?[1-5]00\s+/i, "$1700 ");
+    } else if (!/^(italic\s+)?[6-9]00\s+/i.test(font)) {
+      font = `700 ${font}`;
+    }
+  }
+  if (unit.isItalic && !/^italic\s+/i.test(font)) {
+    font = `italic ${font}`;
+  }
+  return font;
+}
+
+function parseStyledInlineText(
+  text: string,
+  style: InlineTextStyle,
+): Array<Omit<InlineTextUnit, "width">> {
+  const units: Array<Omit<InlineTextUnit, "width">> = [];
+  let index = 0;
+
+  const pushPlain = (value: string, nextStyle = style) => {
+    if (!value) return;
+    units.push({ text: value, ...nextStyle });
+  };
+
+  while (index < text.length) {
+    const remaining = text.slice(index);
+    const codeMatch = remaining.match(/^`([^`]+)`/);
+    if (codeMatch) {
+      pushPlain(codeMatch[1]!, { ...style, isCode: true });
+      index += codeMatch[0].length;
+      continue;
+    }
+
+    const delimiter =
+      remaining.startsWith("**") || remaining.startsWith("__")
+        ? remaining.slice(0, 2)
+        : remaining.startsWith("~~")
+          ? "~~"
+          : remaining.startsWith("*") || remaining.startsWith("_")
+            ? remaining[0]
+            : null;
+
+    if (delimiter) {
+      const closeIndex = text.indexOf(delimiter, index + delimiter.length);
+      if (closeIndex !== -1) {
+        const inner = text.slice(index + delimiter.length, closeIndex);
+        const nextStyle = {
+          ...style,
+          isBold:
+            style.isBold || delimiter === "**" || delimiter === "__",
+          isItalic: style.isItalic || delimiter === "*" || delimiter === "_",
+          isStrike: style.isStrike || delimiter === "~~",
+        };
+        units.push(...parseStyledInlineText(inner, nextStyle));
+        index = closeIndex + delimiter.length;
+        continue;
+      }
+    }
+
+    const nextMarkers = ["`", "**", "__", "~~", "*", "_"]
+      .map((marker) => text.indexOf(marker, index + 1))
+      .filter((markerIndex) => markerIndex !== -1);
+    const nextIndex = nextMarkers.length
+      ? Math.min(...nextMarkers)
+      : text.length;
+    pushPlain(text.slice(index, nextIndex));
+    index = nextIndex;
+  }
+
+  return units;
+}
+
+function toInlineTextUnits(ctx: CanvasRenderingContext2D, text: string) {
+  const units: InlineTextUnit[] = [];
+  const baseFont = ctx.font;
+  const linked = unescapeMarkdownCanvasText(text)
+    .replace(/!\[([^\]]*)]\([^)]+\)/g, "$1")
+    .replace(/\[([^\]]+)]\([^)]+\)/g, "$1")
+    .replace(/<[^>]+>/g, "")
+    .trimEnd();
+
+  const inlineUnits = parseStyledInlineText(linked, {
+    isCode: false,
+    isBold: false,
+    isItalic: false,
+    isStrike: false,
+  });
+
+  for (const inlineUnit of inlineUnits) {
+    const words = inlineUnit.text.split(/(\s+)/).filter(Boolean);
+    for (const word of words) {
+      if (!word.trim()) {
+        ctx.font = fontForInlineUnit(inlineUnit, baseFont);
+        units.push({
+          ...inlineUnit,
+          text: " ",
+          width: ctx.measureText(" ").width,
+        });
+        ctx.font = baseFont;
+        continue;
+      }
+
+      ctx.font = fontForInlineUnit(inlineUnit, baseFont);
+      const width =
+        ctx.measureText(word).width +
+        (inlineUnit.isCode ? MDX_CANVAS_TYPO.inlineCodePaddingX * 2 : 0);
+      ctx.font = baseFont;
+      units.push({ ...inlineUnit, text: word, width });
+    }
+  }
+
+  return units;
+}
+
+function drawWrappedText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+  maxY: number,
+  colors?: {
+    codeBg: string;
+    codeBorder: string;
+    strike?: string;
+  },
+) {
+  const baseFont = ctx.font;
+  const units = toInlineTextUnits(ctx, text).filter(
+    (unit, index, all) =>
+      unit.text !== " " ||
+      (index > 0 && index < all.length - 1 && all[index - 1]?.text !== " "),
+  );
+  if (units.length === 0) return y + lineHeight;
+
+  let lineUnits: InlineTextUnit[] = [];
+  let lineWidth = 0;
+
+  const drawLine = () => {
+    let cursorX = x;
+
+    for (const unit of lineUnits) {
+      if (unit.text === " ") {
+        cursorX += unit.width;
+        continue;
+      }
+
+      const unitFont = fontForInlineUnit(unit, baseFont);
+
+      if (unit.isCode && colors) {
+        const pillWidth = unit.width;
+        const pillHeight = MDX_CANVAS_TYPO.inlineCodeHeight;
+        const pillY = y + (MDX_CANVAS_TYPO.bodySize - pillHeight) / 2;
+        const textFill = ctx.fillStyle;
+        drawRoundedRect(
+          ctx,
+          cursorX,
+          pillY,
+          pillWidth,
+          pillHeight,
+          MDX_CANVAS_TYPO.inlineCodeRadius,
+        );
+        ctx.fillStyle = colors.codeBg;
+        ctx.fill();
+        ctx.strokeStyle = colors.codeBorder;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.font = unitFont;
+        ctx.fillStyle = textFill;
+        ctx.fillText(
+          unit.text,
+          cursorX + MDX_CANVAS_TYPO.inlineCodePaddingX,
+          y + (MDX_CANVAS_TYPO.bodySize - MDX_CANVAS_TYPO.codeSize) / 2,
+        );
+        ctx.font = baseFont;
+        ctx.fillStyle = textFill;
+      } else {
+        ctx.font = unitFont;
+        ctx.fillText(unit.text, cursorX, y);
+        ctx.font = baseFont;
+      }
+
+      if (unit.isStrike && colors?.strike) {
+        ctx.strokeStyle = colors.strike;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(cursorX, y + MDX_CANVAS_TYPO.bodySize * 0.58);
+        ctx.lineTo(cursorX + unit.width, y + MDX_CANVAS_TYPO.bodySize * 0.58);
+        ctx.stroke();
+      }
+
+      cursorX += unit.width;
+    }
+
+    if (colors?.strike) {
+      ctx.strokeStyle = colors.strike;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x, y + MDX_CANVAS_TYPO.bodySize * 0.58);
+      ctx.lineTo(cursorX, y + MDX_CANVAS_TYPO.bodySize * 0.58);
+      ctx.stroke();
+    }
+  };
+
+  for (const unit of units) {
+    const canWrap = lineUnits.length > 0 && unit.text !== " ";
+    if (canWrap && lineWidth + unit.width > maxWidth) {
+      drawLine();
+      y += lineHeight;
+      if (y > maxY) return y;
+      lineUnits = unit.text === " " ? [] : [unit];
+      lineWidth = unit.text === " " ? 0 : unit.width;
+    } else {
+      lineUnits.push(unit);
+      lineWidth += unit.width;
+    }
+  }
+  if (lineUnits.length > 0 && y <= maxY) {
+    drawLine();
+  }
+  return y + lineHeight;
+}
+
+function MarkdownCanvasPreview({
+  blocks,
+  isDark,
+}: {
+  blocks: NodeMarkdownBlock[];
+  isDark: boolean;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const parent = canvas?.parentElement;
+    if (!canvas || !parent) return;
+
+    const draw = () => {
+      const cssWidth = Math.max(1, Math.floor(parent.clientWidth));
+      const cssHeight = Math.max(1, Math.floor(parent.clientHeight));
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.floor(cssWidth * dpr);
+      canvas.height = Math.floor(cssHeight * dpr);
+      canvas.style.width = `${cssWidth}px`;
+      canvas.style.height = `${cssHeight}px`;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssWidth, cssHeight);
+      ctx.textBaseline = "top";
+
+      const fg = isDark ? "rgba(244,244,245,0.86)" : "rgba(24,24,27,0.82)";
+      const muted = isDark ? "rgba(212,212,216,0.58)" : "rgba(63,63,70,0.62)";
+      const codeBg = isDark ? "rgba(8,13,24,0.82)" : "rgba(244,247,252,0.94)";
+      const codeBorder = isDark ? "rgba(148,163,184,0.16)" : "rgba(15,23,42,0.12)";
+      const codeHeaderBg = isDark ? "rgba(24,24,27,0.92)" : "rgba(232,232,232,0.94)";
+      const codeBodyBg = isDark ? "rgba(8,13,24,0.72)" : "rgba(255,255,255,0.94)";
+      const codeGutterBg = isDark ? "rgba(30,41,59,0.72)" : "rgba(239,245,255,0.88)";
+      const codeHeaderControlBg = isDark ? "rgba(3,7,18,0.72)" : "rgba(255,251,252,0.86)";
+      const codeSyntax = isDark
+        ? {
+            fg: "rgba(226,232,240,0.82)",
+            keyword: "rgba(147,197,253,0.92)",
+            variable: "rgba(252,165,165,0.9)",
+            number: "rgba(125,211,252,0.92)",
+            operator: "rgba(190,242,100,0.78)",
+            comment: "rgba(148,163,184,0.82)",
+            string: "rgba(253,186,116,0.9)",
+          }
+        : {
+            fg: "rgba(51,65,85,0.84)",
+            keyword: "rgba(72,112,176,0.9)",
+            variable: "rgba(204,104,80,0.9)",
+            number: "rgba(88,171,198,0.9)",
+            operator: "rgba(112,147,76,0.86)",
+            comment: "rgba(71,85,105,0.82)",
+            string: "rgba(184,118,62,0.9)",
+          };
+      const taskCheckedBg = isDark ? "rgba(96,165,250,0.92)" : "rgba(59, 102, 222, 0.95)";
+      const taskUncheckedBg = isDark ? "rgba(24,24,27,0.56)" : "rgba(255,255,255,0.9)";
+      const taskUncheckedBorder = isDark ? "rgba(244,244,245,0.18)" : "rgba(15,23,42,0.14)";
+      const taskStrike = isDark ? "rgba(244,244,245,0.72)" : "rgba(24,24,27,0.72)";
+
+      let y: number = MDX_CANVAS_TYPO.contentPaddingTop;
+      const x = MDX_CANVAS_TYPO.contentPaddingX;
+      const maxWidth = Math.max(20, cssWidth - x - 16);
+      const maxY = cssHeight - MDX_CANVAS_TYPO.contentPaddingBottom;
+      let inCode = false;
+      let codeLines: string[] = [];
+      let codeLanguage = "";
+      let paragraphLines: string[] = [];
+
+      const lines = descriptionFromBlocks(blocks).split("\n");
+
+      const flushParagraph = () => {
+        if (paragraphLines.length === 0) return;
+
+        ctx.font = `${MDX_CANVAS_TYPO.bodySize}px Inter, ui-sans-serif, system-ui, sans-serif`;
+        ctx.fillStyle = fg;
+        for (const paragraphLine of paragraphLines) {
+          const { indent, text } = splitMarkdownCanvasIndent(paragraphLine);
+          y = drawWrappedText(
+            ctx,
+            text,
+            x + indent,
+            y,
+            maxWidth - indent,
+            MDX_CANVAS_TYPO.bodyLineHeight,
+            maxY,
+            { codeBg, codeBorder },
+          );
+        }
+        y += MDX_CANVAS_TYPO.paragraphGap;
+        paragraphLines = [];
+      };
+
+      const flushCodeBlock = () => {
+        const blockX = x - 8;
+        const blockY = y;
+        const blockWidth = maxWidth + 16;
+        const bodyY = blockY + MDX_CANVAS_TYPO.codeHeaderHeight;
+        const blockHeight =
+          MDX_CANVAS_TYPO.codeHeaderHeight +
+          MDX_CANVAS_TYPO.codePaddingY * 2 +
+          Math.max(1, codeLines.length) * MDX_CANVAS_TYPO.codeLineHeight;
+        const textX =
+          blockX + MDX_CANVAS_TYPO.codeGutterWidth + MDX_CANVAS_TYPO.codePaddingX;
+        let textY = bodyY + MDX_CANVAS_TYPO.codePaddingY;
+
+        drawRoundedRect(ctx, blockX, blockY, blockWidth, blockHeight, 8);
+        ctx.fillStyle = codeBodyBg;
+        ctx.fill();
+        ctx.strokeStyle = codeBorder;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.save();
+        drawRoundedRect(
+          ctx,
+          blockX,
+          blockY,
+          blockWidth,
+          MDX_CANVAS_TYPO.codeHeaderHeight,
+          8,
+        );
+        ctx.clip();
+        ctx.fillStyle = codeHeaderBg;
+        ctx.fillRect(blockX, blockY, blockWidth, MDX_CANVAS_TYPO.codeHeaderHeight);
+        ctx.restore();
+
+        ctx.strokeStyle = codeBorder;
+        ctx.beginPath();
+        ctx.moveTo(blockX, bodyY);
+        ctx.lineTo(blockX + blockWidth, bodyY);
+        ctx.stroke();
+
+        ctx.fillStyle = codeGutterBg;
+        ctx.fillRect(
+          blockX,
+          bodyY,
+          MDX_CANVAS_TYPO.codeGutterWidth,
+          blockHeight - MDX_CANVAS_TYPO.codeHeaderHeight,
+        );
+
+        const dotY = blockY + 18;
+        for (const [dotIndex, color] of [
+          "rgba(255,95,87,0.96)",
+          "rgba(255,189,46,0.96)",
+          "rgba(39,201,63,0.96)",
+        ].entries()) {
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(blockX + 18 + dotIndex * 14, dotY, 5.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        const label = labelForCodeFenceLanguage(codeLanguage);
+        ctx.font = `600 13px Inter, ui-sans-serif, system-ui, sans-serif`;
+        const labelWidth = Math.min(150, ctx.measureText(label).width + 42);
+        const labelX = blockX + 58;
+        drawRoundedRect(ctx, labelX, blockY + 7, labelWidth, 24, 7);
+        ctx.fillStyle = codeHeaderControlBg;
+        ctx.fill();
+        ctx.strokeStyle = codeBorder;
+        ctx.stroke();
+        ctx.fillStyle = fg;
+        ctx.fillText(label, labelX + 14, blockY + 11);
+        ctx.strokeStyle = muted;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(labelX + labelWidth - 18, blockY + 17);
+        ctx.lineTo(labelX + labelWidth - 13, blockY + 22);
+        ctx.lineTo(labelX + labelWidth - 8, blockY + 17);
+        ctx.stroke();
+
+        const copyX = blockX + blockWidth - 28;
+        const copyY = blockY + 10;
+        drawRoundedRect(ctx, copyX - 4, copyY - 4, 22, 22, 6);
+        ctx.fillStyle = codeHeaderControlBg;
+        ctx.fill();
+        ctx.strokeStyle = codeBorder;
+        ctx.stroke();
+        ctx.strokeStyle = fg;
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(copyX + 3, copyY + 4, 9, 10);
+        ctx.strokeRect(copyX, copyY, 9, 10);
+
+        ctx.font = `${MDX_CANVAS_TYPO.codeSize}px var(--font-mono-code, ui-monospace, SFMono-Regular, Menlo, monospace)`;
+        for (const [lineIndex, codeLine] of (
+          codeLines.length > 0 ? codeLines : [""]
+        ).entries()) {
+          if (textY <= maxY) {
+            ctx.fillStyle = muted;
+            const lineNumber = String(lineIndex + 1);
+            ctx.fillText(
+              lineNumber,
+              blockX +
+                MDX_CANVAS_TYPO.codeGutterWidth -
+                MDX_CANVAS_TYPO.codePaddingX -
+                ctx.measureText(lineNumber).width,
+              textY,
+            );
+            drawMarkdownCanvasCodeLine(
+              ctx,
+              codeLine,
+              textX,
+              textY,
+              blockWidth -
+                MDX_CANVAS_TYPO.codeGutterWidth -
+                MDX_CANVAS_TYPO.codePaddingX * 2,
+              codeSyntax,
+            );
+          }
+          textY += MDX_CANVAS_TYPO.codeLineHeight;
+        }
+
+        y += blockHeight + MDX_CANVAS_TYPO.paragraphGap;
+        codeLines = [];
+        codeLanguage = "";
+      };
+
+      for (const rawLine of lines) {
+        if (y > maxY) break;
+
+        const sourceLine = decodeMarkdownCanvasEntities(rawLine).replace(
+          /\t/g,
+          "  ",
+        );
+        const line = unescapeMarkdownCanvasText(sourceLine);
+        const hasEscapedBulletMarker = /^\s*\\[-*+]\s+/.test(sourceLine);
+        const fence = line.trim().match(/^```(\S*)/);
+        if (fence) {
+          flushParagraph();
+          if (!inCode) {
+            inCode = true;
+            codeLines = [];
+            codeLanguage = fence[1] ?? "";
+          } else {
+            flushCodeBlock();
+            inCode = false;
+          }
+          continue;
+        }
+
+        if (inCode) {
+          codeLines.push(line);
+          continue;
+        }
+
+        if (!line.trim()) {
+          flushParagraph();
+          continue;
+        }
+
+        const heading = line.match(/^(#{1,6})\s+(.+)$/);
+        if (heading) {
+          flushParagraph();
+          const level = Math.min(
+            6,
+            heading[1]!.length,
+          ) as keyof typeof MDX_CANVAS_TYPO.heading;
+          const { size, weight } = MDX_CANVAS_TYPO.heading[level];
+          ctx.font = `${weight} ${size}px Inter, ui-sans-serif, system-ui, sans-serif`;
+          ctx.fillStyle = fg;
+          y += MDX_CANVAS_TYPO.headingGapTop;
+          y =
+            drawWrappedText(
+              ctx,
+              heading[2]!,
+              x,
+              y,
+              maxWidth,
+              size * MDX_CANVAS_TYPO.headingLineHeight,
+              maxY,
+              { codeBg, codeBorder },
+            ) + MDX_CANVAS_TYPO.headingGapBottom;
+          continue;
+        }
+
+        const bullet = hasEscapedBulletMarker
+          ? null
+          : line.match(/^(\s*)[-*+]\s+(.+)$/);
+        const ordered = line.match(/^(\s*)(\d+)[.)]\s+(.+)$/);
+        if (bullet || ordered) {
+          flushParagraph();
+          const sourceIndent = bullet?.[1] ?? ordered?.[1] ?? "";
+          const nestedIndent = Math.floor(sourceIndent.length / 2) * MDX_CANVAS_TYPO.listPaddingLeft;
+          const indent = MDX_CANVAS_TYPO.listPaddingLeft + nestedIndent;
+          const textX = x + indent;
+          const rawText = bullet?.[2] ?? ordered?.[3] ?? "";
+          const task = rawText.match(/^\[([ xX])]\s+(.+)$/);
+          ctx.font = `${MDX_CANVAS_TYPO.bodySize}px Inter, ui-sans-serif, system-ui, sans-serif`;
+
+          if (task && bullet) {
+            const checked = task[1]!.toLowerCase() === "x";
+            const boxSize = MDX_CANVAS_TYPO.taskBoxSize;
+            const boxX = textX - boxSize - MDX_CANVAS_TYPO.listMarkerGap;
+            const boxY = y + (MDX_CANVAS_TYPO.bodySize - boxSize) / 2;
+            const taskTextX = textX;
+
+            drawRoundedRect(
+              ctx,
+              boxX,
+              boxY,
+              boxSize,
+              boxSize,
+              MDX_CANVAS_TYPO.taskBoxRadius,
+            );
+            ctx.fillStyle = checked ? taskCheckedBg : taskUncheckedBg;
+            ctx.fill();
+            ctx.strokeStyle = checked ? taskCheckedBg : taskUncheckedBorder;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            if (checked) {
+              ctx.strokeStyle = "rgba(255,255,255,0.96)";
+              ctx.lineWidth = 2.4;
+              ctx.lineCap = "round";
+              ctx.lineJoin = "round";
+              ctx.beginPath();
+              ctx.moveTo(boxX + 4.3, boxY + 9.3);
+              ctx.lineTo(boxX + 7.6, boxY + 12.4);
+              ctx.lineTo(boxX + 14, boxY + 5.2);
+              ctx.stroke();
+              ctx.lineCap = "butt";
+              ctx.lineJoin = "miter";
+            }
+
+            ctx.fillStyle = fg;
+            y = drawWrappedText(
+              ctx,
+              task[2]!,
+              taskTextX,
+              y,
+              maxWidth - (taskTextX - x),
+              MDX_CANVAS_TYPO.bodyLineHeight,
+              maxY,
+              {
+                codeBg,
+                codeBorder,
+                strike: checked ? taskStrike : undefined,
+              },
+            ) + MDX_CANVAS_TYPO.listItemGap;
+            continue;
+          }
+
+          const marker = ordered ? `${ordered[2]}.` : "•";
+          const text = rawText;
+          const markerWidth = ctx.measureText(marker).width;
+          ctx.fillStyle = muted;
+          ctx.fillText(
+            marker,
+            textX - MDX_CANVAS_TYPO.listMarkerGap - markerWidth,
+            y,
+          );
+          ctx.fillStyle = fg;
+          y = drawWrappedText(
+            ctx,
+            text,
+            textX,
+            y,
+            maxWidth - indent,
+            MDX_CANVAS_TYPO.bodyLineHeight,
+            maxY,
+            { codeBg, codeBorder },
+          ) + MDX_CANVAS_TYPO.listItemGap;
+          continue;
+        }
+
+        const quote = line.match(/^>\s?(.+)$/);
+        if (quote) {
+          paragraphLines.push(quote[1]!);
+          continue;
+        }
+
+        paragraphLines.push(line);
+      }
+
+      flushParagraph();
+      if (inCode) {
+        flushCodeBlock();
+      }
+    };
+
+    draw();
+
+    const observer = new ResizeObserver(draw);
+    observer.observe(parent);
+    return () => observer.disconnect();
+  }, [blocks, isDark]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-hidden="true"
+      className="block h-full w-full select-none"
+    />
+  );
+}
 
 type NodeDropHighlight =
   | {
@@ -186,15 +998,6 @@ const MarkdownNodeOverlayItem = ({
         }
       : rearGlowStyle(isConnected);
 
-  if (
-    node.x > worldViewBounds.maxX ||
-    node.x + node.width < worldViewBounds.minX ||
-    node.y > worldViewBounds.maxY ||
-    node.y + node.height < worldViewBounds.minY
-  ) {
-    return null;
-  }
-
   const topLeft = viewport.toScreen(node.x, node.y);
   const bottomRight = viewport.toScreen(
     node.x + node.width,
@@ -207,14 +1010,26 @@ const MarkdownNodeOverlayItem = ({
   const height = Math.abs(bottomRight.y - topLeft.y);
   const bodyTop = 56;
   const bodyHeight = Math.max(0, node.height - bodyTop - 10);
+  const isInWorldView = !(
+    node.x > worldViewBounds.maxX ||
+    node.x + node.width < worldViewBounds.minX ||
+    node.y > worldViewBounds.maxY ||
+    node.y + node.height < worldViewBounds.minY
+  );
+  const isRenderableSize = width >= 48 && height >= 40;
   const nodeImageUrl =
     toDisplayImageUrlCandidate(node.imageUrl?.trim() ?? "") ||
     extractStandaloneImageUrlFromBlocks(blocks);
   const isImageNode = nodeImageUrl.length > 0;
   const headingLevel = normalizeHeadingLevel(node.headingLevel);
   const titleClass = headingLabelClass(headingLevel);
+  const shouldRenderLiveEditor = !readOnly && !isImageNode && isSelected;
 
-  if (width < 48 || height < 40) return null;
+  if (!isInWorldView) {
+    return null;
+  }
+
+  if (!isRenderableSize) return null;
 
   return (
     <div
@@ -510,7 +1325,7 @@ const MarkdownNodeOverlayItem = ({
                 >
                   {descriptionFromBlocks(blocks)}
                 </div>
-              ) : (
+              ) : shouldRenderLiveEditor ? (
                 <div
                   data-node-overlay-scroll="true"
                   onPointerDown={(event) => {
@@ -544,6 +1359,13 @@ const MarkdownNodeOverlayItem = ({
                       updateNodeBlocks(onProjectPatch, node.id, nextBlocks)
                     }
                   />
+                </div>
+              ) : (
+                <div
+                  data-node-overlay-scroll="true"
+                  className="h-full overflow-hidden pointer-events-none"
+                >
+                  <MarkdownCanvasPreview blocks={blocks} isDark={isDark} />
                 </div>
               )}
             </div>
