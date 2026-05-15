@@ -62,8 +62,8 @@ const MemoNodeMarkdownBlocksEditor = memo(
 );
 
 const MDX_CANVAS_TYPO = {
-  contentPaddingX: 26,
-  contentPaddingTop: 26,
+  contentPaddingX: 20,
+  contentPaddingTop: 8,
   contentPaddingBottom: 12,
   bodySize: 16.32,
   bodyLineHeight: 28.1,
@@ -79,11 +79,11 @@ const MDX_CANVAS_TYPO = {
     6: { size: 15.68, weight: 600 },
   },
   headingLineHeight: 1.32,
-  listMarginTop: 0,
+  listMarginTop: 10,
   listMarginBottom: 10,
-  listPaddingLeft: 28.8,
-  listMarkerGap: 4,
-  listItemGap: 5.4,
+  listPaddingLeft: 16.8,
+  listMarkerGap: 1,
+  listItemGap: -4,
   codeSize: 13.76,
   /** Вирівняно з `.cm-scroller` у MDX (~1.58 × codeSize, компактні паддінги). */
   codeLineHeight: 20.5,
@@ -647,15 +647,25 @@ function MarkdownReadonlyMdxPreview({
   nodeId: string;
 }) {
   return (
-    <MemoNodeMarkdownBlocksEditor
-      nodeId={`${nodeId}-preview`}
-      blocks={blocks}
-      selectionEditorMode="toolbar"
-      isDarkMode={isDark}
-      isSelectionOwner={false}
-      uploadPasteImage={async () => ""}
-      onBlocksChange={() => {}}
-    />
+    <div
+      className="h-full overflow-hidden"
+      style={{
+        paddingLeft: MDX_CANVAS_TYPO.contentPaddingX,
+        paddingRight: MDX_CANVAS_TYPO.contentPaddingX,
+        paddingTop: MDX_CANVAS_TYPO.contentPaddingTop,
+        paddingBottom: MDX_CANVAS_TYPO.contentPaddingBottom,
+      }}
+    >
+      <MemoNodeMarkdownBlocksEditor
+        nodeId={`${nodeId}-preview`}
+        blocks={blocks}
+        selectionEditorMode="toolbar"
+        isDarkMode={isDark}
+        isSelectionOwner={false}
+        uploadPasteImage={async () => ""}
+        onBlocksChange={() => {}}
+      />
+    </div>
   );
 }
 
@@ -810,7 +820,10 @@ function MarkdownCanvasPreview({
         ? "rgba(125,211,252,0.18)"
         : "rgba(14,165,233,0.18)";
       const x = MDX_CANVAS_TYPO.contentPaddingX;
-      const maxWidth = Math.max(20, cssWidth - x - 16);
+      const maxWidth = Math.max(
+        20,
+        cssWidth - MDX_CANVAS_TYPO.contentPaddingX * 2,
+      );
       let inCode = false;
       let codeLines: string[] = [];
       let codeLanguage = "";
