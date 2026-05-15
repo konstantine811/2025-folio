@@ -340,7 +340,7 @@ function inferCodeFenceLanguage(language: string, codeLines: string[]) {
   if (/\b(?:const|let|function|export|import|return)\b/.test(code)) {
     return "js";
   }
-  if (/^\s*[{\[]/.test(code) && /["']\w+["']\s*:/.test(code)) {
+  if (/^\s*[{[]/.test(code) && /["']\w+["']\s*:/.test(code)) {
     return "json";
   }
   if (/<\/?[a-z][\w:-]*(?:\s|>|\/>)/i.test(code)) {
