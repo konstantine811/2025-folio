@@ -617,7 +617,8 @@ export function SlideBlocksCanvas({
   );
 
   const clearSelectionIfBackdrop = (e: MouseEvent<HTMLDivElement>) => {
-    if ((e.target as HTMLElement).closest("[data-nw-slide-block]")) return;
+    const target = e.target instanceof Element ? e.target : null;
+    if (target?.closest("[data-nw-slide-block]")) return;
     onSelectBlock(null);
   };
 

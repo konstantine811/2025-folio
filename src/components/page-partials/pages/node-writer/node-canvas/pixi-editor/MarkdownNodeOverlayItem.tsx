@@ -62,8 +62,8 @@ const MemoNodeMarkdownBlocksEditor = memo(
 );
 
 const MDX_CANVAS_TYPO = {
-  contentPaddingX: 32,
-  contentPaddingTop: 24.5,
+  contentPaddingX: 28,
+  contentPaddingTop: 25.5,
   contentPaddingBottom: 12,
   bodySize: 16.32,
   bodyLineHeight: 28.1,

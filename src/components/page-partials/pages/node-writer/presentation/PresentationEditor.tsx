@@ -178,7 +178,7 @@ export function PresentationEditor({
     if (effectiveReadOnly || !activeSlideId) return;
 
     const onPaste = (e: ClipboardEvent) => {
-      const el = e.target as HTMLElement | null;
+      const el = e.target instanceof Element ? e.target : null;
       if (el?.closest("textarea, input, [contenteditable=true]")) return;
 
       let file: File | null = null;
@@ -261,7 +261,7 @@ export function PresentationEditor({
   useEffect(() => {
     if (!effectiveReadOnly || slidesNorm.length === 0) return;
     const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement | null;
+      const t = e.target instanceof Element ? e.target : null;
       if (t?.closest("textarea, input, [contenteditable=true]")) return;
       if (e.key === "ArrowLeft") {
         e.preventDefault();
