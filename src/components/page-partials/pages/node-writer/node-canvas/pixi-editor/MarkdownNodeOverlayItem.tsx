@@ -68,7 +68,7 @@ const MDX_CANVAS_TYPO = {
   bodySize: 16.32,
   bodyLineHeight: 28.1,
   paragraphGap: 14.3,
-  headingGapTop: -2,
+  headingGapTop: 10,
   headingGapBottom: 14,
   heading: {
     1: { size: 32, weight: 800 },
@@ -83,7 +83,7 @@ const MDX_CANVAS_TYPO = {
   listMarginBottom: 10,
   listPaddingLeft: 16.8,
   listMarkerGap: 1,
-  listItemGap: -4,
+  listItemGap: 4,
   codeSize: 13.76,
   /** Вирівняно з `.cm-scroller` у MDX (~1.58 × codeSize, компактні паддінги). */
   codeLineHeight: 20.5,
@@ -100,7 +100,10 @@ const MDX_CANVAS_TYPO = {
   inlineCodeRadius: 4,
   taskBoxSize: 18,
   taskBoxRadius: 4,
-  taskTextGap: 18,
+  taskBoxIndent: 36,
+  taskTextGap: 14,
+  taskBoxOffsetY: 0,
+  taskItemGap: 8,
   thematicBreakGapTop: 8,
   thematicBreakGapBottom: 14,
 } as const;
@@ -981,13 +984,23 @@ function MarkdownCanvasPreview({
             const indent = MDX_CANVAS_TYPO.listPaddingLeft + nestedIndent;
             const rawText = bullet?.[2] ?? ordered?.[3] ?? "";
             const task = rawText.match(/^\[([ xX])]\s+(.+)$/);
+            const taskTextOffset =
+              task && bullet
+                ? MDX_CANVAS_TYPO.taskBoxIndent +
+                  MDX_CANVAS_TYPO.taskBoxSize +
+                  MDX_CANVAS_TYPO.taskTextGap +
+                  nestedIndent
+                : indent;
             estimatedY +=
               estimateWrappedTextHeight(
                 task && bullet ? task[2]! : rawText,
-                maxWidth - indent,
+                maxWidth - taskTextOffset,
                 MDX_CANVAS_TYPO.bodyLineHeight,
                 bodyFont,
-              ) + MDX_CANVAS_TYPO.listItemGap;
+              ) +
+              (task && bullet
+                ? MDX_CANVAS_TYPO.taskItemGap
+                : MDX_CANVAS_TYPO.listItemGap);
             wasListLine = true;
             continue;
           }
@@ -1397,9 +1410,13 @@ function MarkdownCanvasPreview({
           if (task && bullet) {
             const checked = task[1]!.toLowerCase() === "x";
             const boxSize = MDX_CANVAS_TYPO.taskBoxSize;
-            const boxX = textX - boxSize - MDX_CANVAS_TYPO.listMarkerGap;
-            const boxY = y + (MDX_CANVAS_TYPO.bodySize - boxSize) / 2;
-            const taskTextX = textX;
+            const boxX = x + nestedIndent + MDX_CANVAS_TYPO.taskBoxIndent;
+            const boxY =
+              y +
+              (MDX_CANVAS_TYPO.bodySize - boxSize) / 2 +
+              MDX_CANVAS_TYPO.taskBoxOffsetY;
+            const taskTextX =
+              boxX + boxSize + MDX_CANVAS_TYPO.taskTextGap;
 
             drawRoundedRect(
               ctx,
@@ -1444,7 +1461,7 @@ function MarkdownCanvasPreview({
                   codeBorder,
                   strike: checked ? taskStrike : undefined,
                 },
-              ) + MDX_CANVAS_TYPO.listItemGap;
+              ) + MDX_CANVAS_TYPO.taskItemGap;
             wasListDrawing = true;
             continue;
           }
