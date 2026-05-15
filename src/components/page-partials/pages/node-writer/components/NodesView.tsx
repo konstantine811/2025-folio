@@ -1,5 +1,5 @@
-import { useCallback, useRef } from "react";
-import { Crosshair, Info, Minus, Plus } from "lucide-react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { Crosshair, FilePlus2, Info, Minus, Plus, X } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -21,6 +21,9 @@ import {
   contentBoundsFromItems,
   fitViewportToBounds,
 } from "../node-canvas/pixi-editor/utils/canvasContent";
+import { parseImportedTextNodes } from "../node-canvas/utils/import-text-nodes";
+import { descriptionFromBlocks } from "../node-canvas/utils/node-markdown-blocks";
+import { newNodeId } from "../node-canvas/utils/node-ids";
 
 const TOUCH_ZOOM_STEP = 1.25;
 
@@ -37,6 +40,8 @@ const NodesView = ({
 }: NodesViewProps) => {
   const effectiveReadOnly = readOnly || isTouchDevice;
   const shortcutShellRef = useRef<HTMLDivElement>(null);
+  const [isTextImportOpen, setIsTextImportOpen] = useState(false);
+  const [textImportDraft, setTextImportDraft] = useState("");
   const viewport = useEditorStore((s) => s.viewport);
   const bumpViewportVersion = useEditorStore((s) => s.bumpViewportVersion);
   const {
@@ -60,6 +65,54 @@ const NodesView = ({
     }
     bumpViewportVersion();
   }, [bumpViewportVersion, project, viewport]);
+  const importedNodeDrafts = useMemo(
+    () => parseImportedTextNodes(textImportDraft),
+    [textImportDraft],
+  );
+  const createNodesFromImportedText = useCallback(() => {
+    if (effectiveReadOnly || importedNodeDrafts.length === 0) return;
+
+    const gap = 32;
+    const totalHeight =
+      importedNodeDrafts.reduce((sum, draft) => sum + draft.height, 0) +
+      Math.max(0, importedNodeDrafts.length - 1) * gap;
+    const center = viewport?.center ?? { x: 120, y: 120 };
+
+    onProjectPatch((prev) => {
+      let cursorY = center.y - totalHeight / 2;
+      const maxZ = prev.nodes.reduce(
+        (max, node, index) => Math.max(max, node.zIndex ?? index),
+        0,
+      );
+
+      const createdNodes = importedNodeDrafts.map((draft, index) => {
+        const node = {
+          id: newNodeId(),
+          label: draft.label,
+          headingLevel:
+            prev.nodes.length === 0 && index === 0 ? (1 as const) : (2 as const),
+          description: descriptionFromBlocks(draft.markdownBlocks),
+          markdownBlocks: draft.markdownBlocks,
+          type: "concept" as const,
+          x: center.x - draft.width / 2,
+          y: cursorY,
+          width: draft.width,
+          height: draft.height,
+          zIndex: maxZ + index + 1,
+        };
+        cursorY += draft.height + gap;
+        return node;
+      });
+
+      return {
+        ...prev,
+        nodes: [...prev.nodes, ...createdNodes],
+      };
+    });
+
+    setTextImportDraft("");
+    setIsTextImportOpen(false);
+  }, [effectiveReadOnly, importedNodeDrafts, onProjectPatch, viewport]);
 
   const stepZoom = useCallback(
     (direction: 1 | -1) => {
@@ -156,6 +209,17 @@ const NodesView = ({
         <div className="mono ml-4 shrink-0 text-[8px] tracking-wide text-muted-foreground">
           {effectiveReadOnly ? "Лише перегляд" : "Ноди · звʼязки · текст"}
         </div>
+        {!effectiveReadOnly ? (
+          <button
+            type="button"
+            onClick={() => setIsTextImportOpen(true)}
+            className="ml-3 inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-border/25 bg-background/50 text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+            aria-label="Створити ноди з тексту"
+            title="Створити ноди з тексту"
+          >
+            <FilePlus2 className="size-4" strokeWidth={1.85} />
+          </button>
+        ) : null}
       </div>
       <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <EditorCanvas
@@ -195,6 +259,63 @@ const NodesView = ({
           </div>
         ) : null}
       </div>
+      {isTextImportOpen ? (
+        <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
+          <div className="flex max-h-[86vh] w-full max-w-3xl flex-col overflow-hidden rounded-lg border border-border/30 bg-card shadow-2xl">
+            <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/20 px-4">
+              <div className="min-w-0">
+                <h3 className="truncate text-sm font-medium text-foreground">
+                  Створити ноди з тексту
+                </h3>
+                <p className="mono mt-0.5 text-[9px] text-muted-foreground">
+                  Місце старту — центр поточного вигляду canvas
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsTextImportOpen(false)}
+                className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label="Закрити"
+              >
+                <X className="size-4" strokeWidth={1.85} />
+              </button>
+            </div>
+            <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
+              <textarea
+                value={textImportDraft}
+                onChange={(event) => setTextImportDraft(event.target.value)}
+                autoFocus
+                spellCheck={false}
+                className="min-h-[340px] flex-1 resize-none rounded-md border border-border/30 bg-background/70 p-3 font-mono text-xs leading-relaxed text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-primary/45"
+                placeholder="Встав текст з блоками # Node 01 — ..."
+              />
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="mono text-[10px] text-muted-foreground">
+                  Буде створено: {importedNodeDrafts.length} нод
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsTextImportOpen(false)}
+                    className="inline-flex h-9 items-center rounded-md border border-border/30 px-3 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  >
+                    Скасувати
+                  </button>
+                  <button
+                    type="button"
+                    onClick={createNodesFromImportedText}
+                    disabled={importedNodeDrafts.length === 0}
+                    className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-opacity disabled:pointer-events-none disabled:opacity-40"
+                  >
+                    <FilePlus2 className="size-4" strokeWidth={1.85} />
+                    Створити
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };
