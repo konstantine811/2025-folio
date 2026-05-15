@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text";
 import { $createParagraphNode } from "lexical";
@@ -109,6 +109,14 @@ function isMdxSelectTriggerTarget(target: EventTarget | null) {
 }
 
 const MDX_EMPTY_CODE_LANGUAGE_VALUE = "__EMPTY_VALUE__";
+
+function MdxImageUploadPreloader() {
+  return (
+    <div className="my-2 flex min-h-28 items-center justify-center rounded-lg border border-border/25 bg-muted/20">
+      <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary/80 border-t-transparent" />
+    </div>
+  );
+}
 
 function NodeBlockTypeSelect() {
   const convertSelectionToNode = usePublisher(convertSelectionToNode$);
@@ -606,6 +614,7 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
   );
   const [markdown, setMarkdown] = useState(currentMarkdown);
   const [isToolbarActive, setIsToolbarActive] = useState(false);
+  const [pendingImageUploads, setPendingImageUploads] = useState(0);
   const [isDarkTheme, setIsDarkTheme] = useState(() => {
     if (typeof document === "undefined") return false;
     const html = document.documentElement;
@@ -620,6 +629,19 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
   const effectiveDarkTheme = isDarkMode ?? isDarkTheme;
   const blocksRef = useRef(blocks);
   blocksRef.current = blocks;
+
+  const handleImageUpload = useCallback(
+    async (file: File) => {
+      if (!uploadPasteImage) return "";
+      setPendingImageUploads((count) => count + 1);
+      try {
+        return await uploadPasteImage(file);
+      } finally {
+        setPendingImageUploads((count) => Math.max(0, count - 1));
+      }
+    },
+    [uploadPasteImage],
+  );
 
   useEffect(() => {
     setMarkdown(currentMarkdown);
@@ -769,15 +791,21 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
         ],
       }),
       imagePlugin({
-        imageUploadHandler: uploadPasteImage,
-        imagePlaceholder: null,
+        imageUploadHandler: uploadPasteImage ? handleImageUpload : undefined,
+        imagePlaceholder: MdxImageUploadPreloader,
       }),
       markdownShortcutPlugin(),
       toolbarPlugin({
         toolbarContents: () => <GlobalInlineMdxToolbar active={isToolbarActive} />,
       }),
     ],
-    [uploadPasteImage, isToolbarActive, effectiveDarkTheme, isSelectionOwner],
+    [
+      uploadPasteImage,
+      handleImageUpload,
+      isToolbarActive,
+      effectiveDarkTheme,
+      isSelectionOwner,
+    ],
   );
 
   return (
@@ -799,6 +827,14 @@ export function NodeMarkdownBlocksEditor(props: NodeMarkdownBlocksEditorProps) {
         }
       }}
     >
+      {pendingImageUploads > 0 ? (
+        <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex justify-center">
+          <div className="flex items-center gap-2 rounded-lg border border-border/35 bg-background/88 px-3 py-2 text-xs text-muted-foreground shadow-lg backdrop-blur-md">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary/80 border-t-transparent" />
+            <span>Завантаження зображення...</span>
+          </div>
+        </div>
+      ) : null}
       <MDXEditor
         className="node-mdx-editor-basic"
         markdown={markdown}
