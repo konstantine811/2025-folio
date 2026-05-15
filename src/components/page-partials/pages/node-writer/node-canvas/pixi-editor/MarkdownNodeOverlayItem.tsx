@@ -86,15 +86,31 @@ const MDX_CANVAS_TYPO = {
   listItemGap: 4,
   codeSize: 13.76,
   /** Вирівняно з `.cm-scroller` у MDX (~1.58 × codeSize, компактні паддінги). */
-  codeLineHeight: 20.5,
+  codeLineHeight: 23.5,
   codePaddingX: 7,
   codePaddingY: 7,
   codeHeaderHeight: 40,
+  /** Окремий боковий відступ code block від країв preview. Не впливає на звичайний content. */
+  codeBlockInsetX: 30,
   codeGutterWidth: 25,
   /** Розмір цифр у gutter (тіло коду — `codeSize`). */
   codeLineNumberSize: 10,
   /** Dropdown мови у шапці code block (не повна capsule). */
   codeLangSelectRadius: 10,
+  codeChromeDotLeft: 10.5,
+  codeChromeDotRadius: 4.45,
+  codeChromeDotGap: 12.5,
+  codeLangAfterDotsGap: 10,
+  codeLangFallbackLeft: 52,
+  codeLangHeight: 26,
+  codeLangPaddingX: 11,
+  codeLangChevronSlot: 24,
+  codeLangMinWidth: 118,
+  codeLangMaxWidth: 190,
+  codeLangChevronRight: 15,
+  codeCopySize: 26,
+  codeCopyRadius: 6.5,
+  codeCopyRight: 10,
   inlineCodePaddingX: 5.6,
   inlineCodeHeight: 22,
   inlineCodeRadius: 4,
@@ -272,6 +288,15 @@ function blocksContainMarkdownImage(blocks: NodeMarkdownBlock[]): boolean {
 function labelForCodeFenceLanguage(language: string) {
   const normalized = language.trim().toLowerCase();
   if (
+    normalized === "plain" ||
+    normalized === "plain_text" ||
+    normalized === "plaintext" ||
+    normalized === "text" ||
+    normalized === "txt"
+  ) {
+    return "Plain text";
+  }
+  if (
     normalized === "tsx" ||
     normalized === "jsx" ||
     normalized === "typescriptreact"
@@ -286,6 +311,46 @@ function labelForCodeFenceLanguage(language: string) {
   if (normalized === "bash" || normalized === "sh") return "Bash";
   if (normalized === "shell") return "Shell";
   return language.trim() || "TypeScript JSX";
+}
+
+function inferCodeFenceLanguage(language: string, codeLines: string[]) {
+  const normalized = language.trim().toLowerCase();
+  if (
+    normalized === "plain" ||
+    normalized === "plain_text" ||
+    normalized === "plaintext" ||
+    normalized === "text" ||
+    normalized === "txt"
+  ) {
+    return normalized;
+  }
+
+  if (normalized) {
+    return normalized;
+  }
+
+  const code = codeLines.join("\n");
+  if (
+    /\b(?:type|interface|enum|implements|as const|readonly)\b/.test(code) ||
+    /:\s*(?:string|number|boolean|unknown|Vector3|Object3D)\b/.test(code) ||
+    /\bimport\s+type\b/.test(code)
+  ) {
+    return /<[A-Z][\w.]*[\s>]/.test(code) ? "tsx" : "ts";
+  }
+  if (/\b(?:const|let|function|export|import|return)\b/.test(code)) {
+    return "js";
+  }
+  if (/^\s*[{\[]/.test(code) && /["']\w+["']\s*:/.test(code)) {
+    return "json";
+  }
+  if (/<\/?[a-z][\w:-]*(?:\s|>|\/>)/i.test(code)) {
+    return "html";
+  }
+  if (/^\s*[.#]?[\w-]+\s*\{[\s\S]*:[\s\S]*\}/.test(code)) {
+    return "css";
+  }
+
+  return normalized || "";
 }
 
 async function copyCanvasPreviewText(text: string) {
@@ -1062,9 +1127,12 @@ function MarkdownCanvasPreview({
           ? MDX_CANVAS_CODE_CHROME.dark
           : MDX_CANVAS_CODE_CHROME.light;
         const rr = MDX_CANVAS_CODE_CHROME.radius;
-        const blockX = x - 8;
+        const blockX = MDX_CANVAS_TYPO.codeBlockInsetX;
         const blockY = y;
-        const blockWidth = maxWidth + 16;
+        const blockWidth = Math.max(
+          20,
+          cssWidth - MDX_CANVAS_TYPO.codeBlockInsetX * 2,
+        );
         const headerH = MDX_CANVAS_TYPO.codeHeaderHeight;
         const bodyY = blockY + headerH;
         const blockHeight =
@@ -1114,9 +1182,9 @@ function MarkdownCanvasPreview({
         ctx.stroke();
 
         const dotY = blockY + headerH / 2;
-        const dotR = 4.45;
-        const dotStep = 12.5;
-        const dot0 = blockX + 10.5;
+        const dotR = MDX_CANVAS_TYPO.codeChromeDotRadius;
+        const dotStep = MDX_CANVAS_TYPO.codeChromeDotGap;
+        const dot0 = blockX + MDX_CANVAS_TYPO.codeChromeDotLeft;
         for (const [i, trafficColor] of chrome.trafficColors.entries()) {
           ctx.fillStyle = trafficColor;
           ctx.beginPath();
@@ -1124,19 +1192,27 @@ function MarkdownCanvasPreview({
           ctx.fill();
         }
 
-        const label = labelForCodeFenceLanguage(codeLanguage);
-        const langH = 26;
+        const label = labelForCodeFenceLanguage(
+          inferCodeFenceLanguage(codeLanguage, codeLines),
+        );
+        const langH = MDX_CANVAS_TYPO.codeLangHeight;
         const langR = MDX_CANVAS_TYPO.codeLangSelectRadius;
         ctx.font = `600 12px Inter, ui-sans-serif, system-ui, sans-serif`;
-        const chevronSlot = 24;
-        const labelPadX = 11;
+        const chevronSlot = MDX_CANVAS_TYPO.codeLangChevronSlot;
+        const labelPadX = MDX_CANVAS_TYPO.codeLangPaddingX;
         const textW = ctx.measureText(label).width;
         const labelWidth = Math.min(
-          170,
-          Math.max(118, textW + labelPadX + chevronSlot),
+          MDX_CANVAS_TYPO.codeLangMaxWidth,
+          Math.max(
+            MDX_CANVAS_TYPO.codeLangMinWidth,
+            textW + labelPadX + chevronSlot,
+          ),
         );
-        const afterDots = dot0 + 2 * dotStep + dotR + 10;
-        const labelX = Math.round(Math.max(blockX + afterDots, blockX + 52));
+        const afterDots =
+          dot0 + 2 * dotStep + dotR + MDX_CANVAS_TYPO.codeLangAfterDotsGap;
+        const labelX = Math.round(
+          Math.max(afterDots, blockX + MDX_CANVAS_TYPO.codeLangFallbackLeft),
+        );
         const langTop = Math.round(blockY + (headerH - langH) / 2);
         drawRoundedRect(ctx, labelX, langTop, labelWidth, langH, langR);
         ctx.fillStyle = chrome.langBg;
@@ -1154,7 +1230,8 @@ function MarkdownCanvasPreview({
         ctx.lineWidth = 1.05;
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
-        const chevronCx = labelX + labelWidth - 15;
+        const chevronCx =
+          labelX + labelWidth - MDX_CANVAS_TYPO.codeLangChevronRight;
         const chevronCy = langTop + langH / 2 + 0.25;
         ctx.beginPath();
         ctx.moveTo(chevronCx - 3.75, chevronCy - 2.25);
@@ -1162,9 +1239,11 @@ function MarkdownCanvasPreview({
         ctx.lineTo(chevronCx + 3.75, chevronCy - 2.25);
         ctx.stroke();
 
-        const copySz = 26;
-        const copyR = 6.5;
-        const copyX = Math.round(blockX + blockWidth - copySz - 10);
+        const copySz = MDX_CANVAS_TYPO.codeCopySize;
+        const copyR = MDX_CANVAS_TYPO.codeCopyRadius;
+        const copyX = Math.round(
+          blockX + blockWidth - copySz - MDX_CANVAS_TYPO.codeCopyRight,
+        );
         const copyY = Math.round(blockY + (headerH - copySz) / 2);
         drawRoundedRect(ctx, copyX, copyY, copySz, copySz, copyR);
         ctx.fillStyle = chrome.copyBg;
@@ -1415,8 +1494,7 @@ function MarkdownCanvasPreview({
               y +
               (MDX_CANVAS_TYPO.bodySize - boxSize) / 2 +
               MDX_CANVAS_TYPO.taskBoxOffsetY;
-            const taskTextX =
-              boxX + boxSize + MDX_CANVAS_TYPO.taskTextGap;
+            const taskTextX = boxX + boxSize + MDX_CANVAS_TYPO.taskTextGap;
 
             drawRoundedRect(
               ctx,
