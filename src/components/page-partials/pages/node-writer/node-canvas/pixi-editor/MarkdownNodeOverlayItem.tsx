@@ -62,8 +62,8 @@ const MemoNodeMarkdownBlocksEditor = memo(
 );
 
 const MDX_CANVAS_TYPO = {
-  contentPaddingX: 28,
-  contentPaddingTop: 25.5,
+  contentPaddingX: 26,
+  contentPaddingTop: 26,
   contentPaddingBottom: 12,
   bodySize: 16.32,
   bodyLineHeight: 28.1,
@@ -229,7 +229,7 @@ function extractMarkdownCanvasImage(
   const trimmed = line.trim();
   if (!trimmed) return null;
 
-  const markdownImage = trimmed.match(/^!\[([^\]]*)]\((.+?)\)$/);
+  const markdownImage = trimmed.match(/!\[([^\]]*)]\((.+?)\)/);
   if (markdownImage) {
     return {
       alt: markdownImage[1] ?? "",
@@ -238,7 +238,7 @@ function extractMarkdownCanvasImage(
   }
 
   const rawImage = trimmed.match(
-    /^<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["'][^>]*>/i,
+    /<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["'][^>]*>/i,
   );
   if (rawImage) {
     const alt = trimmed.match(/\balt\s*=\s*["']([^"']*)["']/i)?.[1] ?? "";

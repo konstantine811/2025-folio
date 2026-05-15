@@ -57,20 +57,26 @@ const SineWave = ({
 
   const phase = useMotionValue(0);
   const energy = useMotionValue(1);
+  const phaseRef = useRef(phase);
+  const energyRef = useRef(energy);
+
+  phaseRef.current = phase;
+  energyRef.current = energy;
 
   const updatePath = useCallback(() => {
-    setD(
+    const nextPath =
       buildSinePath(
         width,
         height,
         amplitude,
         frequency,
         segments,
-        phase.get(),
-        energy.get()
-      )
-    );
-  }, [amplitude, energy, frequency, height, phase, segments, width]);
+        phaseRef.current.get(),
+        energyRef.current.get()
+      );
+
+    setD((currentPath) => (currentPath === nextPath ? currentPath : nextPath));
+  }, [amplitude, frequency, height, segments, width]);
 
   useMotionValueEvent(phase, "change", updatePath);
   useMotionValueEvent(energy, "change", updatePath);

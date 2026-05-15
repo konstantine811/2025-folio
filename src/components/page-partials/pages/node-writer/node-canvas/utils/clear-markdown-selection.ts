@@ -23,7 +23,12 @@ export function clearNodeWriterMarkdownSelection(root?: HTMLElement | null) {
     activeEl.blur();
   }
 
-  document.dispatchEvent(
+  const escapeTarget =
+    root ??
+    (activeEl instanceof HTMLElement ? activeEl : null) ??
+    document.body;
+
+  escapeTarget.dispatchEvent(
     new KeyboardEvent("keydown", {
       key: "Escape",
       code: "Escape",
