@@ -1,7 +1,7 @@
 import MainWrapperOffset from "@/components/ui-abc/main-wrapper-offset";
 import { Canvas } from "@react-three/fiber";
 import Experience from "./experience";
-import { Suspense, UIEvent, useCallback, useState } from "react";
+import { Suspense, UIEvent, useCallback, useEffect, useState } from "react";
 import { Perf } from "r3f-perf";
 import { useControls } from "leva";
 import ThreeLoader from "../../common/three-loader";
@@ -33,6 +33,22 @@ const Init = () => {
 
     setScrollProgress(maxScroll > 0 ? scrollTop / maxScroll : 0);
   }, []);
+
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsPlaying(false);
+      }
+    },
+    [setIsPlaying],
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   return (
     <MainWrapperOffset>

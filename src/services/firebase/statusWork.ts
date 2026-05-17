@@ -6,6 +6,28 @@ export interface StatusWorkData {
 }
 
 const STATUS_WORK_DOC_ID = "status-work";
+const DEFAULT_STATUS_WORK: StatusWorkData = { status_work: false };
+
+const isPermissionDeniedError = (error: unknown) =>
+  typeof error === "object" &&
+  error !== null &&
+  "code" in error &&
+  error.code === "permission-denied";
+
+const shouldSkipRealtimeStatusWork = () => {
+  if (import.meta.env.VITE_ENABLE_STATUS_WORK_REALTIME === "true") {
+    return false;
+  }
+
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return (
+    import.meta.env.DEV &&
+    ["localhost", "127.0.0.1"].includes(window.location.hostname)
+  );
+};
 
 /**
  * Отримує статус роботи з Firestore
@@ -16,16 +38,19 @@ export const fetchStatusWork = async (): Promise<StatusWorkData | null> => {
     const docRef = doc(db, FirebaseCollection.statusWork, STATUS_WORK_DOC_ID);
     const snap = await getDoc(docRef);
 
-    if (snap.exists()) {
-      const data = snap.data() as StatusWorkData;
-      return data;
-    } else {
-      console.warn("⚠️ Status work document not found");
-      return null;
-    }
+    return snap.exists()
+      ? (snap.data() as StatusWorkData)
+      : DEFAULT_STATUS_WORK;
   } catch (error) {
-    console.error("🔥 Error fetching status work:", error);
-    return null;
+    if (isPermissionDeniedError(error)) {
+      console.warn(
+        "Status work is not readable with the current Firestore rules. Using the local fallback status."
+      );
+    } else {
+      console.error("Error fetching status work:", error);
+    }
+
+    return DEFAULT_STATUS_WORK;
   }
 };
 
@@ -37,22 +62,30 @@ export const fetchStatusWork = async (): Promise<StatusWorkData | null> => {
 export const subscribeToStatusWork = (
   callback: (data: StatusWorkData | null) => void
 ): (() => void) => {
+  if (shouldSkipRealtimeStatusWork()) {
+    callback(DEFAULT_STATUS_WORK);
+    return () => {};
+  }
+
   const docRef = doc(db, FirebaseCollection.statusWork, STATUS_WORK_DOC_ID);
 
   const unsubscribe = onSnapshot(
     docRef,
     (snap) => {
-      if (snap.exists()) {
-        const data = snap.data() as StatusWorkData;
-        callback(data);
-      } else {
-        console.warn("⚠️ Status work document not found");
-        callback(null);
-      }
+      callback(
+        snap.exists() ? (snap.data() as StatusWorkData) : DEFAULT_STATUS_WORK
+      );
     },
     (error) => {
-      console.error("🔥 Error subscribing to status work:", error);
-      callback(null);
+      if (isPermissionDeniedError(error)) {
+        console.warn(
+          "Status work realtime updates are not readable with the current Firestore rules. Using the fallback status."
+        );
+      } else {
+        console.error("Error subscribing to status work:", error);
+      }
+
+      callback(DEFAULT_STATUS_WORK);
     }
   );
 
