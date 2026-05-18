@@ -1,7 +1,15 @@
 import MainWrapperOffset from "@/components/ui-abc/main-wrapper-offset";
 import { Canvas } from "@react-three/fiber";
 import Experience from "./experience";
-import { Suspense, UIEvent, useCallback, useEffect, useState } from "react";
+import {
+  Suspense,
+  UIEvent,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { Perf } from "r3f-perf";
 import { useControls } from "leva";
 import ThreeLoader from "../../common/three-loader";
@@ -15,6 +23,8 @@ export type CameraMode = "Scroll" | "CameraControls";
 
 const Init = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const scrollTopRef = useRef(0);
   const isPlaying = useCommonStatusStore((s) => s.isPlaying);
   const setIsPlaying = useCommonStatusStore((s) => s.setIsPlaying);
   const { cameraMode } = useControls("Sci-fi camera", {
@@ -42,6 +52,12 @@ const Init = () => {
     },
     [setIsPlaying],
   );
+
+  useLayoutEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollTopRef.current;
+    }
+  }, [scrollContainerRef, scrollTopRef, isPlaying]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -71,6 +87,7 @@ const Init = () => {
           data-lenis-prevent
           data-lenis-prevent-touch
           data-lenis-prevent-wheel
+          ref={scrollContainerRef}
           className="absolute inset-0 z-10 overflow-y-auto"
           onScroll={handleScroll}
           onTouchMove={(event) => event.stopPropagation()}
@@ -92,7 +109,11 @@ const Init = () => {
                 <Button
                   variant="default"
                   className="hover:bg-background cursor-pointer hover:text-foreground flex justify-center items-center bg-card/80"
-                  onClick={() => setIsPlaying(true)}
+                  onClick={() => {
+                    scrollTopRef.current =
+                      scrollContainerRef.current?.scrollTop ?? 0;
+                    setIsPlaying(true);
+                  }}
                 >
                   Play
                 </Button>
