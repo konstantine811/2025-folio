@@ -1,17 +1,20 @@
 import { CameraControls, Stars } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
-import { useEffect, useRef } from "react";
+import { RefObject, useEffect, useRef } from "react";
 import { Vector3 } from "three";
 import { ShipContainer } from "./ship/ship-container";
 import Earth from "./ship/earth";
-import { Character } from "./character/character";
 import type { CameraMode } from "./init";
 import { normalizeRange } from "@/utils/math/normalize";
+import { SciFiCharacterAnimations } from "./character/sci-fi.config";
+import { SciFiToggleCharacter } from "./character/sci-fi-character-controller";
+import { CharacterAnimations } from "../../character-controller/models/character-controller.model";
+import { usePauseStore } from "@/components/common/game-controller/store/usePauseMode";
 
 type ExperienceProps = {
   cameraMode: CameraMode;
-  scrollProgress: number;
+  scrollProgressRef: RefObject<number>;
 };
 
 const characterStartZ = 13.821;
@@ -20,11 +23,11 @@ const walkScrollEnd = 1;
 const walkDistance = 4.5;
 
 type FollowCharacterCameraProps = {
-  scrollProgress: number;
+  scrollProgressRef: RefObject<number>;
 };
 
 const FollowCharacterCamera = ({
-  scrollProgress,
+  scrollProgressRef,
 }: FollowCharacterCameraProps) => {
   const { camera } = useThree();
   const cameraPosition = useRef(new Vector3());
@@ -32,7 +35,7 @@ const FollowCharacterCamera = ({
 
   useFrame((_, delta) => {
     const walkProgress = normalizeRange(
-      scrollProgress,
+      scrollProgressRef.current ?? 0,
       walkScrollStart,
       walkScrollEnd,
     );
@@ -50,7 +53,6 @@ const FollowCharacterCamera = ({
 
 const InspectCameraControls = () => {
   const controls = useRef<CameraControls>(null);
-
   useEffect(() => {
     controls.current?.setLookAt(0, 2.2, 21.5, 0, 1.55, 13.8, false);
   }, []);
@@ -66,20 +68,29 @@ const InspectCameraControls = () => {
   );
 };
 
-const Experience = ({ cameraMode, scrollProgress }: ExperienceProps) => {
+const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
+  const isPaused = usePauseStore((s) => s.isPaused);
+  const characterMode = isPaused ? "scroll" : "controller";
   return (
     <>
       {cameraMode === "Scroll" ? (
-        <FollowCharacterCamera scrollProgress={scrollProgress} />
+        <FollowCharacterCamera scrollProgressRef={scrollProgressRef} />
       ) : (
         <InspectCameraControls />
       )}
       <ambientLight intensity={1.7} />
       <directionalLight castShadow position={[1, 3, 1]} intensity={3} />
       {/* <Environment preset="sunset" /> */}
-      <Physics timeStep="vary" gravity={[0, -9.81, 0]}>
+      <Physics debug gravity={[0, -9.81, 0]}>
         <ShipContainer />
-        <Character scrollProgress={scrollProgress} />
+        {/* <Character scrollProgress={scrollProgress} /> */}
+        <SciFiToggleCharacter
+          mode={characterMode}
+          scrollProgressRef={scrollProgressRef}
+          animationType={
+            SciFiCharacterAnimations.idle as unknown as CharacterAnimations
+          }
+        />
       </Physics>
       <Stars
         radius={1}

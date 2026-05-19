@@ -1,10 +1,6 @@
 import { JSX, useEffect, useMemo } from "react";
 import { useGLTF, useTexture } from "@react-three/drei";
-import {
-  Mesh,
-  MeshPhysicalMaterial,
-  MeshStandardMaterial,
-} from "three";
+import { Mesh, MeshPhysicalMaterial, MeshStandardMaterial } from "three";
 import { useControls } from "leva";
 import { RigidBody } from "@react-three/rapier";
 
@@ -82,7 +78,7 @@ export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
     [bakedMat],
   );
   return (
-    <group {...props} dispose={null}>
+    <group {...props} dispose={null} name="ground">
       <mesh
         castShadow
         receiveShadow

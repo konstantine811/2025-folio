@@ -250,6 +250,11 @@ const ThreeSciFi = lazyPage(
   () =>
     import("../components/page-partials/pages/experimental/three-scenes/demo-scenes/sci-fi/init"),
 );
+
+const ThreeSimCityGame = lazyPage(
+  () =>
+    import("../components/page-partials/pages/experimental/three-scenes/games/sim-city-game/init"),
+);
 export enum RoutPath {
   HOME = "/",
   EXPERIMENTAL = "/labs",
@@ -300,6 +305,7 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_CHARACTER_CONTROLLER = "three-character-controller",
   EXPERIMENTAL_THREE_LEARN_CAMERA = "three-learn-camera",
   EXPERIMENTAL_THREE_SCI_FI = "three-sci-fi",
+  EXPERIMENTAL_THREE_SIM_CITY_GAME = "three-sim-city-game",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -706,6 +712,15 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     description: "A sci-fi scene created with Three.js.",
     imageUrl: imagePath("sci-fi"),
     type: ExperimentalTypes.demoScenes,
+  },
+  {
+    path: RoutPath.EXPERIMENTAL_THREE_SIM_CITY_GAME,
+    Component: ThreeSimCityGame,
+    id: "experimental-three-sim-city-game",
+    icon: "🎥",
+    description: "A sim city game scene created with Three.js.",
+    imageUrl: imagePath("sim-city-game"),
+    type: ExperimentalTypes.games,
   },
 ];
 

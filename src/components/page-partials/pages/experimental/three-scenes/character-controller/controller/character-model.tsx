@@ -1,42 +1,59 @@
 import { useAnimations, useGLTF } from "@react-three/drei";
 import { RefObject, useEffect, useRef } from "react";
 import { Group, Mesh } from "three";
+
 import { CharacterAnimations } from "../models/character-controller.model";
 import { useControlStore } from "@/components/common/game-controller/store/control-game-store";
-import {
-  playAction,
-  playAttack,
-  resolveLocomotionAnimation,
-} from "./play-action";
-import { animationConfig } from "../config/character-controller.config";
-import { BoneAttachment } from "../character-attachment/bone-attacment";
-import { Sword } from "../character-attachment/sword";
 import { useCombatStatusStore } from "../store/combat-status-store";
+import { useLocomotionAnimationDriver } from "../character-animation/useLocomotionAnimationDriver";
+import { useCombatAnimationDriver } from "../character-animation/useCombatAnimationDriver";
+import { WeaponAttachment } from "../character-attachment/weapon-attachment";
+import { WeaponAttachmentConfig } from "../models/weapon-attachment.model";
 
-const CharacterModel = ({
-  modelPath,
-  animationType,
-  isMoving,
-  isSprinting,
-  isGrounded,
-  weaponAttachmentRef,
-}: {
+type CharacterModelBaseProps = {
   modelPath: string;
+  animationType: CharacterAnimations;
   isMoving?: boolean;
   isSprinting?: boolean;
   isGrounded?: boolean;
-  animationType: CharacterAnimations;
+  hasCombat?: boolean;
+};
+
+type CharacterModelWithoutWeapon = CharacterModelBaseProps & {
+  hasWeapon?: false;
+  weaponAttachmentRef?: never;
+  weaponConfig?: never;
+};
+
+type CharacterModelWithWeapon = CharacterModelBaseProps & {
+  hasWeapon: true;
   weaponAttachmentRef?: RefObject<Group | null>;
-}) => {
+  weaponConfig: WeaponAttachmentConfig;
+};
+
+type CharacterModelProps =
+  | CharacterModelWithoutWeapon
+  | CharacterModelWithWeapon;
+
+const CharacterModel = (props: CharacterModelProps) => {
+  const {
+    modelPath,
+    animationType,
+    isMoving,
+    isSprinting,
+    isGrounded,
+    hasCombat = false,
+  } = props;
+
   const groupRef = useRef<Group>(null);
-  const { scene, animations } = useGLTF(modelPath, true);
-  const { actions } = useAnimations(animations, groupRef);
-  const isActionsReady = Object.keys(actions).length > 0;
-  // 1) читаємо стан ЛКМ зі стора
-  const isPrimaryClick = useControlStore((s) => s.primaryClick);
-  // 2) читаємо стан дії
+
   const currentActionRef = useRef<string | null>(null);
   const isAttackingRef = useRef(false);
+
+  const { scene, animations } = useGLTF(modelPath, true);
+  const { actions } = useAnimations(animations, groupRef);
+
+  const isPrimaryClick = useControlStore((s) => s.primaryClick);
   const setPlayerAttacking = useCombatStatusStore((s) => s.setPlayerAttacking);
 
   useEffect(() => {
@@ -50,75 +67,51 @@ const CharacterModel = ({
           : [child.material];
 
         materials.forEach((mat) => {
-          if (mat) mat.depthWrite = true;
+          if (mat) {
+            mat.depthWrite = true;
+          }
         });
       }
     });
   }, [scene]);
 
-  useEffect(() => {
-    if (!isPrimaryClick) return;
-    if (isSprinting || isMoving || !isGrounded) return;
-    playAttack(
-      animationType,
-      actions,
-      currentActionRef,
-      isAttackingRef,
-      isGrounded,
-      isMoving ?? false,
-      isSprinting ?? false,
-      setPlayerAttacking,
-    );
-  }, [
-    isPrimaryClick,
-    isSprinting,
-    isMoving,
-    isGrounded,
+  useLocomotionAnimationDriver({
+    enabled: true,
     actions,
+    currentActionRef,
     animationType,
+    isMoving,
+    isSprinting,
+    isGrounded,
+  });
+
+  useCombatAnimationDriver({
+    enabled: hasCombat,
+    actions,
     currentActionRef,
     isAttackingRef,
-    setPlayerAttacking,
-  ]);
-
-  useEffect(() => {
-    if (!isActionsReady) return;
-
-    const target = resolveLocomotionAnimation({
-      isGrounded,
-      isMoving,
-      isSprinting,
-      animationType,
-    });
-
-    const targetAction = actions[target];
-    if (!targetAction) return;
-
-    if (currentActionRef.current === target && targetAction.isRunning()) return;
-    isAttackingRef.current = false;
-    playAction(actions, currentActionRef, target, animationConfig.locomotion);
-  }, [
-    isActionsReady,
-    actions,
-    isGrounded,
+    animationType,
+    isPrimaryClick,
     isMoving,
     isSprinting,
-    animationType,
-  ]);
+    isGrounded,
+    setPlayerAttacking,
+  });
 
   return (
     <group ref={groupRef}>
       <primitive object={scene} />
-      <BoneAttachment
-        ref={weaponAttachmentRef}
-        parentScene={scene}
-        boneName="mixamorigRightHand"
-        position={[0, 0.149, -0.18]}
-        rotation={[Math.PI / 2, 0, 0]}
-        scale={[0.15, 0.15, 0.15]}
-      >
-        <Sword modelPath="/3d-models/ps-game/sword.glb" />
-      </BoneAttachment>
+
+      {props.hasWeapon && (
+        <WeaponAttachment
+          parentScene={scene as Group}
+          weaponAttachmentRef={props.weaponAttachmentRef}
+          modelPath={props.weaponConfig.modelPath}
+          position={props.weaponConfig.position}
+          rotation={props.weaponConfig.rotation}
+          scale={props.weaponConfig.scale}
+        />
+      )}
     </group>
   );
 };

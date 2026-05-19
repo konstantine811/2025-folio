@@ -8,7 +8,6 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
-  useState,
 } from "react";
 import { Perf } from "r3f-perf";
 import { useControls } from "leva";
@@ -17,16 +16,20 @@ import { isDev } from "@/utils/check-env";
 import { Button } from "@/components/ui/button";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
-import { useCommonStatusStore } from "./store/common";
+import InitKeyboardController from "@/components/common/game-controller/init-keyboard";
+import { usePauseStore } from "@/components/common/game-controller/store/usePauseMode";
 
 export type CameraMode = "Scroll" | "CameraControls";
 
 const Init = () => {
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const scrollProgressRef = useRef(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollTopRef = useRef(0);
-  const isPlaying = useCommonStatusStore((s) => s.isPlaying);
-  const setIsPlaying = useCommonStatusStore((s) => s.setIsPlaying);
+
+  const isPaused = usePauseStore((s) => s.isPaused);
+  const setIsPaused = usePauseStore((s) => s.setIsPaused);
+  const setIsGameStarted = usePauseStore((s) => s.setIsGameStarted);
+
   const { cameraMode } = useControls("Sci-fi camera", {
     cameraMode: {
       label: "Mode",
@@ -34,6 +37,7 @@ const Init = () => {
       value: "Scroll" satisfies CameraMode,
     },
   });
+
   const selectedCameraMode = cameraMode as CameraMode;
   const isCameraControlsMode = selectedCameraMode === "CameraControls";
 
@@ -41,26 +45,32 @@ const Init = () => {
     const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
     const maxScroll = scrollHeight - clientHeight;
 
-    setScrollProgress(maxScroll > 0 ? scrollTop / maxScroll : 0);
+    scrollTopRef.current = scrollTop;
+    scrollProgressRef.current = maxScroll > 0 ? scrollTop / maxScroll : 0;
   }, []);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setIsPlaying(false);
+        setIsPaused(true);
       }
     },
-    [setIsPlaying],
+    [setIsPaused],
   );
 
+  useEffect(() => {
+    setIsPaused(true);
+  }, [setIsPaused]);
+
   useLayoutEffect(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = scrollTopRef.current;
-    }
-  }, [scrollContainerRef, scrollTopRef, isPlaying]);
+    if (!scrollContainerRef.current) return;
+
+    scrollContainerRef.current.scrollTop = scrollTopRef.current;
+  }, [isPaused]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
+
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
@@ -69,6 +79,9 @@ const Init = () => {
   return (
     <MainWrapperOffset>
       {!isDev && <ThreeLoader />}
+
+      <InitKeyboardController />
+
       <Canvas
         shadows
         camera={{ position: [15, 10, -5], fov: 30 }}
@@ -76,13 +89,15 @@ const Init = () => {
       >
         <Suspense fallback={null}>
           {isDev && <Perf position="top-left" />}
+
           <Experience
             cameraMode={selectedCameraMode}
-            scrollProgress={scrollProgress}
+            scrollProgressRef={scrollProgressRef}
           />
         </Suspense>
       </Canvas>
-      {!isPlaying && (
+
+      {isPaused && (
         <div
           data-lenis-prevent
           data-lenis-prevent-touch
@@ -102,17 +117,19 @@ const Init = () => {
           <div className="h-[300vh]">
             <div className="relative top-[200px] flex justify-center">
               <SoundHoverElement
-                className="rounded-full "
+                className="rounded-full"
                 hoverTypeElement={SoundTypeElement.SELECT_2}
                 hoverStyleElement={HoverStyleElement.quad}
               >
                 <Button
                   variant="default"
-                  className="hover:bg-background cursor-pointer hover:text-foreground flex justify-center items-center bg-card/80"
+                  className="hover:bg-background cursor-pointer hover:text-foreground flex items-center justify-center bg-card/80"
                   onClick={() => {
                     scrollTopRef.current =
                       scrollContainerRef.current?.scrollTop ?? 0;
-                    setIsPlaying(true);
+
+                    setIsPaused(false);
+                    setIsGameStarted(true);
                   }}
                 >
                   Play
