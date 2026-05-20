@@ -30,7 +30,6 @@ export function useLocomotionAnimationDriver({
   useEffect(() => {
     if (!enabled) return;
     if (!isActionsReady) return;
-    console.log("isMoving", isMoving);
     const target = resolveLocomotionAnimation({
       isGrounded,
       isMoving,

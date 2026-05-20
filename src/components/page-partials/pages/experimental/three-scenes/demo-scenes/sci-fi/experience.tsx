@@ -81,14 +81,14 @@ const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
       <ambientLight intensity={1.7} />
       <directionalLight castShadow position={[1, 3, 1]} intensity={3} />
       {/* <Environment preset="sunset" /> */}
-      <Physics debug gravity={[0, -9.81, 0]}>
+      <Physics debug gravity={[0, -9.81, 0]} interpolate={false}>
         <ShipContainer />
         {/* <Character scrollProgress={scrollProgress} /> */}
         <SciFiToggleCharacter
           mode={characterMode}
           scrollProgressRef={scrollProgressRef}
           animationType={
-            SciFiCharacterAnimations.idle as unknown as CharacterAnimations
+            { idle: "idle", run: "run", walk: "walk" } as CharacterAnimations
           }
         />
       </Physics>

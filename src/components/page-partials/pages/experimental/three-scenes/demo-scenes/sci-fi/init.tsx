@@ -86,6 +86,11 @@ const Init = () => {
         shadows
         camera={{ position: [15, 10, -5], fov: 30 }}
         style={{ height: "100%" }}
+        onPointerDown={(e) => {
+          if (e.pointerType === "mouse") {
+            (e.target as HTMLCanvasElement).requestPointerLock();
+          }
+        }}
       >
         <Suspense fallback={null}>
           {isDev && <Perf position="top-left" />}

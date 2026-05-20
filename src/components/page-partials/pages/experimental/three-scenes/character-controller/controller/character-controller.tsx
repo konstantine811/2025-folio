@@ -35,7 +35,6 @@ export function CharacterController({
     capsuleHalfHeight,
     capsuleRadius,
   });
-
   return (
     <>
       <Entity isPlayer ref={playerRef}>

@@ -31,7 +31,7 @@ export function SciFiToggleCharacter({
     <CharacterController
       hasWeaponSensor={false}
       renderCharacter={({ modelRef, controllerState }) => (
-        <group ref={modelRef} position={[0, -1.2, 0]} scale={5.5}>
+        <group ref={modelRef} position={[0, 0, 0]} scale={1}>
           <SciFiCharacter
             driver="controller"
             animationType={animationType}
