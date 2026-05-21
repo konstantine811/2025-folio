@@ -1,9 +1,13 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import type { MutableRefObject } from "react";
 import * as THREE from "three";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 
 const MAX_INSTANCES_PER_MESH = 1024;
-const CROSS_ARM = 0.12;
+const CROSS_ARM = 0.14;
+const CROSS_THICK = 0.018;
+const GRID_CROSS_COLOR = "#9aaccc";
+const GRID_TILE_LINE_COLOR = "#6d7f9a";
 
 export type GridDebugSyncRef = (tileX: number, tileZ: number) => void;
 
@@ -12,16 +16,20 @@ let sharedCrossGeometry: THREE.BufferGeometry | null = null;
 function getCrossGeometry() {
   if (sharedCrossGeometry) return sharedCrossGeometry;
 
-  const positions = new Float32Array([
-    -CROSS_ARM, 0, 0, CROSS_ARM, 0, 0,
-    0, 0, -CROSS_ARM, 0, 0, CROSS_ARM,
-  ]);
-  sharedCrossGeometry = new THREE.BufferGeometry();
-  sharedCrossGeometry.setAttribute(
-    "position",
-    new THREE.BufferAttribute(positions, 3),
-  );
+  const horizontal = new THREE.PlaneGeometry(CROSS_ARM * 2, CROSS_THICK);
+  const vertical = new THREE.PlaneGeometry(CROSS_THICK, CROSS_ARM * 2);
+  horizontal.rotateX(-Math.PI / 2);
+  vertical.rotateX(-Math.PI / 2);
 
+  const merged = mergeGeometries([horizontal, vertical]);
+  horizontal.dispose();
+  vertical.dispose();
+
+  if (!merged) {
+    throw new Error("Failed to merge cross geometry");
+  }
+
+  sharedCrossGeometry = merged;
   return sharedCrossGeometry;
 }
 
@@ -39,7 +47,7 @@ function collectCrossPositions(
 
   for (let x = minGx; x < maxGx; x++) {
     for (let z = minGz; z < maxGz; z++) {
-      positions.push(new THREE.Vector3(x + 0.5, 0.015, z + 0.5));
+      positions.push(new THREE.Vector3(x + 0.5, 0.008, z + 0.5));
     }
   }
 
@@ -102,6 +110,13 @@ function syncCrossChunks(
     chunk.count = localIndex;
     chunk.instanceMatrix.needsUpdate = true;
     matrixIndex = chunkEnd;
+  }
+
+  for (let i = matrixIndex; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    if (!chunk) continue;
+    chunk.count = 0;
+    chunk.instanceMatrix.needsUpdate = true;
   }
 }
 
@@ -166,6 +181,8 @@ export function ImperativeGridDebug({
   }, [radius]);
 
   useLayoutEffect(() => {
+    crossChunkRefs.current = new Array(crossChunkCount).fill(null);
+
     syncRef.current = (tileX, tileZ) => {
       if (showTileBounds) {
         syncBoundaryLines(boundaryRef.current, tileX, tileZ, radius, tileSize);
@@ -192,6 +209,7 @@ export function ImperativeGridDebug({
     showCrosses,
     showTileBounds,
     dummy,
+    crossChunkCount,
   ]);
 
   return (
@@ -202,7 +220,13 @@ export function ImperativeGridDebug({
           geometry={boundaryGeometry}
           frustumCulled={false}
         >
-          <lineBasicMaterial color="#ffffff" transparent opacity={0.55} />
+          <lineBasicMaterial
+            color={GRID_TILE_LINE_COLOR}
+            transparent
+            opacity={0.45}
+            toneMapped={false}
+            depthWrite={false}
+          />
         </lineSegments>
       )}
       {showCrosses &&
@@ -215,7 +239,13 @@ export function ImperativeGridDebug({
             args={[crossGeometry, undefined, MAX_INSTANCES_PER_MESH]}
             frustumCulled={false}
           >
-            <meshBasicMaterial color="#5b8fd9" toneMapped={false} />
+            <meshBasicMaterial
+              color={GRID_CROSS_COLOR}
+              toneMapped={false}
+              transparent
+              opacity={0.85}
+              depthWrite={false}
+            />
           </instancedMesh>
         ))}
     </group>

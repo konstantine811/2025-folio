@@ -11,6 +11,10 @@ import {
 } from "./bush-core";
 import { BushNodeMaterial } from "./bush-material";
 import { ImperativeGridDebug, type GridDebugSyncRef } from "./grid-debug";
+import {
+  readPlayerTile,
+  shouldRecenterStream,
+} from "./stylized-world-streaming";
 
 type InfiniteStylizedWorldProps = {
   tileSize?: number;
@@ -22,14 +26,15 @@ type InfiniteStylizedWorldProps = {
   showGridDebug?: boolean;
   showGridCrosses?: boolean;
   showTileBounds?: boolean;
+  focusRef?: MutableRefObject<THREE.Vector3>;
 };
 
 const MAX_INSTANCES_PER_MESH = 1024;
 
 function computeGroundColor(tileX: number, tileZ: number, seed: number) {
   const rng = mulberry32(tileSeed(tileX, tileZ, seed));
-  const base = 0.42 + rng() * 0.08;
-  return new THREE.Color(base * 0.55, base * 0.78, base * 0.52);
+  const shade = 0.11 + rng() * 0.025;
+  return new THREE.Color(shade, shade, shade + 0.008);
 }
 
 function collectBushMatrices({
@@ -122,6 +127,13 @@ function syncBushChunks(
     chunk.computeBoundingSphere();
     matrixIndex = chunkEnd;
   }
+
+  for (let i = matrixIndex; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    if (!chunk) continue;
+    chunk.count = 0;
+    chunk.instanceMatrix.needsUpdate = true;
+  }
 }
 
 type GroundPoolSlot = {
@@ -137,7 +149,7 @@ function GroundPool({
 }: {
   radius: number;
   tileSize: number;
-  slotsRef: MutableRefObject<GroundPoolSlot[]>;
+  slotsRef: MutableRefObject<Array<GroundPoolSlot | undefined>>;
 }) {
   const slots = useMemo(() => {
     const result: { dx: number; dz: number }[] = [];
@@ -149,17 +161,17 @@ function GroundPool({
     return result;
   }, [radius]);
 
-  useLayoutEffect(() => {
-    slotsRef.current = [];
-  }, [radius, slotsRef]);
-
   return (
     <>
       {slots.map(({ dx, dz }, index) => (
         <mesh
           key={`${dx}_${dz}`}
           ref={(mesh) => {
-            if (!mesh) return;
+            if (!mesh) {
+              delete slotsRef.current[index];
+              return;
+            }
+            mesh.userData.camExcludeCollision = true;
             slotsRef.current[index] = { dx, dz, mesh };
           }}
           rotation={[-Math.PI / 2, 0, 0]}
@@ -167,7 +179,7 @@ function GroundPool({
           frustumCulled={false}
         >
           <planeGeometry args={[tileSize, tileSize]} />
-          <meshBasicMaterial color="#4a7a52" />
+          <meshBasicMaterial color="#1f1f1f" />
         </mesh>
       ))}
     </>
@@ -175,13 +187,15 @@ function GroundPool({
 }
 
 function syncGroundPool(
-  slots: GroundPoolSlot[],
+  slots: Array<GroundPoolSlot | undefined>,
   tileX: number,
   tileZ: number,
   tileSize: number,
   seed: number,
 ) {
-  for (const { dx, dz, mesh } of slots) {
+  for (const slot of slots) {
+    if (!slot) continue;
+    const { dx, dz, mesh } = slot;
     const worldTileX = tileX + dx;
     const worldTileZ = tileZ + dz;
     mesh.position.set(
@@ -204,12 +218,14 @@ export function InfiniteStylizedWorld({
   showGridDebug = false,
   showGridCrosses = true,
   showTileBounds = true,
+  focusRef,
 }: InfiniteStylizedWorldProps) {
-  const { controls } = useThree();
-  const focusRef = useRef(new THREE.Vector3());
+  const { camera, controls } = useThree();
+  const worldFocusRef = useRef(new THREE.Vector3());
   const tileCenterRef = useRef({ x: 0, z: 0 });
-  const groundSlotsRef = useRef<GroundPoolSlot[]>([]);
+  const groundSlotsRef = useRef<Array<GroundPoolSlot | undefined>>([]);
   const bushChunkRefs = useRef<(THREE.InstancedMesh | null)[]>([]);
+  const bushesSyncedRef = useRef(false);
   const gridSyncRef = useRef<GridDebugSyncRef | null>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const [bushMaterial, setBushMaterial] = useState<THREE.Material | null>(null);
@@ -249,6 +265,20 @@ export function InfiniteStylizedWorld({
     return Math.max(1, Math.ceil(maxInstances / MAX_INSTANCES_PER_MESH));
   }, [renderRadius, bushesPerTile]);
 
+  const worldKey = `${renderRadius}-${bushChunkCount}-${bushesPerTile}`;
+
+  const readTileCenter = () => {
+    const focus = focusRef
+      ? focusRef.current
+      : controls && "target" in controls
+        ? worldFocusRef.current.copy(
+            (controls as { target: THREE.Vector3 }).target,
+          )
+        : worldFocusRef.current.copy(camera.position);
+
+    return readPlayerTile(focus, tileSize);
+  };
+
   const syncWorld = (tileX: number, tileZ: number) => {
     syncGroundPool(
       groundSlotsRef.current,
@@ -271,75 +301,93 @@ export function InfiniteStylizedWorld({
   };
 
   useLayoutEffect(() => {
-    bushChunkRefs.current = bushChunkRefs.current.slice(0, bushChunkCount);
-    syncWorld(tileCenterRef.current.x, tileCenterRef.current.z);
+    groundSlotsRef.current = [];
+    bushesSyncedRef.current = false;
+    if (bushChunkRefs.current.length !== bushChunkCount) {
+      bushChunkRefs.current = new Array(bushChunkCount).fill(null);
+    }
+
+    const tile = readTileCenter();
+    tileCenterRef.current = tile;
   }, [
+    worldKey,
     tileSize,
-    renderRadius,
-    bushesPerTile,
     worldSeed,
     bushGeometry,
-    bushChunkCount,
     bushMaterial,
+    bushChunkCount,
     showGridDebug,
     showGridCrosses,
     showTileBounds,
     dummy,
   ]);
 
-  useFrame(({ camera }) => {
-    const focus =
-      controls && "target" in controls
-        ? focusRef.current.copy(
-            (controls as { target: THREE.Vector3 }).target,
-          )
-        : focusRef.current.copy(camera.position);
+  useFrame(() => {
+    const bushChunksReady =
+      bushesPerTile <= 0 ||
+      !bushMaterial ||
+      bushChunkRefs.current.filter(Boolean).length === bushChunkCount;
 
-    const tileX = Math.floor(focus.x / tileSize);
-    const tileZ = Math.floor(focus.z / tileSize);
+    if (!bushesSyncedRef.current && bushChunksReady) {
+      syncWorld(tileCenterRef.current.x, tileCenterRef.current.z);
+      bushesSyncedRef.current = true;
+    }
+
+    const playerTile = readTileCenter();
 
     if (
-      tileCenterRef.current.x === tileX &&
-      tileCenterRef.current.z === tileZ
+      !shouldRecenterStream(
+        playerTile,
+        tileCenterRef.current,
+        renderRadius,
+      )
     ) {
       return;
     }
 
-    tileCenterRef.current = { x: tileX, z: tileZ };
-    syncWorld(tileX, tileZ);
+    tileCenterRef.current = playerTile;
+    syncWorld(playerTile.x, playerTile.z);
   });
 
   return (
-    <group>
-      <GroundPool
-        radius={renderRadius}
-        tileSize={tileSize}
-        slotsRef={groundSlotsRef}
-      />
-      {showGridDebug && (
-        <ImperativeGridDebug
-          radius={renderRadius}
-          tileSize={tileSize}
-          showCrosses={showGridCrosses}
-          showTileBounds={showTileBounds}
-          syncRef={gridSyncRef}
-        />
-      )}
+    <>
       <mesh visible={false} frustumCulled={false}>
         <boxGeometry args={[0.001, 0.001, 0.001]} />
         <BushNodeMaterial ref={setBushMaterial} {...bushConfig} />
       </mesh>
-      {bushMaterial &&
-        Array.from({ length: bushChunkCount }, (_, chunkIndex) => (
-          <instancedMesh
-            key={`bush-chunk-${chunkIndex}`}
-            ref={(mesh) => {
-              bushChunkRefs.current[chunkIndex] = mesh;
-            }}
-            args={[bushGeometry, bushMaterial, MAX_INSTANCES_PER_MESH]}
-            frustumCulled={false}
+      <group key={worldKey}>
+        <GroundPool
+          radius={renderRadius}
+          tileSize={tileSize}
+          slotsRef={groundSlotsRef}
+        />
+        {showGridDebug && (
+          <ImperativeGridDebug
+            key={`grid-${worldKey}`}
+            radius={renderRadius}
+            tileSize={tileSize}
+            showCrosses={showGridCrosses}
+            showTileBounds={showTileBounds}
+            syncRef={gridSyncRef}
           />
-        ))}
-    </group>
+        )}
+        {bushMaterial &&
+          Array.from({ length: bushChunkCount }, (_, chunkIndex) => (
+            <instancedMesh
+              key={`bush-chunk-${worldKey}-${chunkIndex}`}
+              ref={(mesh) => {
+                if (mesh) {
+                  mesh.count = 0;
+                  mesh.instanceMatrix.needsUpdate = true;
+                  mesh.userData.camExcludeCollision = true;
+                }
+                bushChunkRefs.current[chunkIndex] = mesh;
+              }}
+              args={[bushGeometry, bushMaterial, MAX_INSTANCES_PER_MESH]}
+              frustumCulled={false}
+            />
+          ))}
+      </group>
+    </>
   );
 }

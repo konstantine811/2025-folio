@@ -1,4 +1,5 @@
 import MainWrapperOffset from "@/components/ui-abc/main-wrapper-offset";
+import InitKeyboardController from "@/components/common/game-controller/init-keyboard";
 import { Stats } from "@react-three/drei";
 import { Canvas, extend } from "@react-three/fiber";
 import { Suspense, useState } from "react";
@@ -16,6 +17,7 @@ const Init = () => {
 
   return (
     <MainWrapperOffset isFullHeight className="flex min-h-0 flex-1 flex-col">
+      <InitKeyboardController isIgnorePause />
       <div className="relative min-h-0 flex-1">
         {isDev && <Stats />}
         {isDev && <WebGpuPerfPanel top={56} />}
@@ -25,6 +27,11 @@ const Init = () => {
           style={{ width: "100%", height: "100%" }}
           camera={{ position: [0, 6, 10], fov: 45 }}
           frameloop={gpuReady ? "always" : "never"}
+          onPointerDown={(e) => {
+            if (e.pointerType === "mouse") {
+              (e.target as HTMLCanvasElement).requestPointerLock();
+            }
+          }}
           gl={(props) => {
             const renderer = new WebGPURenderer({
               ...(props as WebGPURendererParameters),
@@ -37,7 +44,7 @@ const Init = () => {
             return renderer;
           }}
         >
-          <color attach="background" args={["#87b5a8"]} />
+          <color attach="background" args={["#1c1c1c"]} />
           {gpuReady && (
             <Suspense fallback={null}>
               {isDev && <WebGpuPerfTracker />}
