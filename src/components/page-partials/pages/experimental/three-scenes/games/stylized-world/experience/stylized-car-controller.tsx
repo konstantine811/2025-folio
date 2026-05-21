@@ -30,12 +30,16 @@ const WHEEL_WIDTH = 0.14;
 const WHEEL_Y = -BODY.height / 2 + 0.02;
 const CHASSIS_MASS = 10;
 const DEFAULT_ACCELERATE_FORCE = 2;
+const REVERSE_FORCE_MULT = 0.42;
+const REVERSE_MAX_SPEED = 3.5;
+const MAX_REVERSE_PITCH = 0.045;
 const DEFAULT_BRAKE_FORCE = 0.05;
 const REAR_BRAKE_RATIO = 0.88;
 const FRONT_BRAKE_RATIO = 0.38;
 const DEFAULT_STEER_ANGLE = Math.PI / 24;
-const CHASSIS_COLLIDER_HALF_HEIGHT = 0.1;
-const CHASSIS_COLLIDER_Y = 0.06;
+const CHASSIS_COLLIDER_HALF_HEIGHT = 0.08;
+const CHASSIS_COLLIDER_Y = 0.1;
+const CHASSIS_COLLIDER_LENGTH_SCALE = 0.82;
 const PIVOT_HEIGHT = 0.55;
 const CAMERA_SMOOTHING = 10;
 const DEFAULT_START_Y = 0.55;
@@ -43,17 +47,19 @@ const BRAKE_PITCH_SPEED = 0.5;
 const BRAKE_PITCH_FROM_SPEED = 0.035;
 const MAX_BRAKE_PITCH = 0.09;
 const PITCH_RECOVERY_SMOOTHING = 10;
+const FLAT_PITCH_SPEED = 0.45;
+const FLAT_PITCH_RECOVERY = 8;
 
 const WHEEL_INFO_BASE: Omit<WheelInfo, "position"> = {
   axleCs: new Vector3(-1, 0, 0),
-  suspensionRestLength: 0.18,
-  suspensionStiffness: 30,
+  suspensionRestLength: 0.2,
+  suspensionStiffness: 26,
   suspensionCompression: 4.4,
   suspensionRelaxation: 4.5,
   maxSuspensionForce: 6000,
-  maxSuspensionTravel: 0.22,
+  maxSuspensionTravel: 0.3,
   sideFrictionStiffness: 3,
-  frictionSlip: 1.5,
+  frictionSlip: 2.2,
   radius: WHEEL_RADIUS,
 };
 
@@ -90,7 +96,11 @@ export function StylizedCarController({
 }: StylizedCarControllerProps) {
   const chassisRef = useRef<RapierRigidBody>(null);
   const wheelRefs = useRef<(Object3D | null)[]>([]);
-  const driveStateRef = useRef({ isBraking: false, delta: 1 / 60 });
+  const driveStateRef = useRef({
+    isBraking: false,
+    isReversing: false,
+    delta: 1 / 60,
+  });
 
   const wheelsInfo = useMemo(() => WHEELS, []);
   const { vehicleController } = useVehicleController(
@@ -113,6 +123,8 @@ export function StylizedCarController({
   const chassisEuler = useMemo(() => new Euler(0, 0, 0, "YXZ"), []);
   const uprightEuler = useMemo(() => new Euler(0, 0, 0, "YXZ"), []);
   const uprightQuat = useMemo(() => new Quaternion(), []);
+  const worldForward = useMemo(() => new Vector3(), []);
+  const worldVelocity = useMemo(() => new Vector3(), []);
 
   const { followCam, pivot } = useFollowCamera({
     disableFollowCam: false,
@@ -132,29 +144,55 @@ export function StylizedCarController({
     const chassis = chassisRef.current;
     if (!chassis) return;
 
-    const { isBraking, delta } = driveStateRef.current;
+    const { isBraking, isReversing, delta } = driveStateRef.current;
     const linvel = chassis.linvel();
     const speed = Math.hypot(linvel.x, linvel.z);
     const rotation = chassis.rotation();
+    const angvel = chassis.angvel();
 
     chassisQuat.set(rotation.x, rotation.y, rotation.z, rotation.w);
     chassisEuler.setFromQuaternion(chassisQuat, "YXZ");
 
     const yaw = chassisEuler.y;
-    let targetPitch = 0;
+    let pitch = chassisEuler.x;
+    let changed = false;
+
     if (isBraking && speed > BRAKE_PITCH_SPEED) {
-      targetPitch = -Math.min(speed * BRAKE_PITCH_FROM_SPEED, MAX_BRAKE_PITCH);
+      const targetPitch = -Math.min(
+        speed * BRAKE_PITCH_FROM_SPEED,
+        MAX_BRAKE_PITCH,
+      );
+      const pitchFactor = 1 - Math.exp(-PITCH_RECOVERY_SMOOTHING * delta);
+      pitch = Math.min(
+        pitch,
+        MathUtils.lerp(pitch, targetPitch, pitchFactor),
+      );
+      changed = true;
+    } else if (isReversing && pitch > MAX_REVERSE_PITCH) {
+      const stabilize = 1 - Math.exp(-14 * delta);
+      pitch = MathUtils.lerp(pitch, MAX_REVERSE_PITCH, stabilize);
+      changed = true;
+    } else if (
+      !isBraking &&
+      speed < FLAT_PITCH_SPEED &&
+      Math.abs(pitch) > 0.015
+    ) {
+      const recover = 1 - Math.exp(-FLAT_PITCH_RECOVERY * delta);
+      pitch = MathUtils.lerp(pitch, 0, recover);
+      changed = true;
     }
 
-    const pitchFactor = 1 - Math.exp(-PITCH_RECOVERY_SMOOTHING * delta);
-    const pitch = MathUtils.lerp(chassisEuler.x, targetPitch, pitchFactor);
+    if (changed) {
+      uprightEuler.set(pitch, yaw, 0);
+      uprightQuat.setFromEuler(uprightEuler);
+      chassis.setRotation(uprightQuat, true);
+    }
 
-    uprightEuler.set(pitch, yaw, 0);
-    uprightQuat.setFromEuler(uprightEuler);
-    chassis.setRotation(uprightQuat, true);
-
-    const angvel = chassis.angvel();
-    chassis.setAngvel({ x: 0, y: angvel.y, z: 0 }, true);
+    if (isReversing && angvel.x > 0.05) {
+      chassis.setAngvel({ x: angvel.x * 0.55, y: angvel.y, z: 0 }, true);
+    } else {
+      chassis.setAngvel({ x: angvel.x, y: angvel.y, z: 0 }, true);
+    }
   });
 
   useFrame(({ camera }, delta) => {
@@ -180,13 +218,42 @@ export function StylizedCarController({
 
     // Hood faces -Z; Rapier forward axis is +Z — reverse sign vs sketch W/S.
     const isBraking = jump;
-    driveStateRef.current = { isBraking, delta };
-    const engineForce = isBraking
-      ? 0
-      : Number(backward) * accelerateForce - Number(forward) * accelerateForce;
+    const isForward = Boolean(forward) && !backward;
+    const isReversing = Boolean(backward) && !forward;
+    driveStateRef.current = { isBraking, isReversing, delta };
+
+    const linvel = chassis.linvel();
+    worldVelocity.set(linvel.x, 0, linvel.z);
+    chassisQuat.set(
+      chassis.rotation().x,
+      chassis.rotation().y,
+      chassis.rotation().z,
+      chassis.rotation().w,
+    );
+    worldForward.set(0, 0, 1).applyQuaternion(chassisQuat);
+    const forwardSpeed = worldForward.dot(worldVelocity);
+
+    let forwardForce = 0;
+    let reverseForce = 0;
+
+    if (!isBraking) {
+      if (isForward) {
+        forwardForce = -accelerateForce;
+      } else if (isReversing) {
+        const reverseSpeed = Math.max(0, -forwardSpeed);
+        const speedFactor = MathUtils.clamp(
+          1 - reverseSpeed / REVERSE_MAX_SPEED,
+          0.2,
+          1,
+        );
+        reverseForce = accelerateForce * REVERSE_FORCE_MULT * speedFactor;
+      }
+    }
 
     WHEELS.forEach(({ axle }, index) => {
-      controller.setWheelEngineForce(index, axle === "front" ? engineForce : 0);
+      const force =
+        axle === "front" ? forwardForce : axle === "rear" ? reverseForce : 0;
+      controller.setWheelEngineForce(index, force);
     });
 
     WHEELS.forEach(({ axle }, index) => {
@@ -233,7 +300,7 @@ export function StylizedCarController({
       mass={CHASSIS_MASS}
       position={startPosition}
       rotation={[0, startRotationY, 0]}
-      enabledRotations={[false, true, false]}
+      enabledRotations={[true, true, false]}
       friction={0.8}
       linearDamping={0.08}
       angularDamping={0.25}
@@ -243,7 +310,7 @@ export function StylizedCarController({
         args={[
           BODY.width / 2,
           CHASSIS_COLLIDER_HALF_HEIGHT,
-          BODY.length / 2,
+          (BODY.length / 2) * CHASSIS_COLLIDER_LENGTH_SCALE,
         ]}
         position={[0, CHASSIS_COLLIDER_Y, 0]}
         restitution={0.01}

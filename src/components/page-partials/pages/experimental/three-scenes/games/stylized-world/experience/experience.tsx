@@ -5,6 +5,7 @@ import { Vector3 } from "three";
 import { InfiniteStylizedWorld } from "./infinite-stylized-world";
 import { StylizedCarController } from "./stylized-car-controller";
 import { StylizedWorldGround } from "./stylized-world-ground";
+import { StylizedWorldTestCourse } from "./stylized-world-test-course";
 
 const Experience = () => {
   const {
@@ -13,6 +14,7 @@ const Experience = () => {
     bushesPerTile,
     viewRadius,
     showGridDebug,
+    showTestCourse,
     accelerateForce,
     brakeForce,
     steerAngleDeg,
@@ -22,6 +24,7 @@ const Experience = () => {
     bushesPerTile: { value: 1, min: 0, max: 16, step: 1 },
     viewRadius: { value: 6, min: 3, max: 10, step: 1 },
     showGridDebug: { value: true, label: "Grid debug" },
+    showTestCourse: { value: true, label: "Test course" },
     accelerateForce: {
       value: 2,
       min: 0.5,
@@ -71,6 +74,7 @@ const Experience = () => {
         tileSize={8}
         radius={physicsRadius}
       />
+      {showTestCourse && <StylizedWorldTestCourse />}
       <StylizedCarController
         focusRef={focusRef}
         accelerateForce={accelerateForce}
