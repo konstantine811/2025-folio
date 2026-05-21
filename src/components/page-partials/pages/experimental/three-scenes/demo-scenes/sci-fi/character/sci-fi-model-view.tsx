@@ -23,7 +23,7 @@ export function SciFiCharacterModelView({
       <group
         name="Armature008"
         position={[0, 0, 0]}
-        rotation={[Math.PI / 2, 0, Math.PI]}
+        rotation={[Math.PI / 2, 0, 0]}
         scale={0.011}
       >
         <skinnedMesh

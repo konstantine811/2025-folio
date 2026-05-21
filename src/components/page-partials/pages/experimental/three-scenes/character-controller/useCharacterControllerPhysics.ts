@@ -21,6 +21,11 @@ type UseCharacterControllerPhysicsParams = {
 
   capsuleHalfHeight: number;
   capsuleRadius: number;
+
+  /** Rapier collision group membership for ground/wall raycasts. Default: 0 */
+  raycastMembershipGroup?: number;
+  /** Rapier groups ground/wall rays may hit. Default: [1, 2] */
+  raycastFilterGroups?: readonly number[];
 };
 
 export function useCharacterControllerPhysics({
@@ -28,6 +33,8 @@ export function useCharacterControllerPhysics({
   modelRef,
   capsuleHalfHeight,
   capsuleRadius,
+  raycastMembershipGroup = 0,
+  raycastFilterGroups = [1, 2],
 }: UseCharacterControllerPhysicsParams) {
   const setPlayerPosition = usePlayerPositionStore((s) => s.setPosition);
 
@@ -70,6 +77,10 @@ export function useCharacterControllerPhysics({
   const pivotYAxis = useMemo(() => new Vector3(0, 1, 0), []);
   const pivotZAxis = useMemo(() => new Vector3(0, 0, 1), []);
   const followCamPosition = useMemo(() => new Vector3(), []);
+  const raycastFilter = useMemo(
+    () => interactionGroups(raycastMembershipGroup, [...raycastFilterGroups]),
+    [raycastMembershipGroup, raycastFilterGroups],
+  );
 
   useFrame(({ camera }, delta) => {
     if (delta > 1) delta %= 1;
@@ -147,7 +158,7 @@ export function useCharacterControllerPhysics({
         rayLength,
         true,
         undefined,
-        interactionGroups(0, [1, 2]),
+        raycastFilter,
         undefined,
         characterRigidBody,
       );
@@ -209,7 +220,7 @@ export function useCharacterControllerPhysics({
         wallRayLength,
         true,
         undefined,
-        interactionGroups(0, [1, 2]),
+        raycastFilter,
         undefined,
         characterRigidBody,
       );

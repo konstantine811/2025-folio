@@ -1,18 +1,26 @@
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
-import { createRef, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import {
   CatmullRomCurve3,
   Euler,
-  Group,
+  Matrix4,
   Mesh,
   MeshStandardMaterial,
   Object3D,
+  Quaternion,
   TubeGeometry,
   Vector3,
 } from "three";
+import {
+  pushPointOutOfCapsule,
+  resolveCableProxyCapsules,
+  ResolvedCableProxyCapsule,
+} from "../sci-fi-cable-proxy-limbs";
 
 type HelmetCableRopesProps = {
   head: Object3D;
+  skeletonRoot?: Object3D;
+  bodyProxyCollisionsEnabled?: boolean;
   helmetPosition: [number, number, number];
   helmetRotation: [number, number, number];
   helmetScale: number;
@@ -50,8 +58,8 @@ const pinnedArcPhysicsPointCount = 10;
 const pinnedArcRenderPointCount = 30;
 const pinnedArcStartOffset: [number, number, number] = [0, 0, 0];
 const pinnedArcBackDistance = -0.112;
-const pinnedArcLift = 0.115;
-const pinnedArcEndDrop = 0.4;
+const pinnedArcLift = 0.015;
+const pinnedArcEndDrop = 0.05;
 const pinnedArcRoundness = 1.2;
 const helmetColliderRadius = 0.16;
 const helmetCollisionPlaneRadius = 0.12;
@@ -144,6 +152,9 @@ const tmpDirection = new Vector3();
 const tmpPlanePoint = new Vector3();
 const tmpPlaneNormal = new Vector3();
 const tmpArcPoint = new Vector3();
+const tmpQuat = new Quaternion();
+const tmpPlaneQuat = new Quaternion();
+const tmpScale = new Vector3();
 
 const smoothStep = (value: number) => value * value * (3 - 2 * value);
 
@@ -176,14 +187,14 @@ const getPinnedArcLocalPoint = (t: number, ropeIndex: number) => {
 
 const pinArcPoints = (
   points: RopePoint[],
-  anchor: Group,
+  anchorWorldMatrix: Matrix4,
   ropeIndex: number,
 ) => {
   for (let index = 0; index < pinnedArcPhysicsPointCount; index += 1) {
     const t = index / (pinnedArcPhysicsPointCount - 1);
     const point = points[index];
     const arcPoint = getPinnedArcLocalPoint(t, ropeIndex).applyMatrix4(
-      anchor.matrixWorld,
+      anchorWorldMatrix,
     );
 
     point.current.copy(arcPoint);
@@ -222,14 +233,72 @@ const resetDynamicTail = (points: RopePoint[], ropeIndex: number) => {
   }
 };
 
-const createPinnedArcRenderPoints = (anchor: Group, ropeIndex: number) =>
+const createPinnedArcRenderPoints = (
+  anchorWorldMatrix: Matrix4,
+  ropeIndex: number,
+) =>
   Array.from({ length: pinnedArcRenderPointCount }, (_, index) => {
     const t = index / (pinnedArcRenderPointCount - 1);
 
     return getPinnedArcLocalPoint(t, ropeIndex)
-      .applyMatrix4(anchor.matrixWorld)
+      .applyMatrix4(anchorWorldMatrix)
       .clone();
   });
+
+type HelmetTransform = {
+  position: Vector3;
+  quaternion: Quaternion;
+  scale: number;
+  centeredOrigin: Vector3;
+  connectorLocals: Vector3[];
+  collisionPlaneLocal: Vector3;
+  collisionPlaneRotation: Euler;
+};
+
+const syncConnectorTransform = (
+  head: Object3D,
+  connectorLocal: Vector3,
+  helmet: HelmetTransform,
+  outPosition: Vector3,
+  outMatrix: Matrix4,
+) => {
+  head.updateWorldMatrix(true, false);
+
+  outPosition
+    .copy(helmet.centeredOrigin)
+    .add(connectorLocal)
+    .multiplyScalar(helmet.scale)
+    .applyQuaternion(helmet.quaternion)
+    .add(helmet.position);
+  head.localToWorld(outPosition);
+
+  head.getWorldQuaternion(tmpQuat);
+  tmpQuat.multiply(helmet.quaternion);
+  outMatrix.compose(outPosition, tmpQuat, tmpScale.set(1, 1, 1));
+};
+
+const syncCollisionPlane = (
+  head: Object3D,
+  helmet: HelmetTransform,
+  outPoint: Vector3,
+  outNormal: Vector3,
+) => {
+  head.updateWorldMatrix(true, false);
+
+  outPoint
+    .copy(helmet.centeredOrigin)
+    .add(helmet.collisionPlaneLocal)
+    .multiplyScalar(helmet.scale)
+    .applyQuaternion(helmet.quaternion)
+    .add(helmet.position);
+  head.localToWorld(outPoint);
+
+  head.getWorldQuaternion(tmpQuat);
+  tmpQuat.multiply(helmet.quaternion);
+  tmpPlaneQuat.setFromEuler(helmet.collisionPlaneRotation);
+  tmpQuat.multiply(tmpPlaneQuat);
+  outNormal.set(0, 0, 1).applyQuaternion(tmpQuat);
+};
 
 const createInitialPoints = (anchor: Vector3, index: number) => {
   const spread = (index - (connectorLocalPositions.length - 1) / 2) * 0.035;
@@ -278,16 +347,18 @@ const satisfyDistance = (
 
 export function HelmetCableRopes({
   head,
+  skeletonRoot,
+  bodyProxyCollisionsEnabled = false,
   helmetPosition,
   helmetRotation,
   helmetScale,
 }: HelmetCableRopesProps) {
   const { scene } = useThree();
-  const anchorRefs = useRef(
-    connectorLocalPositions.map(() => createRef<Group>()),
-  );
-  const collisionPlaneRef = useRef<Group>(null);
   const meshRefs = useRef<(Mesh | null)[]>([]);
+  const bodyCapsules = useRef<ResolvedCableProxyCapsule[]>([]);
+  const anchorWorldMatrices = useRef(
+    connectorLocalPositions.map(() => new Matrix4()),
+  );
   const ropeStates = useRef<RopeState[]>(
     connectorLocalPositions.map(() => ({
       initialized: false,
@@ -295,10 +366,30 @@ export function HelmetCableRopes({
       previousAnchor: new Vector3(),
     })),
   );
-  const helmetEuler = useMemo(
-    () => new Euler(...helmetRotation),
-    [helmetRotation],
-  );
+  const helmetTransform = useMemo((): HelmetTransform => {
+    const position = new Vector3(...helmetPosition);
+    const quaternion = new Quaternion().setFromEuler(
+      new Euler(...helmetRotation),
+    );
+    const centeredOrigin = new Vector3(...helmetCenteredOrigin);
+    const connectorLocals = connectorLocalPositions.map(
+      (position) => new Vector3(...position),
+    );
+    const collisionPlaneLocal = new Vector3(...helmetCollisionPlanePosition);
+    const collisionPlaneRotationEuler = new Euler(
+      ...helmetCollisionPlaneRotation,
+    );
+
+    return {
+      position,
+      quaternion,
+      scale: helmetScale,
+      centeredOrigin,
+      connectorLocals,
+      collisionPlaneLocal,
+      collisionPlaneRotation: collisionPlaneRotationEuler,
+    };
+  }, [helmetPosition, helmetRotation, helmetScale]);
   const material = useMemo(
     () =>
       new MeshStandardMaterial({
@@ -324,29 +415,34 @@ export function HelmetCableRopes({
 
   useFrame((_, delta) => {
     const dt = Math.min(delta, 1 / 30);
+
     head.getWorldPosition(tmpHeadCenter);
-    collisionPlaneRef.current?.getWorldPosition(tmpPlanePoint);
-    tmpPlaneNormal
-      .set(0, 0, 1)
-      .transformDirection(
-        collisionPlaneRef.current?.matrixWorld ?? head.matrixWorld,
-      );
+    syncCollisionPlane(head, helmetTransform, tmpPlanePoint, tmpPlaneNormal);
 
-    anchorRefs.current.forEach((anchorRef, ropeIndex) => {
-      const anchor = anchorRef.current;
+    if (bodyProxyCollisionsEnabled && skeletonRoot) {
+      resolveCableProxyCapsules(skeletonRoot, undefined, bodyCapsules.current);
+    } else {
+      bodyCapsules.current.length = 0;
+    }
+
+    connectorLocalPositions.forEach((_, ropeIndex) => {
       const mesh = meshRefs.current[ropeIndex];
+      if (!mesh) return;
 
-      if (!anchor || !mesh) {
-        return;
-      }
-
-      anchor.getWorldPosition(tmpAnchor);
+      const anchorWorldMatrix = anchorWorldMatrices.current[ropeIndex];
+      syncConnectorTransform(
+        head,
+        helmetTransform.connectorLocals[ropeIndex],
+        helmetTransform,
+        tmpAnchor,
+        anchorWorldMatrix,
+      );
 
       const rope = ropeStates.current[ropeIndex];
 
       if (!rope.initialized) {
         rope.points = createInitialPoints(tmpAnchor, ropeIndex);
-        pinArcPoints(rope.points, anchor, ropeIndex);
+        pinArcPoints(rope.points, anchorWorldMatrix, ropeIndex);
         resetDynamicTail(rope.points, ropeIndex);
         rope.previousAnchor.copy(tmpAnchor);
         rope.initialized = true;
@@ -360,7 +456,8 @@ export function HelmetCableRopes({
 
         points.forEach((point, pointIndex) => {
           const isPinnedPoint = pointIndex < pinnedArcPhysicsPointCount;
-          const isOnFloor = point.current.y <= floorPointY + floorContactEpsilon;
+          const isOnFloor =
+            point.current.y <= floorPointY + floorContactEpsilon;
 
           if (!isPinnedPoint && isOnFloor) {
             return;
@@ -374,7 +471,7 @@ export function HelmetCableRopes({
         rope.previousAnchor.copy(tmpAnchor);
       }
 
-      pinArcPoints(points, anchor, ropeIndex);
+      pinArcPoints(points, anchorWorldMatrix, ropeIndex);
 
       for (
         let index = pinnedArcPhysicsPointCount;
@@ -395,7 +492,7 @@ export function HelmetCableRopes({
         iteration < constraintIterations;
         iteration += 1
       ) {
-        pinArcPoints(points, anchor, ropeIndex);
+        pinArcPoints(points, anchorWorldMatrix, ropeIndex);
 
         for (
           let index = pinnedArcPhysicsPointCount - 1;
@@ -465,11 +562,15 @@ export function HelmetCableRopes({
               cableRadius - planeDistance,
             );
           }
+
+          for (const capsule of bodyCapsules.current) {
+            pushPointOutOfCapsule(point.current, capsule, cableRadius);
+          }
         }
       }
 
       const curve = new CatmullRomCurve3([
-        ...createPinnedArcRenderPoints(anchor, ropeIndex),
+        ...createPinnedArcRenderPoints(anchorWorldMatrix, ropeIndex),
         ...points
           .slice(pinnedArcPhysicsPointCount)
           .map(({ current }) => current.clone()),
@@ -481,49 +582,22 @@ export function HelmetCableRopes({
     });
   });
 
-  return (
+  return createPortal(
     <>
-      {createPortal(
-        <group
-          position={helmetPosition}
-          rotation={helmetEuler}
-          scale={helmetScale}
-        >
-          <group position={helmetCenteredOrigin}>
-            {connectorLocalPositions.map((position, index) => (
-              <group
-                key={index}
-                ref={anchorRefs.current[index]}
-                position={position}
-              />
-            ))}
-            <group
-              ref={collisionPlaneRef}
-              position={helmetCollisionPlanePosition}
-              rotation={helmetCollisionPlaneRotation}
-            />
-          </group>
-        </group>,
-        head,
-      )}
-      {createPortal(
-        <>
-          {connectorLocalPositions.map((_, index) => (
-            <mesh
-              key={index}
-              ref={(mesh) => {
-                meshRefs.current[index] = mesh;
-              }}
-              castShadow
-              receiveShadow
-              frustumCulled={false}
-              geometry={placeholderGeometries[index]}
-              material={material}
-            />
-          ))}
-        </>,
-        scene,
-      )}
-    </>
+      {connectorLocalPositions.map((_, index) => (
+        <mesh
+          key={index}
+          ref={(mesh) => {
+            meshRefs.current[index] = mesh;
+          }}
+          castShadow
+          receiveShadow
+          frustumCulled={false}
+          geometry={placeholderGeometries[index]}
+          material={material}
+        />
+      ))}
+    </>,
+    scene,
   );
 }

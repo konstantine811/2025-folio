@@ -1,7 +1,7 @@
 import { CharacterAnimations } from "../../../character-controller/models/character-controller.model";
 
 export const SciFiCharacterAnimations: CharacterAnimations = {
-  idle: "idle",
+  idle: "sad_idle",
   walk: "sad_walk",
   run: "sad_run",
   jumpFalling: "sad_jump_falling",

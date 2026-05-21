@@ -91,7 +91,7 @@ const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
             {
               idle: SciFiCharacterAnimations.idle,
               run: "run",
-              walk: "walk",
+              walk: SciFiCharacterAnimations.walk,
             } as CharacterAnimations
           }
         />

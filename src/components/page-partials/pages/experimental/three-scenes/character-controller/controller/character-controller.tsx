@@ -17,12 +17,22 @@ type CharacterControllerProps = {
 
   hasWeaponSensor?: boolean;
 
+  /** Rapier collision groups for the player capsule (from interactionGroups). */
+  capsuleCollisionGroups?: number;
+  /** Groups ground/wall raycasts may hit. Default: [1, 2] */
+  raycastFilterGroups?: readonly number[];
+  /** Rapier membership group for ground/wall raycasts. Default: 0 */
+  raycastMembershipGroup?: number;
+
   renderCharacter: (props: CharacterRenderProps) => ReactNode;
 };
 
 export function CharacterController({
   startPosition = [0, 6, 1],
   hasWeaponSensor = false,
+  capsuleCollisionGroups,
+  raycastFilterGroups,
+  raycastMembershipGroup,
   renderCharacter,
 }: CharacterControllerProps) {
   const playerRef = useRef<EntityType>(null);
@@ -34,6 +44,8 @@ export function CharacterController({
     modelRef,
     capsuleHalfHeight,
     capsuleRadius,
+    raycastMembershipGroup,
+    raycastFilterGroups,
   });
   return (
     <>
@@ -57,6 +69,7 @@ export function CharacterController({
             <CapsuleCollider
               args={[capsuleHalfHeight, capsuleRadius]}
               position={[0, 0, 0]}
+              collisionGroups={capsuleCollisionGroups}
             />
 
             {renderCharacter({

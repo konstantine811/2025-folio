@@ -1,11 +1,14 @@
 import { JSX, RefObject, useEffect, useRef } from "react";
+import { createPortal, useThree } from "@react-three/fiber";
 import { useAnimations, useGLTF } from "@react-three/drei";
+import { useControls } from "leva";
 import { Group, Object3D } from "three";
 import { sciFiCharacterConfig } from "./sci-fi.config";
 import { useLocomotionAnimationDriver } from "../../../character-controller/character-animation/useLocomotionAnimationDriver";
 import { useStableWalkAnimations } from "./useStableWalkAnimations";
 import { SciFiHelmetAttachments } from "./sci-fi-helmet-attachments";
 import { SciFiCharacterModelView } from "./sci-fi-model-view";
+import { SciFiCharacterCableProxies } from "./sci-fi-character-cable-proxies";
 import { useScrollAnimationDriver } from "../../../character-controller/character-animation/useScrollAnimationDriver";
 import { CharacterAnimations } from "../../../character-controller/models/character-controller.model";
 
@@ -32,6 +35,7 @@ type SciFiCharacterProps =
 
 export function SciFiCharacter(props: SciFiCharacterProps) {
   const { driver, ...groupProps } = props;
+  const { scene } = useThree();
   const fallbackScrollProgressRef = useRef(0);
   const group = useRef<Group>(null);
   const modelRoot = useRef<Group>(null);
@@ -51,14 +55,18 @@ export function SciFiCharacter(props: SciFiCharacterProps) {
   const { actions, mixer } = useAnimations(characterAnimations, group);
 
   const head = nodes.mixamorigHead as Object3D | undefined;
+  const skeletonRoot = nodes.mixamorigHips as Object3D | undefined;
 
   const isScrollDriver = driver === "scroll";
   const isControllerDriver = driver === "controller";
 
-  /**
-   * Коли переключаємось з scroll на controller,
-   * треба прибрати scroll offset, бо scroll driver рухав modelRoot по Z.
-   */
+  const { debugCableProxies } = useControls("Sci-fi debug", {
+    debugCableProxies: {
+      value: false,
+      label: "Cable proxy wireframes",
+    },
+  });
+
   useEffect(() => {
     if (!isControllerDriver) return;
     if (!modelRoot.current) return;
@@ -66,18 +74,10 @@ export function SciFiCharacter(props: SciFiCharacterProps) {
     modelRoot.current.position.z = 0;
   }, [isControllerDriver]);
 
-  /**
-   * Коли міняємо driver, скидаємо currentActionRef,
-   * щоб locomotion driver не думав, що стара action ще активна.
-   */
   useEffect(() => {
     currentActionRef.current = null;
   }, [driver]);
 
-  /**
-   * Scroll animation driver.
-   * Працює тільки в режимі driver="scroll".
-   */
   useScrollAnimationDriver({
     enabled: isScrollDriver,
 
@@ -100,10 +100,6 @@ export function SciFiCharacter(props: SciFiCharacterProps) {
     walkCycles: sciFiCharacterConfig.scroll.walkCycles,
   });
 
-  /**
-   * Controller locomotion driver.
-   * Працює тільки в режимі driver="controller".
-   */
   useLocomotionAnimationDriver({
     enabled: isControllerDriver,
 
@@ -119,10 +115,19 @@ export function SciFiCharacter(props: SciFiCharacterProps) {
     isGrounded: isControllerDriver ? props.isGrounded : true,
   });
 
+  const cableProxies = (
+    <SciFiCharacterCableProxies
+      skeletonRoot={skeletonRoot}
+      debugVisual={debugCableProxies}
+    />
+  );
+
   return (
     <group ref={group} {...groupProps} dispose={null}>
       <SciFiHelmetAttachments
         head={head}
+        skeletonRoot={skeletonRoot}
+        bodyProxyCollisionsEnabled
         helmetPosition={sciFiCharacterConfig.helmet.position}
         helmetRotation={sciFiCharacterConfig.helmet.rotation}
         helmetScale={sciFiCharacterConfig.helmet.scale}
@@ -133,6 +138,8 @@ export function SciFiCharacter(props: SciFiCharacterProps) {
         nodes={nodes}
         materials={materials}
       />
+
+      {createPortal(cableProxies, scene)}
     </group>
   );
 }
