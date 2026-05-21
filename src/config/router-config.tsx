@@ -1,11 +1,14 @@
 import AuthGuard from "@/components/auth/auth-guard";
 import NodeWriterPage from "@/components/page-partials/pages/node-writer/NodeWriter";
+import { THREE_GAME_DEMO_ROUTES } from "@/config/experimental/three-game-demos.registry";
+import { ExperimentalTypes } from "@/config/experimental/experimental-types";
+import { lazyPage } from "@/config/lazy-page";
 import { AppRoute } from "@/types/route";
 import { ChartSpline, LayoutDashboard } from "lucide-react";
-import { lazy, type ComponentType, type LazyExoticComponent } from "react";
 import { Navigate } from "react-router";
 
-type Routable = ComponentType<object>;
+export { lazyPage } from "@/config/lazy-page";
+export { ExperimentalTypes } from "@/config/experimental/experimental-types";
 
 /**
  * Node Writer без обовʼязкового логіну: перегляд папок/нод для всіх (див. firestore/storage rules).
@@ -14,12 +17,6 @@ type Routable = ComponentType<object>;
  */
 function NodeWriterRoute() {
   return <NodeWriterPage />;
-}
-
-export function lazyPage<P extends object>(
-  loader: () => Promise<{ default: ComponentType<P> }>,
-): LazyExoticComponent<Routable> {
-  return lazy(loader) as LazyExoticComponent<Routable>;
 }
 
 const HomePage = lazyPage(
@@ -251,10 +248,6 @@ const ThreeSciFi = lazyPage(
     import("../components/page-partials/pages/experimental/three-scenes/demo-scenes/sci-fi/init"),
 );
 
-const ThreeSimCityGame = lazyPage(
-  () =>
-    import("../components/page-partials/pages/experimental/three-scenes/games/sim-city-game/init"),
-);
 export enum RoutPath {
   HOME = "/",
   EXPERIMENTAL = "/labs",
@@ -305,7 +298,6 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_CHARACTER_CONTROLLER = "three-character-controller",
   EXPERIMENTAL_THREE_LEARN_CAMERA = "three-learn-camera",
   EXPERIMENTAL_THREE_SCI_FI = "three-sci-fi",
-  EXPERIMENTAL_THREE_SIM_CITY_GAME = "three-sim-city-game",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -340,25 +332,6 @@ export const TASK_MANAGER_ROUTERS = [
 const imagePath = (imageName: string, format = "jpg") => {
   return `images/three-views-scene/page_images/${imageName}.${format}`;
 };
-
-export enum ExperimentalTypes {
-  physics = "physics",
-  shaders = "shaders",
-  camera = "camera",
-  games = "games",
-  webgpu = "webgpu",
-  ai = "ai",
-  particle = "particle",
-  maps = "maps",
-  canvas2d = "2d-canvas",
-  vfx = "vfx",
-  particles = "particles",
-  optimization = "optimization",
-  yuka = "yuka",
-  raycast = "raycast-navigation",
-  baking = "baking-texture",
-  demoScenes = "demo-scenes",
-}
 
 export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
   // {
@@ -713,15 +686,7 @@ export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
     imageUrl: imagePath("sci-fi"),
     type: ExperimentalTypes.demoScenes,
   },
-  {
-    path: RoutPath.EXPERIMENTAL_THREE_SIM_CITY_GAME,
-    Component: ThreeSimCityGame,
-    id: "experimental-three-sim-city-game",
-    icon: "🎥",
-    description: "A sim city game scene created with Three.js.",
-    imageUrl: imagePath("sim-city-game"),
-    type: ExperimentalTypes.games,
-  },
+  ...THREE_GAME_DEMO_ROUTES,
 ];
 
 export const router: AppRoute[] = [

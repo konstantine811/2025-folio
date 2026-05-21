@@ -1,4 +1,4 @@
-import { ExperimentalTypes } from "@/config/router-config";
+import { ExperimentalTypes } from "@/config/experimental/experimental-types";
 import { ComponentType, LazyExoticComponent, ReactNode } from "react";
 
 type Routable = ComponentType<object>; // ✅ будь-які об’єктні пропси (без any)
