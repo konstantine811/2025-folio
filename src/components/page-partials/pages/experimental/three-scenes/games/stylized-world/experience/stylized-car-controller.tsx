@@ -36,7 +36,7 @@ const MAX_REVERSE_PITCH = 0.045;
 const DEFAULT_BRAKE_FORCE = 0.05;
 const REAR_BRAKE_RATIO = 0.88;
 const FRONT_BRAKE_RATIO = 0.38;
-const DEFAULT_STEER_ANGLE = Math.PI / 24;
+const DEFAULT_STEER_ANGLE = Math.PI / 15;
 const CHASSIS_COLLIDER_HALF_HEIGHT = 0.08;
 const CHASSIS_COLLIDER_Y = 0.1;
 const CHASSIS_COLLIDER_LENGTH_SCALE = 0.82;
@@ -273,7 +273,7 @@ export function StylizedCarController({
     const steering = MathUtils.lerp(
       currentSteering,
       steerAngle * steerDirection,
-      0.5,
+      0.65,
     );
     controller.setWheelSteering(0, steering);
     controller.setWheelSteering(1, steering);
