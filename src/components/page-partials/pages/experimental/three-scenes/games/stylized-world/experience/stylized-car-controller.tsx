@@ -4,6 +4,7 @@ import {
   CuboidCollider,
   RapierRigidBody,
   RigidBody,
+  useAfterPhysicsStep,
   useBeforePhysicsStep,
   useRapier,
 } from "@react-three/rapier";
@@ -20,48 +21,54 @@ type StylizedCarControllerProps = {
   focusRef: MutableRefObject<Vector3>;
   startPosition?: [number, number, number];
   startRotationY?: number;
-  accelerationForce?: number;
-  breakForce?: number;
-  topSpeed?: number;
-  boostForceMult?: number;
-  boostTopSpeedMult?: number;
+  engineForceMin?: number;
+  engineForceMax?: number;
+  engineForceStep?: number;
+  brakeForceMax?: number;
+  brakeForceStep?: number;
   maxSteerDeg?: number;
-  steerSmoothing?: number;
+  steerLerp?: number;
+  topSpeed?: number;
 };
 
 /**
- * Rapier 0.15 vehicle forward axis is local +X (cannot be changed).
- * Body length runs along X. With `startRotationY = -π/2` the hood (+X) faces the camera (+Z);
- * drive impulse uses local +X so W moves in the hood direction (+Z toward camera).
+ * Rapier vehicle setup aligned with the official three.js example:
+ * https://threejs.org/examples/physics_rapier_vehicle_controller.html
+ *
+ * Chassis length runs along local Z, front wheels at -Z.
+ * With `startRotationY = Math.PI` the hood (-Z) faces world +Z (camera).
  */
 const BODY = { width: 1.2, height: 0.45, length: 2 };
 const WHEEL_RADIUS = 0.22;
 const WHEEL_WIDTH = 0.14;
 const WHEEL_Y = -BODY.height / 2 + 0.02;
-const SUSPENSION_REST_LENGTH = 0.16;
-const CHASSIS_MASS = 120;
-const CHASSIS_FORWARD = new Vector3(1, 0, 0);
-const DRIVE_IMPULSE_SCALE = 0.22;
-const DEFAULT_BOOST_FORCE_MULT = 1.65;
-const DEFAULT_BOOST_TOP_SPEED_MULT = 1.5;
-const HANDBRAKE_FORCE_MULT = 0.18;
-const HANDBRAKE_FRICTION_SLIP = 55;
-const HANDBRAKE_SIDE_FRICTION = 0.35;
-const NORMAL_FRICTION_SLIP = 180;
-const NORMAL_SIDE_FRICTION = 0.9;
-const CHASSIS_COLLIDER_HALF_HEIGHT = 0.12;
-const CHASSIS_COLLIDER_Y = 0.15;
+const SUSPENSION_REST_LENGTH = 0.28;
+const CHASSIS_MASS = 10;
+const ENGINE_FORCE_MIN = -15;
+const ENGINE_FORCE_MAX = 15;
+const ENGINE_FORCE_STEP = 0.5;
+const BRAKE_FORCE_MAX = 1;
+const BRAKE_FORCE_STEP = 0.05;
+const STEER_LERP = 0.25;
+const FRICTION_SLIP = 1000;
+const SUSPENSION_STIFFNESS = 24;
+const SUSPENSION_COMPRESSION = 0.4;
+const SUSPENSION_RELAXATION = 2.5;
+const PHYSICS_DT = 1 / 60;
+const TOP_SPEED = 7;
+const MAX_VERTICAL_SPEED = 1.2;
+const CHASSIS_COLLIDER_HALF_HEIGHT = 0.1;
+const CHASSIS_COLLIDER_Y = 0.06;
 const PIVOT_HEIGHT = 0.55;
-const CAMERA_SMOOTHING = 8;
-/** Chassis center Y so wheels rest on ground (y = 0) with suspension at rest length. */
+const CAMERA_SMOOTHING = 5;
 const DEFAULT_START_Y =
   WHEEL_RADIUS - WHEEL_Y + SUSPENSION_REST_LENGTH;
 
 const WHEELS: { position: Vector3; axle: "front" | "rear" }[] = [
-  { position: new Vector3(0.7, WHEEL_Y, -0.5), axle: "front" },
-  { position: new Vector3(0.7, WHEEL_Y, 0.5), axle: "front" },
-  { position: new Vector3(-0.7, WHEEL_Y, -0.5), axle: "rear" },
-  { position: new Vector3(-0.7, WHEEL_Y, 0.5), axle: "rear" },
+  { position: new Vector3(-0.5, WHEEL_Y, -0.7), axle: "front" },
+  { position: new Vector3(0.5, WHEEL_Y, -0.7), axle: "front" },
+  { position: new Vector3(-0.5, WHEEL_Y, 0.7), axle: "rear" },
+  { position: new Vector3(0.5, WHEEL_Y, 0.7), axle: "rear" },
 ];
 
 type VehicleController = NonNullable<
@@ -73,8 +80,13 @@ function createVehicleForChassis(
   chassis: RapierRigidBody,
 ) {
   const vehicle = world.createVehicleController(chassis);
+  // Rapier 0.15 defaults to +X forward; our chassis length is along Z (like three.js example).
+  vehicle.indexUpAxis = 1;
+  // Rapier typings name this setter `setIndexForwardAxis` (not `indexForwardAxis`).
+  (vehicle as { setIndexForwardAxis: number }).setIndexForwardAxis = 2;
+
   const wheelDirection = { x: 0, y: -1, z: 0 };
-  const wheelAxle = { x: 0, y: 0, z: 1 };
+  const wheelAxle = { x: -1, y: 0, z: 0 };
 
   WHEELS.forEach(({ position }, index) => {
     vehicle.addWheel(
@@ -84,13 +96,10 @@ function createVehicleForChassis(
       SUSPENSION_REST_LENGTH,
       WHEEL_RADIUS,
     );
-    vehicle.setWheelSuspensionCompression(index, 0.4);
-    vehicle.setWheelSuspensionRelaxation(index, 2.8);
-    vehicle.setWheelSuspensionStiffness(index, 24);
-    vehicle.setWheelMaxSuspensionForce(index, 4000);
-    vehicle.setWheelMaxSuspensionTravel(index, 0.18);
-    vehicle.setWheelSideFrictionStiffness(index, 0.9);
-    vehicle.setWheelFrictionSlip(index, 180);
+    vehicle.setWheelSuspensionStiffness(index, SUSPENSION_STIFFNESS);
+    vehicle.setWheelSuspensionCompression(index, SUSPENSION_COMPRESSION);
+    vehicle.setWheelSuspensionRelaxation(index, SUSPENSION_RELAXATION);
+    vehicle.setWheelFrictionSlip(index, FRICTION_SLIP);
   });
 
   return { vehicle };
@@ -99,23 +108,32 @@ function createVehicleForChassis(
 export function StylizedCarController({
   focusRef,
   startPosition = [0, DEFAULT_START_Y, 0],
-  startRotationY = -Math.PI / 2,
-  accelerationForce = 1.8,
-  breakForce = 1.2,
-  topSpeed = 12,
-  boostForceMult = DEFAULT_BOOST_FORCE_MULT,
-  boostTopSpeedMult = DEFAULT_BOOST_TOP_SPEED_MULT,
-  maxSteerDeg = 32,
-  steerSmoothing = 0.35,
+  startRotationY = Math.PI,
+  engineForceMin = ENGINE_FORCE_MIN,
+  engineForceMax = ENGINE_FORCE_MAX,
+  engineForceStep = ENGINE_FORCE_STEP,
+  brakeForceMax = BRAKE_FORCE_MAX,
+  brakeForceStep = BRAKE_FORCE_STEP,
+  maxSteerDeg = 40,
+  steerLerp = STEER_LERP,
+  topSpeed = TOP_SPEED,
 }: StylizedCarControllerProps) {
   const chassisRef = useRef<RapierRigidBody>(null);
   const vehicleRef = useRef<VehicleController | null>(null);
   const wheelRefs = useRef<(Object3D | null)[]>([]);
+  const engineForceRef = useRef(0);
+  const brakeForceRef = useRef(0);
+  const wheelBrakeRef = useRef(0);
+  const wheelEngineForceRef = useRef(0);
+  const steerAngleRef = useRef(0);
 
   const { world } = useRapier();
-  const { forward, backward, leftward, rightward, jump, run } = useControlStore();
+  const forward = useControlStore((s) => s.forward);
+  const backward = useControlStore((s) => s.backward);
+  const leftward = useControlStore((s) => s.leftward);
+  const rightward = useControlStore((s) => s.rightward);
+  const jump = useControlStore((s) => s.jump);
 
-  const currSteerSmooth = useRef(0);
   const wheelSteeringQuat = useMemo(() => new Quaternion(), []);
   const wheelRotationQuat = useMemo(() => new Quaternion(), []);
   const wheelQuat = useMemo(() => new Quaternion(), []);
@@ -123,11 +141,6 @@ export function StylizedCarController({
   const pivotPosition = useMemo(() => new Vector3(), []);
   const followCamPosition = useMemo(() => new Vector3(), []);
   const chassisPosition = useMemo(() => new Vector3(), []);
-  const worldForward = useMemo(() => new Vector3(), []);
-  const velocity = useMemo(() => new Vector3(), []);
-  const driveImpulse = useMemo(() => new Vector3(), []);
-
-  const chassisQuat = useMemo(() => new Quaternion(), []);
 
   const maxSteerRad = useMemo(
     () => MathUtils.degToRad(maxSteerDeg),
@@ -167,100 +180,85 @@ export function StylizedCarController({
     }
 
     const vehicle = vehicleRef.current;
-    const dt = rapierWorld.timestep;
-
-    const rot = chassis.rotation();
-    chassisQuat.set(rot.x, rot.y, rot.z, rot.w);
-    worldForward.copy(CHASSIS_FORWARD).applyQuaternion(chassisQuat);
-
-    const linvel = chassis.linvel();
-    velocity.set(linvel.x, linvel.y, linvel.z);
-    const speed = velocity.length();
-    const forwardSpeed = velocity.dot(worldForward);
-
-    const currAcc = forward ? 1 : backward ? -1 : 0;
-    const steerInput = leftward ? 1 : rightward ? -1 : 0;
-    const isBoosting = run && forward && !jump;
-    const effectiveTopSpeed = topSpeed * (isBoosting ? boostTopSpeedMult : 1);
-    const hasInput = currAcc !== 0 || steerInput !== 0 || jump || run;
-
-    if (hasInput && chassis.isSleeping()) {
-      chassis.wakeUp();
-    }
-
-    currSteerSmooth.current = MathUtils.lerp(
-      currSteerSmooth.current,
-      steerInput,
-      MathUtils.clamp(dt / Math.max(0.0001, steerSmoothing), 0, 1),
-    );
-
-    const isHandbraking = jump && speed > 0.4;
-    const isReverseBraking =
-      !jump && currAcc < 0 && speed > 0.15 && forwardSpeed > 0.05;
-    const isAccelerating =
-      currAcc !== 0 && !isReverseBraking && speed < effectiveTopSpeed;
-
-    const speedFactor = MathUtils.clamp(
-      1 - Math.abs(forwardSpeed) / effectiveTopSpeed,
-      0.25,
-      1,
-    );
-    const boostMult =
-      isBoosting && currAcc > 0 ? boostForceMult : 1;
-    const reverseBrake = isReverseBraking ? breakForce * 0.4 : 0;
-    const handbrake = isHandbraking ? breakForce * HANDBRAKE_FORCE_MULT : 0;
-    const steerRad =
-      currSteerSmooth.current *
-      maxSteerRad *
-      (isHandbraking ? 1.4 : 1);
 
     WHEELS.forEach(({ axle }, index) => {
-      vehicle.setWheelEngineForce(index, 0);
-
-      if (isHandbraking && axle === "rear") {
-        vehicle.setWheelBrake(index, handbrake);
-        vehicle.setWheelFrictionSlip(index, HANDBRAKE_FRICTION_SLIP);
-        vehicle.setWheelSideFrictionStiffness(index, HANDBRAKE_SIDE_FRICTION);
-      } else {
-        vehicle.setWheelBrake(index, reverseBrake);
-        vehicle.setWheelFrictionSlip(index, NORMAL_FRICTION_SLIP);
-        vehicle.setWheelSideFrictionStiffness(index, NORMAL_SIDE_FRICTION);
-      }
+      vehicle.setWheelEngineForce(
+        index,
+        axle === "front" ? wheelEngineForceRef.current : 0,
+      );
+      vehicle.setWheelBrake(index, wheelBrakeRef.current);
 
       if (axle === "front") {
-        vehicle.setWheelSteering(index, steerRad);
+        vehicle.setWheelSteering(index, steerAngleRef.current);
       }
     });
 
-    vehicle.updateVehicle(dt);
+    vehicle.updateVehicle(PHYSICS_DT);
 
-    if (isAccelerating) {
-      driveImpulse
-        .copy(worldForward)
-        .multiplyScalar(
-          currAcc * accelerationForce * DRIVE_IMPULSE_SCALE * speedFactor * boostMult,
-        );
-      driveImpulse.y = 0;
-      chassis.applyImpulse(driveImpulse, true);
+    const linvel = chassis.linvel();
+    if (Math.abs(linvel.y) > MAX_VERTICAL_SPEED) {
+      chassis.setLinvel(
+        {
+          x: linvel.x,
+          y: Math.sign(linvel.y) * MAX_VERTICAL_SPEED,
+          z: linvel.z,
+        },
+        true,
+      );
     }
   });
 
-  useFrame(({ camera }, delta) => {
-    if (delta > 1) delta %= 1;
-
+  useFrame(() => {
     const vehicle = vehicleRef.current;
     const chassis = chassisRef.current;
     if (!vehicle || !chassis) return;
 
-    const chassisTranslation = chassis.translation();
-    if (chassisTranslation.y < -8) {
-      chassis.setTranslation(
-        { x: chassisTranslation.x, y: DEFAULT_START_Y, z: chassisTranslation.z },
-        true,
-      );
-      chassis.setLinvel({ x: 0, y: 0, z: 0 }, true);
-      chassis.setAngvel({ x: 0, y: 0, z: 0 }, true);
+    const forwardInput = forward ? -1 : backward ? 1 : 0;
+    const steerDirection = leftward ? 1 : rightward ? -1 : 0;
+    const brakeInput = jump ? 1 : 0;
+
+    let engineForce = 0;
+    if (forwardInput < 0) {
+      engineForce = engineForceRef.current - engineForceStep;
+      if (engineForce < engineForceMin) engineForce = engineForceMin;
+    } else if (forwardInput > 0) {
+      engineForce = engineForceRef.current + engineForceStep;
+      if (engineForce > engineForceMax) engineForce = engineForceMax;
+    } else if (chassis.isSleeping()) {
+      chassis.wakeUp();
     }
+    engineForceRef.current = engineForce;
+
+    let brakeForce = 0;
+    if (brakeInput > 0) {
+      brakeForce = brakeForceRef.current + brakeForceStep;
+      if (brakeForce > brakeForceMax) brakeForce = brakeForceMax;
+    }
+    brakeForceRef.current = brakeForce;
+    wheelBrakeRef.current = brakeInput * brakeForce;
+
+    const vehicleSpeed = vehicle.currentVehicleSpeed();
+    let wheelEngineForce = engineForce;
+    if (vehicleSpeed <= -topSpeed && wheelEngineForce < 0) {
+      wheelEngineForce = 0;
+    }
+    if (vehicleSpeed >= topSpeed && wheelEngineForce > 0) {
+      wheelEngineForce = 0;
+    }
+    wheelEngineForceRef.current = wheelEngineForce;
+
+    const currentSteering = vehicle.wheelSteering(0) ?? 0;
+    steerAngleRef.current = MathUtils.lerp(
+      currentSteering,
+      maxSteerRad * steerDirection,
+      steerLerp,
+    );
+  }, -1);
+
+  useAfterPhysicsStep(() => {
+    const vehicle = vehicleRef.current;
+    const chassis = chassisRef.current;
+    if (!vehicle || !chassis) return;
 
     for (let index = 0; index < 4; index++) {
       const wheel = wheelRefs.current[index];
@@ -282,19 +280,37 @@ export function StylizedCarController({
       wheelQuat.copy(wheelSteeringQuat).multiply(wheelRotationQuat);
       wheel.quaternion.copy(wheelQuat);
     }
+  });
+
+  useFrame(({ camera }, delta) => {
+    if (delta > 1) delta %= 1;
+
+    const chassis = chassisRef.current;
+    if (!chassis) return;
+
+    const chassisTranslation = chassis.translation();
+    if (chassisTranslation.y < -8) {
+      chassis.setTranslation(
+        { x: chassisTranslation.x, y: DEFAULT_START_Y, z: chassisTranslation.z },
+        true,
+      );
+      chassis.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      chassis.setAngvel({ x: 0, y: 0, z: 0 }, true);
+      engineForceRef.current = 0;
+      brakeForceRef.current = 0;
+      wheelBrakeRef.current = 0;
+      wheelEngineForceRef.current = 0;
+    }
 
     const translation = chassis.translation();
     chassisPosition.set(translation.x, translation.y, translation.z);
-    focusRef.current.copy(chassisPosition);
+    focusRef.current.set(translation.x, translation.y, translation.z);
 
     pivotPosition.set(chassisPosition.x, PIVOT_HEIGHT, chassisPosition.z);
     pivot.position.lerp(pivotPosition, 1 - Math.exp(-CAMERA_SMOOTHING * delta));
 
     followCam.getWorldPosition(followCamPosition);
-    camera.position.lerp(
-      followCamPosition,
-      1 - Math.exp(-CAMERA_SMOOTHING * delta),
-    );
+    camera.position.copy(followCamPosition);
     camera.lookAt(pivot.position);
   });
 
@@ -306,24 +322,24 @@ export function StylizedCarController({
       position={startPosition}
       rotation={[0, startRotationY, 0]}
       enabledRotations={[false, true, false]}
-      friction={1}
-      linearDamping={0.15}
-      angularDamping={0.85}
+      friction={0.8}
+      linearDamping={0.02}
+      angularDamping={0.35}
       canSleep
     >
       <CuboidCollider
         args={[
-          BODY.length / 2,
-          CHASSIS_COLLIDER_HALF_HEIGHT,
           BODY.width / 2,
+          CHASSIS_COLLIDER_HALF_HEIGHT,
+          BODY.length / 2,
         ]}
         position={[0, CHASSIS_COLLIDER_Y, 0]}
         restitution={0.01}
-        friction={0.4}
+        friction={0}
       />
 
       <mesh castShadow>
-        <boxGeometry args={[BODY.length, BODY.height, BODY.width]} />
+        <boxGeometry args={[BODY.width, BODY.height, BODY.length]} />
         <meshBasicMaterial color="#f5f5f5" wireframe />
       </mesh>
 
@@ -335,7 +351,7 @@ export function StylizedCarController({
             wheelRefs.current[index] = node;
           }}
         >
-          <mesh castShadow rotation={[Math.PI / 2, 0, 0]}>
+          <mesh castShadow rotation={[0, 0, Math.PI / 2]}>
             <cylinderGeometry
               args={[WHEEL_RADIUS, WHEEL_RADIUS, WHEEL_WIDTH, 12, 1]}
             />
