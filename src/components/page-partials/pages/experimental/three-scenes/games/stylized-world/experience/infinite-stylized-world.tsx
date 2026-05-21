@@ -14,6 +14,7 @@ import { ImperativeGridDebug, type GridDebugSyncRef } from "./grid-debug";
 import {
   readPlayerTile,
   shouldRecenterStream,
+  VISUAL_STREAM_RECENTER_MARGIN,
 } from "./stylized-world-streaming";
 
 type InfiniteStylizedWorldProps = {
@@ -26,6 +27,8 @@ type InfiniteStylizedWorldProps = {
   showGridDebug?: boolean;
   showGridCrosses?: boolean;
   showTileBounds?: boolean;
+  streamMargin?: number;
+  lookAheadTiles?: number;
   focusRef?: MutableRefObject<THREE.Vector3>;
 };
 
@@ -210,18 +213,23 @@ function syncGroundPool(
 
 export function InfiniteStylizedWorld({
   tileSize = 8,
-  radius: _radius = 6,
-  maxRadius = 10,
+  radius = 10,
+  maxRadius,
   bushesPerTile = 6,
   worldSeed = 42,
   bush,
   showGridDebug = false,
   showGridCrosses = true,
   showTileBounds = true,
+  streamMargin = VISUAL_STREAM_RECENTER_MARGIN,
+  lookAheadTiles = 2,
   focusRef,
 }: InfiniteStylizedWorldProps) {
   const { camera, controls } = useThree();
   const worldFocusRef = useRef(new THREE.Vector3());
+  const lastFocusRef = useRef(new THREE.Vector3());
+  const hasPreviousFocusRef = useRef(false);
+  const lookAheadFocusRef = useRef(new THREE.Vector3());
   const tileCenterRef = useRef({ x: 0, z: 0 });
   const groundSlotsRef = useRef<Array<GroundPoolSlot | undefined>>([]);
   const bushChunkRefs = useRef<(THREE.InstancedMesh | null)[]>([]);
@@ -230,7 +238,7 @@ export function InfiniteStylizedWorld({
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const [bushMaterial, setBushMaterial] = useState<THREE.Material | null>(null);
 
-  const renderRadius = maxRadius;
+  const renderRadius = maxRadius ?? radius;
 
   const bushConfig = useMemo(
     () => ({ ...DEFAULT_BUSH_CONFIG, ...bush }),
@@ -276,7 +284,26 @@ export function InfiniteStylizedWorld({
           )
         : worldFocusRef.current.copy(camera.position);
 
-    return readPlayerTile(focus, tileSize);
+    lookAheadFocusRef.current.copy(focus);
+
+    if (!hasPreviousFocusRef.current) {
+      lastFocusRef.current.copy(focus);
+      hasPreviousFocusRef.current = true;
+      return readPlayerTile(focus, tileSize);
+    }
+
+    const moveX = focus.x - lastFocusRef.current.x;
+    const moveZ = focus.z - lastFocusRef.current.z;
+    lastFocusRef.current.copy(focus);
+
+    const moveDistance = Math.hypot(moveX, moveZ);
+    if (moveDistance > 0.0001) {
+      const aheadDistance = Math.min(tileSize * lookAheadTiles, moveDistance * 18);
+      lookAheadFocusRef.current.x += (moveX / moveDistance) * aheadDistance;
+      lookAheadFocusRef.current.z += (moveZ / moveDistance) * aheadDistance;
+    }
+
+    return readPlayerTile(lookAheadFocusRef.current, tileSize);
   };
 
   const syncWorld = (tileX: number, tileZ: number) => {
@@ -303,6 +330,7 @@ export function InfiniteStylizedWorld({
   useLayoutEffect(() => {
     groundSlotsRef.current = [];
     bushesSyncedRef.current = false;
+    hasPreviousFocusRef.current = false;
     if (bushChunkRefs.current.length !== bushChunkCount) {
       bushChunkRefs.current = new Array(bushChunkCount).fill(null);
     }
@@ -340,6 +368,7 @@ export function InfiniteStylizedWorld({
         playerTile,
         tileCenterRef.current,
         renderRadius,
+        streamMargin,
       )
     ) {
       return;

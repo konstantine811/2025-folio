@@ -5,8 +5,11 @@ export type TileCoord = {
   z: number;
 };
 
-/** Recenter the streamed tile ring when the player gets this close to its edge. */
-export const STREAM_RECENTER_MARGIN = 3;
+/** Recenter physics tiles when the player gets this close to the pool edge. */
+export const PHYSICS_STREAM_RECENTER_MARGIN = 3;
+
+/** Visual tiles recenter earlier so new ground/bushes appear ahead of the player. */
+export const VISUAL_STREAM_RECENTER_MARGIN = 6;
 
 export function readPlayerTile(focus: Vector3, tileSize: number): TileCoord {
   return {
@@ -19,7 +22,7 @@ export function shouldRecenterStream(
   playerTile: TileCoord,
   streamCenter: TileCoord,
   radius: number,
-  margin = STREAM_RECENTER_MARGIN,
+  margin = PHYSICS_STREAM_RECENTER_MARGIN,
 ) {
   const threshold = Math.max(1, radius - margin);
   return (

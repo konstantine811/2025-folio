@@ -51,7 +51,8 @@ const Experience = () => {
   );
 
   const focusRef = useRef(new Vector3());
-  const groundRadius = viewRadius + 4;
+  const physicsRadius = viewRadius + 4;
+  const visualRadius = physicsRadius + 3;
 
   return (
     <Physics gravity={[0, -9.81, 0]} timeStep={1 / 60} interpolate>
@@ -59,8 +60,7 @@ const Experience = () => {
       <directionalLight position={[4, 8, 3]} intensity={1.1} />
       <InfiniteStylizedWorld
         tileSize={8}
-        radius={viewRadius}
-        maxRadius={groundRadius}
+        radius={visualRadius}
         bushesPerTile={bushesPerTile}
         bush={bush}
         showGridDebug={showGridDebug}
@@ -69,7 +69,7 @@ const Experience = () => {
       <StylizedWorldGround
         focusRef={focusRef}
         tileSize={8}
-        radius={groundRadius}
+        radius={physicsRadius}
       />
       <StylizedCarController
         focusRef={focusRef}
