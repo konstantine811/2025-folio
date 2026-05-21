@@ -40,7 +40,7 @@ const Experience = () => {
       label: "Brake force",
     },
     steerAngleDeg: {
-      value: 12,
+      value: 22,
       min: 3,
       max: 22,
       step: 0.5,

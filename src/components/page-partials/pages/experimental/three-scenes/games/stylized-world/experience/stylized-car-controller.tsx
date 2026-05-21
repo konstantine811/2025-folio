@@ -28,6 +28,9 @@ const BODY = { width: 1.2, height: 0.45, length: 2 };
 const WHEEL_RADIUS = 0.22;
 const WHEEL_WIDTH = 0.14;
 const WHEEL_Y = -BODY.height / 2 + 0.02;
+const MAX_WHEEL_HUB_Y = -BODY.height / 2 + WHEEL_RADIUS - 0.055;
+const FRONT_WHEEL_X = 0.58;
+const REAR_WHEEL_X = 0.52;
 const CHASSIS_MASS = 10;
 const DEFAULT_ACCELERATE_FORCE = 2;
 const REVERSE_FORCE_MULT = 0.42;
@@ -45,42 +48,45 @@ const CAMERA_SMOOTHING = 10;
 const DEFAULT_START_Y = 0.55;
 const BRAKE_PITCH_SPEED = 0.5;
 const BRAKE_PITCH_FROM_SPEED = 0.035;
-const MAX_BRAKE_PITCH = 0.09;
+const MAX_BRAKE_PITCH = 0.06;
+const MAX_ABS_PITCH = 0.085;
 const PITCH_RECOVERY_SMOOTHING = 10;
-const FLAT_PITCH_SPEED = 0.45;
-const FLAT_PITCH_RECOVERY = 8;
+const FLAT_PITCH_SPEED = 2.5;
+const FLAT_PITCH_RECOVERY = 10;
+const BRAKE_PITCH_RECOVERY = 14;
 
 const WHEEL_INFO_BASE: Omit<WheelInfo, "position"> = {
   axleCs: new Vector3(-1, 0, 0),
   suspensionRestLength: 0.2,
   suspensionStiffness: 26,
   suspensionCompression: 4.4,
-  suspensionRelaxation: 4.5,
+  suspensionRelaxation: 6,
   maxSuspensionForce: 6000,
-  maxSuspensionTravel: 0.3,
+  maxSuspensionTravel: 0.12,
   sideFrictionStiffness: 3,
   frictionSlip: 2.2,
   radius: WHEEL_RADIUS,
+  maxHubY: MAX_WHEEL_HUB_Y,
 };
 
 const WHEELS: (WheelInfo & { axle: "front" | "rear" })[] = [
   {
-    position: new Vector3(-0.5, WHEEL_Y, -0.7),
+    position: new Vector3(-FRONT_WHEEL_X, WHEEL_Y, -0.7),
     axle: "front",
     ...WHEEL_INFO_BASE,
   },
   {
-    position: new Vector3(0.5, WHEEL_Y, -0.7),
+    position: new Vector3(FRONT_WHEEL_X, WHEEL_Y, -0.7),
     axle: "front",
     ...WHEEL_INFO_BASE,
   },
   {
-    position: new Vector3(-0.5, WHEEL_Y, 0.7),
+    position: new Vector3(-REAR_WHEEL_X, WHEEL_Y, 0.7),
     axle: "rear",
     ...WHEEL_INFO_BASE,
   },
   {
-    position: new Vector3(0.5, WHEEL_Y, 0.7),
+    position: new Vector3(REAR_WHEEL_X, WHEEL_Y, 0.7),
     axle: "rear",
     ...WHEEL_INFO_BASE,
   },
@@ -158,27 +164,29 @@ export function StylizedCarController({
     let changed = false;
 
     if (isBraking && speed > BRAKE_PITCH_SPEED) {
-      const targetPitch = -Math.min(
+      const maxNoseDown = -Math.min(
         speed * BRAKE_PITCH_FROM_SPEED,
         MAX_BRAKE_PITCH,
       );
-      const pitchFactor = 1 - Math.exp(-PITCH_RECOVERY_SMOOTHING * delta);
-      pitch = Math.min(
-        pitch,
-        MathUtils.lerp(pitch, targetPitch, pitchFactor),
-      );
-      changed = true;
+      if (pitch < maxNoseDown) {
+        const pitchFactor = 1 - Math.exp(-PITCH_RECOVERY_SMOOTHING * delta);
+        pitch = MathUtils.lerp(pitch, maxNoseDown, pitchFactor);
+        changed = true;
+      }
     } else if (isReversing && pitch > MAX_REVERSE_PITCH) {
       const stabilize = 1 - Math.exp(-14 * delta);
       pitch = MathUtils.lerp(pitch, MAX_REVERSE_PITCH, stabilize);
       changed = true;
-    } else if (
-      !isBraking &&
-      speed < FLAT_PITCH_SPEED &&
-      Math.abs(pitch) > 0.015
-    ) {
-      const recover = 1 - Math.exp(-FLAT_PITCH_RECOVERY * delta);
+    } else if (!isBraking && Math.abs(pitch) > 0.012) {
+      const recoverRate =
+        speed < FLAT_PITCH_SPEED ? FLAT_PITCH_RECOVERY : BRAKE_PITCH_RECOVERY;
+      const recover = 1 - Math.exp(-recoverRate * delta);
       pitch = MathUtils.lerp(pitch, 0, recover);
+      changed = true;
+    }
+
+    if (Math.abs(pitch) > MAX_ABS_PITCH) {
+      pitch = MathUtils.clamp(pitch, -MAX_ABS_PITCH, MAX_ABS_PITCH);
       changed = true;
     }
 
@@ -190,6 +198,8 @@ export function StylizedCarController({
 
     if (isReversing && angvel.x > 0.05) {
       chassis.setAngvel({ x: angvel.x * 0.55, y: angvel.y, z: 0 }, true);
+    } else if (!isBraking && Math.abs(angvel.x) > 0.08) {
+      chassis.setAngvel({ x: angvel.x * 0.72, y: angvel.y, z: 0 }, true);
     } else {
       chassis.setAngvel({ x: angvel.x, y: angvel.y, z: 0 }, true);
     }
