@@ -1,4 +1,4 @@
-import { createPortal, useFrame } from "@react-three/fiber";
+import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { createRef, useMemo, useRef } from "react";
 import {
   CatmullRomCurve3,
@@ -26,6 +26,7 @@ type RopePoint = {
 type RopeState = {
   initialized: boolean;
   points: RopePoint[];
+  previousAnchor: Vector3;
 };
 
 type FloorScatterConfig = {
@@ -37,12 +38,14 @@ type FloorScatterConfig = {
 };
 
 const cableRadius = 0.01;
-const floorY = 0.08;
+const floorY = 0.057;
 const gravity = new Vector3(0, -9.8, 0);
 const segmentCount = 94;
 const segmentLength = 0.1;
 const constraintIterations = 5;
 const damping = 0.93;
+const floorFriction = 0.68;
+const floorContactEpsilon = 0.03;
 const pinnedArcPhysicsPointCount = 10;
 const pinnedArcRenderPointCount = 30;
 const pinnedArcStartOffset: [number, number, number] = [0, 0, 0];
@@ -134,6 +137,8 @@ const floorScatterConfigs: FloorScatterConfig[] = [
 
 const tmpHeadCenter = new Vector3();
 const tmpAnchor = new Vector3();
+const tmpAnchorDelta = new Vector3();
+const tmpFollowDelta = new Vector3();
 const tmpDelta = new Vector3();
 const tmpDirection = new Vector3();
 const tmpPlanePoint = new Vector3();
@@ -277,6 +282,7 @@ export function HelmetCableRopes({
   helmetRotation,
   helmetScale,
 }: HelmetCableRopesProps) {
+  const { scene } = useThree();
   const anchorRefs = useRef(
     connectorLocalPositions.map(() => createRef<Group>()),
   );
@@ -286,6 +292,7 @@ export function HelmetCableRopes({
     connectorLocalPositions.map(() => ({
       initialized: false,
       points: [],
+      previousAnchor: new Vector3(),
     })),
   );
   const helmetEuler = useMemo(
@@ -341,10 +348,32 @@ export function HelmetCableRopes({
         rope.points = createInitialPoints(tmpAnchor, ropeIndex);
         pinArcPoints(rope.points, anchor, ropeIndex);
         resetDynamicTail(rope.points, ropeIndex);
+        rope.previousAnchor.copy(tmpAnchor);
         rope.initialized = true;
       }
 
       const { points } = rope;
+      tmpAnchorDelta.subVectors(tmpAnchor, rope.previousAnchor);
+
+      if (tmpAnchorDelta.lengthSq() > 0) {
+        const floorPointY = floorY + cableRadius;
+
+        points.forEach((point, pointIndex) => {
+          const isPinnedPoint = pointIndex < pinnedArcPhysicsPointCount;
+          const isOnFloor = point.current.y <= floorPointY + floorContactEpsilon;
+
+          if (!isPinnedPoint && isOnFloor) {
+            return;
+          }
+
+          tmpFollowDelta.copy(tmpAnchorDelta);
+          point.current.add(tmpFollowDelta);
+          point.previous.add(tmpFollowDelta);
+        });
+
+        rope.previousAnchor.copy(tmpAnchor);
+      }
+
       pinArcPoints(points, anchor, ropeIndex);
 
       for (
@@ -395,9 +424,19 @@ export function HelmetCableRopes({
           index += 1
         ) {
           const point = points[index];
+          const floorPointY = floorY + cableRadius;
 
-          if (point.current.y < floorY + cableRadius) {
-            point.current.y = floorY + cableRadius;
+          if (point.current.y < floorPointY) {
+            tmpDelta.subVectors(point.current, point.previous);
+            tmpDelta.x *= floorFriction;
+            tmpDelta.z *= floorFriction;
+
+            point.current.y = floorPointY;
+            point.previous.set(
+              point.current.x - tmpDelta.x,
+              floorPointY,
+              point.current.z - tmpDelta.z,
+            );
           }
 
           tmpDirection.subVectors(point.current, tmpHeadCenter);
@@ -467,18 +506,24 @@ export function HelmetCableRopes({
         </group>,
         head,
       )}
-      {connectorLocalPositions.map((_, index) => (
-        <mesh
-          key={index}
-          ref={(mesh) => {
-            meshRefs.current[index] = mesh;
-          }}
-          castShadow
-          receiveShadow
-          geometry={placeholderGeometries[index]}
-          material={material}
-        />
-      ))}
+      {createPortal(
+        <>
+          {connectorLocalPositions.map((_, index) => (
+            <mesh
+              key={index}
+              ref={(mesh) => {
+                meshRefs.current[index] = mesh;
+              }}
+              castShadow
+              receiveShadow
+              frustumCulled={false}
+              geometry={placeholderGeometries[index]}
+              material={material}
+            />
+          ))}
+        </>,
+        scene,
+      )}
     </>
   );
 }

@@ -22,7 +22,7 @@ export function SciFiCharacterModelView({
     <group ref={modelRootRef} name="Scene">
       <group
         name="Armature008"
-        position={[0, 0.055, 13.821]}
+        position={[0, 0, 0]}
         rotation={[Math.PI / 2, 0, Math.PI]}
         scale={0.011}
       >

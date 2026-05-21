@@ -18,12 +18,14 @@ export function SciFiToggleCharacter({
 }: SciFiToggleCharacterProps) {
   if (mode === "scroll") {
     return (
-      <SciFiCharacter
-        driver="scroll"
-        scrollProgressRef={scrollProgressRef}
-        position={[0, 0, 0]}
-        scale={1}
-      />
+      <group position={[0, 0, 13.821]} scale={1}>
+        <SciFiCharacter
+          driver="scroll"
+          scrollProgressRef={scrollProgressRef}
+          position={[0, 0, 0]}
+          scale={1}
+        />
+      </group>
     );
   }
 
@@ -31,7 +33,7 @@ export function SciFiToggleCharacter({
     <CharacterController
       hasWeaponSensor={false}
       renderCharacter={({ modelRef, controllerState }) => (
-        <group ref={modelRef} position={[0, 0, 0]} scale={1}>
+        <group ref={modelRef} position={[0, -1.2, 0]} scale={1}>
           <SciFiCharacter
             driver="controller"
             animationType={animationType}

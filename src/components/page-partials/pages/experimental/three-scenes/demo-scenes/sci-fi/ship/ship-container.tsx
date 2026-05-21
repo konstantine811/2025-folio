@@ -2,10 +2,13 @@ import { JSX, useEffect, useMemo } from "react";
 import { useGLTF, useTexture } from "@react-three/drei";
 import { Mesh, MeshPhysicalMaterial, MeshStandardMaterial } from "three";
 import { useControls } from "leva";
-import { RigidBody } from "@react-three/rapier";
+import { CuboidCollider, RigidBody, interactionGroups } from "@react-three/rapier";
 
 const modelPath = "/3d-models/sci-fi/ship-container.glb";
 const texturePath = "/3d-models/sci-fi/ship_baking.jpg";
+const cableCollisionGroup = 4;
+const cableFloorCollisionGroup = 5;
+
 export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
   const { nodes, materials } = useGLTF(modelPath);
 
@@ -107,6 +110,17 @@ export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
           geometry={(nodes.ship_floor as Mesh).geometry}
           material={materials.floor}
           position={[0, 0.057, 17.861]}
+        />
+      </RigidBody>
+      <RigidBody type="fixed" colliders={false}>
+        <CuboidCollider
+          args={[5.8, 0.08, 12.5]}
+          position={[0, 0.035, 17.861]}
+          collisionGroups={interactionGroups(cableFloorCollisionGroup, [
+            cableCollisionGroup,
+          ])}
+          friction={2.2}
+          restitution={0}
         />
       </RigidBody>
       <mesh

@@ -2,7 +2,7 @@ import { JSX, useEffect, useMemo, useRef } from "react";
 import { useAnimations, useGLTF } from "@react-three/drei";
 import { createPortal, useFrame } from "@react-three/fiber";
 import { Group, LoopOnce, LoopRepeat, Object3D, SkinnedMesh } from "three";
-import { HelmetCableRopes } from "./helmet-cable-ropes";
+import { HelmetCableRopes } from "./cables/helmet-cable-ropes";
 import { SholomModel } from "./sholom";
 import { normalizeRange } from "@/utils/math/normalize";
 

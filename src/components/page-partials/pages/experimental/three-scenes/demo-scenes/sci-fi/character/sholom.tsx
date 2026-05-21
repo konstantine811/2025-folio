@@ -1,10 +1,12 @@
 import { useGLTF } from "@react-three/drei";
-import { RigidBody } from "@react-three/rapier";
+import { RigidBody, interactionGroups } from "@react-three/rapier";
 import { JSX } from "react";
 import { Mesh } from "three";
 
 const pathModel = "/3d-models/sci-fi/sholom.glb";
 const helmetOrigin: [number, number, number] = [0, -2.067, -6.745];
+const cableCollisionGroup = 4;
+const helmetCollisionGroup = 6;
 
 type SholomModelProps = JSX.IntrinsicElements["group"] & {
   centered?: boolean;
@@ -267,7 +269,14 @@ export function SholomModel({ centered = false, ...props }: SholomModelProps) {
           rotation={[2.148, -0.058, -1.554]}
           scale={[0.146, 0.094, 0.146]}
         />
-        <RigidBody type="kinematicPosition" colliders="trimesh" friction={1}>
+        <RigidBody
+          type="kinematicPosition"
+          colliders="trimesh"
+          collisionGroups={interactionGroups(helmetCollisionGroup, [
+            cableCollisionGroup,
+          ])}
+          friction={1}
+        >
           <mesh
             castShadow
             receiveShadow

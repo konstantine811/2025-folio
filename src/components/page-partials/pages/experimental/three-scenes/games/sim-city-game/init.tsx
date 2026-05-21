@@ -8,7 +8,7 @@ function Init() {
   return (
     <MainWrapperOffset>
       <ThreeLoader />
-      <Canvas camera={{ position: [0, 0, 10], fov: 50 }}>
+      <Canvas camera={{ position: [40, 30, 50], fov: 50 }}>
         <color attach="background" args={["#131017"]} />
         <Suspense fallback={null}>
           <Experience />

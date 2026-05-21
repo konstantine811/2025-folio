@@ -1,7 +1,8 @@
 import { createPortal } from "@react-three/fiber";
 import { Object3D } from "three";
-import { HelmetCableRopes } from "./helmet-cable-ropes";
+import { RapierHelmetCables } from "./cables/rapier-helmet-cables";
 import { SholomModel } from "./sholom";
+import SimpleHelmetCable from "./cables/simple-halmet-cable";
 
 type Vec3 = [number, number, number];
 
@@ -24,21 +25,28 @@ export function SciFiHelmetAttachments({
   return (
     <>
       {createPortal(
-        <SholomModel
-          centered
-          position={helmetPosition}
-          rotation={helmetRotation}
-          scale={helmetScale}
-        />,
+        <>
+          <SholomModel
+            centered
+            position={helmetPosition}
+            rotation={helmetRotation}
+            scale={helmetScale}
+          />
+        </>,
         head,
       )}
-
-      <HelmetCableRopes
+      <RapierHelmetCables
         head={head}
         helmetPosition={helmetPosition}
         helmetRotation={helmetRotation}
         helmetScale={helmetScale}
       />
+      {/* <SimpleHelmetCable
+        head={head}
+        helmetPosition={helmetPosition}
+        helmetRotation={helmetRotation}
+        helmetScale={helmetScale}
+      /> */}
     </>
   );
 }

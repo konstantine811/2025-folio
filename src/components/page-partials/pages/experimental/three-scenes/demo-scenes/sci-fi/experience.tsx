@@ -7,10 +7,10 @@ import { ShipContainer } from "./ship/ship-container";
 import Earth from "./ship/earth";
 import type { CameraMode } from "./init";
 import { normalizeRange } from "@/utils/math/normalize";
-import { SciFiCharacterAnimations } from "./character/sci-fi.config";
 import { SciFiToggleCharacter } from "./character/sci-fi-character-controller";
 import { CharacterAnimations } from "../../character-controller/models/character-controller.model";
 import { usePauseStore } from "@/components/common/game-controller/store/usePauseMode";
+import { SciFiCharacterAnimations } from "./character/sci-fi.config";
 
 type ExperienceProps = {
   cameraMode: CameraMode;
@@ -81,14 +81,18 @@ const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
       <ambientLight intensity={1.7} />
       <directionalLight castShadow position={[1, 3, 1]} intensity={3} />
       {/* <Environment preset="sunset" /> */}
-      <Physics debug gravity={[0, -9.81, 0]} interpolate={false}>
+      <Physics debug={false} gravity={[0, -9.81, 0]} interpolate={false}>
         <ShipContainer />
         {/* <Character scrollProgress={scrollProgress} /> */}
         <SciFiToggleCharacter
           mode={characterMode}
           scrollProgressRef={scrollProgressRef}
           animationType={
-            { idle: "idle", run: "run", walk: "walk" } as CharacterAnimations
+            {
+              idle: SciFiCharacterAnimations.idle,
+              run: "run",
+              walk: "walk",
+            } as CharacterAnimations
           }
         />
       </Physics>

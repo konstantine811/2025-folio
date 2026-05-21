@@ -1,13 +1,14 @@
-import CameraController from "./controllers/camera-controller";
+import { CameraControls, Environment } from "@react-three/drei";
+import { City } from "./city";
+// import CameraController from "./controllers/camera-controller";
 
 const Experience = () => {
   return (
     <>
-      <mesh>
-        <boxGeometry />
-        <meshBasicMaterial color="red" />
-      </mesh>
-      <CameraController />
+      <City />
+      <Environment preset="sunset" />
+      {/* <CameraController /> */}
+      <CameraControls makeDefault />
     </>
   );
 };
