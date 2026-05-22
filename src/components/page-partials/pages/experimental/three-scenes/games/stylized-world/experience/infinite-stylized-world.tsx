@@ -10,6 +10,8 @@ import {
   type BushConfig,
 } from "./bush-core";
 import { BushNodeMaterial } from "./bush-material";
+import type { GrassRuntimeConfig } from "./grass/config";
+import { StylizedGrass } from "./grass/stylized-grass";
 import { ImperativeGridDebug, type GridDebugSyncRef } from "./grid-debug";
 import {
   readPlayerTile,
@@ -24,6 +26,8 @@ type InfiniteStylizedWorldProps = {
   bushesPerTile?: number;
   worldSeed?: number;
   bush?: BushConfig;
+  grass?: GrassRuntimeConfig;
+  showGrass?: boolean;
   showGridDebug?: boolean;
   showGridCrosses?: boolean;
   showTileBounds?: boolean;
@@ -218,6 +222,8 @@ export function InfiniteStylizedWorld({
   bushesPerTile = 6,
   worldSeed = 42,
   bush,
+  grass,
+  showGrass = true,
   showGridDebug = false,
   showGridCrosses = true,
   showTileBounds = true,
@@ -250,6 +256,17 @@ export function InfiniteStylizedWorld({
       bush?.normalMix,
       bush?.debug,
     ],
+  );
+
+  const grassRuntime = useMemo(
+    () => ({
+      bladeHeightMin: grass?.bladeHeightMin ?? 0.28,
+      bladeHeightMax: grass?.bladeHeightMax ?? 0.62,
+      windSwayStrength: grass?.windSwayStrength ?? 0.1,
+      pushRadius: grass?.pushRadius ?? 1.4,
+      ...grass,
+    }),
+    [grass],
   );
 
   const bushGeometry = useMemo(
@@ -385,6 +402,13 @@ export function InfiniteStylizedWorld({
         <BushNodeMaterial ref={setBushMaterial} {...bushConfig} />
       </mesh>
       <group key={worldKey}>
+        {showGrass && focusRef && (
+          <StylizedGrass
+            focusRef={focusRef}
+            visible={showGrass}
+            config={grassRuntime}
+          />
+        )}
         <GroundPool
           radius={renderRadius}
           tileSize={tileSize}

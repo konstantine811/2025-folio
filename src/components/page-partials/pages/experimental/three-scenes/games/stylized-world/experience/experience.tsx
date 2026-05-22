@@ -15,6 +15,8 @@ const Experience = () => {
     viewRadius,
     showGridDebug,
     showTestCourse,
+    showGrass,
+    grassBladeHeight,
     accelerateForce,
     brakeForce,
     steerAngleDeg,
@@ -26,6 +28,14 @@ const Experience = () => {
     viewRadius: { value: 6, min: 3, max: 10, step: 1 },
     showGridDebug: { value: true, label: "Grid debug" },
     showTestCourse: { value: true, label: "Test course" },
+    showGrass: { value: true, label: "Grass" },
+    grassBladeHeight: {
+      value: 0.52,
+      min: 0.2,
+      max: 1.2,
+      step: 0.02,
+      label: "Grass blade height",
+    },
     accelerateForce: {
       value: 8.5,
       min: 0.5,
@@ -55,6 +65,16 @@ const Experience = () => {
     [windStrength, windSpeed],
   );
 
+  const grass = useMemo(
+    () => ({
+      bladeHeightMin: grassBladeHeight * 0.55,
+      bladeHeightMax: grassBladeHeight * 1.15,
+      windSwayStrength: windStrength * 0.85,
+      pushRadius: 1.4,
+    }),
+    [grassBladeHeight, windStrength],
+  );
+
   const focusRef = useRef(new Vector3());
   const physicsRadius = viewRadius + 4;
   const visualRadius = physicsRadius + 3;
@@ -73,6 +93,8 @@ const Experience = () => {
         radius={visualRadius}
         bushesPerTile={bushesPerTile}
         bush={bush}
+        grass={grass}
+        showGrass={showGrass}
         showGridDebug={showGridDebug}
         focusRef={focusRef}
       />
