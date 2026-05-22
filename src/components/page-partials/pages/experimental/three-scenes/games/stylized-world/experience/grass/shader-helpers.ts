@@ -1,11 +1,15 @@
 import {
   Fn,
+  If,
   abs,
+  atan,
   clamp,
   cos,
   cross,
   dot,
   float,
+  floor,
+  int,
   length,
   mix,
   mul,
@@ -190,4 +194,73 @@ export function applyViewDependentTilt(
 export function safeNormalize2D(v: ReturnType<typeof vec2>) {
   const len = length(v);
   return len.lessThan(float(0.001)).select(vec2(1, 0), v.div(len));
+}
+
+/** Horizontal camera-facing width axis for single-sided grass billboards. */
+export function computeGrassBillboardSide(
+  spineWorld: ReturnType<typeof vec3>,
+  cameraPos: ReturnType<typeof vec3>,
+) {
+  const toCamXZ = vec2(
+    cameraPos.x.sub(spineWorld.x),
+    cameraPos.z.sub(spineWorld.z),
+  );
+  const viewDir2 = safeNormalize2D(toCamXZ);
+  return normalize(cross(vec3(0, 1, 0), vec3(viewDir2.x, float(0), viewDir2.y)));
+}
+
+/** Per-blade wind strength in [0, maxStrength] — False Earth-style patch + gust noise. */
+export function calculateWindStrength(
+  worldXZ: ReturnType<typeof vec2>,
+  windDir: ReturnType<typeof vec2>,
+  windScale: ReturnType<typeof float>,
+  uTime: ReturnType<typeof float>,
+  windSpeed: ReturnType<typeof float>,
+  maxStrength: ReturnType<typeof float>,
+) {
+  const windDirNorm = safeNormalize2D(windDir);
+  const windUv = worldXZ.mul(windScale).add(windDirNorm.mul(uTime).mul(windSpeed));
+
+  const ix = int(floor(windUv.x));
+  const iz = int(floor(windUv.y));
+  const fx = windUv.x.fract();
+  const fz = windUv.y.fract();
+
+  const h00 = hash2to1(ix, iz);
+  const h10 = hash2to1(ix.add(int(1)), iz);
+  const h01 = hash2to1(ix, iz.add(int(1)));
+  const h11 = hash2to1(ix.add(int(1)), iz.add(int(1)));
+  const sx = smoothstep(float(0), float(1), fx);
+  const sz = smoothstep(float(0), float(1), fz);
+  const patchNoise = mix(mix(h00, h10, sx), mix(h01, h11, sx), sz);
+
+  const wavePhase = dot(worldXZ, windDirNorm).mul(windScale.mul(2));
+  const gust = sin(uTime.mul(windSpeed.mul(3)).add(wavePhase)).mul(0.5).add(0.5);
+  const combined = patchNoise.mul(0.55).add(gust.mul(0.45));
+
+  return clamp(combined.mul(maxStrength), float(0), float(1));
+}
+
+/** Multiplicative per-blade jitter after clump shaping — False Earth uBladeRandomness. */
+export function applyBladeRandomness(
+  value: ReturnType<typeof float>,
+  randomness: ReturnType<typeof float>,
+  seed: ReturnType<typeof float>,
+) {
+  return value.mul(mix(oneMinus(randomness), float(1).add(randomness), seed));
+}
+
+/** Rotate blade yaw toward wind direction, scaled by gust strength. */
+export function applyWindFacing(
+  baseAngle: ReturnType<typeof float>,
+  windStrength01: ReturnType<typeof float>,
+  windDir: ReturnType<typeof vec2>,
+  windFacing: ReturnType<typeof float>,
+) {
+  const windAngle = atan(windDir.y, windDir.x);
+  const angleDiff = atan(
+    sin(windAngle.sub(baseAngle)),
+    cos(windAngle.sub(baseAngle)),
+  );
+  return baseAngle.add(angleDiff.mul(windFacing.mul(windStrength01)));
 }

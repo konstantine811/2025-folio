@@ -1,5 +1,5 @@
 import { useFrame, useThree } from "@react-three/fiber";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState, memo } from "react";
 import type { MutableRefObject } from "react";
 import * as THREE from "three";
 import {
@@ -215,6 +215,35 @@ function syncGroundPool(
   }
 }
 
+type BushLayerProps = {
+  worldKey: string;
+  bushChunkCount: number;
+  bushGeometry: THREE.BufferGeometry;
+  bushMaterial: THREE.Material;
+  bushChunkRefCallbacks: Array<(mesh: THREE.InstancedMesh | null) => void>;
+};
+
+const BushInstances = memo(function BushInstances({
+  worldKey,
+  bushChunkCount,
+  bushGeometry,
+  bushMaterial,
+  bushChunkRefCallbacks,
+}: BushLayerProps) {
+  return (
+    <>
+      {Array.from({ length: bushChunkCount }, (_, chunkIndex) => (
+        <instancedMesh
+          key={`bush-chunk-${worldKey}-${chunkIndex}`}
+          ref={bushChunkRefCallbacks[chunkIndex]}
+          args={[bushGeometry, bushMaterial, MAX_INSTANCES_PER_MESH]}
+          frustumCulled={false}
+        />
+      ))}
+    </>
+  );
+});
+
 export function InfiniteStylizedWorld({
   tileSize = 8,
   radius = 10,
@@ -242,7 +271,14 @@ export function InfiniteStylizedWorld({
   const bushesSyncedRef = useRef(false);
   const gridSyncRef = useRef<GridDebugSyncRef | null>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
-  const [bushMaterial, setBushMaterial] = useState<THREE.Material | null>(null);
+  const bushMaterialRef = useRef<THREE.Material | null>(null);
+  const [bushMaterialReady, setBushMaterialReady] = useState(false);
+
+  const assignBushMaterial = useCallback((material: THREE.Material | null) => {
+    if (!material || bushMaterialRef.current?.uuid === material.uuid) return;
+    bushMaterialRef.current = material;
+    setBushMaterialReady(true);
+  }, []);
 
   const renderRadius = maxRadius ?? radius;
 
@@ -289,6 +325,21 @@ export function InfiniteStylizedWorld({
     const maxInstances = (2 * renderRadius + 1) ** 2 * bushesPerTile;
     return Math.max(1, Math.ceil(maxInstances / MAX_INSTANCES_PER_MESH));
   }, [renderRadius, bushesPerTile]);
+
+  const bushChunkRefCallbacks = useMemo(
+    () =>
+      Array.from({ length: bushChunkCount }, (_, chunkIndex) => {
+        return (mesh: THREE.InstancedMesh | null) => {
+          bushChunkRefs.current[chunkIndex] = mesh;
+          if (mesh) {
+            mesh.userData.camExcludeCollision = true;
+            return;
+          }
+          bushesSyncedRef.current = false;
+        };
+      }),
+    [bushChunkCount],
+  );
 
   const worldKey = `${renderRadius}-${bushChunkCount}-${bushesPerTile}`;
 
@@ -345,7 +396,6 @@ export function InfiniteStylizedWorld({
   };
 
   useLayoutEffect(() => {
-    groundSlotsRef.current = [];
     bushesSyncedRef.current = false;
     hasPreviousFocusRef.current = false;
     if (bushChunkRefs.current.length !== bushChunkCount) {
@@ -359,7 +409,6 @@ export function InfiniteStylizedWorld({
     tileSize,
     worldSeed,
     bushGeometry,
-    bushMaterial,
     bushChunkCount,
     showGridDebug,
     showGridCrosses,
@@ -368,10 +417,25 @@ export function InfiniteStylizedWorld({
   ]);
 
   useFrame(() => {
+    const bushMaterial = bushMaterialRef.current;
     const bushChunksReady =
       bushesPerTile <= 0 ||
       !bushMaterial ||
       bushChunkRefs.current.filter(Boolean).length === bushChunkCount;
+
+    const bushInstanceCount = bushChunkRefs.current.reduce(
+      (sum, chunk) => sum + (chunk?.count ?? 0),
+      0,
+    );
+
+    if (
+      bushesPerTile > 0 &&
+      bushChunksReady &&
+      bushInstanceCount === 0 &&
+      bushesSyncedRef.current
+    ) {
+      bushesSyncedRef.current = false;
+    }
 
     if (!bushesSyncedRef.current && bushChunksReady) {
       syncWorld(tileCenterRef.current.x, tileCenterRef.current.z);
@@ -399,7 +463,7 @@ export function InfiniteStylizedWorld({
     <>
       <mesh visible={false} frustumCulled={false}>
         <boxGeometry args={[0.001, 0.001, 0.001]} />
-        <BushNodeMaterial ref={setBushMaterial} {...bushConfig} />
+        <BushNodeMaterial ref={assignBushMaterial} {...bushConfig} />
       </mesh>
       <group key={worldKey}>
         {showGrass && focusRef && (
@@ -424,22 +488,15 @@ export function InfiniteStylizedWorld({
             syncRef={gridSyncRef}
           />
         )}
-        {bushMaterial &&
-          Array.from({ length: bushChunkCount }, (_, chunkIndex) => (
-            <instancedMesh
-              key={`bush-chunk-${worldKey}-${chunkIndex}`}
-              ref={(mesh) => {
-                if (mesh) {
-                  mesh.count = 0;
-                  mesh.instanceMatrix.needsUpdate = true;
-                  mesh.userData.camExcludeCollision = true;
-                }
-                bushChunkRefs.current[chunkIndex] = mesh;
-              }}
-              args={[bushGeometry, bushMaterial, MAX_INSTANCES_PER_MESH]}
-              frustumCulled={false}
-            />
-          ))}
+        {bushMaterialReady && bushMaterialRef.current && (
+          <BushInstances
+            worldKey={worldKey}
+            bushChunkCount={bushChunkCount}
+            bushGeometry={bushGeometry}
+            bushMaterial={bushMaterialRef.current}
+            bushChunkRefCallbacks={bushChunkRefCallbacks}
+          />
+        )}
       </group>
     </>
   );

@@ -1,3 +1,4 @@
+import { Environment } from "@react-three/drei";
 import { Physics } from "@react-three/rapier";
 import { useControls } from "leva";
 import { useMemo, useRef } from "react";
@@ -17,6 +18,19 @@ const Experience = () => {
     showTestCourse,
     showGrass,
     grassBladeHeight,
+    grassClumpSize,
+    grassClumpBlend,
+    grassDensity,
+    grassStraightness,
+    grassHeightVariation,
+    grassBladeRandomness,
+    grassWidthRandomness,
+    grassBendRandomness,
+    grassTerrainAmp,
+    grassWindFacing,
+    grassWindDistanceStart,
+    grassWindDistanceEnd,
+    grassDebugLod,
     accelerateForce,
     brakeForce,
     steerAngleDeg,
@@ -35,6 +49,94 @@ const Experience = () => {
       max: 1.2,
       step: 0.02,
       label: "Grass blade height",
+    },
+    grassClumpSize: {
+      value: 0.8,
+      min: 0.2,
+      max: 2.5,
+      step: 0.05,
+      label: "Grass clump size",
+    },
+    grassClumpBlend: {
+      value: 0.2,
+      min: 0.05,
+      max: 0.6,
+      step: 0.01,
+      label: "Grass clump blend",
+    },
+    grassDensity: {
+      value: 1,
+      min: 0.15,
+      max: 1,
+      step: 0.01,
+      label: "Grass density",
+    },
+    grassStraightness: {
+      value: 1,
+      min: 0,
+      max: 1,
+      step: 0.01,
+      label: "Grass straightness",
+    },
+    grassHeightVariation: {
+      value: 0.85,
+      min: 0,
+      max: 1,
+      step: 0.01,
+      label: "Grass height variation",
+    },
+    grassBladeRandomness: {
+      value: 0.3,
+      min: 0,
+      max: 0.6,
+      step: 0.01,
+      label: "Grass height random",
+    },
+    grassWidthRandomness: {
+      value: 0.3,
+      min: 0,
+      max: 0.6,
+      step: 0.01,
+      label: "Grass width random",
+    },
+    grassBendRandomness: {
+      value: 0.2,
+      min: 0,
+      max: 0.6,
+      step: 0.01,
+      label: "Grass bend random",
+    },
+    grassTerrainAmp: {
+      value: 0.12,
+      min: 0,
+      max: 0.5,
+      step: 0.01,
+      label: "Grass terrain amp",
+    },
+    grassWindFacing: {
+      value: 0.6,
+      min: 0,
+      max: 1,
+      step: 0.01,
+      label: "Grass wind facing",
+    },
+    grassWindDistanceStart: {
+      value: 10,
+      min: 0,
+      max: 80,
+      step: 1,
+      label: "Grass wind fade start (m)",
+    },
+    grassWindDistanceEnd: {
+      value: 30,
+      min: 1,
+      max: 120,
+      step: 1,
+      label: "Grass wind fade end (m)",
+    },
+    grassDebugLod: {
+      value: false,
+      label: "Grass LOD debug",
     },
     accelerateForce: {
       value: 8.5,
@@ -67,12 +169,49 @@ const Experience = () => {
 
   const grass = useMemo(
     () => ({
-      bladeHeightMin: grassBladeHeight * 0.55,
-      bladeHeightMax: grassBladeHeight * 1.15,
+      bladeHeightMin: grassBladeHeight * 0.35,
+      bladeHeightMax: grassBladeHeight * 1.45,
       windSwayStrength: windStrength * 0.85,
+      windScale: 0.25,
+      windSpeed: windSpeed * 12,
+      windStrength: windStrength * 2.8,
+      windFacing: grassWindFacing,
+      windDistanceStart: grassWindDistanceStart,
+      windDistanceEnd: Math.max(grassWindDistanceStart + 1, grassWindDistanceEnd),
+      windDirX: 0.85,
+      windDirZ: 0.35,
       pushRadius: 1.4,
+      clumpSize: grassClumpSize,
+      clumpBlend: grassClumpBlend,
+      density: grassDensity,
+      straightness: grassStraightness,
+      heightVariation: grassHeightVariation,
+      bladeRandomnessX: grassBladeRandomness,
+      bladeRandomnessY: grassWidthRandomness,
+      bladeRandomnessZ: grassBendRandomness,
+      terrainAmp: grassTerrainAmp,
+      terrainFreq: 0.06,
+      terrainSeed: 42,
+      debugLod: grassDebugLod,
     }),
-    [grassBladeHeight, windStrength],
+    [
+      grassBladeHeight,
+      windStrength,
+      windSpeed,
+      grassClumpSize,
+      grassClumpBlend,
+      grassDensity,
+      grassStraightness,
+      grassHeightVariation,
+      grassBladeRandomness,
+      grassWidthRandomness,
+      grassBendRandomness,
+      grassTerrainAmp,
+      grassWindFacing,
+      grassWindDistanceStart,
+      grassWindDistanceEnd,
+      grassDebugLod,
+    ],
   );
 
   const focusRef = useRef(new Vector3());
@@ -86,6 +225,7 @@ const Experience = () => {
       timeStep={1 / 60}
       interpolate
     >
+      <Environment preset="park" environmentIntensity={0.45} />
       <ambientLight intensity={0.45} />
       <directionalLight position={[4, 8, 3]} intensity={1.1} />
       <InfiniteStylizedWorld

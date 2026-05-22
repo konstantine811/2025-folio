@@ -22,7 +22,7 @@ export function StylizedGrass({
   const groupRef = useRef<THREE.Group>(null);
   const { camera } = useThree();
   const { uniforms, syncUniforms } = useGrassUniforms(config);
-  const { lodBuffer, grassData } = useGrassCompute(uniforms, camera);
+  const { lodBuffers, grassData } = useGrassCompute(uniforms, camera);
 
   useEffect(() => {
     if (config) syncUniforms(config);
@@ -46,15 +46,18 @@ export function StylizedGrass({
     uniforms.compute.uCharacterWorldPos.value.copy(focusRef.current);
   });
 
-  if (!visible || !lodBuffer || !grassData) return null;
+  if (!visible || !grassData || lodBuffers.length === 0) return null;
 
   return (
     <group ref={groupRef}>
-      <GrassLOD
-        grassData={grassData}
-        lodBuffer={lodBuffer}
-        uniforms={uniforms}
-      />
+      {lodBuffers.map((lodBuffer) => (
+        <GrassLOD
+          key={`grass-lod-${lodBuffer.segments}-${lodBuffer.minDistance}`}
+          grassData={grassData}
+          lodBuffer={lodBuffer}
+          uniforms={uniforms}
+        />
+      ))}
     </group>
   );
 }

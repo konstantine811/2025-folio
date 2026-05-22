@@ -3,14 +3,21 @@ import InitKeyboardController from "@/components/common/game-controller/init-key
 import { Stats } from "@react-three/drei";
 import { Canvas, extend } from "@react-three/fiber";
 import { Suspense, useState } from "react";
-import { MeshBasicNodeMaterial, WebGPURenderer } from "three/webgpu";
+import {
+  MeshBasicNodeMaterial,
+  MeshStandardNodeMaterial,
+  WebGPURenderer,
+} from "three/webgpu";
 import { WebGPURendererParameters } from "three/src/renderers/webgpu/WebGPURenderer.js";
 import ThreeLoader from "../../common/three-loader";
 import { WebGpuPerfPanel, WebGpuPerfTracker } from "../../common/webgpu-perf";
 import Experience from "./experience/experience";
 import { isDev } from "@/utils/check-env";
 
-extend({ MeshBasicNodeMaterial });
+extend({
+  MeshBasicNodeMaterial,
+  MeshStandardNodeMaterial,
+});
 
 const Init = () => {
   const [gpuReady, setGpuReady] = useState(false);
