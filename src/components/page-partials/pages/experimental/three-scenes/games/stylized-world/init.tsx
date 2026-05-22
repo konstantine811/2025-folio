@@ -21,7 +21,7 @@ const Init = () => {
       <div className="relative min-h-0 flex-1">
         {isDev && <Stats />}
         {isDev && <WebGpuPerfPanel top={56} />}
-        <ThreeLoader />
+        {!isDev && <ThreeLoader />}
         <Canvas
           className="!absolute inset-0 touch-none"
           style={{ width: "100%", height: "100%" }}

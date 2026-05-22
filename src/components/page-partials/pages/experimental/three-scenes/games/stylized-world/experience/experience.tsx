@@ -18,6 +18,7 @@ const Experience = () => {
     accelerateForce,
     brakeForce,
     steerAngleDeg,
+    isDebug,
   } = useControls("Stylized World", {
     windStrength: { value: 0.12, min: 0, max: 0.5, step: 0.01 },
     windSpeed: { value: 0.05, min: 0, max: 0.2, step: 0.005 },
@@ -46,6 +47,7 @@ const Experience = () => {
       step: 0.5,
       label: "Steer angle (deg)",
     },
+    isDebug: { value: false, label: "Debug" },
   });
 
   const bush = useMemo(
@@ -58,7 +60,12 @@ const Experience = () => {
   const visualRadius = physicsRadius + 3;
 
   return (
-    <Physics gravity={[0, -9.81, 0]} timeStep={1 / 60} interpolate>
+    <Physics
+      debug={isDebug}
+      gravity={[0, -9.81, 0]}
+      timeStep={1 / 60}
+      interpolate
+    >
       <ambientLight intensity={0.45} />
       <directionalLight position={[4, 8, 3]} intensity={1.1} />
       <InfiniteStylizedWorld
