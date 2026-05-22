@@ -14,12 +14,19 @@ import { CharacterAnimations } from "../../../character-controller/models/charac
 
 type SciFiCharacterBaseProps = JSX.IntrinsicElements["group"];
 
-type SciFiCharacterScrollProps = SciFiCharacterBaseProps & {
+type SciFiCharacterSharedProps = {
+  /** Visual Y rotation in radians; does not affect scroll walk offset. */
+  modelRotationY?: number;
+};
+
+type SciFiCharacterScrollProps = SciFiCharacterBaseProps &
+  SciFiCharacterSharedProps & {
   driver: "scroll";
   scrollProgressRef: RefObject<number>;
 };
 
-type SciFiCharacterControllerProps = SciFiCharacterBaseProps & {
+type SciFiCharacterControllerProps = SciFiCharacterBaseProps &
+  SciFiCharacterSharedProps & {
   driver: "controller";
 
   animationType: CharacterAnimations;
@@ -34,7 +41,7 @@ type SciFiCharacterProps =
   | SciFiCharacterControllerProps;
 
 export function SciFiCharacter(props: SciFiCharacterProps) {
-  const { driver, ...groupProps } = props;
+  const { driver, modelRotationY = 0, ...groupProps } = props;
   const { scene } = useThree();
   const fallbackScrollProgressRef = useRef(0);
   const group = useRef<Group>(null);
@@ -137,6 +144,7 @@ export function SciFiCharacter(props: SciFiCharacterProps) {
         modelRootRef={modelRoot}
         nodes={nodes}
         materials={materials}
+        modelRotationY={modelRotationY}
       />
 
       {createPortal(cableProxies, scene)}

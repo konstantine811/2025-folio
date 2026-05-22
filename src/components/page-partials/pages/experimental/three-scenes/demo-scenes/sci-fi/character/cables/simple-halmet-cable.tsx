@@ -28,8 +28,8 @@ type SimpleRapierHelmetCableProps = {
 };
 
 type JointProps = {
-  bodyA: RefObject<RapierRigidBody>;
-  bodyB: RefObject<RapierRigidBody>;
+  bodyA: RefObject<RapierRigidBody | null>;
+  bodyB: RefObject<RapierRigidBody | null>;
   anchorA: Vec3;
   anchorB: Vec3;
 };
@@ -45,7 +45,11 @@ const cableRadius = 0.035;
 const tmpAnchorWorld = new Vector3();
 
 function CableJoint({ bodyA, bodyB, anchorA, anchorB }: JointProps) {
-  useSphericalJoint(bodyA, bodyB, [anchorA, anchorB]);
+  useSphericalJoint(
+    bodyA as RefObject<RapierRigidBody>,
+    bodyB as RefObject<RapierRigidBody>,
+    [anchorA, anchorB],
+  );
 
   return null;
 }
@@ -72,7 +76,7 @@ export default function SimpleRapierHelmetCable({
   /**
    * Dynamic bodies — шматочки кабелю.
    */
-  const segmentBodyRefs = useRef<RefObject<RapierRigidBody>[]>(
+  const segmentBodyRefs = useRef(
     Array.from({ length: segmentCount }, () => createRef<RapierRigidBody>()),
   );
 

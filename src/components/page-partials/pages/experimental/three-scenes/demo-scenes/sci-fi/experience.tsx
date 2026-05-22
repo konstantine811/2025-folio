@@ -87,6 +87,7 @@ const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
         <SciFiToggleCharacter
           mode={characterMode}
           scrollProgressRef={scrollProgressRef}
+          scrollModelRotationY={Math.PI}
           animationType={
             {
               idle: SciFiCharacterAnimations.idle,

@@ -14,19 +14,27 @@ type SciFiToggleCharacterProps = {
   scrollProgressRef: RefObject<number>;
 
   animationType: CharacterAnimations;
+
+  /** Visual facing offset for scroll mode (radians). */
+  scrollModelRotationY?: number;
+  /** Visual facing offset for controller mode (radians). */
+  controllerModelRotationY?: number;
 };
 
 export function SciFiToggleCharacter({
   mode,
   scrollProgressRef,
   animationType,
+  scrollModelRotationY = 0,
+  controllerModelRotationY = 0,
 }: SciFiToggleCharacterProps) {
   if (mode === "scroll") {
     return (
-      <group position={[0, 0, 13.821]} scale={1}>
+      <group position={[0, 0.1, 13.821]} scale={1}>
         <SciFiCharacter
           driver="scroll"
           scrollProgressRef={scrollProgressRef}
+          modelRotationY={scrollModelRotationY}
           position={[0, 0, 0]}
           scale={1}
         />
@@ -44,6 +52,7 @@ export function SciFiToggleCharacter({
         <group ref={modelRef} position={[0, -1.2, 0]} scale={1}>
           <SciFiCharacter
             driver="controller"
+            modelRotationY={controllerModelRotationY}
             animationType={animationType}
             isMoving={controllerState.isMoving}
             isSprinting={controllerState.isSprinting}
