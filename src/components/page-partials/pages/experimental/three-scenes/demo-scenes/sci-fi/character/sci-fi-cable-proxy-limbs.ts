@@ -24,72 +24,72 @@ export const sciFiCableProxyLimbs: SciFiCableProxyLimbConfig[] = [
   {
     id: "head",
     boneName: "mixamorigHead",
-    halfHeight: 0.08,
+    halfHeight: 0.06,
     radius: 0.14,
     localPosition: [0, 10, 1],
   },
   {
     id: "torso",
     boneName: "mixamorigSpine2",
-    halfHeight: 0.14,
-    radius: 0.25,
-    localPosition: [0, -10, 0],
+    halfHeight: 0.24,
+    radius: 0.21,
+    localPosition: [0, -16, 0],
   },
   {
     id: "left-upper-arm",
     boneName: "mixamorigLeftArm",
-    halfHeight: 0.11,
-    radius: 0.065,
+    halfHeight: 0.13,
+    radius: 0.09,
     localPosition: [0, 12, 0],
   },
   {
     id: "left-forearm",
     boneName: "mixamorigLeftForeArm",
-    halfHeight: 0.1,
-    radius: 0.035,
-    localPosition: [0, 11, 0],
+    halfHeight: 0.2,
+    radius: 0.05,
+    localPosition: [0, 16, 0],
   },
   {
     id: "right-upper-arm",
     boneName: "mixamorigRightArm",
-    halfHeight: 0.11,
-    radius: 0.065,
+    halfHeight: 0.13,
+    radius: 0.09,
     localPosition: [0, 12, 0],
   },
   {
     id: "right-forearm",
     boneName: "mixamorigRightForeArm",
-    halfHeight: 0.1,
-    radius: 0.035,
-    localPosition: [0, 11, 0],
+    halfHeight: 0.2,
+    radius: 0.05,
+    localPosition: [0, 16, 0],
   },
   {
     id: "left-thigh",
     boneName: "mixamorigLeftUpLeg",
-    halfHeight: 0.16,
-    radius: 0.085,
-    localPosition: [0, 22, 0],
+    halfHeight: 0.24,
+    radius: 0.093,
+    localPosition: [0, 25, 0],
   },
   {
     id: "left-shin",
     boneName: "mixamorigLeftLeg",
-    halfHeight: 0.14,
+    halfHeight: 0.2,
     radius: 0.08,
-    localPosition: [0, 25, 0],
+    localPosition: [0, 27, 0],
   },
   {
     id: "right-thigh",
     boneName: "mixamorigRightUpLeg",
-    halfHeight: 0.36,
-    radius: 0.085,
-    localPosition: [0, 22, 0],
+    halfHeight: 0.24,
+    radius: 0.093,
+    localPosition: [0, 25, 0],
   },
   {
     id: "right-shin",
     boneName: "mixamorigRightLeg",
-    halfHeight: 0.14,
+    halfHeight: 0.2,
     radius: 0.08,
-    localPosition: [0, 25, 0],
+    localPosition: [0, 27, 0],
   },
 ];
 
@@ -155,7 +155,9 @@ export function pushPointOutOfCapsule(
   pointRadius = CABLE_PROXY_POINT_RADIUS,
 ) {
   tmpAxis.set(0, 1, 0).applyQuaternion(capsule.quaternion);
-  tmpCapsuleA.copy(capsule.center).addScaledVector(tmpAxis, -capsule.halfHeight);
+  tmpCapsuleA
+    .copy(capsule.center)
+    .addScaledVector(tmpAxis, -capsule.halfHeight);
   tmpCapsuleB.copy(capsule.center).addScaledVector(tmpAxis, capsule.halfHeight);
 
   tmpSegment.subVectors(tmpCapsuleB, tmpCapsuleA);
@@ -166,7 +168,10 @@ export function pushPointOutOfCapsule(
   } else {
     const t = Math.max(
       0,
-      Math.min(1, tmpPush.copy(point).sub(tmpCapsuleA).dot(tmpSegment) / abLenSq),
+      Math.min(
+        1,
+        tmpPush.copy(point).sub(tmpCapsuleA).dot(tmpSegment) / abLenSq,
+      ),
     );
     tmpClosest.copy(tmpCapsuleA).addScaledVector(tmpSegment, t);
   }

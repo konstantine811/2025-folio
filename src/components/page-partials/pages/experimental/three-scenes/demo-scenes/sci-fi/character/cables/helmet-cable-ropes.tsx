@@ -45,14 +45,14 @@ type FloorScatterConfig = {
   wavePhase: number;
 };
 
-const cableRadius = 0.01;
+const cableRadius = 0.015;
 const floorY = 0.057;
 const gravity = new Vector3(0, -9.8, 0);
 const segmentCount = 94;
-const segmentLength = 0.1;
+const segmentLength = 0.13;
 const constraintIterations = 5;
-const damping = 0.93;
-const floorFriction = 0.68;
+const damping = 0.91;
+const floorFriction = 0.98;
 const floorContactEpsilon = 0.03;
 const pinnedArcPhysicsPointCount = 10;
 const pinnedArcRenderPointCount = 30;

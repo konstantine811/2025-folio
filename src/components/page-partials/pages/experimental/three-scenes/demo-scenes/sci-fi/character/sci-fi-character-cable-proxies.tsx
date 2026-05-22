@@ -19,6 +19,18 @@ type ResolvedLimb = {
   rotationOffset: Euler | null;
 };
 
+function findBone(root: Object3D, boneName: string): Object3D | null {
+  let found: Object3D | null = null;
+
+  root.traverse((child) => {
+    if (child.name === boneName) {
+      found = child;
+    }
+  });
+
+  return found;
+}
+
 type SciFiCharacterCableProxiesProps = {
   skeletonRoot?: Object3D;
   enabled?: boolean;
@@ -39,33 +51,27 @@ export function SciFiCharacterCableProxies({
   const resolvedLimbs = useMemo((): ResolvedLimb[] => {
     if (!skeletonRoot) return [];
 
-    return sciFiCableProxyLimbs
-      .map((config) => {
-        let bone: Object3D | null = null;
+    return sciFiCableProxyLimbs.flatMap((config): ResolvedLimb[] => {
+      const bone = findBone(skeletonRoot, config.boneName);
 
-        skeletonRoot.traverse((child) => {
-          if (child.name === config.boneName) {
-            bone = child;
-          }
-        });
+      if (!bone) {
+        console.warn(
+          `[SciFiCharacterCableProxies] Bone "${config.boneName}" not found`,
+        );
+        return [];
+      }
 
-        if (!bone) {
-          console.warn(
-            `[SciFiCharacterCableProxies] Bone "${config.boneName}" not found`,
-          );
-          return null;
-        }
-
-        return {
+      return [
+        {
           config,
           bone,
           localPosition: new Vector3(...(config.localPosition ?? [0, 0, 0])),
           rotationOffset: config.localRotation
             ? new Euler(...config.localRotation)
             : null,
-        };
-      })
-      .filter((entry): entry is ResolvedLimb => entry !== null);
+        },
+      ];
+    });
   }, [skeletonRoot]);
 
   useBeforePhysicsStep(() => {
@@ -126,7 +132,7 @@ export function SciFiCharacterCableProxies({
           {debugVisual && (
             <mesh raycast={() => null}>
               <capsuleGeometry
-                args={[config.radius, config.halfHeight * 2, 8, 16]}
+                args={[config.radius, config.halfHeight * 2, 2, 4]}
               />
               <meshBasicMaterial
                 color={DEBUG_PROXY_COLOR}
