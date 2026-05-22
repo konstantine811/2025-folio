@@ -27,8 +27,9 @@ type StylizedCarControllerProps = {
 const BODY = { width: 1.2, height: 0.45, length: 2 };
 const WHEEL_RADIUS = 0.22;
 const WHEEL_WIDTH = 0.14;
-const WHEEL_Y = -BODY.height / 2 + 0.02;
-const MAX_WHEEL_HUB_Y = -BODY.height / 2 + WHEEL_RADIUS - 0.055;
+const WHEEL_Y = -BODY.height / 2;
+const MAX_SUSPENSION_TRAVEL = 0.12;
+const SUSPENSION_REST_LENGTH = BODY.height / 2;
 const FRONT_WHEEL_X = 0.58;
 const REAR_WHEEL_X = 0.52;
 const CHASSIS_MASS = 10;
@@ -40,12 +41,12 @@ const DEFAULT_BRAKE_FORCE = 0.05;
 const REAR_BRAKE_RATIO = 0.88;
 const FRONT_BRAKE_RATIO = 0.38;
 const DEFAULT_STEER_ANGLE = Math.PI / 15;
-const CHASSIS_COLLIDER_HALF_HEIGHT = 0.08;
-const CHASSIS_COLLIDER_Y = 0.1;
-const CHASSIS_COLLIDER_LENGTH_SCALE = 0.82;
+const CHASSIS_COLLIDER_HALF_HEIGHT = BODY.height / 2 - 0.04;
+const CHASSIS_COLLIDER_Y = 0;
+const CHASSIS_COLLIDER_LENGTH_SCALE = 1;
 const PIVOT_HEIGHT = 0.55;
 const CAMERA_SMOOTHING = 10;
-const DEFAULT_START_Y = 0.55;
+const DEFAULT_START_Y = WHEEL_RADIUS + SUSPENSION_REST_LENGTH + 0.05;
 const BRAKE_PITCH_SPEED = 0.5;
 const BRAKE_PITCH_FROM_SPEED = 0.035;
 const MAX_BRAKE_PITCH = 0.06;
@@ -57,16 +58,15 @@ const BRAKE_PITCH_RECOVERY = 14;
 
 const WHEEL_INFO_BASE: Omit<WheelInfo, "position"> = {
   axleCs: new Vector3(-1, 0, 0),
-  suspensionRestLength: 0.2,
+  suspensionRestLength: SUSPENSION_REST_LENGTH,
   suspensionStiffness: 26,
   suspensionCompression: 4.4,
   suspensionRelaxation: 6,
   maxSuspensionForce: 6000,
-  maxSuspensionTravel: 0.12,
+  maxSuspensionTravel: MAX_SUSPENSION_TRAVEL,
   sideFrictionStiffness: 3,
   frictionSlip: 2.2,
   radius: WHEEL_RADIUS,
-  maxHubY: MAX_WHEEL_HUB_Y,
 };
 
 const WHEELS: (WheelInfo & { axle: "front" | "rear" })[] = [

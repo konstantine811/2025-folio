@@ -2,10 +2,11 @@ import type { DynamicRayCastVehicleController } from "@dimforge/rapier3d-compat"
 import {
   type RapierRigidBody,
   useAfterPhysicsStep,
+  useBeforePhysicsStep,
   useRapier,
 } from "@react-three/rapier";
 import { type RefObject, useEffect, useRef } from "react";
-import { Quaternion, Vector3, MathUtils, type Object3D } from "three";
+import { Quaternion, Vector3, type Object3D } from "three";
 
 const up = new Vector3(0, 1, 0);
 const wheelSteeringQuat = new Quaternion();
@@ -23,8 +24,6 @@ export type WheelInfo = {
   sideFrictionStiffness: number;
   position: Vector3;
   radius: number;
-  /** Max local Y for wheel hub — stops mesh clipping into chassis. */
-  maxHubY?: number;
 };
 
 type UseVehicleControllerOptions = {
@@ -39,7 +38,6 @@ export function useVehicleController(
 ) {
   const { world } = useRapier();
   const vehicleController = useRef<DynamicRayCastVehicleController | null>(null);
-  const hubYRefs = useRef<number[]>([]);
 
   useEffect(() => {
     const chassis = chassisRef.current;
@@ -47,8 +45,7 @@ export function useVehicleController(
 
     const vehicle = world.createVehicleController(chassis);
     vehicle.indexUpAxis = 1;
-    (vehicle as { setIndexForwardAxis: number }).setIndexForwardAxis =
-      indexForwardAxis;
+    vehicle.setIndexForwardAxis = indexForwardAxis;
 
     const suspensionDirection = new Vector3(0, -1, 0);
 
@@ -70,7 +67,6 @@ export function useVehicleController(
     });
 
     vehicleController.current = vehicle;
-    hubYRefs.current = [];
 
     return () => {
       vehicleController.current = null;
@@ -78,17 +74,21 @@ export function useVehicleController(
     };
   }, [chassisRef, indexForwardAxis, wheelsInfo, world]);
 
-  useAfterPhysicsStep((rapierWorld) => {
+  useBeforePhysicsStep(() => {
+    const controller = vehicleController.current;
+    if (!controller) return;
+
+    controller.updateVehicle(1 / 60);
+  });
+
+  useAfterPhysicsStep(() => {
     const controller = vehicleController.current;
     const wheels = wheelsRef.current;
     if (!controller || !wheels) return;
 
-    controller.updateVehicle(rapierWorld.timestep);
-
     wheels.forEach((wheel, index) => {
       if (!wheel) return;
 
-      const wheelInfo = wheelsInfo[index];
       const wheelAxleCs = controller.wheelAxleCs(index);
       if (!wheelAxleCs) return;
 
@@ -97,29 +97,14 @@ export function useVehicleController(
       const steering = controller.wheelSteering(index) ?? 0;
       const rotationRad = controller.wheelRotation(index) ?? 0;
 
-      // Suspension length is ray-to-ground; hub sits one radius above contact.
-      let targetHubY = connection - suspension + wheelInfo.radius;
-      if (wheelInfo.maxHubY !== undefined) {
-        targetHubY = Math.min(targetHubY, wheelInfo.maxHubY);
-      }
-
-      const minHubY =
-        connection - wheelInfo.suspensionRestLength + wheelInfo.radius;
-      targetHubY = Math.max(targetHubY, minHubY);
-
-      const previousHubY = hubYRefs.current[index] ?? targetHubY;
-      const isRecovering = targetHubY > previousHubY;
-      const smoothFactor = isRecovering ? 0.62 : 0.38;
-      const hubY = MathUtils.lerp(previousHubY, targetHubY, smoothFactor);
-      hubYRefs.current[index] = hubY;
-      wheel.position.y = hubY;
+      // Rapier suspension length = distance from chassis connection to wheel center.
+      wheel.position.y = connection - suspension;
 
       wheelSteeringQuat.setFromAxisAngle(up, steering);
       wheelRotationQuat.setFromAxisAngle(wheelAxleCs, rotationRad);
-      wheel.quaternion.multiplyQuaternions(
-        wheelSteeringQuat,
-        wheelRotationQuat,
-      );
+      wheel.quaternion
+        .copy(wheelSteeringQuat)
+        .multiply(wheelRotationQuat);
     });
   });
 
