@@ -6,6 +6,7 @@ import { useMemo, useRef, type MutableRefObject } from "react";
 import { MathUtils, Quaternion, Euler, Vector3, type Object3D } from "three";
 import {
   type WheelInfo,
+  isVehicleOnFlatGround,
   useVehicleController,
 } from "./use-vehicle-controller";
 
@@ -28,7 +29,7 @@ const BODY = { width: 1.2, height: 0.45, length: 2 };
 const WHEEL_RADIUS = 0.22;
 const WHEEL_WIDTH = 0.14;
 const WHEEL_Y = -BODY.height / 2;
-const MAX_SUSPENSION_TRAVEL = 0.12;
+const MAX_SUSPENSION_TRAVEL = 0.16;
 const SUSPENSION_REST_LENGTH = BODY.height / 2;
 const FRONT_WHEEL_X = 0.58;
 const REAR_WHEEL_X = 0.52;
@@ -50,7 +51,7 @@ const DEFAULT_START_Y = WHEEL_RADIUS + SUSPENSION_REST_LENGTH + 0.05;
 const BRAKE_PITCH_SPEED = 0.5;
 const BRAKE_PITCH_FROM_SPEED = 0.035;
 const MAX_BRAKE_PITCH = 0.06;
-const MAX_ABS_PITCH = 0.085;
+const MAX_ABS_PITCH = 0.2;
 const PITCH_RECOVERY_SMOOTHING = 10;
 const FLAT_PITCH_SPEED = 2.5;
 const FLAT_PITCH_RECOVERY = 10;
@@ -148,8 +149,10 @@ export function StylizedCarController({
 
   useBeforePhysicsStep(() => {
     const chassis = chassisRef.current;
+    const controller = vehicleController.current;
     if (!chassis) return;
 
+    const onFlatGround = controller ? isVehicleOnFlatGround(controller) : false;
     const { isBraking, isReversing, delta } = driveStateRef.current;
     const linvel = chassis.linvel();
     const speed = Math.hypot(linvel.x, linvel.z);
@@ -160,48 +163,54 @@ export function StylizedCarController({
     chassisEuler.setFromQuaternion(chassisQuat, "YXZ");
 
     const yaw = chassisEuler.y;
+    const roll = chassisEuler.z;
     let pitch = chassisEuler.x;
     let changed = false;
 
-    if (isBraking && speed > BRAKE_PITCH_SPEED) {
-      const maxNoseDown = -Math.min(
-        speed * BRAKE_PITCH_FROM_SPEED,
-        MAX_BRAKE_PITCH,
-      );
-      if (pitch < maxNoseDown) {
-        const pitchFactor = 1 - Math.exp(-PITCH_RECOVERY_SMOOTHING * delta);
-        pitch = MathUtils.lerp(pitch, maxNoseDown, pitchFactor);
+    if (onFlatGround) {
+      if (isBraking && speed > BRAKE_PITCH_SPEED) {
+        const maxNoseDown = -Math.min(
+          speed * BRAKE_PITCH_FROM_SPEED,
+          MAX_BRAKE_PITCH,
+        );
+        if (pitch < maxNoseDown) {
+          const pitchFactor = 1 - Math.exp(-PITCH_RECOVERY_SMOOTHING * delta);
+          pitch = MathUtils.lerp(pitch, maxNoseDown, pitchFactor);
+          changed = true;
+        }
+      } else if (isReversing && pitch > MAX_REVERSE_PITCH) {
+        const stabilize = 1 - Math.exp(-14 * delta);
+        pitch = MathUtils.lerp(pitch, MAX_REVERSE_PITCH, stabilize);
+        changed = true;
+      } else if (!isBraking && Math.abs(pitch) > 0.012) {
+        const recoverRate =
+          speed < FLAT_PITCH_SPEED ? FLAT_PITCH_RECOVERY : BRAKE_PITCH_RECOVERY;
+        const recover = 1 - Math.exp(-recoverRate * delta);
+        pitch = MathUtils.lerp(pitch, 0, recover);
         changed = true;
       }
-    } else if (isReversing && pitch > MAX_REVERSE_PITCH) {
-      const stabilize = 1 - Math.exp(-14 * delta);
-      pitch = MathUtils.lerp(pitch, MAX_REVERSE_PITCH, stabilize);
-      changed = true;
-    } else if (!isBraking && Math.abs(pitch) > 0.012) {
-      const recoverRate =
-        speed < FLAT_PITCH_SPEED ? FLAT_PITCH_RECOVERY : BRAKE_PITCH_RECOVERY;
-      const recover = 1 - Math.exp(-recoverRate * delta);
-      pitch = MathUtils.lerp(pitch, 0, recover);
-      changed = true;
-    }
 
-    if (Math.abs(pitch) > MAX_ABS_PITCH) {
-      pitch = MathUtils.clamp(pitch, -MAX_ABS_PITCH, MAX_ABS_PITCH);
-      changed = true;
-    }
+      if (Math.abs(pitch) > MAX_ABS_PITCH) {
+        pitch = MathUtils.clamp(pitch, -MAX_ABS_PITCH, MAX_ABS_PITCH);
+        changed = true;
+      }
 
-    if (changed) {
-      uprightEuler.set(pitch, yaw, 0);
-      uprightQuat.setFromEuler(uprightEuler);
-      chassis.setRotation(uprightQuat, true);
-    }
+      if (changed) {
+        uprightEuler.set(pitch, yaw, roll);
+        uprightQuat.setFromEuler(uprightEuler);
+        chassis.setRotation(uprightQuat, true);
+      }
 
-    if (isReversing && angvel.x > 0.05) {
-      chassis.setAngvel({ x: angvel.x * 0.55, y: angvel.y, z: 0 }, true);
-    } else if (!isBraking && Math.abs(angvel.x) > 0.08) {
-      chassis.setAngvel({ x: angvel.x * 0.72, y: angvel.y, z: 0 }, true);
-    } else {
-      chassis.setAngvel({ x: angvel.x, y: angvel.y, z: 0 }, true);
+      if (isReversing && angvel.x > 0.05) {
+        chassis.setAngvel({ x: angvel.x * 0.55, y: angvel.y, z: angvel.z }, true);
+      } else if (!isBraking && Math.abs(angvel.x) > 0.08) {
+        chassis.setAngvel({ x: angvel.x * 0.72, y: angvel.y, z: angvel.z }, true);
+      } else if (Math.abs(angvel.z) > 0.06) {
+        chassis.setAngvel(
+          { x: angvel.x, y: angvel.y, z: angvel.z * 0.82 },
+          true,
+        );
+      }
     }
   });
 
@@ -310,10 +319,10 @@ export function StylizedCarController({
       mass={CHASSIS_MASS}
       position={startPosition}
       rotation={[0, startRotationY, 0]}
-      enabledRotations={[true, true, false]}
+      enabledRotations={[true, true, true]}
       friction={0.8}
       linearDamping={0.08}
-      angularDamping={0.25}
+      angularDamping={0.35}
       canSleep={false}
     >
       <CuboidCollider

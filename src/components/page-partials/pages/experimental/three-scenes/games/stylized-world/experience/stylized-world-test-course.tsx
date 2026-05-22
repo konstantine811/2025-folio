@@ -61,6 +61,14 @@ type RampProps = {
   direction?: "up" | "down";
 };
 
+/** Top-surface Y at the high (+Z) end of an "up" ramp flush to y=0 at the low end. */
+function getRampExitSurfaceY(length: number, thickness: number, pitch: number) {
+  const halfY = thickness / 2;
+  const halfZ = length / 2;
+  const centerY = halfY * Math.cos(pitch) + halfZ * Math.sin(pitch);
+  return centerY + halfY * Math.cos(pitch) + halfZ * Math.sin(pitch);
+}
+
 /** Ramp flush to ground on the low side; car drives toward +Z. */
 function Ramp({
   positionZ,
@@ -139,8 +147,9 @@ function CylinderObstacle({
 export function StylizedWorldTestCourse() {
   const climbPitch = 0.11;
   const climbLength = 12;
-  const climbTopY =
-    climbLength * Math.sin(climbPitch) + 0.12;
+  const climbThickness = 0.24;
+  const climbExitY = getRampExitSurfaceY(climbLength, climbThickness, climbPitch);
+  const plateauHalfHeight = 0.1;
 
   return (
     <group name="stylized-world-test-course">
@@ -180,20 +189,20 @@ export function StylizedWorldTestCourse() {
         positionZ={36}
         width={8}
         length={climbLength}
-        thickness={0.24}
+        thickness={climbThickness}
         pitch={climbPitch}
         color="#7ec8a8"
       />
       <BoxObstacle
-        position={[0, climbTopY, 44]}
-        size={[8, 0.2, 4]}
+        position={[0, climbExitY - plateauHalfHeight, 44]}
+        size={[8, plateauHalfHeight * 2, 4]}
         color="#6fbf9b"
       />
       <Ramp
         positionZ={52}
         width={8}
         length={climbLength}
-        thickness={0.24}
+        thickness={climbThickness}
         pitch={climbPitch}
         direction="down"
         color="#6fbf9b"
