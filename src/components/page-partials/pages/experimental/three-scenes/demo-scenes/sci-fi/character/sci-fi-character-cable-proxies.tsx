@@ -1,5 +1,6 @@
 import {
   CapsuleCollider,
+  CuboidCollider,
   RapierRigidBody,
   RigidBody,
   useBeforePhysicsStep,
@@ -7,7 +8,10 @@ import {
 import { useMemo, useRef } from "react";
 import { Euler, Object3D, Quaternion, Vector3 } from "three";
 import { sciFiBodyProxyCollisionGroups } from "../sci-fi-collision-groups";
-import { sciFiCableProxyLimbs } from "./sci-fi-cable-proxy-limbs";
+import {
+  isCableProxyBoxConfig,
+  sciFiCableProxyLimbs,
+} from "./sci-fi-cable-proxy-limbs";
 
 const PROXY_COLLISION_GROUPS = sciFiBodyProxyCollisionGroups();
 const DEBUG_PROXY_COLOR = "#22c55e";
@@ -123,26 +127,53 @@ export function SciFiCharacterCableProxies({
           type="kinematicPosition"
           colliders={false}
         >
-          <CapsuleCollider
-            args={[config.halfHeight, config.radius]}
-            collisionGroups={PROXY_COLLISION_GROUPS}
-            friction={1.4}
-            restitution={0.02}
-          />
-          {debugVisual && (
-            <mesh raycast={() => null}>
-              <capsuleGeometry
-                args={[config.radius, config.halfHeight * 2, 2, 4]}
-              />
-              <meshBasicMaterial
-                color={DEBUG_PROXY_COLOR}
-                wireframe
-                transparent
-                opacity={0.85}
-                depthTest={false}
-              />
-            </mesh>
+          {isCableProxyBoxConfig(config) ? (
+            <CuboidCollider
+              args={config.halfExtents}
+              collisionGroups={PROXY_COLLISION_GROUPS}
+              friction={1.4}
+              restitution={0.02}
+            />
+          ) : (
+            <CapsuleCollider
+              args={[config.halfHeight, config.radius]}
+              collisionGroups={PROXY_COLLISION_GROUPS}
+              friction={1.4}
+              restitution={0.02}
+            />
           )}
+          {debugVisual &&
+            (isCableProxyBoxConfig(config) ? (
+              <mesh raycast={() => null}>
+                <boxGeometry
+                  args={[
+                    config.halfExtents[0] * 2,
+                    config.halfExtents[1] * 2,
+                    config.halfExtents[2] * 2,
+                  ]}
+                />
+                <meshBasicMaterial
+                  color={DEBUG_PROXY_COLOR}
+                  wireframe
+                  transparent
+                  opacity={0.85}
+                  depthTest={false}
+                />
+              </mesh>
+            ) : (
+              <mesh raycast={() => null}>
+                <capsuleGeometry
+                  args={[config.radius, config.halfHeight * 2, 2, 4]}
+                />
+                <meshBasicMaterial
+                  color={DEBUG_PROXY_COLOR}
+                  wireframe
+                  transparent
+                  opacity={0.85}
+                  depthTest={false}
+                />
+              </mesh>
+            ))}
         </RigidBody>
       ))}
     </>

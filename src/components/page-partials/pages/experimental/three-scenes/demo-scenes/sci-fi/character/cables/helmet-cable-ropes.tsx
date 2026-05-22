@@ -12,8 +12,11 @@ import {
   Vector3,
 } from "three";
 import {
+  pushPointOutOfBox,
   pushPointOutOfCapsule,
+  resolveCableProxyBoxes,
   resolveCableProxyCapsules,
+  ResolvedCableProxyBox,
   ResolvedCableProxyCapsule,
 } from "../sci-fi-cable-proxy-limbs";
 
@@ -356,6 +359,7 @@ export function HelmetCableRopes({
   const { scene } = useThree();
   const meshRefs = useRef<(Mesh | null)[]>([]);
   const bodyCapsules = useRef<ResolvedCableProxyCapsule[]>([]);
+  const bodyBoxes = useRef<ResolvedCableProxyBox[]>([]);
   const anchorWorldMatrices = useRef(
     connectorLocalPositions.map(() => new Matrix4()),
   );
@@ -421,8 +425,10 @@ export function HelmetCableRopes({
 
     if (bodyProxyCollisionsEnabled && skeletonRoot) {
       resolveCableProxyCapsules(skeletonRoot, undefined, bodyCapsules.current);
+      resolveCableProxyBoxes(skeletonRoot, undefined, bodyBoxes.current);
     } else {
       bodyCapsules.current.length = 0;
+      bodyBoxes.current.length = 0;
     }
 
     connectorLocalPositions.forEach((_, ropeIndex) => {
@@ -565,6 +571,10 @@ export function HelmetCableRopes({
 
           for (const capsule of bodyCapsules.current) {
             pushPointOutOfCapsule(point.current, capsule, cableRadius);
+          }
+
+          for (const box of bodyBoxes.current) {
+            pushPointOutOfBox(point.current, box, cableRadius);
           }
         }
       }
