@@ -57,7 +57,7 @@ export function createGrassMaterial(
   const material = new THREE.MeshStandardNodeMaterial();
   material.side = THREE.FrontSide;
   material.depthWrite = true;
-  material.roughness = 0.42;
+  material.roughness = 0.52;
   material.metalness = 0;
 
   const trueIndex = visibleIndicesBuffer.element(instanceIndex);
@@ -87,7 +87,9 @@ export function createGrassMaterial(
     const tnX = d3.x;
     const tnZ = d3.y;
     const pushVector = d3.zw;
-    const tnY = sqrt(max(float(0), float(1).sub(tnX.mul(tnX)).sub(tnZ.mul(tnZ))));
+    const tnY = sqrt(
+      max(float(0), float(1).sub(tnX.mul(tnX)).sub(tnZ.mul(tnZ))),
+    );
     const tn = vec3(tnX, tnY, tnZ);
 
     const worldBasePos = instancePos;
@@ -97,7 +99,11 @@ export function createGrassMaterial(
     const windDistanceFalloff = select(
       uniforms.uWindDistanceEnd.greaterThan(float(0)),
       oneMinus(
-        smoothstep(uniforms.uWindDistanceStart, uniforms.uWindDistanceEnd, dist),
+        smoothstep(
+          uniforms.uWindDistanceStart,
+          uniforms.uWindDistanceEnd,
+          dist,
+        ),
       ),
       float(1),
     );
@@ -151,7 +157,11 @@ export function createGrassMaterial(
     lpos.assign(
       vec3(
         lpos.x.add(pushVector.x.mul(pow(t, 2))),
-        lpos.y.mul(oneMinus(length(pushVector).mul(uniforms.uCharacterFlattenAmount).mul(t))),
+        lpos.y.mul(
+          oneMinus(
+            length(pushVector).mul(uniforms.uCharacterFlattenAmount).mul(t),
+          ),
+        ),
         lpos.z.add(pushVector.y.mul(pow(t, 2))),
       ),
     );
@@ -183,7 +193,7 @@ export function createGrassMaterial(
 
   material.normalNode = Fn(() => {
     // Billboard geometry rotates with camera; use terrain-up normal for stable lighting.
-    const upBias = float(0.72);
+    const upBias = float(0.1);
     const lightingNormal = normalize(
       mix(normalize(vLightNormal), vec3(0, 1, 0), upBias),
     );
@@ -202,7 +212,10 @@ export function createGrassMaterial(
       uniforms.uBladeSeedRange.y,
       vBladeSeed,
     );
-    let grassColor = gradient.mul(clumpFactor).mul(bladeFactor).mul(calculateAO());
+    let grassColor = gradient
+      .mul(clumpFactor)
+      .mul(bladeFactor)
+      .mul(calculateAO());
 
     const grayValue = dot(grassColor, vec3(0.333));
     const distFadeFactor = vDistFade.mul(float(0.18));
@@ -212,10 +225,10 @@ export function createGrassMaterial(
 
     if (debugColor) {
       const lodDebugColor = color(debugColor.r, debugColor.g, debugColor.b);
-      return mix(grassColor, lodDebugColor, uniforms.uDebugLod);
+      return mix(grassColor, lodDebugColor, uniforms.uDebugLod).mul(float(0.9));
     }
 
-    return grassColor;
+    return grassColor.mul(float(0.9));
   })();
 
   material.roughnessNode = Fn(() => {
@@ -227,7 +240,9 @@ export function createGrassMaterial(
     return clamp(mix(roughnessMax, roughnessMin, aoFactor), float(0), float(1));
   })();
 
-  material.envNode = Fn(() => pmremTexture(material.envMap).mul(calculateAO()))();
+  material.envNode = Fn(() =>
+    pmremTexture(material.envMap).mul(calculateAO()).mul(float(0.65)),
+  )();
 
   return material;
 }

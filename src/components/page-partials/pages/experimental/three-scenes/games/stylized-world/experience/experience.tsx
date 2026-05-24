@@ -66,7 +66,7 @@ const Experience = () => {
     },
     grassDensity: {
       value: 1,
-      min: 0.15,
+      min: 0.1,
       max: 1,
       step: 0.01,
       label: "Grass density",

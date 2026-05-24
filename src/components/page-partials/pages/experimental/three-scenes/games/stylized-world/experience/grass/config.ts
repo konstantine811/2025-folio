@@ -4,8 +4,8 @@ import * as THREE from "three";
 /** Grass patch covers this square (meters), centered on snapped origin. */
 export const GRASS_AREA_SIZE = 128;
 export const BLADES_PER_AXIS = 192;
-/** Sub-blades spawned inside each coarse grid cell (10x density at slider = 1). */
-export const BLADES_PER_CELL = 10;
+/** Sub-blades spawned inside each coarse grid cell (20 at density slider = 1). */
+export const BLADES_PER_CELL = 20;
 export const GRASS_BLADE_COUNT =
   BLADES_PER_AXIS * BLADES_PER_AXIS * BLADES_PER_CELL;
 /** Blade-grid steps per streaming snap cell (False Earth uses 1; 8 ≈ 5.3 m steps). */

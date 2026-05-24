@@ -34,7 +34,7 @@ export function GrassLOD({ grassData, lodBuffer, uniforms }: GrassLODProps) {
 
     if (envMap) {
       material.envMap = envMap;
-      material.envMapIntensity = 0.45;
+      material.envMapIntensity = 0.08;
     }
 
     const grassMesh = new THREE.Mesh(bladeGeometry, material);
