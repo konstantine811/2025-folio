@@ -12,6 +12,7 @@ import { MathUtils, Quaternion, Euler, Vector3, type Object3D } from "three";
 import {
   type WheelInfo,
   isVehicleOnFlatGround,
+  isVehicleTouchingGround,
   useVehicleController,
 } from "./use-vehicle-controller";
 import { useWheelContactHistory } from "./use-wheel-contact-history";
@@ -19,6 +20,7 @@ import { WheelContactHistoryDebugRack } from "./wheel-contact-history-debug";
 
 type StylizedCarControllerProps = {
   focusRef: MutableRefObject<Vector3>;
+  grassInteractionRef?: MutableRefObject<Vector3>;
   startPosition?: [number, number, number];
   startRotationY?: number;
   accelerateForce?: number;
@@ -34,6 +36,8 @@ type StylizedCarControllerProps = {
  * Chassis length along Z, front at -Z. startRotationY = PI faces hood toward +Z.
  */
 const BODY = { width: 1.2, height: 0.45, length: 2 };
+export const STYLIZED_CAR_GRASS_PUSH_RADIUS =
+  Math.hypot(BODY.width, BODY.length) * 0.5 + 0.35;
 const WHEEL_RADIUS = 0.22;
 const WHEEL_WIDTH = 0.14;
 const WHEEL_Y = -BODY.height / 2;
@@ -111,6 +115,7 @@ const WHEELS: (WheelInfo & { axle: "front" | "rear" })[] = [
 
 export function StylizedCarController({
   focusRef,
+  grassInteractionRef,
   startPosition = [0, DEFAULT_START_Y, 0],
   startRotationY = Math.PI,
   accelerateForce = DEFAULT_ACCELERATE_FORCE,
@@ -420,6 +425,14 @@ export function StylizedCarController({
       chassisTranslation.z,
     );
     focusRef.current.copy(chassisPosition);
+
+    if (grassInteractionRef) {
+      if (isVehicleTouchingGround(controller)) {
+        grassInteractionRef.current.copy(chassisPosition);
+      } else {
+        grassInteractionRef.current.set(9999, 0, 9999);
+      }
+    }
 
     pivotPosition.set(chassisPosition.x, PIVOT_HEIGHT, chassisPosition.z);
     pivot.position.lerp(pivotPosition, 1 - Math.exp(-CAMERA_SMOOTHING * delta));

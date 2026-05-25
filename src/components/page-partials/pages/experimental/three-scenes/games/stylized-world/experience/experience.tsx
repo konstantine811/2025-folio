@@ -4,7 +4,10 @@ import { useControls } from "leva";
 import { useMemo, useRef } from "react";
 import { Vector3 } from "three";
 import { InfiniteStylizedWorld } from "./infinite-stylized-world";
-import { StylizedCarController } from "./stylized-car-controller";
+import {
+  STYLIZED_CAR_GRASS_PUSH_RADIUS,
+  StylizedCarController,
+} from "./stylized-car-controller";
 import { StylizedWorldGround } from "./stylized-world-ground";
 import { StylizedWorldTestCourse } from "./stylized-world-test-course";
 
@@ -185,7 +188,7 @@ const Experience = () => {
       windDistanceEnd: Math.max(grassWindDistanceStart + 1, grassWindDistanceEnd),
       windDirX: 0.85,
       windDirZ: 0.35,
-      pushRadius: 1.4,
+      pushRadius: STYLIZED_CAR_GRASS_PUSH_RADIUS,
       clumpSize: grassClumpSize,
       clumpBlend: grassClumpBlend,
       density: grassDensity,
@@ -220,6 +223,7 @@ const Experience = () => {
   );
 
   const focusRef = useRef(new Vector3());
+  const grassInteractionRef = useRef(new Vector3(9999, 0, 9999));
   const physicsRadius = viewRadius + 4;
   const visualRadius = physicsRadius + 3;
 
@@ -242,6 +246,7 @@ const Experience = () => {
         showGrass={showGrass}
         showGridDebug={showGridDebug}
         focusRef={focusRef}
+        grassInteractionRef={grassInteractionRef}
       />
       <StylizedWorldGround
         focusRef={focusRef}
@@ -255,6 +260,7 @@ const Experience = () => {
         brakeForce={brakeForce}
         steerAngle={(steerAngleDeg * Math.PI) / 180}
         showWheelTrackDebug={showWheelTrackDebug}
+        grassInteractionRef={grassInteractionRef}
       />
     </Physics>
   );

@@ -10,12 +10,14 @@ import { useGrassUniforms } from "./use-grass-uniforms";
 
 type StylizedGrassProps = {
   focusRef: MutableRefObject<THREE.Vector3>;
+  interactionRef?: MutableRefObject<THREE.Vector3>;
   visible?: boolean;
   config?: GrassRuntimeConfig;
 };
 
 export function StylizedGrass({
   focusRef,
+  interactionRef,
   visible = true,
   config,
 }: StylizedGrassProps) {
@@ -39,7 +41,9 @@ export function StylizedGrass({
   });
 
   useFrame(() => {
-    uniforms.compute.uCharacterWorldPos.value.copy(focusRef.current);
+    uniforms.compute.uCharacterWorldPos.value.copy(
+      interactionRef?.current ?? focusRef.current,
+    );
   });
 
   if (!visible || !grassData || lodBuffers.length === 0) return null;

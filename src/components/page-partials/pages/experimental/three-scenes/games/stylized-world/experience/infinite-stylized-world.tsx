@@ -34,6 +34,7 @@ type InfiniteStylizedWorldProps = {
   streamMargin?: number;
   lookAheadTiles?: number;
   focusRef?: MutableRefObject<THREE.Vector3>;
+  grassInteractionRef?: MutableRefObject<THREE.Vector3>;
 };
 
 const MAX_INSTANCES_PER_MESH = 1024;
@@ -259,6 +260,7 @@ export function InfiniteStylizedWorld({
   streamMargin = VISUAL_STREAM_RECENTER_MARGIN,
   lookAheadTiles = 2,
   focusRef,
+  grassInteractionRef,
 }: InfiniteStylizedWorldProps) {
   const { camera, controls } = useThree();
   const worldFocusRef = useRef(new THREE.Vector3());
@@ -469,6 +471,7 @@ export function InfiniteStylizedWorld({
         {showGrass && focusRef && (
           <StylizedGrass
             focusRef={focusRef}
+            interactionRef={grassInteractionRef}
             visible={showGrass}
             config={grassRuntime}
           />

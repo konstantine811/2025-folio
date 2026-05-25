@@ -44,6 +44,18 @@ export function isVehicleOnFlatGround(
   return wheelCount > 0;
 }
 
+export function isVehicleTouchingGround(
+  controller: DynamicRayCastVehicleController,
+): boolean {
+  const wheelCount = controller.numWheels();
+
+  for (let index = 0; index < wheelCount; index += 1) {
+    if (controller.wheelIsInContact(index)) return true;
+  }
+
+  return false;
+}
+
 function isWheelOnFlatGround(
   controller: DynamicRayCastVehicleController,
   index: number,
