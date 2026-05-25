@@ -1,16 +1,25 @@
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
+import { useControls } from "leva";
 import { useMemo, useRef } from "react";
 import {
   CatmullRomCurve3,
+  Color,
   Euler,
+  InstancedMesh,
   Matrix4,
   Mesh,
   MeshStandardMaterial,
   Object3D,
   Quaternion,
+  SphereGeometry,
   TubeGeometry,
   Vector3,
 } from "three";
+import {
+  cableNeonOrbDefaults,
+  cableNeonOrbInstanceCount,
+  cableNeonOrbMaxPerCable,
+} from "./cable-neon-orbs.config";
 import {
   pushPointOutOfBox,
   pushPointOutOfCapsule,
@@ -158,8 +167,21 @@ const tmpArcPoint = new Vector3();
 const tmpQuat = new Quaternion();
 const tmpPlaneQuat = new Quaternion();
 const tmpScale = new Vector3();
+const tmpOrbPosition = new Vector3();
+const tmpOrbMatrix = new Matrix4();
+const tmpOrbQuaternion = new Quaternion();
 
 const smoothStep = (value: number) => value * value * (3 - 2 * value);
+
+const getOrbVisibility = (
+  curveT: number,
+  spawnFade: number,
+  absorbFade: number,
+) => {
+  const spawn = smoothStep(Math.min((1 - curveT) / spawnFade, 1));
+  const absorb = smoothStep(Math.min(curveT / absorbFade, 1));
+  return spawn * absorb;
+};
 
 const getFloorScatterOffset = (ropeIndex: number, floorDistance: number) => {
   const config = floorScatterConfigs[ropeIndex % floorScatterConfigs.length];
@@ -356,8 +378,72 @@ export function HelmetCableRopes({
   helmetRotation,
   helmetScale,
 }: HelmetCableRopesProps) {
-  const { scene } = useThree();
+  const { scene, clock } = useThree();
   const meshRefs = useRef<(Mesh | null)[]>([]);
+  const orbMeshRef = useRef<InstancedMesh>(null);
+  const orbMaterialColor = useRef(new Color(cableNeonOrbDefaults.color));
+
+  const {
+    neonOrbsEnabled,
+    neonOrbsPerCable,
+    neonOrbSpeed,
+    neonOrbRadius,
+    neonOrbColor,
+    neonOrbEmissive,
+    neonOrbSpawnFade,
+    neonOrbAbsorbFade,
+  } = useControls("Cable neon orbs", {
+    neonOrbsEnabled: {
+      value: cableNeonOrbDefaults.enabled,
+      label: "Enabled",
+    },
+    neonOrbsPerCable: {
+      value: cableNeonOrbDefaults.orbsPerCable,
+      min: 1,
+      max: cableNeonOrbMaxPerCable,
+      step: 1,
+      label: "Orbs per cable",
+    },
+    neonOrbSpeed: {
+      value: cableNeonOrbDefaults.speed,
+      min: 0.03,
+      max: 0.5,
+      step: 0.01,
+      label: "Flow speed",
+    },
+    neonOrbRadius: {
+      value: cableNeonOrbDefaults.radius,
+      min: 0.01,
+      max: 0.05,
+      step: 0.001,
+      label: "Orb radius",
+    },
+    neonOrbColor: {
+      value: cableNeonOrbDefaults.color,
+      label: "Color",
+    },
+    neonOrbEmissive: {
+      value: cableNeonOrbDefaults.emissiveIntensity,
+      min: 1,
+      max: 12,
+      step: 0.1,
+      label: "Emissive",
+    },
+    neonOrbSpawnFade: {
+      value: cableNeonOrbDefaults.spawnFade,
+      min: 0.02,
+      max: 0.2,
+      step: 0.01,
+      label: "Floor spawn fade",
+    },
+    neonOrbAbsorbFade: {
+      value: cableNeonOrbDefaults.absorbFade,
+      min: 0.02,
+      max: 0.2,
+      step: 0.01,
+      label: "Helmet absorb fade",
+    },
+  });
   const bodyCapsules = useRef<ResolvedCableProxyCapsule[]>([]);
   const bodyBoxes = useRef<ResolvedCableProxyBox[]>([]);
   const anchorWorldMatrices = useRef(
@@ -400,6 +486,19 @@ export function HelmetCableRopes({
         color: "#101217",
         roughness: 0.85,
         metalness: 0.15,
+      }),
+    [],
+  );
+  const orbGeometry = useMemo(() => new SphereGeometry(1, 12, 12), []);
+  const orbMaterial = useMemo(
+    () =>
+      new MeshStandardMaterial({
+        color: cableNeonOrbDefaults.color,
+        emissive: cableNeonOrbDefaults.color,
+        emissiveIntensity: cableNeonOrbDefaults.emissiveIntensity,
+        toneMapped: false,
+        transparent: true,
+        opacity: 1,
       }),
     [],
   );
@@ -589,7 +688,57 @@ export function HelmetCableRopes({
 
       mesh.geometry.dispose();
       mesh.geometry = geometry;
+
+      const orbMesh = orbMeshRef.current;
+      if (!neonOrbsEnabled || !orbMesh) return;
+
+      orbMaterialColor.current.set(neonOrbColor);
+      orbMaterial.color.copy(orbMaterialColor.current);
+      orbMaterial.emissive.copy(orbMaterialColor.current);
+      orbMaterial.emissiveIntensity = neonOrbEmissive;
+
+      for (let orbIndex = 0; orbIndex < cableNeonOrbMaxPerCable; orbIndex += 1) {
+        const instanceIndex = ropeIndex * cableNeonOrbMaxPerCable + orbIndex;
+        const isActiveOrb = orbIndex < neonOrbsPerCable;
+
+        if (!isActiveOrb) {
+          tmpOrbMatrix.compose(
+            tmpOrbPosition.set(0, -100, 0),
+            tmpOrbQuaternion.identity(),
+            tmpScale.set(0, 0, 0),
+          );
+          orbMesh.setMatrixAt(instanceIndex, tmpOrbMatrix);
+          continue;
+        }
+
+        const phase =
+          orbIndex / neonOrbsPerCable + ropeIndex * 0.137;
+        const progress = (clock.elapsedTime * neonOrbSpeed + phase) % 1;
+        const curveT = 1 - progress;
+
+        curve.getPointAt(curveT, tmpOrbPosition);
+
+        const visibility = getOrbVisibility(
+          curveT,
+          neonOrbSpawnFade,
+          neonOrbAbsorbFade,
+        );
+        const scale = neonOrbRadius * visibility;
+
+        tmpOrbMatrix.compose(
+          tmpOrbPosition,
+          tmpOrbQuaternion.identity(),
+          tmpScale.set(scale, scale, scale),
+        );
+        orbMesh.setMatrixAt(instanceIndex, tmpOrbMatrix);
+      }
     });
+
+    const orbMesh = orbMeshRef.current;
+    if (orbMesh) {
+      orbMesh.instanceMatrix.needsUpdate = true;
+      orbMesh.visible = neonOrbsEnabled;
+    }
   });
 
   return createPortal(
@@ -607,6 +756,12 @@ export function HelmetCableRopes({
           material={material}
         />
       ))}
+      <instancedMesh
+        ref={orbMeshRef}
+        args={[orbGeometry, orbMaterial, cableNeonOrbInstanceCount]}
+        frustumCulled={false}
+        visible={neonOrbsEnabled}
+      />
     </>,
     scene,
   );

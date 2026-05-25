@@ -1,6 +1,7 @@
 import { CameraControls, Stars } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
+import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { RefObject, useEffect, useRef } from "react";
 import { Vector3 } from "three";
 import { ShipContainer } from "./ship/ship-container";
@@ -123,6 +124,14 @@ const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
         fade
       />
       <Earth />
+      <EffectComposer multisampling={0}>
+        <Bloom
+          intensity={0.9}
+          luminanceThreshold={0.55}
+          luminanceSmoothing={0.2}
+          mipmapBlur
+        />
+      </EffectComposer>
     </>
   );
 };
