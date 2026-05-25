@@ -4,7 +4,7 @@ import {
   RigidBody,
 } from "@react-three/rapier";
 import { useFrame } from "@react-three/fiber";
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { MutableRefObject } from "react";
 import type { Vector3 } from "three";
 import {
@@ -20,6 +20,7 @@ type StylizedWorldGroundProps = {
   focusRef: MutableRefObject<Vector3>;
   tileSize?: number;
   radius?: number;
+  worldSeed?: number;
 };
 
 const GROUND_COLLIDER_Y = 0;
@@ -53,19 +54,64 @@ function syncPhysicsGroundPool({
   }
 }
 
+function PhysicsGroundTile({
+  tileX,
+  tileZ,
+  tileSize,
+  worldSeed,
+  bodyRef,
+}: {
+  tileX: number;
+  tileZ: number;
+  tileSize: number;
+  worldSeed: number;
+  bodyRef: (body: RapierRigidBody | null) => void;
+}) {
+  const center = useMemo(
+    () => getTileWorldCenter(tileX, tileZ, tileSize),
+    [tileX, tileZ, tileSize],
+  );
+  const heightfieldArgs = useMemo(
+    () =>
+      createGroundTerrainHeightfieldArgs(
+        tileX,
+        tileZ,
+        tileSize,
+        undefined,
+        worldSeed,
+      ),
+    [tileX, tileZ, tileSize, worldSeed],
+  );
+
+  return (
+    <RigidBody
+      ref={bodyRef}
+      type="fixed"
+      colliders={false}
+      position={[center.x, GROUND_COLLIDER_Y, center.z]}
+      friction={1.2}
+      userData={{ isGround: true, camExcludeCollision: true }}
+    >
+      <HeightfieldCollider
+        args={heightfieldArgs}
+        friction={1.2}
+        restitution={0}
+      />
+    </RigidBody>
+  );
+}
+
 export function StylizedWorldGround({
   focusRef,
   tileSize = 8,
   radius = 10,
+  worldSeed = 42,
 }: StylizedWorldGroundProps) {
   const streamCenterRef = useRef<TileCoord>({ x: 0, z: 0 });
   const bodyRefs = useRef<(RapierRigidBody | null)[]>([]);
   const hasSyncedRef = useRef(false);
+  const [streamEpoch, setStreamEpoch] = useState(0);
   const offsets = useMemo(() => getTilePoolOffsets(radius), [radius]);
-  const heightfieldArgs = useMemo(
-    () => createGroundTerrainHeightfieldArgs(tileSize),
-    [tileSize],
-  );
 
   const runSync = (streamCenter: TileCoord) => {
     syncPhysicsGroundPool({
@@ -81,7 +127,8 @@ export function StylizedWorldGround({
     const streamCenter = readPlayerTile(focusRef.current, tileSize);
     streamCenterRef.current = streamCenter;
     hasSyncedRef.current = false;
-  }, [focusRef, tileSize, radius, offsets]);
+    setStreamEpoch((epoch) => epoch + 1);
+  }, [focusRef, tileSize, radius, offsets, worldSeed]);
 
   useFrame(() => {
     const readyCount = bodyRefs.current.filter(Boolean).length;
@@ -98,32 +145,27 @@ export function StylizedWorldGround({
     }
 
     streamCenterRef.current = playerTile;
+    setStreamEpoch((epoch) => epoch + 1);
     runSync(playerTile);
   });
 
   return (
     <>
       {offsets.map(({ dx, dz }, index) => {
-        const center = getTileWorldCenter(dx, dz, tileSize);
+        const tileX = streamCenterRef.current.x + dx;
+        const tileZ = streamCenterRef.current.z + dz;
 
         return (
-          <RigidBody
-            key={`${dx}_${dz}`}
-            ref={(body) => {
+          <PhysicsGroundTile
+            key={`${streamEpoch}_${dx}_${dz}`}
+            tileX={tileX}
+            tileZ={tileZ}
+            tileSize={tileSize}
+            worldSeed={worldSeed}
+            bodyRef={(body) => {
               bodyRefs.current[index] = body;
             }}
-            type="fixed"
-            colliders={false}
-            position={[center.x, GROUND_COLLIDER_Y, center.z]}
-            friction={1.2}
-            userData={{ isGround: true, camExcludeCollision: true }}
-          >
-            <HeightfieldCollider
-              args={heightfieldArgs}
-              friction={1.2}
-              restitution={0}
-            />
-          </RigidBody>
+          />
         );
       })}
     </>

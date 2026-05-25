@@ -2,6 +2,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
 import type { MutableRefObject } from "react";
 import * as THREE from "three";
+import { GROUND_TERRAIN_HEIGHT } from "../ground-terrain";
 import { GrassLOD } from "./grass-lod";
 import type { GrassRuntimeConfig } from "./config";
 import { useGrassCompute } from "./use-grass-compute";
@@ -29,7 +30,7 @@ export function StylizedGrass({
   useGridSnapping(focusRef, ({ snappedX, snappedZ, currentCellX, currentCellZ }) => {
     if (!groupRef.current) return;
 
-    groupRef.current.position.set(snappedX, 0, snappedZ);
+    groupRef.current.position.set(snappedX, GROUND_TERRAIN_HEIGHT, snappedZ);
     groupRef.current.updateMatrixWorld(true);
 
     const groupOffset = uniforms.compute.uGroupOffset.value;

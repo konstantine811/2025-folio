@@ -9,6 +9,7 @@ import {
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type MutableRefObject } from "react";
 import { MathUtils, Quaternion, Euler, Vector3, type Object3D } from "three";
+import { sampleGroundTerrainHeight } from "./ground-terrain";
 import {
   type WheelInfo,
   isVehicleOnFlatGround,
@@ -22,6 +23,7 @@ type StylizedCarControllerProps = {
   focusRef: MutableRefObject<Vector3>;
   grassInteractionRef?: MutableRefObject<Vector3>;
   startPosition?: [number, number, number];
+  worldSeed?: number;
   startRotationY?: number;
   accelerateForce?: number;
   brakeForce?: number;
@@ -68,7 +70,15 @@ const CHASSIS_COLLIDER_Y = 0;
 const CHASSIS_COLLIDER_LENGTH_SCALE = 1;
 const PIVOT_HEIGHT = 0.55;
 const CAMERA_SMOOTHING = 10;
-const DEFAULT_START_Y = WHEEL_RADIUS + SUSPENSION_REST_LENGTH + 0.05;
+const CHASSIS_SPAWN_CLEARANCE =
+  WHEEL_RADIUS + SUSPENSION_REST_LENGTH + 0.05;
+
+function chassisSpawnYAt(worldX: number, worldZ: number, worldSeed: number) {
+  return (
+    sampleGroundTerrainHeight({ worldX, worldZ, seed: worldSeed }) +
+    CHASSIS_SPAWN_CLEARANCE
+  );
+}
 const BRAKE_PITCH_SPEED = 0.5;
 const BRAKE_PITCH_FROM_SPEED = 0.035;
 const MAX_BRAKE_PITCH = 0.06;
@@ -116,7 +126,8 @@ const WHEELS: (WheelInfo & { axle: "front" | "rear" })[] = [
 export function StylizedCarController({
   focusRef,
   grassInteractionRef,
-  startPosition = [0, DEFAULT_START_Y, 0],
+  startPosition = [0, 0, 0],
+  worldSeed = 42,
   startRotationY = Math.PI,
   accelerateForce = DEFAULT_ACCELERATE_FORCE,
   brakeForce = DEFAULT_BRAKE_FORCE,
@@ -133,6 +144,12 @@ export function StylizedCarController({
   });
 
   const wheelsInfo = useMemo(() => WHEELS, []);
+  const startX = startPosition[0];
+  const startZ = startPosition[2];
+  const resolvedStartPosition = useMemo<[number, number, number]>(
+    () => [startX, chassisSpawnYAt(startX, startZ, worldSeed), startZ],
+    [startX, startZ, worldSeed],
+  );
   const { historiesRef } = useWheelContactHistory(wheelsInfo.length);
   const { vehicleController } = useVehicleController(
     chassisRef,
@@ -309,7 +326,11 @@ export function StylizedCarController({
       chassis.setTranslation(
         {
           x: chassisTranslation.x,
-          y: DEFAULT_START_Y,
+          y: chassisSpawnYAt(
+            chassisTranslation.x,
+            chassisTranslation.z,
+            worldSeed,
+          ),
           z: chassisTranslation.z,
         },
         true,
@@ -451,7 +472,7 @@ export function StylizedCarController({
         ref={chassisRef}
         colliders={false}
         mass={CHASSIS_MASS}
-        position={startPosition}
+        position={resolvedStartPosition}
         rotation={[0, startRotationY, 0]}
         enabledRotations={[true, true, true]}
         friction={0.8}

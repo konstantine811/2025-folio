@@ -13,7 +13,8 @@ import { BushNodeMaterial } from "./bush-material";
 import type { GrassRuntimeConfig } from "./grass/config";
 import { StylizedGrass } from "./grass/stylized-grass";
 import {
-  createGroundTerrainGeometry,
+  applyGroundTerrainToGeometry,
+  createGroundTerrainGeometryTemplate,
   sampleGroundTerrainHeight,
 } from "./ground-terrain";
 import { ImperativeGridDebug, type GridDebugSyncRef } from "./grid-debug";
@@ -79,13 +80,13 @@ function collectBushMatrices({
         const oz = rng() * tileSize;
         const scale = THREE.MathUtils.lerp(0.75, 1.25, rng());
         const yaw = rng() * Math.PI * 2;
-        const localX = ox - tileSize / 2;
-        const localZ = oz - tileSize / 2;
+        const worldX = tileX * tileSize + ox;
+        const worldZ = tileZ * tileSize + oz;
 
         dummy.position.set(
-          tileX * tileSize + ox,
-          sampleGroundTerrainHeight({ x: localX, z: localZ, tileSize }),
-          tileZ * tileSize + oz,
+          worldX,
+          sampleGroundTerrainHeight({ worldX, worldZ, seed: worldSeed }),
+          worldZ,
         );
         dummy.rotation.set(0, yaw, 0);
         dummy.scale.setScalar(scale);
@@ -209,12 +210,30 @@ function syncGroundPool(
   tileZ: number,
   tileSize: number,
   seed: number,
+  terrainTemplate: THREE.BufferGeometry,
 ) {
   for (const slot of slots) {
     if (!slot) continue;
     const { dx, dz, mesh } = slot;
     const worldTileX = tileX + dx;
     const worldTileZ = tileZ + dz;
+    const terrainKey = `${worldTileX}_${worldTileZ}`;
+
+    if (mesh.userData.terrainKey !== terrainKey) {
+      if (!mesh.userData.terrainGeometry) {
+        mesh.geometry = terrainTemplate.clone();
+        mesh.userData.terrainGeometry = mesh.geometry;
+      }
+      applyGroundTerrainToGeometry(
+        mesh.geometry as THREE.BufferGeometry,
+        worldTileX,
+        worldTileZ,
+        tileSize,
+        seed,
+      );
+      mesh.userData.terrainKey = terrainKey;
+    }
+
     mesh.position.set(
       worldTileX * tileSize + tileSize / 2,
       0,
@@ -284,8 +303,8 @@ export function InfiniteStylizedWorld({
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const bushMaterialRef = useRef<THREE.Material | null>(null);
   const [bushMaterialReady, setBushMaterialReady] = useState(false);
-  const groundGeometry = useMemo(
-    () => createGroundTerrainGeometry(tileSize),
+  const groundTerrainTemplate = useMemo(
+    () => createGroundTerrainGeometryTemplate(tileSize),
     [tileSize],
   );
 
@@ -396,6 +415,7 @@ export function InfiniteStylizedWorld({
       tileZ,
       tileSize,
       worldSeed,
+      groundTerrainTemplate,
     );
     syncBushChunks(
       bushChunkRefs.current,
@@ -419,6 +439,14 @@ export function InfiniteStylizedWorld({
 
     const tile = readTileCenter();
     tileCenterRef.current = tile;
+    syncGroundPool(
+      groundSlotsRef.current,
+      tile.x,
+      tile.z,
+      tileSize,
+      worldSeed,
+      groundTerrainTemplate,
+    );
   }, [
     worldKey,
     tileSize,
@@ -429,6 +457,7 @@ export function InfiniteStylizedWorld({
     showGridCrosses,
     showTileBounds,
     dummy,
+    groundTerrainTemplate,
   ]);
 
   useFrame(() => {
@@ -491,7 +520,7 @@ export function InfiniteStylizedWorld({
         )}
         <GroundPool
           radius={renderRadius}
-          geometry={groundGeometry}
+          geometry={groundTerrainTemplate}
           slotsRef={groundSlotsRef}
         />
         {showGridDebug && (

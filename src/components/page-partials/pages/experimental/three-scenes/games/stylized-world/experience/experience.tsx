@@ -252,10 +252,12 @@ const Experience = () => {
         focusRef={focusRef}
         tileSize={8}
         radius={physicsRadius}
+        worldSeed={42}
       />
       {showTestCourse && <StylizedWorldTestCourse />}
       <StylizedCarController
         focusRef={focusRef}
+        worldSeed={42}
         accelerateForce={accelerateForce}
         brakeForce={brakeForce}
         steerAngle={(steerAngleDeg * Math.PI) / 180}
