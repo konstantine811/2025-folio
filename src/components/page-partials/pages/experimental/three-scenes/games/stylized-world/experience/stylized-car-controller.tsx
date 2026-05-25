@@ -1,8 +1,13 @@
 import useFollowCamera from "@/components/common/hooks/camera/useFollowCamera";
 import { useControlStore } from "@/components/common/game-controller/store/control-game-store";
-import { CuboidCollider, RapierRigidBody, RigidBody, useBeforePhysicsStep } from "@react-three/rapier";
+import {
+  CuboidCollider,
+  RapierRigidBody,
+  RigidBody,
+  useBeforePhysicsStep,
+} from "@react-three/rapier";
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef, type MutableRefObject } from "react";
+import { useEffect, useMemo, useRef, type MutableRefObject } from "react";
 import { MathUtils, Quaternion, Euler, Vector3, type Object3D } from "three";
 import {
   type WheelInfo,
@@ -65,6 +70,8 @@ const BRAKE_PITCH_FROM_SPEED = 0.035;
 const MAX_BRAKE_PITCH = 0.06;
 const MAX_ABS_PITCH = 0.2;
 const PITCH_RECOVERY_SMOOTHING = 10;
+const HOP_IMPULSE = 4.5;
+const RECOVER_DROP_HEIGHT = 1.7;
 
 const WHEEL_INFO_BASE: Omit<WheelInfo, "position"> = {
   axleCs: new Vector3(-1, 0, 0),
@@ -160,6 +167,54 @@ export function StylizedCarController({
     camCollisionSpeedMult: 4,
   });
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat) return;
+
+      const chassis = chassisRef.current;
+      const controller = vehicleController.current;
+
+      if (event.code === "KeyR") {
+        if (!chassis || !controller || !isVehicleOnFlatGround(controller)) {
+          return;
+        }
+
+        chassis.wakeUp();
+        chassis.applyImpulse({ x: 0, y: HOP_IMPULSE, z: 0 }, true);
+        return;
+      }
+
+      if (event.code === "KeyY" && chassis) {
+        const translation = chassis.translation();
+        const rotation = chassis.rotation();
+
+        chassisQuat.set(rotation.x, rotation.y, rotation.z, rotation.w);
+        chassisEuler.setFromQuaternion(chassisQuat, "YXZ");
+        uprightEuler.set(0, chassisEuler.y, 0);
+        uprightQuat.setFromEuler(uprightEuler);
+
+        chassis.setTranslation(
+          {
+            x: translation.x,
+            y: translation.y + RECOVER_DROP_HEIGHT,
+            z: translation.z,
+          },
+          true,
+        );
+        chassis.setRotation(uprightQuat, true);
+        chassis.setLinvel({ x: 0, y: 0, z: 0 }, true);
+        chassis.setAngvel({ x: 0, y: 0, z: 0 }, true);
+        chassis.wakeUp();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [chassisEuler, chassisQuat, uprightEuler, uprightQuat, vehicleController]);
+
   useBeforePhysicsStep(() => {
     const chassis = chassisRef.current;
     const controller = vehicleController.current;
@@ -212,9 +267,15 @@ export function StylizedCarController({
       }
 
       if (isReversing && angvel.x > 0.05) {
-        chassis.setAngvel({ x: angvel.x * 0.55, y: angvel.y, z: angvel.z }, true);
+        chassis.setAngvel(
+          { x: angvel.x * 0.55, y: angvel.y, z: angvel.z },
+          true,
+        );
       } else if (!isBraking && Math.abs(angvel.x) > 0.08) {
-        chassis.setAngvel({ x: angvel.x * 0.72, y: angvel.y, z: angvel.z }, true);
+        chassis.setAngvel(
+          { x: angvel.x * 0.72, y: angvel.y, z: angvel.z },
+          true,
+        );
       } else if (Math.abs(angvel.z) > 0.06) {
         chassis.setAngvel(
           { x: angvel.x, y: angvel.y, z: angvel.z * 0.82 },
@@ -238,7 +299,11 @@ export function StylizedCarController({
     const chassisTranslation = chassis.translation();
     if (chassisTranslation.y < -8) {
       chassis.setTranslation(
-        { x: chassisTranslation.x, y: DEFAULT_START_Y, z: chassisTranslation.z },
+        {
+          x: chassisTranslation.x,
+          y: DEFAULT_START_Y,
+          z: chassisTranslation.z,
+        },
         true,
       );
       chassis.setLinvel({ x: 0, y: 0, z: 0 }, true);
@@ -275,8 +340,7 @@ export function StylizedCarController({
 
     let frontEngineForce = 0;
     let rearEngineForce = 0;
-    const isBoosting =
-      wantsForward && run && !wantsHandbrake && !isFootBraking;
+    const isBoosting = wantsForward && run && !wantsHandbrake && !isFootBraking;
     const maxForwardSpeed = isBoosting
       ? BOOST_MAX_FORWARD_SPEED
       : MAX_FORWARD_SPEED;
@@ -366,65 +430,67 @@ export function StylizedCarController({
   });
 
   return (
-    <RigidBody
-      ref={chassisRef}
-      colliders={false}
-      mass={CHASSIS_MASS}
-      position={startPosition}
-      rotation={[0, startRotationY, 0]}
-      enabledRotations={[true, true, true]}
-      friction={0.8}
-      linearDamping={0.08}
-      angularDamping={0.35}
-      canSleep={false}
-    >
-      <CuboidCollider
-        args={[
-          BODY.width / 2,
-          CHASSIS_COLLIDER_HALF_HEIGHT,
-          (BODY.length / 2) * CHASSIS_COLLIDER_LENGTH_SCALE,
-        ]}
-        position={[0, CHASSIS_COLLIDER_Y, 0]}
-        restitution={0.01}
-        friction={0}
-      />
+    <>
+      <RigidBody
+        ref={chassisRef}
+        colliders={false}
+        mass={CHASSIS_MASS}
+        position={startPosition}
+        rotation={[0, startRotationY, 0]}
+        enabledRotations={[true, true, true]}
+        friction={0.8}
+        linearDamping={0.08}
+        angularDamping={0.35}
+        canSleep={false}
+      >
+        <CuboidCollider
+          args={[
+            BODY.width / 2,
+            CHASSIS_COLLIDER_HALF_HEIGHT,
+            (BODY.length / 2) * CHASSIS_COLLIDER_LENGTH_SCALE,
+          ]}
+          position={[0, CHASSIS_COLLIDER_Y, 0]}
+          restitution={0.01}
+          friction={0}
+        />
 
-      <mesh castShadow>
-        <boxGeometry args={[BODY.width, BODY.height, BODY.length]} />
-        <meshBasicMaterial color="#f5f5f5" wireframe />
-      </mesh>
+        <mesh castShadow>
+          <boxGeometry args={[BODY.width, BODY.height, BODY.length]} />
+          <meshBasicMaterial color="#f5f5f5" wireframe />
+        </mesh>
 
-      {WHEELS.map(({ position, axle }, index) => (
-        <group
-          key={index}
-          position={position}
-          ref={(node) => {
-            wheelRefs.current[index] = node;
-          }}
-        >
-          <mesh castShadow rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry
-              args={[WHEEL_RADIUS, WHEEL_RADIUS, WHEEL_WIDTH, 12, 1]}
-            />
-            <meshStandardMaterial
-              color={
-                axle === "front"
-                  ? index === 0
-                    ? "#d48bb8"
-                    : "#e8a0c4"
-                  : index === 2
-                    ? "#8fd4e8"
-                    : "#a6dce8"
-              }
-              roughness={0.55}
-            />
-          </mesh>
-        </group>
-      ))}
+        {WHEELS.map(({ position, axle }, index) => (
+          <group
+            key={index}
+            position={position}
+            ref={(node) => {
+              wheelRefs.current[index] = node;
+            }}
+          >
+            <mesh castShadow rotation={[0, 0, Math.PI / 2]}>
+              <cylinderGeometry
+                args={[WHEEL_RADIUS, WHEEL_RADIUS, WHEEL_WIDTH, 12, 1]}
+              />
+              <meshStandardMaterial
+                color={
+                  axle === "front"
+                    ? index === 0
+                      ? "#d48bb8"
+                      : "#e8a0c4"
+                    : index === 2
+                      ? "#8fd4e8"
+                      : "#a6dce8"
+                }
+                roughness={0.55}
+              />
+            </mesh>
+          </group>
+        ))}
+      </RigidBody>
 
       {showWheelTrackDebug && (
         <WheelContactHistoryDebugRack historiesRef={historiesRef} />
       )}
-    </RigidBody>
+    </>
   );
 }

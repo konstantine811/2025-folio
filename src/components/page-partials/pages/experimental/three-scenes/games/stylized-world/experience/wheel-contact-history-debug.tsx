@@ -1,127 +1,120 @@
-import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import type { RefObject } from "react";
 import * as THREE from "three";
-import { LinearFilter, RGBAFormat, Texture } from "three";
+import {
+  atan,
+  clamp,
+  color as tslColor,
+  cos,
+  float,
+  Fn,
+  positionGeometry,
+  sign,
+  sin,
+  texture,
+  uv,
+  varying,
+  vec2,
+  vec3,
+  vec4,
+} from "three/tsl";
 import type { WheelContactHistoryEntry } from "./wheel-contact-history";
 import { WHEEL_CONTACT_HISTORY_SIZE } from "./wheel-contact-history";
 
-const TEXTURE_SCALE = 6;
-const LABEL_WIDTH = 18;
-const CHANNELS_PER_WHEEL = 4;
-const STRIP_WIDTH = 3.4;
-const STRIP_HEIGHT = 0.18;
-const STRIP_GAP = 0.08;
-const RACK_OFFSET: [number, number, number] = [0, 1.05, 0.85];
-const COORD_SCALE = 0.1;
+const TRACK_HALF_WIDTH = 0.18;
+const TRACK_Y_OFFSET = 0.035;
+const HIDDEN_Y = -10000;
 
-const WHEEL_MARKER_COLORS = [
+const WHEEL_TRACK_COLORS = [
   "#e8a0c4",
   "#d48bb8",
   "#a6dce8",
   "#8fd4e8",
 ] as const;
 
-function frac(value: number) {
-  const scaled = value * COORD_SCALE;
-  return scaled - Math.floor(scaled);
+function createTrailGeometry() {
+  const geometry = new THREE.PlaneGeometry(1, 1, WHEEL_CONTACT_HISTORY_SIZE, 1);
+  geometry.translate(0.5, 0, 0);
+  return geometry;
 }
 
-function WheelContactHistoryCanvasStrip({
-  historiesRef,
-  index,
+function WheelContactTrailMaterial({
+  entry,
+  color,
 }: {
-  historiesRef: RefObject<WheelContactHistoryEntry[]>;
-  index: number;
+  entry: WheelContactHistoryEntry;
+  color: string;
 }) {
-  const canvas = useMemo(() => {
-    const element = document.createElement("canvas");
-    element.width = LABEL_WIDTH + WHEEL_CONTACT_HISTORY_SIZE * TEXTURE_SCALE;
-    element.height = CHANNELS_PER_WHEEL * TEXTURE_SCALE;
-    return element;
-  }, []);
+  const nodes = useMemo(() => {
+    const trailData = varying(vec4(0));
+    const pixelSize = float(1).div(WHEEL_CONTACT_HISTORY_SIZE);
+    const halfPixel = pixelSize.mul(0.5);
+    const maxPixelCenter = float(1).sub(halfPixel);
+    const sideSign = sign(positionGeometry.y).mul(-1);
 
-  const context = useMemo(() => canvas.getContext("2d"), [canvas]);
-  const texture = useMemo(() => {
-    const nextTexture = new Texture(canvas);
-    nextTexture.minFilter = LinearFilter;
-    nextTexture.magFilter = LinearFilter;
-    nextTexture.format = RGBAFormat;
-    nextTexture.colorSpace = THREE.SRGBColorSpace;
-    nextTexture.generateMipmaps = false;
-    nextTexture.needsUpdate = true;
-    return nextTexture;
-  }, [canvas]);
-
-  useFrame(() => {
-    if (!context) return;
-
-    const entry = historiesRef.current[index];
-    if (!entry) return;
-
-    const { data } = entry;
-
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = "#111";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = "#ff2020";
-    context.fillRect(0, 0, LABEL_WIDTH, TEXTURE_SCALE);
-    context.fillStyle = "#20ff20";
-    context.fillRect(0, TEXTURE_SCALE, LABEL_WIDTH, TEXTURE_SCALE);
-    context.fillStyle = "#2070ff";
-    context.fillRect(0, TEXTURE_SCALE * 2, LABEL_WIDTH, TEXTURE_SCALE);
-    context.fillStyle = "#ffffff";
-    context.fillRect(0, TEXTURE_SCALE * 3, LABEL_WIDTH, TEXTURE_SCALE);
-
-    for (let i = 0; i < WHEEL_CONTACT_HISTORY_SIZE; i += 1) {
-      const offset = i * 4;
-      const drawX = LABEL_WIDTH + i * TEXTURE_SCALE;
-      const x = frac(data[offset]);
-      const y = frac(data[offset + 1]);
-      const z = frac(data[offset + 2]);
-      const a = data[offset + 3] > 0.5 ? 1 : 0;
-
-      context.fillStyle = `rgb(${Math.round(x * 255)},0,0)`;
-      context.fillRect(drawX, 0, TEXTURE_SCALE, TEXTURE_SCALE);
-
-      context.fillStyle = `rgb(0,${Math.round(y * 255)},0)`;
-      context.fillRect(
-        drawX,
-        TEXTURE_SCALE,
-        TEXTURE_SCALE,
-        TEXTURE_SCALE,
+    const positionNode = Fn(() => {
+      const sampleU = clamp(uv().x.sub(halfPixel), halfPixel, maxPixelCenter);
+      const previousU = clamp(
+        sampleU.add(pixelSize),
+        halfPixel,
+        maxPixelCenter,
       );
-
-      context.fillStyle = `rgb(0,0,${Math.round(z * 255)})`;
-      context.fillRect(
-        drawX,
-        TEXTURE_SCALE * 2,
-        TEXTURE_SCALE,
-        TEXTURE_SCALE,
+      const current = texture(entry.texture, vec2(sampleU, 0.5));
+      const previous = texture(entry.texture, vec2(previousU, 0.5));
+      const angle = atan(current.z.sub(previous.z), current.x.sub(previous.x));
+      const perpendicularAngle = angle.add(sideSign.mul(Math.PI * 0.5));
+      const sideOffset = vec2(
+        cos(perpendicularAngle),
+        sin(perpendicularAngle),
+      ).mul(TRACK_HALF_WIDTH);
+      const worldPosition = vec3(
+        current.x.add(sideOffset.x),
+        current.y.add(TRACK_Y_OFFSET),
+        current.z.add(sideOffset.y),
       );
+      const hiddenPosition = vec3(current.x, HIDDEN_Y, current.z);
 
-      context.fillStyle = a > 0 ? "white" : "#111";
-      context.fillRect(
-        drawX,
-        TEXTURE_SCALE * 3,
-        TEXTURE_SCALE,
-        TEXTURE_SCALE,
-      );
-    }
+      trailData.assign(current);
 
-    texture.needsUpdate = true;
-  });
+      return current.w
+        .greaterThan(float(0.5))
+        .select(worldPosition, hiddenPosition);
+    })();
+
+    return {
+      colorNode: tslColor(new THREE.Color(color)),
+      opacityNode: trailData.w,
+      positionNode,
+    };
+  }, [color, entry]);
 
   return (
-    <mesh renderOrder={999} position={[0, 0, 0.02]}>
-      <planeGeometry args={[STRIP_WIDTH, STRIP_HEIGHT]} />
-      <meshBasicMaterial
-        map={texture}
-        toneMapped={false}
-        depthTest={false}
-        depthWrite={false}
-        side={THREE.DoubleSide}
-      />
+    <meshBasicNodeMaterial
+      {...nodes}
+      transparent
+      alphaTest={0.5}
+      side={THREE.DoubleSide}
+      depthTest={false}
+      depthWrite={false}
+      toneMapped={false}
+      wireframe={true}
+    />
+  );
+}
+
+function WheelContactTrail({
+  entry,
+  index,
+}: {
+  entry: WheelContactHistoryEntry;
+  index: number;
+}) {
+  const geometry = useMemo(() => createTrailGeometry(), []);
+  const color = WHEEL_TRACK_COLORS[index] ?? "#ffffff";
+
+  return (
+    <mesh geometry={geometry} frustumCulled={false} renderOrder={900 + index}>
+      <WheelContactTrailMaterial entry={entry} color={color} />
     </mesh>
   );
 }
@@ -133,50 +126,11 @@ type WheelContactHistoryDebugRackProps = {
 export function WheelContactHistoryDebugRack({
   historiesRef,
 }: WheelContactHistoryDebugRackProps) {
-  const rackRef = useRef<THREE.Group>(null);
-
-  useFrame(({ camera }) => {
-    rackRef.current?.lookAt(camera.position);
-  });
-
   return (
-    <group ref={rackRef} position={RACK_OFFSET}>
-      {historiesRef.current.map((_, index) => {
-        const y =
-          (historiesRef.current.length - 1 - index) *
-          (STRIP_HEIGHT + STRIP_GAP);
-        const markerColor = WHEEL_MARKER_COLORS[index] ?? "#ffffff";
-
-        return (
-          <group key={index} position={[0, y, 0]}>
-            <mesh position={[-STRIP_WIDTH / 2 - 0.1, 0, 0.01]} renderOrder={997}>
-              <planeGeometry args={[0.12, STRIP_HEIGHT]} />
-              <meshBasicMaterial
-                color={markerColor}
-                toneMapped={false}
-                depthTest={false}
-                depthWrite={false}
-              />
-            </mesh>
-
-            <mesh position={[0, 0, -0.01]} renderOrder={998}>
-              <planeGeometry args={[STRIP_WIDTH + 0.06, STRIP_HEIGHT + 0.04]} />
-              <meshBasicMaterial
-                color="#2a2a2a"
-                toneMapped={false}
-                depthTest={false}
-                depthWrite={false}
-                side={THREE.DoubleSide}
-              />
-            </mesh>
-
-            <WheelContactHistoryCanvasStrip
-              historiesRef={historiesRef}
-              index={index}
-            />
-          </group>
-        );
-      })}
-    </group>
+    <>
+      {historiesRef.current.map((entry, index) => (
+        <WheelContactTrail key={index} entry={entry} index={index} />
+      ))}
+    </>
   );
 }
