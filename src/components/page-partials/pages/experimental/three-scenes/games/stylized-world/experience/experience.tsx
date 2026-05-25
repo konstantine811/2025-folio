@@ -35,6 +35,7 @@ const Experience = () => {
     brakeForce,
     steerAngleDeg,
     isDebug,
+    showWheelTrackDebug,
   } = useControls("Stylized World", {
     windStrength: { value: 1, min: 0, max: 5, step: 0.05 },
     windSpeed: { value: 0.05, min: 0, max: 0.2, step: 0.005 },
@@ -160,6 +161,10 @@ const Experience = () => {
       label: "Steer angle (deg)",
     },
     isDebug: { value: false, label: "Debug" },
+    showWheelTrackDebug: {
+      value: true,
+      label: "Wheel track DataTexture debug",
+    },
   });
 
   const bush = useMemo(
@@ -249,6 +254,7 @@ const Experience = () => {
         accelerateForce={accelerateForce}
         brakeForce={brakeForce}
         steerAngle={(steerAngleDeg * Math.PI) / 180}
+        showWheelTrackDebug={showWheelTrackDebug}
       />
     </Physics>
   );

@@ -9,6 +9,8 @@ import {
   isVehicleOnFlatGround,
   useVehicleController,
 } from "./use-vehicle-controller";
+import { useWheelContactHistory } from "./use-wheel-contact-history";
+import { WheelContactHistoryDebugRack } from "./wheel-contact-history-debug";
 
 type StylizedCarControllerProps = {
   focusRef: MutableRefObject<Vector3>;
@@ -17,6 +19,7 @@ type StylizedCarControllerProps = {
   accelerateForce?: number;
   brakeForce?: number;
   steerAngle?: number;
+  showWheelTrackDebug?: boolean;
 };
 
 /**
@@ -106,6 +109,7 @@ export function StylizedCarController({
   accelerateForce = DEFAULT_ACCELERATE_FORCE,
   brakeForce = DEFAULT_BRAKE_FORCE,
   steerAngle = DEFAULT_STEER_ANGLE,
+  showWheelTrackDebug = false,
 }: StylizedCarControllerProps) {
   const chassisRef = useRef<RapierRigidBody>(null);
   const wheelRefs = useRef<(Object3D | null)[]>([]);
@@ -117,11 +121,12 @@ export function StylizedCarController({
   });
 
   const wheelsInfo = useMemo(() => WHEELS, []);
+  const { historiesRef } = useWheelContactHistory(wheelsInfo.length);
   const { vehicleController } = useVehicleController(
     chassisRef,
     wheelRefs,
     wheelsInfo,
-    { indexForwardAxis: 2 },
+    { indexForwardAxis: 2, contactHistoriesRef: historiesRef },
   );
 
   const forward = useControlStore((s) => s.forward);
@@ -416,6 +421,10 @@ export function StylizedCarController({
           </mesh>
         </group>
       ))}
+
+      {showWheelTrackDebug && (
+        <WheelContactHistoryDebugRack historiesRef={historiesRef} />
+      )}
     </RigidBody>
   );
 }

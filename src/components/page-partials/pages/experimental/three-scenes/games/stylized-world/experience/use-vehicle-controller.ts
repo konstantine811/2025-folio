@@ -7,6 +7,10 @@ import {
 } from "@react-three/rapier";
 import { type RefObject, useEffect, useRef } from "react";
 import { Quaternion, Vector3, type Object3D } from "three";
+import {
+  recordWheelContactPoint,
+  type WheelContactHistoryEntry,
+} from "./wheel-contact-history";
 
 const up = new Vector3(0, 1, 0);
 const wheelSteeringQuat = new Quaternion();
@@ -14,6 +18,7 @@ const wheelRotationQuat = new Quaternion();
 const tmpTargetWheelPos = new Vector3();
 const tmpWheelWorld = new Vector3();
 const tmpContactNormal = new Vector3();
+const tmpWheelAxle = new Vector3();
 
 const WHEEL_VISUAL_SMOOTH_DOWN = 0.42;
 const WHEEL_VISUAL_SMOOTH_UP = 0.24;
@@ -21,6 +26,8 @@ const SLOPE_WHEEL_VISUAL_SMOOTH = 0.34;
 const AIRBORNE_WHEEL_VISUAL_SMOOTH = 0.55;
 
 const FLAT_GROUND_NORMAL_Y = 0.97;
+const WHEEL_CONTACT_RAY_START_OFFSET = 0.12;
+const WHEEL_CONTACT_RAY_EXTRA_LENGTH = 0.18;
 
 export function isVehicleOnFlatGround(
   controller: DynamicRayCastVehicleController,
@@ -49,8 +56,8 @@ function isWheelOnFlatGround(
 
 function setSuspensionWheelTarget(
   target: Vector3,
-  connection: Vector3,
-  direction: Vector3,
+  connection: { x: number; y: number; z: number },
+  direction: { x: number; y: number; z: number },
   suspension: number,
 ) {
   target.set(
@@ -97,15 +104,19 @@ export type WheelInfo = {
 
 type UseVehicleControllerOptions = {
   indexForwardAxis?: number;
+  contactHistoriesRef?: RefObject<WheelContactHistoryEntry[]>;
 };
 
 export function useVehicleController(
   chassisRef: RefObject<RapierRigidBody | null>,
   wheelsRef: RefObject<(Object3D | null)[]>,
   wheelsInfo: WheelInfo[],
-  { indexForwardAxis = 2 }: UseVehicleControllerOptions = {},
+  {
+    indexForwardAxis = 2,
+    contactHistoriesRef,
+  }: UseVehicleControllerOptions = {},
 ) {
-  const { world } = useRapier();
+  const { world, rapier } = useRapier();
   const vehicleController = useRef<DynamicRayCastVehicleController | null>(null);
   const smoothedWheelPosRef = useRef<(Vector3 | undefined)[]>([]);
 
@@ -156,14 +167,108 @@ export function useVehicleController(
   useAfterPhysicsStep(() => {
     const controller = vehicleController.current;
     const wheels = wheelsRef.current;
-    if (!controller || !wheels) return;
+    if (!controller) return;
+
+    const histories = contactHistoriesRef?.current;
+    const wheelCount = controller.numWheels();
+
+    if (histories?.length) {
+      for (let index = 0; index < wheelCount; index += 1) {
+        const history = histories[index];
+        const wheelInfo = wheelsInfo[index];
+
+        if (!history || !wheelInfo) continue;
+
+        const inContact = controller.wheelIsInContact(index);
+        const contact = controller.wheelContactPoint(index);
+
+        if (inContact && contact) {
+          recordWheelContactPoint(
+            history,
+            contact.x,
+            contact.y,
+            contact.z,
+            true,
+          );
+        } else {
+          const hardPoint = controller.wheelHardPoint(index);
+          const rayOrigin = hardPoint
+            ? {
+                x: hardPoint.x,
+                y: hardPoint.y + WHEEL_CONTACT_RAY_START_OFFSET,
+                z: hardPoint.z,
+              }
+            : { x: 0, y: 0, z: 0 };
+          const rayDir = { x: 0, y: -1, z: 0 };
+          const maxToi =
+            wheelInfo.suspensionRestLength +
+            wheelInfo.radius +
+            WHEEL_CONTACT_RAY_START_OFFSET +
+            WHEEL_CONTACT_RAY_EXTRA_LENGTH;
+          const rayHit = hardPoint
+            ? world.castRay(
+                new rapier.Ray(rayOrigin, rayDir),
+                maxToi,
+                true,
+                undefined,
+                undefined,
+                undefined,
+                chassisRef.current ?? undefined,
+              )
+            : null;
+
+          if (rayHit) {
+            recordWheelContactPoint(
+              history,
+              rayOrigin.x,
+              rayOrigin.y + rayDir.y * rayHit.timeOfImpact,
+              rayOrigin.z,
+              true,
+            );
+          } else if (hardPoint) {
+            const suspension = controller.wheelSuspensionLength(index) ?? 0;
+            recordWheelContactPoint(
+              history,
+              hardPoint.x,
+              hardPoint.y - suspension - wheelInfo.radius,
+              hardPoint.z,
+              false,
+            );
+          } else {
+            recordWheelContactPoint(history, 0, 0, 0, false);
+          }
+        }
+      }
+    }
+
+    if (!wheels) {
+      return;
+    }
 
     wheels.forEach((wheel, index) => {
-      if (!wheel) return;
+      if (!wheel) {
+        return;
+      }
 
       const wheelInfo = wheelsInfo[index];
+      if (wheelCount === 0) {
+        const history = histories?.[index];
+        if (history && wheelInfo) {
+          wheel.getWorldPosition(tmpWheelWorld);
+          recordWheelContactPoint(
+            history,
+            tmpWheelWorld.x,
+            tmpWheelWorld.y - wheelInfo.radius,
+            tmpWheelWorld.z,
+            true,
+          );
+        }
+      }
+
       const wheelAxleCs = controller.wheelAxleCs(index);
-      if (!wheelAxleCs) return;
+      if (!wheelAxleCs) {
+        return;
+      }
 
       const connection = controller.wheelChassisConnectionPointCs(index);
       const direction = controller.wheelDirectionCs(index);
@@ -223,7 +328,8 @@ export function useVehicleController(
       wheel.position.copy(smoothedPos);
 
       wheelSteeringQuat.setFromAxisAngle(up, steering);
-      wheelRotationQuat.setFromAxisAngle(wheelAxleCs, rotationRad);
+      tmpWheelAxle.set(wheelAxleCs.x, wheelAxleCs.y, wheelAxleCs.z);
+      wheelRotationQuat.setFromAxisAngle(tmpWheelAxle, rotationRad);
       wheel.quaternion
         .copy(wheelSteeringQuat)
         .multiply(wheelRotationQuat);
