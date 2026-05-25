@@ -1,9 +1,9 @@
-import { JSX, RefObject, useEffect, useRef } from "react";
+import { JSX, RefObject, useEffect, useMemo, useRef } from "react";
 import { createPortal, useThree } from "@react-three/fiber";
 import { useAnimations, useGLTF } from "@react-three/drei";
 import { useControls } from "leva";
-import { Group, Object3D } from "three";
-import { sciFiCharacterConfig } from "./sci-fi.config";
+import { Group, Object3D, SkinnedMesh } from "three";
+import { sciFiCharacterConfig, SciFiCharacterAnimations } from "./sci-fi.config";
 import { useLocomotionAnimationDriver } from "../../../character-controller/character-animation/useLocomotionAnimationDriver";
 import { useStableWalkAnimations } from "./useStableWalkAnimations";
 import { SciFiHelmetAttachments } from "./sci-fi-helmet-attachments";
@@ -21,24 +21,39 @@ type SciFiCharacterSharedProps = {
 
 type SciFiCharacterScrollProps = SciFiCharacterBaseProps &
   SciFiCharacterSharedProps & {
-  driver: "scroll";
-  scrollProgressRef: RefObject<number>;
-};
+    driver: "scroll";
+    scrollProgressRef: RefObject<number>;
+  };
 
 type SciFiCharacterControllerProps = SciFiCharacterBaseProps &
   SciFiCharacterSharedProps & {
-  driver: "controller";
+    driver: "controller";
 
-  animationType: CharacterAnimations;
+    animationType: CharacterAnimations;
 
-  isMoving?: boolean;
-  isSprinting?: boolean;
-  isGrounded?: boolean;
-};
+    isMoving?: boolean;
+    isSprinting?: boolean;
+    isGrounded?: boolean;
+  };
 
 type SciFiCharacterProps =
   | SciFiCharacterScrollProps
   | SciFiCharacterControllerProps;
+
+const STABLE_HEAD_CLIP_NAMES = [
+  sciFiCharacterConfig.animations.walk,
+  SciFiCharacterAnimations.walk,
+  SciFiCharacterAnimations.idle,
+  SciFiCharacterAnimations.run,
+];
+
+function resolveHeadBone(nodes: Record<string, Object3D>) {
+  const human = nodes.human as SkinnedMesh | undefined;
+  const fromSkeleton = human?.skeleton?.bones.find(
+    (bone) => bone.name === "mixamorigHead",
+  );
+  return (fromSkeleton ?? nodes.mixamorigHead) as Object3D | undefined;
+}
 
 export function SciFiCharacter(props: SciFiCharacterProps) {
   const { driver, modelRotationY = 0, ...groupProps } = props;
@@ -55,13 +70,13 @@ export function SciFiCharacter(props: SciFiCharacterProps) {
 
   const characterAnimations = useStableWalkAnimations({
     animations,
-    walkAnimationName: sciFiCharacterConfig.animations.walk,
+    walkAnimationNames: STABLE_HEAD_CLIP_NAMES,
     stableBoneTracks: sciFiCharacterConfig.stableWalkBoneTracks,
   });
 
   const { actions, mixer } = useAnimations(characterAnimations, group);
 
-  const head = nodes.mixamorigHead as Object3D | undefined;
+  const head = useMemo(() => resolveHeadBone(nodes), [nodes]);
   const skeletonRoot = nodes.mixamorigHips as Object3D | undefined;
 
   const isScrollDriver = driver === "scroll";
@@ -75,9 +90,7 @@ export function SciFiCharacter(props: SciFiCharacterProps) {
   });
 
   useEffect(() => {
-    if (!isControllerDriver) return;
-    if (!modelRoot.current) return;
-
+    if (!isControllerDriver || !modelRoot.current) return;
     modelRoot.current.position.z = 0;
   }, [isControllerDriver]);
 
@@ -87,36 +100,28 @@ export function SciFiCharacter(props: SciFiCharacterProps) {
 
   useScrollAnimationDriver({
     enabled: isScrollDriver,
-
     actions,
     mixer,
     modelRootRef: modelRoot,
-
     scrollProgressRef: isScrollDriver
       ? props.scrollProgressRef
       : fallbackScrollProgressRef,
-
     sitToStandAnimation: sciFiCharacterConfig.animations.sitToStand,
     walkAnimation: sciFiCharacterConfig.animations.walk,
-
     standScrollEnd: sciFiCharacterConfig.scroll.standScrollEnd,
     walkScrollStart: sciFiCharacterConfig.scroll.walkScrollStart,
     walkScrollEnd: sciFiCharacterConfig.scroll.walkScrollEnd,
-
     walkDistance: sciFiCharacterConfig.scroll.walkDistance,
     walkCycles: sciFiCharacterConfig.scroll.walkCycles,
   });
 
   useLocomotionAnimationDriver({
     enabled: isControllerDriver,
-
     actions,
     currentActionRef,
-
     animationType: isControllerDriver
       ? props.animationType
       : (sciFiCharacterConfig.fallbackAnimationType as unknown as CharacterAnimations),
-
     isMoving: isControllerDriver ? props.isMoving : false,
     isSprinting: isControllerDriver ? props.isSprinting : false,
     isGrounded: isControllerDriver ? props.isGrounded : true,

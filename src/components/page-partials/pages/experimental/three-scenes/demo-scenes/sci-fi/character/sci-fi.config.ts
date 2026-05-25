@@ -3,7 +3,7 @@ import { SCI_FI_CHARACTER_MODEL_PATH } from "./model/sci-fi-character.model";
 
 export const SciFiCharacterAnimations: CharacterAnimations = {
   idle: "Idle",
-  walk: "SadWalking",
+  walk: "Walk",
   run: "Run",
   jumpFalling: "FallingIdle",
   attack: "Idle",
@@ -16,6 +16,7 @@ export const sciFiCharacterConfig = {
 
   animations: {
     sitToStand: "StandUp",
+    /** Scroll timeline walk — sad/slow variant. */
     walk: "SadWalking",
   },
 

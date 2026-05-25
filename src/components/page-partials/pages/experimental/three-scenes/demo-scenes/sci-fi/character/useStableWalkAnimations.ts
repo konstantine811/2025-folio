@@ -3,18 +3,18 @@ import { AnimationClip } from "three";
 
 type UseStableWalkAnimationsParams = {
   animations: AnimationClip[];
-  walkAnimationName: string;
+  walkAnimationNames: string[];
   stableBoneTracks: string[];
 };
 
 export function useStableWalkAnimations({
   animations,
-  walkAnimationName,
+  walkAnimationNames,
   stableBoneTracks,
 }: UseStableWalkAnimationsParams) {
   return useMemo(() => {
     return animations.map((clip) => {
-      if (clip.name !== walkAnimationName) {
+      if (!walkAnimationNames.includes(clip.name)) {
         return clip;
       }
 
@@ -32,5 +32,5 @@ export function useStableWalkAnimations({
 
       return stableWalkClip;
     });
-  }, [animations, walkAnimationName, stableBoneTracks]);
+  }, [animations, walkAnimationNames, stableBoneTracks]);
 }
