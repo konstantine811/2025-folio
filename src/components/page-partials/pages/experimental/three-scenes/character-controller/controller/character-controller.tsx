@@ -29,6 +29,9 @@ type CharacterControllerProps = {
   /** Rapier membership group for ground/wall raycasts. Default: 0 */
   raycastMembershipGroup?: number;
 
+  /** Initial visual Y rotation for modelRef (radians). Default: 0 */
+  startModelRotationY?: number;
+
   renderCharacter: (props: CharacterRenderProps) => ReactNode;
 };
 
@@ -40,6 +43,7 @@ export function CharacterController({
   capsuleCollisionGroups,
   raycastFilterGroups,
   raycastMembershipGroup,
+  startModelRotationY = 0,
   renderCharacter,
 }: CharacterControllerProps) {
   const playerRef = useRef<EntityType>(null);
@@ -53,6 +57,7 @@ export function CharacterController({
     capsuleRadius,
     raycastMembershipGroup,
     raycastFilterGroups,
+    startModelRotationY,
   });
   return (
     <>

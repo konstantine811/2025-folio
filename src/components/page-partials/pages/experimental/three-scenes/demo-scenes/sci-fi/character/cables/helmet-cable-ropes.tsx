@@ -19,6 +19,7 @@ import {
   cableNeonOrbDefaults,
   cableNeonOrbInstanceCount,
   cableNeonOrbMaxPerCable,
+  getCableNeonOrbSizeFactor,
 } from "./cable-neon-orbs.config";
 import {
   pushPointOutOfBox,
@@ -381,7 +382,7 @@ export function HelmetCableRopes({
   const { scene, clock } = useThree();
   const meshRefs = useRef<(Mesh | null)[]>([]);
   const orbMeshRef = useRef<InstancedMesh>(null);
-  const orbMaterialColor = useRef(new Color(cableNeonOrbDefaults.color));
+  const neonMaterialColor = useRef(new Color(cableNeonOrbDefaults.color));
 
   const {
     neonOrbsEnabled,
@@ -692,9 +693,9 @@ export function HelmetCableRopes({
       const orbMesh = orbMeshRef.current;
       if (!neonOrbsEnabled || !orbMesh) return;
 
-      orbMaterialColor.current.set(neonOrbColor);
-      orbMaterial.color.copy(orbMaterialColor.current);
-      orbMaterial.emissive.copy(orbMaterialColor.current);
+      neonMaterialColor.current.set(neonOrbColor);
+      orbMaterial.color.copy(neonMaterialColor.current);
+      orbMaterial.emissive.copy(neonMaterialColor.current);
       orbMaterial.emissiveIntensity = neonOrbEmissive;
 
       for (let orbIndex = 0; orbIndex < cableNeonOrbMaxPerCable; orbIndex += 1) {
@@ -711,8 +712,7 @@ export function HelmetCableRopes({
           continue;
         }
 
-        const phase =
-          orbIndex / neonOrbsPerCable + ropeIndex * 0.137;
+        const phase = orbIndex / neonOrbsPerCable + ropeIndex * 0.137;
         const progress = (clock.elapsedTime * neonOrbSpeed + phase) % 1;
         const curveT = 1 - progress;
 
@@ -723,7 +723,8 @@ export function HelmetCableRopes({
           neonOrbSpawnFade,
           neonOrbAbsorbFade,
         );
-        const scale = neonOrbRadius * visibility;
+        const sizeFactor = getCableNeonOrbSizeFactor(orbIndex);
+        const scale = neonOrbRadius * sizeFactor * visibility;
 
         tmpOrbMatrix.compose(
           tmpOrbPosition,

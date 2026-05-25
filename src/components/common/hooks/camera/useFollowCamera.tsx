@@ -53,7 +53,11 @@ const useFollowCamera = ({
   const previousTouch2 = useRef<Touch | null>(null);
 
   const originZDis = useRef<number>(camInitDis ?? -5);
-  const pivot = useMemo(() => new Object3D(), []);
+  const pivot = useMemo(() => {
+    const nextPivot = new Object3D();
+    nextPivot.rotation.y = camInitDir.y;
+    return nextPivot;
+  }, [camInitDir.y]);
   const followCam = useMemo(() => {
     const origin = new Object3D();
     origin.position.set(
@@ -61,8 +65,9 @@ const useFollowCamera = ({
       originZDis.current * Math.sin(-camInitDir.x),
       originZDis.current * Math.cos(-camInitDir.x),
     );
+    origin.rotation.x = camInitDir.x;
     return origin;
-  }, [camInitDir.x]);
+  }, [camInitDir.x, camInitDir.y]);
 
   /** Camera collison detect setups */
   let smallestDistance = null;

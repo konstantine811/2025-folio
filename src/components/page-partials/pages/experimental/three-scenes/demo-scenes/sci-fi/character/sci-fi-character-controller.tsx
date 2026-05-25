@@ -67,6 +67,7 @@ export function SciFiToggleCharacter({
     <CharacterController
       key={controllerStartPosition.join(",")}
       startPosition={controllerStartPosition}
+      startModelRotationY={scrollModelRotationY}
       capsuleHalfHeight={sciFiCapsuleHalfHeight}
       capsuleRadius={sciFiCapsuleRadius}
       hasWeaponSensor={false}

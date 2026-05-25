@@ -26,6 +26,9 @@ type UseCharacterControllerPhysicsParams = {
   raycastMembershipGroup?: number;
   /** Rapier groups ground/wall rays may hit. Default: [1, 2] */
   raycastFilterGroups?: readonly number[];
+
+  /** Initial visual Y rotation for modelRef (radians). Default: 0 */
+  startModelRotationY?: number;
 };
 
 export function useCharacterControllerPhysics({
@@ -35,6 +38,7 @@ export function useCharacterControllerPhysics({
   capsuleRadius,
   raycastMembershipGroup = 0,
   raycastFilterGroups = [1, 2],
+  startModelRotationY = 0,
 }: UseCharacterControllerPhysicsParams) {
   const setPlayerPosition = usePlayerPositionStore((s) => s.setPosition);
 
@@ -50,7 +54,7 @@ export function useCharacterControllerPhysics({
     camMinDis: -0.7,
     camUpLimit: 1.5,
     camLowLimit: -1.3,
-    camInitDir: { x: 0, y: 0 },
+    camInitDir: { x: 0, y: startModelRotationY },
     camMoveSpeed: 1,
     camZoomSpeed: 1,
     camCollisionOffset: 0.7,
@@ -69,8 +73,8 @@ export function useCharacterControllerPhysics({
     });
 
   const prevPosition = useRef(new Vector3());
-  const targetRotation = useRef(0);
-  const currentRotation = useRef(0);
+  const targetRotation = useRef(startModelRotationY);
+  const currentRotation = useRef(startModelRotationY);
 
   const pivotPosition = useMemo(() => new Vector3(), []);
   const pivotXAxis = useMemo(() => new Vector3(1, 0, 0), []);

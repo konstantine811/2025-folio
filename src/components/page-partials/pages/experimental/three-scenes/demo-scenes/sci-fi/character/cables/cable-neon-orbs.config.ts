@@ -15,3 +15,10 @@ export const cableNeonOrbMaxPerCable = 6;
 
 export const cableNeonOrbInstanceCount =
   CABLE_NEON_ORB_COUNT * cableNeonOrbMaxPerCable;
+
+/** Slight size variation so orbs are not identical. */
+export const cableNeonOrbSizeFactors = [0.85, 1, 1.15, 0.9, 1.05, 1.2] as const;
+
+export function getCableNeonOrbSizeFactor(orbIndex: number) {
+  return cableNeonOrbSizeFactors[orbIndex % cableNeonOrbSizeFactors.length];
+}

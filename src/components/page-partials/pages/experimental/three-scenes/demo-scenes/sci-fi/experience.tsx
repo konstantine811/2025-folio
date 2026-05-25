@@ -84,11 +84,11 @@ const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
   const characterMode = isPaused ? "scroll" : "controller";
   return (
     <>
-      {cameraMode === "Scroll" ? (
+      {characterMode === "scroll" && cameraMode === "Scroll" ? (
         <FollowCharacterCamera scrollProgressRef={scrollProgressRef} />
-      ) : (
+      ) : cameraMode === "CameraControls" ? (
         <InspectCameraControls />
-      )}
+      ) : null}
       <ambientLight intensity={1.7} />
       <directionalLight castShadow position={[1, 3, 1]} intensity={3} />
       {/* <Environment preset="sunset" /> */}
