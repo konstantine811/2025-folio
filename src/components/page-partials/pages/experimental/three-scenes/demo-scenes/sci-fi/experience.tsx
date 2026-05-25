@@ -91,9 +91,11 @@ const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
           animationType={
             {
               idle: SciFiCharacterAnimations.idle,
-              run: "run",
+              run: SciFiCharacterAnimations.run,
               walk: SciFiCharacterAnimations.walk,
-            } as CharacterAnimations
+              jumpFalling: SciFiCharacterAnimations.jumpFalling,
+              attack: SciFiCharacterAnimations.attack,
+            } satisfies CharacterAnimations
           }
         />
       </Physics>

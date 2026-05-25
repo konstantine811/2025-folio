@@ -1,21 +1,22 @@
 import { CharacterAnimations } from "../../../character-controller/models/character-controller.model";
+import { SCI_FI_CHARACTER_MODEL_PATH } from "./model/sci-fi-character.model";
 
 export const SciFiCharacterAnimations: CharacterAnimations = {
-  idle: "sad_idle",
-  walk: "sad_walk",
-  run: "sad_run",
-  jumpFalling: "sad_jump_falling",
-  attack: "sad_attack",
+  idle: "Idle",
+  walk: "SadWalking",
+  run: "Run",
+  jumpFalling: "FallingIdle",
+  attack: "Idle",
 };
 
 export const sciFiCharacterConfig = {
-  modelPath: "/3d-models/sci-fi/character.glb",
+  modelPath: SCI_FI_CHARACTER_MODEL_PATH,
 
   fallbackAnimationType: SciFiCharacterAnimations.idle,
 
   animations: {
-    sitToStand: "sit-to-stand",
-    walk: "sad_walk",
+    sitToStand: "StandUp",
+    walk: "SadWalking",
   },
 
   scroll: {
@@ -26,10 +27,13 @@ export const sciFiCharacterConfig = {
     walkCycles: 3.6,
   },
 
+  // Sholom GLB meshes use internal scale 0.011. Old character armature was also 0.011,
+  // so group scale 90 kept the helmet ~1m in world space (90 × 0.011 × 0.011).
+  // Full-scale character only needs group scale ≈ 1.
   helmet: {
-    position: [0, 15, 1.5] as [number, number, number],
+    position: [0, 0.17, 0.017] as [number, number, number],
     rotation: [0, 0, 0] as [number, number, number],
-    scale: 90,
+    scale: 1,
   },
 
   stableWalkBoneTracks: ["mixamorighead", "mixamorigneck", "headtopend"],

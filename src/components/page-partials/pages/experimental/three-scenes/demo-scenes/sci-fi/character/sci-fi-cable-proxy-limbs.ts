@@ -4,6 +4,14 @@ type Vec3 = [number, number, number];
 
 export const CABLE_PROXY_POINT_RADIUS = 0.01;
 
+/** Bone-local proxy offsets were tuned for the old 0.011 armature export. */
+export const SCI_FI_CABLE_PROXY_BONE_UNIT = 0.011;
+
+export function toBoneLocalOffset(position?: Vec3) {
+  const offset = new Vector3(...(position ?? [0, 0, 0]));
+  return offset.multiplyScalar(SCI_FI_CABLE_PROXY_BONE_UNIT);
+}
+
 type SciFiCableProxyBase = {
   id: string;
   boneName: string;
@@ -169,7 +177,7 @@ export function resolveCableProxyCapsules(
 
     bone.updateWorldMatrix(true, false);
 
-    tmpCenter.set(...(config.localPosition ?? [0, 0, 0]));
+    tmpCenter.copy(toBoneLocalOffset(config.localPosition));
     bone.localToWorld(tmpCenter);
     bone.getWorldQuaternion(tmpRotationOffset);
 
@@ -205,7 +213,7 @@ export function resolveCableProxyBoxes(
 
     bone.updateWorldMatrix(true, false);
 
-    tmpCenter.set(...(config.localPosition ?? [0, 0, 0]));
+    tmpCenter.copy(toBoneLocalOffset(config.localPosition));
     bone.localToWorld(tmpCenter);
     bone.getWorldQuaternion(tmpRotationOffset);
 

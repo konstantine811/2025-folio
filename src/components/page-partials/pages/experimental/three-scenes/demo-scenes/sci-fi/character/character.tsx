@@ -6,18 +6,20 @@ import { HelmetCableRopes } from "./cables/helmet-cable-ropes";
 import { SholomModel } from "./sholom";
 import { normalizeRange } from "@/utils/math/normalize";
 
-const characterPath = "/3d-models/sci-fi/character.glb";
-const sitToStandAnimation = "sit-to-stand";
-const walkAnimation = "sad_walk";
-const standScrollEnd = 0.28;
-const walkScrollStart = 0.26;
-const walkScrollEnd = 1;
-const walkDistance = 4.5;
-const walkCycles = 3.6;
-const helmetHeadPosition: [number, number, number] = [0, 15, 1.5];
-const helmetHeadRotation: [number, number, number] = [0, 0, 0];
-const helmetHeadScale = 90;
-const stableWalkBoneTracks = ["mixamorighead", "mixamorigneck", "headtopend"];
+import { sciFiCharacterConfig } from "./sci-fi.config";
+
+const characterPath = sciFiCharacterConfig.modelPath;
+const sitToStandAnimation = sciFiCharacterConfig.animations.sitToStand;
+const walkAnimation = sciFiCharacterConfig.animations.walk;
+const standScrollEnd = sciFiCharacterConfig.scroll.standScrollEnd;
+const walkScrollStart = sciFiCharacterConfig.scroll.walkScrollStart;
+const walkScrollEnd = sciFiCharacterConfig.scroll.walkScrollEnd;
+const walkDistance = sciFiCharacterConfig.scroll.walkDistance;
+const walkCycles = sciFiCharacterConfig.scroll.walkCycles;
+const helmetHeadPosition = sciFiCharacterConfig.helmet.position;
+const helmetHeadRotation = sciFiCharacterConfig.helmet.rotation;
+const helmetHeadScale = sciFiCharacterConfig.helmet.scale;
+const stableWalkBoneTracks = sciFiCharacterConfig.stableWalkBoneTracks;
 
 type CharacterProps = JSX.IntrinsicElements["group"] & {
   scrollProgress: number;
@@ -129,25 +131,29 @@ export function Character({ scrollProgress, ...props }: CharacterProps) {
         />
       )}
       <group ref={modelRoot} name="Scene">
-        <group
-          name="Armature008"
-          position={[0, 0.055, 13.821]}
-          rotation={[Math.PI / 2, 0, Math.PI]}
-          scale={0.011}
-        >
+        <group name="Armature">
           <skinnedMesh
-            name="human001"
-            geometry={(nodes.human001 as SkinnedMesh).geometry}
-            material={materials.Skin}
-            skeleton={(nodes.human001 as SkinnedMesh).skeleton}
+            name="human"
+            geometry={(nodes.human as SkinnedMesh).geometry}
+            material={materials["Skin.002"]}
+            skeleton={(nodes.human as SkinnedMesh).skeleton}
           />
           <skinnedMesh
-            name="l_manb001"
-            geometry={(nodes.l_manb001 as SkinnedMesh).geometry}
-            material={materials["L_m_default.007"]}
-            skeleton={(nodes.l_manb001 as SkinnedMesh).skeleton}
+            name="l_manb"
+            geometry={(nodes.l_manb as SkinnedMesh).geometry}
+            material={materials.L_m_default}
+            skeleton={(nodes.l_manb as SkinnedMesh).skeleton}
           />
           <primitive object={nodes.mixamorigHips} />
+          <primitive object={nodes.Ctrl_Master} />
+          <primitive object={nodes.Ctrl_Foot_IK_Left} />
+          <primitive object={nodes.Ctrl_LegPole_IK_Left} />
+          <primitive object={nodes.Ctrl_Foot_IK_Right} />
+          <primitive object={nodes.Ctrl_LegPole_IK_Right} />
+          <primitive object={nodes.Ctrl_ArmPole_IK_Left} />
+          <primitive object={nodes.Ctrl_Hand_IK_Left} />
+          <primitive object={nodes.Ctrl_ArmPole_IK_Right} />
+          <primitive object={nodes.Ctrl_Hand_IK_Right} />
         </group>
       </group>
     </group>

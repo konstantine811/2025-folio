@@ -62,6 +62,32 @@ export function getTerrainHeight(
   });
 }
 
+/** Large-scale 0–1 FBM for grass field color patches (world XZ). */
+export function getGrassFieldNoise(
+  noiseScale: ReturnType<typeof float>,
+  noiseSeed: ReturnType<typeof float>,
+) {
+  return Fn(([xz]: [ReturnType<typeof vec2>]) => {
+    const sample = xz
+      .mul(noiseScale)
+      .add(vec2(noiseSeed.mul(0.13), noiseSeed.mul(0.71)));
+    const n0 = sampleFbm(sample, noiseSeed);
+    const n1 = sampleFbm(
+      sample.mul(1.9).add(vec2(11.3, 4.7)),
+      noiseSeed.add(29),
+    );
+    const n2 = sampleFbm(
+      sample.mul(3.8).add(vec2(6.1, 14.2)),
+      noiseSeed.add(53),
+    );
+    return clamp(
+      n0.mul(0.55).add(n1.mul(0.3)).add(n2.mul(0.15)),
+      float(0),
+      float(1),
+    );
+  });
+}
+
 export function getTerrainNormal(
   getTerrainHeightFn: ReturnType<ReturnType<typeof getTerrainHeight>>,
 ) {

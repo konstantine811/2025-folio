@@ -1,5 +1,5 @@
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import type { MutableRefObject } from "react";
 import * as THREE from "three";
 import { GrassLOD } from "./grass-lod";
@@ -21,12 +21,8 @@ export function StylizedGrass({
 }: StylizedGrassProps) {
   const groupRef = useRef<THREE.Group>(null);
   const { camera } = useThree();
-  const { uniforms, syncUniforms } = useGrassUniforms(config);
+  const { uniforms } = useGrassUniforms(config);
   const { lodBuffers, grassData } = useGrassCompute(uniforms, camera);
-
-  useEffect(() => {
-    if (config) syncUniforms(config);
-  }, [config, syncUniforms]);
 
   useGridSnapping(focusRef, ({ snappedX, snappedZ, currentCellX, currentCellZ }) => {
     if (!groupRef.current) return;

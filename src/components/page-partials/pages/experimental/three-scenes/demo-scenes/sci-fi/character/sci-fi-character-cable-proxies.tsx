@@ -11,6 +11,7 @@ import { sciFiBodyProxyCollisionGroups } from "../sci-fi-collision-groups";
 import {
   isCableProxyBoxConfig,
   sciFiCableProxyLimbs,
+  toBoneLocalOffset,
 } from "./sci-fi-cable-proxy-limbs";
 
 const PROXY_COLLISION_GROUPS = sciFiBodyProxyCollisionGroups();
@@ -69,7 +70,7 @@ export function SciFiCharacterCableProxies({
         {
           config,
           bone,
-          localPosition: new Vector3(...(config.localPosition ?? [0, 0, 0])),
+          localPosition: toBoneLocalOffset(config.localPosition),
           rotationOffset: config.localRotation
             ? new Euler(...config.localRotation)
             : null,

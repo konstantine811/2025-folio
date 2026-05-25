@@ -1,5 +1,5 @@
 import { struct } from "three/tsl";
-import * as THREE from "three";
+import type { IndirectStorageBufferAttribute } from "three/webgpu";
 
 /** Grass patch covers this square (meters), centered on snapped origin. */
 export const GRASS_AREA_SIZE = 128;
@@ -49,7 +49,7 @@ export const DEFAULT_LOD_CONFIG: LODSegmentsConfig[] = [
 
 export type LODBufferConfig = LODSegmentsConfig & {
   indices: ReturnType<typeof import("three/tsl").instancedArray>;
-  drawBuffer: THREE.IndirectStorageBufferAttribute;
+  drawBuffer: IndirectStorageBufferAttribute;
   drawStorage: ReturnType<typeof import("three/tsl").storage>;
   vertexCount: number;
 };
@@ -89,6 +89,8 @@ export type GrassRuntimeConfig = {
   terrainAmp?: number;
   terrainFreq?: number;
   terrainSeed?: number;
+  colorNoiseScale?: number;
+  colorNoiseSeed?: number;
   debugLod?: boolean;
 };
 
@@ -110,17 +112,19 @@ export const DEFAULT_GRASS_RUNTIME: Required<GrassRuntimeConfig> = {
   pushRadius: 1.4,
   pushAmount: 0.32,
   flattenAmount: 0.5,
-  windSwayStrength: 0.1,
+  windSwayStrength: 0.85,
   windDirX: 0.85,
   windDirZ: 0.35,
   windScale: 0.25,
   windSpeed: 0.6,
-  windStrength: 0.35,
+  windStrength: 2.8,
   windFacing: 0.6,
   windDistanceStart: 10,
   windDistanceEnd: 30,
   terrainAmp: 0.12,
   terrainFreq: 0.06,
   terrainSeed: 42,
+  colorNoiseScale: 0.5,
+  colorNoiseSeed: 107,
   debugLod: false,
 };

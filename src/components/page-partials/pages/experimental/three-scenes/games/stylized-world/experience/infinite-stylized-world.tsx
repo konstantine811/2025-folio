@@ -298,7 +298,7 @@ export function InfiniteStylizedWorld({
     () => ({
       bladeHeightMin: grass?.bladeHeightMin ?? 0.28,
       bladeHeightMax: grass?.bladeHeightMax ?? 0.62,
-      windSwayStrength: grass?.windSwayStrength ?? 0.1,
+      windSwayStrength: grass?.windSwayStrength ?? 0.85,
       pushRadius: grass?.pushRadius ?? 1.4,
       ...grass,
     }),

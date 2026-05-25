@@ -20,7 +20,6 @@ import {
   select,
   smoothstep,
   sqrt,
-  time,
   transformNormalToView,
   uv,
   varying,
@@ -29,8 +28,9 @@ import {
   vec4,
 } from "three/tsl";
 import type { GrassUniforms } from "./config";
+import { getPerlinTexture } from "../bush-core";
+import { samplePerlinWindOffset } from "../wind-helpers";
 import {
-  applyVertexSway,
   applyWindPush,
   bezier3,
   bezier3Tangent,
@@ -38,7 +38,7 @@ import {
   getBezierControlPoints,
   safeNormalize2D,
 } from "./shader-helpers";
-import { applySlopeAlignment } from "./terrain-helpers";
+import { applySlopeAlignment, getGrassFieldNoise } from "./terrain-helpers";
 
 export function createGrassMaterial(
   grassData: ReturnType<typeof import("./grass-geometry").createGrassData>,
@@ -49,6 +49,7 @@ export function createGrassMaterial(
   debugColor?: THREE.Color,
 ) {
   const vLightNormal = varying(vec3(0));
+  const vWorldXZ = varying(vec2(0));
   const vHeight = varying(float(0));
   const vDistFade = varying(float(0));
   const vClumpSeed = varying(float(0));
@@ -62,6 +63,11 @@ export function createGrassMaterial(
 
   const trueIndex = visibleIndicesBuffer.element(instanceIndex);
   const data = grassData.element(trueIndex);
+  const perlinTexture = getPerlinTexture();
+  const grassFieldNoise = getGrassFieldNoise(
+    uniforms.uColorNoiseScale as unknown as ReturnType<typeof float>,
+    uniforms.uColorNoiseSeed as unknown as ReturnType<typeof float>,
+  );
 
   const calculateAO = () =>
     mix(
@@ -84,6 +90,8 @@ export function createGrassMaterial(
     const windStrength01 = d1.w;
     const clumpSeed01 = d2.z;
     const perBladeHash01 = d2.w;
+    const rotSin = d2.x;
+    const rotCos = d2.y;
     const tnX = d3.x;
     const tnZ = d3.y;
     const pushVector = d3.zw;
@@ -134,18 +142,7 @@ export function createGrassMaterial(
       instancePos.z.add(spine.z),
     );
     const side = computeGrassBillboardSide(spineWorld, cameraPosition);
-    const vertexSway = applyVertexSway(
-      side,
-      t,
-      height,
-      windStrength,
-      perBladeHash01,
-      worldXZ,
-      windDir2,
-      time,
-      uniforms.uWindSwayStrength,
-    );
-    const spineWithSway = spine.add(vertexSway);
+    const spineWithSway = spine;
     const normal = normalize(cross(side, tangent));
 
     const widthFactor = t
@@ -166,9 +163,56 @@ export function createGrassMaterial(
       ),
     );
 
+    const perlinWind = samplePerlinWindOffset(
+      perlinTexture,
+      worldXZ,
+      uniforms.uWindDir as unknown as ReturnType<typeof vec2>,
+      uniforms.uWindSpeed as unknown as ReturnType<typeof float>,
+      uniforms.uWindSwayStrength
+        .mul(windStrength)
+        .mul(pow(t, float(1.5))),
+    );
+    lpos.addAssign(
+      vec3(
+        perlinWind.x.mul(pow(t, 2)),
+        float(0),
+        perlinWind.y.mul(pow(t, 2)),
+      ),
+    );
+
+    lpos.assign(
+      vec3(
+        lpos.x.mul(rotCos).sub(lpos.z.mul(rotSin)),
+        lpos.y,
+        lpos.x.mul(rotSin).add(lpos.z.mul(rotCos)),
+      ),
+    );
+
     let tangentRotated = normalize(tangent).toVar();
     let sideRotated = normalize(side).toVar();
     let normalRotated = normalize(normal).toVar();
+
+    tangentRotated.assign(
+      vec3(
+        tangentRotated.x.mul(rotCos).sub(tangentRotated.z.mul(rotSin)),
+        tangentRotated.y,
+        tangentRotated.x.mul(rotSin).add(tangentRotated.z.mul(rotCos)),
+      ),
+    );
+    sideRotated.assign(
+      vec3(
+        sideRotated.x.mul(rotCos).sub(sideRotated.z.mul(rotSin)),
+        sideRotated.y,
+        sideRotated.x.mul(rotSin).add(sideRotated.z.mul(rotCos)),
+      ),
+    );
+    normalRotated.assign(
+      vec3(
+        normalRotated.x.mul(rotCos).sub(normalRotated.z.mul(rotSin)),
+        normalRotated.y,
+        normalRotated.x.mul(rotSin).add(normalRotated.z.mul(rotCos)),
+      ),
+    );
 
     applySlopeAlignment(tn, lpos, tangentRotated, sideRotated, normalRotated);
 
@@ -179,6 +223,7 @@ export function createGrassMaterial(
     );
 
     vLightNormal.assign(tn);
+    vWorldXZ.assign(vec2(instancePos.x, instancePos.z));
     vHeight.assign(t);
     vDistFade.assign(
       smoothstep(uniforms.uDistFadeNear, uniforms.uDistFadeFar, dist),
@@ -201,7 +246,17 @@ export function createGrassMaterial(
   })();
 
   material.colorNode = Fn(() => {
-    const gradient = mix(uniforms.uBaseColor, uniforms.uTipColor, vHeight);
+    const fieldNoise = smoothstep(
+      float(0.18),
+      float(0.82),
+      grassFieldNoise(vWorldXZ),
+    );
+    const patchColor = mix(
+      uniforms.uFieldColorDark,
+      uniforms.uFieldColorLight,
+      fieldNoise,
+    );
+    const bladeShade = mix(uniforms.uBaseColor, uniforms.uTipColor, vHeight);
     const clumpFactor = mix(
       uniforms.uClumpSeedRange.x,
       uniforms.uClumpSeedRange.y,
@@ -212,7 +267,8 @@ export function createGrassMaterial(
       uniforms.uBladeSeedRange.y,
       vBladeSeed,
     );
-    let grassColor = gradient
+    let grassColor = patchColor
+      .mul(bladeShade)
       .mul(clumpFactor)
       .mul(bladeFactor)
       .mul(calculateAO());

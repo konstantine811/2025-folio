@@ -23,27 +23,29 @@ export function SciFiCharacterModelView({
   return (
     <group ref={modelRootRef} name="Scene">
       <group rotation={[0, modelRotationY, 0]}>
-        <group
-          name="Armature008"
-          position={[0, 0, 0]}
-          rotation={[Math.PI / 2, 0, 0]}
-          scale={0.011}
-        >
-        <skinnedMesh
-          name="human001"
-          geometry={(nodes.human001 as SkinnedMesh).geometry}
-          material={materials.Skin}
-          skeleton={(nodes.human001 as SkinnedMesh).skeleton}
-        />
-
-        <skinnedMesh
-          name="l_manb001"
-          geometry={(nodes.l_manb001 as SkinnedMesh).geometry}
-          material={materials["L_m_default.007"]}
-          skeleton={(nodes.l_manb001 as SkinnedMesh).skeleton}
-        />
-
-        <primitive object={nodes.mixamorigHips} />
+        <group name="Armature">
+          <skinnedMesh
+            name="human"
+            geometry={(nodes.human as SkinnedMesh).geometry}
+            material={materials["Skin.002"]}
+            skeleton={(nodes.human as SkinnedMesh).skeleton}
+          />
+          <skinnedMesh
+            name="l_manb"
+            geometry={(nodes.l_manb as SkinnedMesh).geometry}
+            material={materials.L_m_default}
+            skeleton={(nodes.l_manb as SkinnedMesh).skeleton}
+          />
+          <primitive object={nodes.mixamorigHips} />
+          <primitive object={nodes.Ctrl_Master} />
+          <primitive object={nodes.Ctrl_Foot_IK_Left} />
+          <primitive object={nodes.Ctrl_LegPole_IK_Left} />
+          <primitive object={nodes.Ctrl_Foot_IK_Right} />
+          <primitive object={nodes.Ctrl_LegPole_IK_Right} />
+          <primitive object={nodes.Ctrl_ArmPole_IK_Left} />
+          <primitive object={nodes.Ctrl_Hand_IK_Left} />
+          <primitive object={nodes.Ctrl_ArmPole_IK_Right} />
+          <primitive object={nodes.Ctrl_Hand_IK_Right} />
         </group>
       </group>
     </group>

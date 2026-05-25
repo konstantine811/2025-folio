@@ -13,9 +13,9 @@ import {
   normalLocal,
   positionLocal,
   texture,
-  time,
   uniform,
   uv,
+  vec2,
   vec3,
 } from "three/tsl";
 import {
@@ -24,6 +24,7 @@ import {
   LEAF_MASK_PATH,
   type BushConfig,
 } from "./bush-core";
+import { samplePerlinWindOffset } from "./wind-helpers";
 
 type BushNodeMaterialProps = BushConfig & {
   geometry?: THREE.BufferGeometry;
@@ -55,20 +56,17 @@ export function useBushMaterialNodes(config: BushConfig = {}) {
     const windSpeedUniform = uniform(DEFAULT_BUSH_CONFIG.windSpeed);
 
     const leafAlpha = texture(leafMask, uv()).r;
-    const perlinUv = positionLocal.xz
-      .mul(0.12)
-      .add(time.mul(windSpeedUniform));
-    const windSample = clamp(
-      texture(perlinTexture, perlinUv).sub(0.5),
-      -0.35,
-      0.35,
+    const windOffset = samplePerlinWindOffset(
+      perlinTexture,
+      positionLocal.xz,
+      vec2(-1, 1),
+      windSpeedUniform,
+      windStrengthUniform,
     );
-    const perlinColor = windSample
-      .mul(max(0, positionLocal.y))
-      .mul(windStrengthUniform);
+    const heightMask = max(float(0), positionLocal.y);
 
     const positionNode = positionLocal.add(
-      vec3(perlinColor.r, 0, perlinColor.r),
+      vec3(windOffset.x, float(0), windOffset.y).mul(heightMask),
     );
 
     if (debug) {

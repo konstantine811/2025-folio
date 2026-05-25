@@ -156,7 +156,7 @@ export type BushConfig = {
 export const DEFAULT_BUSH_CONFIG: Required<BushConfig> = {
   leafCount: 80,
   bushRadius: 1,
-  windStrength: 0.12,
+  windStrength: 1,
   windSpeed: 0.05,
   normalMix: 0.4,
   debug: false,

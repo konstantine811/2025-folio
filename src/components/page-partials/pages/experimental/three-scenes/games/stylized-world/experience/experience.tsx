@@ -36,7 +36,7 @@ const Experience = () => {
     steerAngleDeg,
     isDebug,
   } = useControls("Stylized World", {
-    windStrength: { value: 0.12, min: 0, max: 0.5, step: 0.01 },
+    windStrength: { value: 1, min: 0, max: 5, step: 0.05 },
     windSpeed: { value: 0.05, min: 0, max: 0.2, step: 0.005 },
     bushesPerTile: { value: 1, min: 0, max: 16, step: 1 },
     viewRadius: { value: 6, min: 3, max: 10, step: 1 },

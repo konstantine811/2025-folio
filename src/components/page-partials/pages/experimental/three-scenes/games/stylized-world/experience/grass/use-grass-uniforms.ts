@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import * as THREE from "three";
 import { uniform, vec2, vec3 } from "three/tsl";
 import {
@@ -70,6 +70,7 @@ export function useGrassUniforms(config: GrassRuntimeConfig = {}) {
           new THREE.Vector2(params.windDirX, params.windDirZ).normalize(),
         ),
         uWindSwayStrength: uniform(params.windSwayStrength),
+        uWindSpeed: uniform(params.windSpeed),
         uBaseColor: uniform(vec3(0.36, 0.5, 0.2)),
         uTipColor: uniform(vec3(0.78, 0.84, 0.48)),
         uBladeSeedRange: uniform(vec2(0.94, 1.06)),
@@ -88,12 +89,16 @@ export function useGrassUniforms(config: GrassRuntimeConfig = {}) {
         uWindDistanceEnd: uniform(params.windDistanceEnd),
         uDistFadeNear: uniform(15),
         uDistFadeFar: uniform(30),
+        uColorNoiseScale: uniform<number>(params.colorNoiseScale),
+        uColorNoiseSeed: uniform<number>(params.colorNoiseSeed),
+        uFieldColorDark: uniform(vec3(0.26, 0.4, 0.15)),
+        uFieldColorLight: uniform(vec3(0.64, 0.74, 0.36)),
       },
     }),
     [],
   );
 
-  const syncUniforms = (next: GrassRuntimeConfig) => {
+  const syncUniforms = useCallback((next: GrassRuntimeConfig) => {
     const merged = { ...DEFAULT_GRASS_RUNTIME, ...next };
     const nextAlignment = resolveStraightness(merged.straightness);
 
@@ -132,6 +137,7 @@ export function useGrassUniforms(config: GrassRuntimeConfig = {}) {
     uniforms.compute.uTerrainFreq.value = merged.terrainFreq;
     uniforms.compute.uTerrainSeed.value = merged.terrainSeed;
     uniforms.material.uWindSwayStrength.value = merged.windSwayStrength;
+    uniforms.material.uWindSpeed.value = merged.windSpeed;
     uniforms.material.uCharacterFlattenAmount.value = merged.flattenAmount;
     uniforms.material.uDebugLod.value = merged.debugLod ? 1 : 0;
     uniforms.material.uWindDir.value
@@ -139,7 +145,12 @@ export function useGrassUniforms(config: GrassRuntimeConfig = {}) {
       .normalize();
     uniforms.material.uWindDistanceStart.value = merged.windDistanceStart;
     uniforms.material.uWindDistanceEnd.value = merged.windDistanceEnd;
-  };
+    uniforms.material.uColorNoiseScale.value = merged.colorNoiseScale;
+    uniforms.material.uColorNoiseSeed.value = merged.colorNoiseSeed;
+  }, [uniforms]);
+
+  // Keep GPU uniforms in sync every render (same pattern as bush material).
+  syncUniforms(params);
 
   return { uniforms, syncUniforms };
 }
