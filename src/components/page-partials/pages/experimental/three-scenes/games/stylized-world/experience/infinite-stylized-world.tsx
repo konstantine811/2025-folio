@@ -12,6 +12,10 @@ import {
 import { BushNodeMaterial } from "./bush-material";
 import type { GrassRuntimeConfig } from "./grass/config";
 import { StylizedGrass } from "./grass/stylized-grass";
+import {
+  createGroundTerrainGeometry,
+  sampleGroundTerrainHeight,
+} from "./ground-terrain";
 import { ImperativeGridDebug, type GridDebugSyncRef } from "./grid-debug";
 import {
   readPlayerTile,
@@ -75,8 +79,14 @@ function collectBushMatrices({
         const oz = rng() * tileSize;
         const scale = THREE.MathUtils.lerp(0.75, 1.25, rng());
         const yaw = rng() * Math.PI * 2;
+        const localX = ox - tileSize / 2;
+        const localZ = oz - tileSize / 2;
 
-        dummy.position.set(tileX * tileSize + ox, 0, tileZ * tileSize + oz);
+        dummy.position.set(
+          tileX * tileSize + ox,
+          sampleGroundTerrainHeight({ x: localX, z: localZ, tileSize }),
+          tileZ * tileSize + oz,
+        );
         dummy.rotation.set(0, yaw, 0);
         dummy.scale.setScalar(scale);
         dummy.updateMatrix();
@@ -152,11 +162,11 @@ type GroundPoolSlot = {
 
 function GroundPool({
   radius,
-  tileSize,
+  geometry,
   slotsRef,
 }: {
   radius: number;
-  tileSize: number;
+  geometry: THREE.BufferGeometry;
   slotsRef: MutableRefObject<Array<GroundPoolSlot | undefined>>;
 }) {
   const slots = useMemo(() => {
@@ -182,12 +192,11 @@ function GroundPool({
             mesh.userData.camExcludeCollision = true;
             slotsRef.current[index] = { dx, dz, mesh };
           }}
-          rotation={[-Math.PI / 2, 0, 0]}
+          geometry={geometry}
           receiveShadow
           frustumCulled={false}
         >
-          <planeGeometry args={[tileSize, tileSize]} />
-          <meshBasicMaterial color="#1f1f1f" />
+          <meshStandardMaterial color="#1f1f1f" roughness={0.92} />
         </mesh>
       ))}
     </>
@@ -211,7 +220,7 @@ function syncGroundPool(
       0,
       worldTileZ * tileSize + tileSize / 2,
     );
-    const material = mesh.material as THREE.MeshBasicMaterial;
+    const material = mesh.material as THREE.MeshStandardMaterial;
     material.color.copy(computeGroundColor(worldTileX, worldTileZ, seed));
   }
 }
@@ -275,6 +284,10 @@ export function InfiniteStylizedWorld({
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const bushMaterialRef = useRef<THREE.Material | null>(null);
   const [bushMaterialReady, setBushMaterialReady] = useState(false);
+  const groundGeometry = useMemo(
+    () => createGroundTerrainGeometry(tileSize),
+    [tileSize],
+  );
 
   const assignBushMaterial = useCallback((material: THREE.Material | null) => {
     if (!material || bushMaterialRef.current?.uuid === material.uuid) return;
@@ -478,7 +491,7 @@ export function InfiniteStylizedWorld({
         )}
         <GroundPool
           radius={renderRadius}
-          tileSize={tileSize}
+          geometry={groundGeometry}
           slotsRef={groundSlotsRef}
         />
         {showGridDebug && (

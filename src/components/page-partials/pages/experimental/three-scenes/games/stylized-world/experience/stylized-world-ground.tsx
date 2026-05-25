@@ -1,11 +1,12 @@
 import {
-  CuboidCollider,
+  HeightfieldCollider,
   RapierRigidBody,
   RigidBody,
 } from "@react-three/rapier";
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import type { MutableRefObject } from "react";
+import type { Vector3 } from "three";
 import {
   getTilePoolOffsets,
   getTileWorldCenter,
@@ -13,15 +14,15 @@ import {
   shouldRecenterStream,
   type TileCoord,
 } from "./stylized-world-streaming";
+import { createGroundTerrainHeightfieldArgs } from "./ground-terrain";
 
 type StylizedWorldGroundProps = {
-  focusRef: MutableRefObject<{ x: number; y: number; z: number }>;
+  focusRef: MutableRefObject<Vector3>;
   tileSize?: number;
   radius?: number;
 };
 
-const GROUND_COLLIDER_HALF_Y = 0.25;
-const GROUND_COLLIDER_Y = -GROUND_COLLIDER_HALF_Y;
+const GROUND_COLLIDER_Y = 0;
 
 function syncPhysicsGroundPool({
   bodyRefs,
@@ -34,8 +35,6 @@ function syncPhysicsGroundPool({
   streamCenter: TileCoord;
   tileSize: number;
 }) {
-  const half = tileSize / 2;
-
   for (let index = 0; index < offsets.length; index++) {
     const body = bodyRefs[index];
     if (!body) continue;
@@ -63,7 +62,10 @@ export function StylizedWorldGround({
   const bodyRefs = useRef<(RapierRigidBody | null)[]>([]);
   const hasSyncedRef = useRef(false);
   const offsets = useMemo(() => getTilePoolOffsets(radius), [radius]);
-  const half = tileSize / 2;
+  const heightfieldArgs = useMemo(
+    () => createGroundTerrainHeightfieldArgs(tileSize),
+    [tileSize],
+  );
 
   const runSync = (streamCenter: TileCoord) => {
     syncPhysicsGroundPool({
@@ -116,8 +118,9 @@ export function StylizedWorldGround({
             friction={1.2}
             userData={{ isGround: true, camExcludeCollision: true }}
           >
-            <CuboidCollider
-              args={[half, GROUND_COLLIDER_HALF_Y, half]}
+            <HeightfieldCollider
+              args={heightfieldArgs}
+              friction={1.2}
               restitution={0}
             />
           </RigidBody>

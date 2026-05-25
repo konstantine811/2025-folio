@@ -39,7 +39,7 @@ const BODY = { width: 1.2, height: 0.45, length: 2 };
 export const STYLIZED_CAR_GRASS_PUSH_RADIUS =
   Math.hypot(BODY.width, BODY.length) * 0.5 + 0.35;
 const WHEEL_RADIUS = 0.22;
-const WHEEL_WIDTH = 0.14;
+const WHEEL_WIDTH = 0.24;
 const WHEEL_Y = -BODY.height / 2;
 const MAX_SUSPENSION_TRAVEL = 0.16;
 const SUSPENSION_REST_LENGTH = BODY.height / 2;
