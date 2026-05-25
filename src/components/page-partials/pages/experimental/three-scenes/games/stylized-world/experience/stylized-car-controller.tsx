@@ -138,7 +138,10 @@ export function StylizedCarController({
     chassisRef,
     wheelRefs,
     wheelsInfo,
-    { indexForwardAxis: 2, contactHistoriesRef: historiesRef },
+    {
+      indexForwardAxis: 2,
+      contactHistoriesRef: showWheelTrackDebug ? historiesRef : undefined,
+    },
   );
 
   const forward = useControlStore((s) => s.forward);

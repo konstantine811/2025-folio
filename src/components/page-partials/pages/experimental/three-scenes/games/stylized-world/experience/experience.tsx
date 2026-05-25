@@ -44,7 +44,7 @@ const Experience = () => {
     windSpeed: { value: 0.05, min: 0, max: 0.2, step: 0.005 },
     bushesPerTile: { value: 1, min: 0, max: 16, step: 1 },
     viewRadius: { value: 6, min: 3, max: 10, step: 1 },
-    showGridDebug: { value: true, label: "Grid debug" },
+    showGridDebug: { value: false, label: "Grid debug" },
     showTestCourse: { value: true, label: "Test course" },
     showGrass: { value: true, label: "Grass" },
     grassBladeHeight: {
@@ -165,7 +165,7 @@ const Experience = () => {
     },
     isDebug: { value: false, label: "Debug" },
     showWheelTrackDebug: {
-      value: true,
+      value: false,
       label: "Wheel track DataTexture debug",
     },
   });
