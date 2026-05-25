@@ -7,13 +7,18 @@ import { Component, Entity, EntityType } from "../ecs";
 import { WeaponSensor } from "../character-attachment/weapon-sensor";
 import { CharacterRenderProps } from "../store/character-controller-store";
 
-const capsuleHalfHeight = 0.8;
-const capsuleRadius = 0.4;
+const DEFAULT_CAPSULE_HALF_HEIGHT = 0.8;
+const DEFAULT_CAPSULE_RADIUS = 0.4;
 
 type CharacterControllerProps = {
   startPosition?: [number, number, number];
   modelPosition?: [number, number, number];
   modelScale?: number;
+
+  /** Rapier capsule half-height (cylinder section). Default: 0.8 */
+  capsuleHalfHeight?: number;
+  /** Rapier capsule radius. Default: 0.4 */
+  capsuleRadius?: number;
 
   hasWeaponSensor?: boolean;
 
@@ -29,6 +34,8 @@ type CharacterControllerProps = {
 
 export function CharacterController({
   startPosition = [0, 6, 1],
+  capsuleHalfHeight = DEFAULT_CAPSULE_HALF_HEIGHT,
+  capsuleRadius = DEFAULT_CAPSULE_RADIUS,
   hasWeaponSensor = false,
   capsuleCollisionGroups,
   raycastFilterGroups,

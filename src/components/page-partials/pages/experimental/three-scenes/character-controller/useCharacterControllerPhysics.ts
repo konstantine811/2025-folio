@@ -294,7 +294,7 @@ export function useCharacterControllerPhysics({
 
       if (closestHit && closestHitRay) {
         const point = closestHitRay.pointAt(closestHit.timeOfImpact);
-        const targetY = point.y + 1.2;
+        const targetY = point.y + capsuleHalfHeight + capsuleRadius;
 
         characterRigidBody.setTranslation(
           {

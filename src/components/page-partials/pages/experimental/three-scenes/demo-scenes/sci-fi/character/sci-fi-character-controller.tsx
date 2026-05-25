@@ -8,9 +8,15 @@ import {
   sciFiControllerCapsuleCollisionGroups,
 } from "../sci-fi-collision-groups";
 import {
+  getSciFiCapsuleFeetToCenterOffset,
   getSciFiControllerSpawnFromScroll,
+  sciFiCharacterConfig,
   sciFiScrollPlacement,
 } from "./sci-fi.config";
+
+const { halfHeight: sciFiCapsuleHalfHeight, radius: sciFiCapsuleRadius } =
+  sciFiCharacterConfig.controllerCapsule;
+const sciFiModelOffsetY = -getSciFiCapsuleFeetToCenterOffset();
 
 type SciFiToggleCharacterProps = {
   mode: "scroll" | "controller";
@@ -61,12 +67,14 @@ export function SciFiToggleCharacter({
     <CharacterController
       key={controllerStartPosition.join(",")}
       startPosition={controllerStartPosition}
+      capsuleHalfHeight={sciFiCapsuleHalfHeight}
+      capsuleRadius={sciFiCapsuleRadius}
       hasWeaponSensor={false}
       capsuleCollisionGroups={sciFiControllerCapsuleCollisionGroups()}
       raycastMembershipGroup={SCIFI_CHARACTER_CONTROLLER_GROUP}
       raycastFilterGroups={SCIFI_CONTROLLER_COLLIDES_WITH}
       renderCharacter={({ modelRef, controllerState }) => (
-        <group ref={modelRef} position={[0, -1.2, 0]} scale={1}>
+        <group ref={modelRef} position={[0, sciFiModelOffsetY, 0]} scale={1}>
           <SciFiCharacter
             driver="controller"
             modelRotationY={controllerModelRotationY}

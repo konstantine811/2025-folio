@@ -39,15 +39,24 @@ export const sciFiCharacterConfig = {
   },
 
   stableWalkBoneTracks: ["mixamorighead", "mixamorigneck", "headtopend"],
+
+  /** Controller-mode Rapier capsule — smaller than default CharacterController. */
+  controllerCapsule: {
+    halfHeight: 0.68,
+    radius: 0.4,
+  },
 };
+
+export function getSciFiCapsuleFeetToCenterOffset() {
+  const { halfHeight, radius } = sciFiCharacterConfig.controllerCapsule;
+  return halfHeight + radius;
+}
 
 /** Scroll group placement — must stay in sync with sci-fi-character-controller scroll wrapper. */
 export const sciFiScrollPlacement = {
   groupY: 0.1,
   startZ: 13.821,
   floorY: 0.057,
-  /** Matches CharacterController ground snap (capsule halfHeight + radius). */
-  capsuleCenterAboveFloor: 1.2,
 };
 
 export function getSciFiControllerSpawnFromScroll(
@@ -61,7 +70,7 @@ export function getSciFiControllerSpawnFromScroll(
 
   return [
     0,
-    sciFiScrollPlacement.floorY + sciFiScrollPlacement.capsuleCenterAboveFloor,
+    sciFiScrollPlacement.floorY + getSciFiCapsuleFeetToCenterOffset(),
     sciFiScrollPlacement.startZ -
       sciFiCharacterConfig.scroll.walkDistance * walkProgress,
   ];
