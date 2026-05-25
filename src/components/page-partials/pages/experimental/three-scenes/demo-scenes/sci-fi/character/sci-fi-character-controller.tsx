@@ -1,12 +1,16 @@
 import { SciFiCharacter } from "./sci-fi-character";
 import { CharacterAnimations } from "../../../character-controller/models/character-controller.model";
 import { CharacterController } from "../../../character-controller/controller/character-controller";
-import { RefObject } from "react";
+import { RefObject, useMemo } from "react";
 import {
   SCIFI_CHARACTER_CONTROLLER_GROUP,
   SCIFI_CONTROLLER_COLLIDES_WITH,
   sciFiControllerCapsuleCollisionGroups,
 } from "../sci-fi-collision-groups";
+import {
+  getSciFiControllerSpawnFromScroll,
+  sciFiScrollPlacement,
+} from "./sci-fi.config";
 
 type SciFiToggleCharacterProps = {
   mode: "scroll" | "controller";
@@ -28,9 +32,20 @@ export function SciFiToggleCharacter({
   scrollModelRotationY = 0,
   controllerModelRotationY = 0,
 }: SciFiToggleCharacterProps) {
+  const controllerStartPosition = useMemo((): [number, number, number] => {
+    if (mode !== "controller") {
+      return getSciFiControllerSpawnFromScroll(0);
+    }
+
+    return getSciFiControllerSpawnFromScroll(scrollProgressRef.current ?? 0);
+  }, [mode, scrollProgressRef]);
+
   if (mode === "scroll") {
     return (
-      <group position={[0, 0.1, 13.821]} scale={1}>
+      <group
+        position={[0, sciFiScrollPlacement.groupY, sciFiScrollPlacement.startZ]}
+        scale={1}
+      >
         <SciFiCharacter
           driver="scroll"
           scrollProgressRef={scrollProgressRef}
@@ -44,6 +59,8 @@ export function SciFiToggleCharacter({
 
   return (
     <CharacterController
+      key={controllerStartPosition.join(",")}
+      startPosition={controllerStartPosition}
       hasWeaponSensor={false}
       capsuleCollisionGroups={sciFiControllerCapsuleCollisionGroups()}
       raycastMembershipGroup={SCIFI_CHARACTER_CONTROLLER_GROUP}

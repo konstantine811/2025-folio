@@ -1,16 +1,23 @@
-import { JSX, useEffect, useMemo } from "react";
+import { JSX, useEffect, useMemo, useRef } from "react";
 import { useGLTF, useTexture } from "@react-three/drei";
-import { Mesh, MeshPhysicalMaterial, MeshStandardMaterial } from "three";
+import { Group, Mesh, MeshPhysicalMaterial, MeshStandardMaterial } from "three";
 import { useControls } from "leva";
 import { CuboidCollider, RigidBody, interactionGroups } from "@react-three/rapier";
+import { useRegisterCameraCollisionMeshes } from "@/components/common/hooks/camera/useRegisterCameraCollisionMeshes";
 
 const modelPath = "/3d-models/sci-fi/ship-container.glb";
 const texturePath = "/3d-models/sci-fi/ship_baking.jpg";
 const cableCollisionGroup = 4;
 const cableFloorCollisionGroup = 5;
 
+const camWall = { camIncludeCollision: true } as const;
+const camFloorExclude = { camExcludeCollision: true } as const;
+
 export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
+  const rootRef = useRef<Group>(null);
   const { nodes, materials } = useGLTF(modelPath);
+
+  useRegisterCameraCollisionMeshes(rootRef, [nodes]);
 
   const bakedTexture = useTexture(texturePath);
   bakedTexture.flipY = false;
@@ -81,20 +88,14 @@ export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
     [bakedMat],
   );
   return (
-    <group {...props} dispose={null} name="ground">
+    <group {...props} ref={rootRef} dispose={null} name="ground">
       <mesh
         castShadow
         receiveShadow
         geometry={(nodes.support as Mesh).geometry}
         material={materials.support}
         position={[0.054, 2.533, -0.042]}
-      />
-      <mesh
-        castShadow
-        receiveShadow
-        geometry={(nodes.window_frame as Mesh).geometry}
-        material={materials["Material.004"]}
-        position={[0, 2.639, -0.92]}
+        userData={camWall}
       />
       <mesh
         castShadow
@@ -102,6 +103,7 @@ export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
         geometry={(nodes.ship_top as Mesh).geometry}
         material={materials.shop_top}
         position={[0, 5.272, 17.861]}
+        userData={camWall}
       />
       <RigidBody type="fixed" colliders="trimesh" friction={1}>
         <mesh
@@ -110,6 +112,37 @@ export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
           geometry={(nodes.ship_floor as Mesh).geometry}
           material={materials.floor}
           position={[0, 0.057, 17.861]}
+          userData={camFloorExclude}
+        />
+      </RigidBody>
+      <RigidBody type="fixed" colliders="trimesh" friction={1}>
+        <mesh
+          castShadow
+          receiveShadow
+          geometry={(nodes.ship_husk as Mesh).geometry}
+          material={materials.shop_husk}
+          position={[0, 2.671, 17.861]}
+          userData={camWall}
+        />
+      </RigidBody>
+      <RigidBody type="fixed" colliders="trimesh" friction={0.6}>
+        <mesh
+          castShadow
+          receiveShadow
+          geometry={(nodes.window_glass as Mesh).geometry}
+          material={materials["Glass.001"]}
+          position={[0, 2.639, -0.951]}
+          userData={camWall}
+        />
+      </RigidBody>
+      <RigidBody type="fixed" colliders="trimesh" friction={1}>
+        <mesh
+          castShadow
+          receiveShadow
+          geometry={(nodes.window_frame as Mesh).geometry}
+          material={materials["Material.004"]}
+          position={[0, 2.639, -0.92]}
+          userData={camWall}
         />
       </RigidBody>
       <RigidBody type="fixed" colliders={false}>
@@ -129,20 +162,7 @@ export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
         geometry={(nodes.ship_top_white as Mesh).geometry}
         material={materials.ship_top_white}
         position={[0, 5.257, 19.199]}
-      />
-      <mesh
-        castShadow
-        receiveShadow
-        geometry={(nodes.ship_husk as Mesh).geometry}
-        material={materials.shop_husk}
-        position={[0, 2.671, 17.861]}
-      />
-      <mesh
-        castShadow
-        receiveShadow
-        geometry={(nodes.window_glass as Mesh).geometry}
-        material={materials["Glass.001"]}
-        position={[0, 2.639, -0.951]}
+        userData={camWall}
       />
       <mesh
         castShadow

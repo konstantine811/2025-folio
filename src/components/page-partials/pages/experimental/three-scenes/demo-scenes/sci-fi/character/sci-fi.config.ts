@@ -1,5 +1,6 @@
 import { CharacterAnimations } from "../../../character-controller/models/character-controller.model";
 import { SCI_FI_CHARACTER_MODEL_PATH } from "./model/sci-fi-character.model";
+import { normalizeRange } from "@/utils/math/normalize";
 
 export const SciFiCharacterAnimations: CharacterAnimations = {
   idle: "Idle",
@@ -39,3 +40,29 @@ export const sciFiCharacterConfig = {
 
   stableWalkBoneTracks: ["mixamorighead", "mixamorigneck", "headtopend"],
 };
+
+/** Scroll group placement — must stay in sync with sci-fi-character-controller scroll wrapper. */
+export const sciFiScrollPlacement = {
+  groupY: 0.1,
+  startZ: 13.821,
+  floorY: 0.057,
+  /** Matches CharacterController ground snap (capsule halfHeight + radius). */
+  capsuleCenterAboveFloor: 1.2,
+};
+
+export function getSciFiControllerSpawnFromScroll(
+  scrollProgress: number,
+): [number, number, number] {
+  const walkProgress = normalizeRange(
+    scrollProgress,
+    sciFiCharacterConfig.scroll.walkScrollStart,
+    sciFiCharacterConfig.scroll.walkScrollEnd,
+  );
+
+  return [
+    0,
+    sciFiScrollPlacement.floorY + sciFiScrollPlacement.capsuleCenterAboveFloor,
+    sciFiScrollPlacement.startZ -
+      sciFiCharacterConfig.scroll.walkDistance * walkProgress,
+  ];
+}

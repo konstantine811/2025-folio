@@ -10,17 +10,22 @@ import { normalizeRange } from "@/utils/math/normalize";
 import { SciFiToggleCharacter } from "./character/sci-fi-character-controller";
 import { CharacterAnimations } from "../../character-controller/models/character-controller.model";
 import { usePauseStore } from "@/components/common/game-controller/store/usePauseMode";
-import { SciFiCharacterAnimations } from "./character/sci-fi.config";
+import {
+  SciFiCharacterAnimations,
+  sciFiScrollPlacement,
+  sciFiCharacterConfig,
+} from "./character/sci-fi.config";
+import { useControls } from "leva";
 
 type ExperienceProps = {
   cameraMode: CameraMode;
   scrollProgressRef: RefObject<number>;
 };
 
-const characterStartZ = 13.821;
-const walkScrollStart = 0.26;
-const walkScrollEnd = 1;
-const walkDistance = 4.5;
+const characterStartZ = sciFiScrollPlacement.startZ;
+const walkScrollStart = sciFiCharacterConfig.scroll.walkScrollStart;
+const walkScrollEnd = sciFiCharacterConfig.scroll.walkScrollEnd;
+const walkDistance = sciFiCharacterConfig.scroll.walkDistance;
 
 type FollowCharacterCameraProps = {
   scrollProgressRef: RefObject<number>;
@@ -53,6 +58,7 @@ const FollowCharacterCamera = ({
 
 const InspectCameraControls = () => {
   const controls = useRef<CameraControls>(null);
+
   useEffect(() => {
     controls.current?.setLookAt(0, 2.2, 21.5, 0, 1.55, 13.8, false);
   }, []);
@@ -70,6 +76,10 @@ const InspectCameraControls = () => {
 
 const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
   const isPaused = usePauseStore((s) => s.isPaused);
+  const { isDebugPhysics } = useControls({
+    isDebugPhysics: { value: false },
+  });
+
   const characterMode = isPaused ? "scroll" : "controller";
   return (
     <>
@@ -81,7 +91,11 @@ const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
       <ambientLight intensity={1.7} />
       <directionalLight castShadow position={[1, 3, 1]} intensity={3} />
       {/* <Environment preset="sunset" /> */}
-      <Physics debug={false} gravity={[0, -9.81, 0]} interpolate={false}>
+      <Physics
+        debug={isDebugPhysics}
+        gravity={[0, -9.81, 0]}
+        interpolate={false}
+      >
         <ShipContainer />
         {/* <Character scrollProgress={scrollProgress} /> */}
         <SciFiToggleCharacter

@@ -2,6 +2,10 @@ import { Mesh, Object3D, Object3DEventMap, Raycaster, Vector3 } from "three";
 
 import { useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import {
+  getCameraCollisionMeshes,
+  subscribeCameraCollisionMeshes,
+} from "./camera-collision-registry";
 
 export type camListenerTargetType = "document" | "domElement";
 
@@ -63,12 +67,18 @@ const useFollowCamera = ({
   /** Camera collison detect setups */
   let smallestDistance = null;
   const cameraDistance = useRef<number | null>(null);
-  // let intersectObjects: THREE.Object3D[] = [];
   const intersectObjects = useRef<Object3D[]>([]);
   const cameraRayDir = useMemo(() => new Vector3(), []);
   const cameraRayOrigin = useMemo(() => new Vector3(), []);
   const cameraPosition = useMemo(() => new Vector3(), []);
   const camLerpingPoint = useMemo(() => new Vector3(), []);
+
+  const addIntersectObject = useCallback((object: Object3D) => {
+    if (intersectObjects.current.some((item) => item.uuid === object.uuid)) {
+      return;
+    }
+    intersectObjects.current.push(object);
+  }, []);
   // Rapier ray setup (optional)
   // const rayCast = new rapier.Ray(cameraRayOrigin, cameraRayDir);
   // let rayLength = null;
@@ -192,22 +202,31 @@ const useFollowCamera = ({
    * Custom traverse function
    */
   // Prepare intersect objects for camera collision
-  const customTraverseAdd = useCallback((object: Object3D) => {
-    // Chekc if the object's userData camExcludeCollision is true
-    if (object.userData && object.userData.camExcludeCollision === true) {
-      return;
-    }
+  const customTraverseAdd = useCallback(
+    (object: Object3D) => {
+      if (object.userData?.camExcludeCollision === true) {
+        return;
+      }
 
-    // Check if the object is a Mesh, and is visible
-    if ((object as Mesh).isMesh && (object as Mesh).visible) {
-      intersectObjects.current.push(object);
-    }
+      const mesh = object as Mesh;
+      const includeExplicitly = object.userData?.camIncludeCollision === true;
 
-    // Recursively traverse child objects
-    object.children.forEach((child) => {
-      customTraverseAdd(child); // Continue the traversal for all child objects
-    });
-  }, []);
+      if (mesh.isMesh && (includeExplicitly || mesh.visible)) {
+        addIntersectObject(mesh);
+      }
+
+      object.children.forEach((child) => {
+        customTraverseAdd(child);
+      });
+    },
+    [addIntersectObject],
+  );
+
+  const rebuildIntersectObjects = useCallback(() => {
+    intersectObjects.current = [];
+    scene.children.forEach((child) => customTraverseAdd(child));
+    getCameraCollisionMeshes().forEach((mesh) => addIntersectObject(mesh));
+  }, [addIntersectObject, customTraverseAdd, scene]);
 
   // Remove intersect objects from camera collision array
   const customTraverseRemove = useCallback((object: Object3D) => {
@@ -282,9 +301,10 @@ const useFollowCamera = ({
     // Initialize camera facing direction
     pivot.rotation.y = camInitDir.y;
     followCam.rotation.x = camInitDir.x;
-    intersectObjects.current = [];
-    // Prepare for camera ray intersect objects
-    scene.children.forEach((child) => customTraverseAdd(child));
+    rebuildIntersectObjects();
+    const unsubscribeRegistry = subscribeCameraCollisionMeshes(
+      rebuildIntersectObjects,
+    );
 
     // Prepare for followCam and pivot point
     pivot.add(followCam);
@@ -335,6 +355,7 @@ const useFollowCamera = ({
 
     return () => {
       onRemove();
+      unsubscribeRegistry();
       scene.remove(pivot);
     };
   }, [isEditMode]);
@@ -371,7 +392,7 @@ const useFollowCamera = ({
       scene.removeEventListener("childadded", onObjectAdded);
       scene.removeEventListener("childremoved", onObjectRemoved);
     };
-  }, [scene, customTraverseAdd, customTraverseRemove]);
+  }, [scene, customTraverseAdd, customTraverseRemove, rebuildIntersectObjects]);
 
   return { pivot, followCam, cameraCollisionDetect };
 };
