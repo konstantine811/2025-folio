@@ -86,8 +86,7 @@ export type GrassRuntimeConfig = {
   windFacing?: number;
   windDistanceStart?: number;
   windDistanceEnd?: number;
-  terrainAmp?: number;
-  terrainFreq?: number;
+  /** Must match `worldSeed` used for ground mesh / physics heightfield. */
   terrainSeed?: number;
   colorNoiseScale?: number;
   colorNoiseSeed?: number;
@@ -121,8 +120,6 @@ export const DEFAULT_GRASS_RUNTIME: Required<GrassRuntimeConfig> = {
   windFacing: 0.6,
   windDistanceStart: 10,
   windDistanceEnd: 30,
-  terrainAmp: 0.12,
-  terrainFreq: 0.06,
   terrainSeed: 42,
   colorNoiseScale: 0.5,
   colorNoiseSeed: 107,

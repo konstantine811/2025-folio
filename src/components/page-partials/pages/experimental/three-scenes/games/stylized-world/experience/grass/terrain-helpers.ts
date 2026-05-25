@@ -7,6 +7,7 @@ import {
   cos,
   cross,
   dot,
+  exp,
   float,
   floor,
   int,
@@ -17,9 +18,15 @@ import {
   select,
   sin,
   smoothstep,
+  uint,
   vec2,
   vec3,
 } from "three/tsl";
+import {
+  GROUND_TERRAIN_HEIGHT,
+  GROUND_TERRAIN_HILL_CELL_SIZE,
+  GROUND_TERRAIN_NOISE_SCALE,
+} from "../ground-terrain";
 import { hash2to1 } from "./shader-helpers";
 
 function sampleFbm(
@@ -40,25 +47,141 @@ function sampleFbm(
   return mix(mix(h00, h10, sx), mix(h01, h11, sx), sz);
 }
 
-/** Procedural FBM height — matches False Earth role without MaterialX noise. */
-export function getTerrainHeight(
-  terrainAmp: ReturnType<typeof float>,
-  terrainFreq: ReturnType<typeof float>,
-  terrainSeed: ReturnType<typeof float>,
+const perlinFade = Fn(([t]: [ReturnType<typeof float>]) =>
+  t.mul(t).mul(t).mul(t.mul(t.mul(6).sub(15)).add(10)),
+);
+
+/** Same hash as `ground-terrain.ts` `hash2` (integer cell coordinates). */
+const groundTerrainHash2 = Fn(
+  ([x, z, seed]: [
+    ReturnType<typeof int>,
+    ReturnType<typeof int>,
+    ReturnType<typeof int>,
+  ]) => {
+    let h = uint(x)
+      .mul(uint(374761393))
+      .add(uint(z).mul(uint(668265263)))
+      .add(uint(seed).mul(uint(1442695041)));
+    h = h.bitXor(h.shiftRight(uint(13))).mul(uint(1274126177));
+    return float(h.bitXor(h.shiftRight(uint(16)))).div(float(4294967295));
+  },
+);
+
+const groundTerrainValueNoise = Fn(
+  ([x, z, seed]: [
+    ReturnType<typeof float>,
+    ReturnType<typeof float>,
+    ReturnType<typeof int>,
+  ]) => {
+    const ix = floor(x);
+    const iz = floor(z);
+    const fx = perlinFade(x.sub(ix));
+    const fz = perlinFade(z.sub(iz));
+    const ixInt = int(ix);
+    const izInt = int(iz);
+    const a = groundTerrainHash2(ixInt, izInt, seed);
+    const b = groundTerrainHash2(ixInt.add(int(1)), izInt, seed);
+    const c = groundTerrainHash2(ixInt, izInt.add(int(1)), seed);
+    const d = groundTerrainHash2(ixInt.add(int(1)), izInt.add(int(1)), seed);
+    return mix(mix(a, b, fx), mix(c, d, fx), fz);
+  },
+);
+
+const groundTerrainFbm = Fn(
+  ([worldX, worldZ, seed]: [
+    ReturnType<typeof float>,
+    ReturnType<typeof float>,
+    ReturnType<typeof int>,
+  ]) => {
+    const nx = worldX.mul(float(GROUND_TERRAIN_NOISE_SCALE));
+    const nz = worldZ.mul(float(GROUND_TERRAIN_NOISE_SCALE));
+    const low = groundTerrainValueNoise(
+      nx.mul(2.2).add(17.1),
+      nz.mul(2.2).sub(3.6),
+      seed.add(int(42)),
+    )
+      .mul(2)
+      .sub(1);
+    const mid = groundTerrainValueNoise(
+      nx.mul(4.4).sub(8.4),
+      nz.mul(4.4).add(12.7),
+      seed.add(int(91)),
+    )
+      .mul(2)
+      .sub(1);
+    const high = groundTerrainValueNoise(
+      nx.mul(8.0).add(4.2),
+      nz.mul(8.0).sub(7.8),
+      seed.add(int(137)),
+    )
+      .mul(2)
+      .sub(1);
+    return low.mul(0.62).add(mid.mul(0.28)).add(high.mul(0.1));
+  },
+);
+
+const accumulateHillCell = Fn(
+  ([worldX, worldZ, seed, sum, cellX, cellZ, dx, dz]: [
+    ReturnType<typeof float>,
+    ReturnType<typeof float>,
+    ReturnType<typeof int>,
+    ReturnType<typeof import("three/tsl").ShaderNodeObject<typeof float>>,
+    ReturnType<typeof float>,
+    ReturnType<typeof float>,
+    number,
+    number,
+  ]) => {
+    const cx = cellX.add(float(dx));
+    const cz = cellZ.add(float(dz));
+    const cxInt = int(cx);
+    const czInt = int(cz);
+    const peakX = cx
+      .add(groundTerrainHash2(cxInt, czInt, seed.add(int(11))))
+      .mul(float(GROUND_TERRAIN_HILL_CELL_SIZE));
+    const peakZ = cz
+      .add(groundTerrainHash2(cxInt, czInt, seed.add(int(17))))
+      .mul(float(GROUND_TERRAIN_HILL_CELL_SIZE));
+    const amp = float(0.45)
+      .add(groundTerrainHash2(cxInt, czInt, seed.add(int(23))).mul(0.85))
+      .mul(float(GROUND_TERRAIN_HEIGHT));
+    const radius = float(GROUND_TERRAIN_HILL_CELL_SIZE).mul(
+      float(0.32).add(
+        groundTerrainHash2(cxInt, czInt, seed.add(int(31))).mul(0.22),
+      ),
+    );
+    const dxw = worldX.sub(peakX);
+    const dzw = worldZ.sub(peakZ);
+    const t = exp(
+      dxw.mul(dxw).add(dzw.mul(dzw)).negate().div(radius.mul(radius).mul(2)),
+    );
+    sum.addAssign(amp.mul(t));
+  },
+);
+
+/** Height in world XZ — matches `sampleGroundTerrainHeight` in `ground-terrain.ts`. */
+export function getGroundTerrainHeight(
+  terrainSeed: ReturnType<typeof import("three/tsl").uniform>,
 ) {
   return Fn(([xz]: [ReturnType<typeof vec2>]) => {
-    const sample = xz.mul(terrainFreq).add(vec2(terrainSeed, float(0)));
-    const n0 = sampleFbm(sample, terrainSeed);
-    const n1 = sampleFbm(
-      sample.mul(2.1).add(vec2(13.7, 9.2)),
-      terrainSeed.add(17),
+    const seed = int(terrainSeed);
+    const worldX = xz.x;
+    const worldZ = xz.y;
+    const base = groundTerrainFbm(worldX, worldZ, seed).mul(
+      float(GROUND_TERRAIN_HEIGHT),
     );
-    const n2 = sampleFbm(
-      sample.mul(4.3).add(vec2(4.1, 7.9)),
-      terrainSeed.add(43),
-    );
-    const fbm = n0.mul(0.55).add(n1.mul(0.3)).add(n2.mul(0.15));
-    return fbm.sub(0.5).mul(2).mul(terrainAmp);
+    const cellX = floor(worldX.div(float(GROUND_TERRAIN_HILL_CELL_SIZE)));
+    const cellZ = floor(worldZ.div(float(GROUND_TERRAIN_HILL_CELL_SIZE)));
+    const hills = float(0).toVar();
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, -1, -1);
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, 0, -1);
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, 1, -1);
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, -1, 0);
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, 0, 0);
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, 1, 0);
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, -1, 1);
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, 0, 1);
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, 1, 1);
+    return base.add(hills);
   });
 }
 
@@ -89,7 +212,7 @@ export function getGrassFieldNoise(
 }
 
 export function getTerrainNormal(
-  getTerrainHeightFn: ReturnType<ReturnType<typeof getTerrainHeight>>,
+  getTerrainHeightFn: ReturnType<ReturnType<typeof getGroundTerrainHeight>>,
 ) {
   return Fn(([xz]: [ReturnType<typeof vec2>]) => {
     const baseEpsilon = float(0.1);

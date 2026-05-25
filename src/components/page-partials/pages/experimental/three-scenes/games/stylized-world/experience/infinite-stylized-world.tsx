@@ -334,9 +334,10 @@ export function InfiniteStylizedWorld({
       bladeHeightMax: grass?.bladeHeightMax ?? 0.62,
       windSwayStrength: grass?.windSwayStrength ?? 0.85,
       pushRadius: grass?.pushRadius ?? 1.4,
+      terrainSeed: grass?.terrainSeed ?? worldSeed,
       ...grass,
     }),
-    [grass],
+    [grass, worldSeed],
   );
 
   const bushGeometry = useMemo(

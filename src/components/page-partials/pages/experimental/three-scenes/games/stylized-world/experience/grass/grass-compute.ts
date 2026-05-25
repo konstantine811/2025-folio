@@ -32,6 +32,7 @@ import {
   type LODBufferConfig,
 } from "./config";
 import { hash2to1, hash2to2, calculateWindStrength, applyWindFacing, applyBladeRandomness } from "./shader-helpers";
+import { getGroundTerrainHeight, getTerrainNormal } from "./terrain-helpers";
 
 const BLADE_SPACING = GRASS_AREA_SIZE / BLADES_PER_AXIS;
 
@@ -110,6 +111,8 @@ export function createGrassCompute(
     lodConfigs,
     uniforms.uLODNoiseScale,
   );
+  const sampleGroundHeight = getGroundTerrainHeight(uniforms.uTerrainSeed);
+  const sampleGroundNormal = getTerrainNormal(sampleGroundHeight);
 
   const performCulling = Fn(([worldPos]: [ReturnType<typeof vec3>]) => {
     const radius = float(1.5);
@@ -168,8 +171,9 @@ export function createGrassCompute(
 
       If(float(subIdx).lessThan(maxSubBlades), () => {
       const worldXZ = vec2(worldPos.x, worldPos.z);
-      const finalPos = worldPos;
-      const tn = vec3(0, 1, 0);
+      const terrainY = sampleGroundHeight(worldXZ);
+      const finalPos = vec3(worldPos.x, terrainY, worldPos.z);
+      const tn = sampleGroundNormal(worldXZ);
 
       const bladesPerClump = uniforms.uClumpSize.div(bladeSpacing);
       const cx = floor(float(globalGridX).div(bladesPerClump));

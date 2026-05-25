@@ -61,8 +61,6 @@ export function useGrassUniforms(config: GrassRuntimeConfig = {}) {
         uWindStrength: uniform(params.windStrength),
         uWindFacing: uniform(params.windFacing),
         uTime: uniform(0),
-        uTerrainAmp: uniform(params.terrainAmp),
-        uTerrainFreq: uniform(params.terrainFreq),
         uTerrainSeed: uniform(params.terrainSeed),
       },
       material: {
@@ -133,8 +131,6 @@ export function useGrassUniforms(config: GrassRuntimeConfig = {}) {
     uniforms.compute.uWindSpeed.value = merged.windSpeed;
     uniforms.compute.uWindStrength.value = merged.windStrength;
     uniforms.compute.uWindFacing.value = merged.windFacing;
-    uniforms.compute.uTerrainAmp.value = merged.terrainAmp;
-    uniforms.compute.uTerrainFreq.value = merged.terrainFreq;
     uniforms.compute.uTerrainSeed.value = merged.terrainSeed;
     uniforms.material.uWindSwayStrength.value = merged.windSwayStrength;
     uniforms.material.uWindSpeed.value = merged.windSpeed;
