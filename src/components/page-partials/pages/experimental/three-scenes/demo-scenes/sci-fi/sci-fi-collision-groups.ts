@@ -6,6 +6,7 @@ export const SCIFI_CABLE_FLOOR_GROUP = 5;
 export const SCIFI_HELMET_GROUP = 6;
 export const SCIFI_BODY_PROXY_GROUP = 7;
 export const SCIFI_CHARACTER_CONTROLLER_GROUP = 8;
+export const SCIFI_PROP_COLLIDER_GROUP = 1;
 
 export const SCIFI_CONTROLLER_COLLIDES_WITH = [0, SCIFI_CABLE_FLOOR_GROUP, 1, 2] as const;
 

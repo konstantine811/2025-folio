@@ -6,6 +6,7 @@ import { RefObject, useEffect, useRef } from "react";
 import { Vector3 } from "three";
 import { ShipContainer } from "./ship/ship-container";
 import Earth from "./ship/earth";
+import { TableAndComputer } from "./ship/table-and-computer";
 import type { CameraMode } from "./init";
 import { normalizeRange } from "@/utils/math/normalize";
 import { SciFiToggleCharacter } from "./character/sci-fi-character-controller";
@@ -98,6 +99,7 @@ const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
         interpolate={false}
       >
         <ShipContainer />
+        <TableAndComputer />
         {/* <Character scrollProgress={scrollProgress} /> */}
         <SciFiToggleCharacter
           mode={characterMode}
