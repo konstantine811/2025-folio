@@ -1,4 +1,4 @@
-import { JSX } from "react";
+import { JSX, useMemo } from "react";
 import { useGLTF } from "@react-three/drei";
 import {
   CuboidCollider,
@@ -6,7 +6,7 @@ import {
   RigidBody,
 } from "@react-three/rapier";
 import { useControls } from "leva";
-import { type Mesh } from "three";
+import { Mesh, MeshStandardMaterial } from "three";
 import {
   SCIFI_CABLE_GROUP,
   SCIFI_CHARACTER_CONTROLLER_GROUP,
@@ -16,11 +16,16 @@ import {
   TABLE_CABLE_PROXY_CONTROLS_PATH,
   useSciFiTableCableProxyTransform,
 } from "./table-cable-proxies";
+import {
+  applyTableGlowMaterial,
+  createTunedTableGlowMaterial,
+  tableGlowMaterialDefaults,
+} from "./table-glow-material";
 
 const modelPath = "/3d-models/sci-fi/table_and_computer.glb";
 
 export function TableAndComputer(props: JSX.IntrinsicElements["group"]) {
-  const { nodes } = useGLTF(modelPath);
+  const { nodes, materials } = useGLTF(modelPath);
   const {
     position,
     rotationY,
@@ -30,15 +35,49 @@ export function TableAndComputer(props: JSX.IntrinsicElements["group"]) {
     cableProxyTwoPosition,
     cableProxyTwoHalfExtents,
   } = useSciFiTableCableProxyTransform();
-  const { showCableProxyWireframes } = useControls(
-    TABLE_CABLE_PROXY_CONTROLS_PATH,
-    {
+  const { showCableProxyWireframes, glowEmissiveIntensity, glowColorScale } =
+    useControls(TABLE_CABLE_PROXY_CONTROLS_PATH, {
       showCableProxyWireframes: {
         value: false,
         label: "Show cable proxy wireframes",
       },
-    },
-  );
+      glowEmissiveIntensity: {
+        value: tableGlowMaterialDefaults.emissiveIntensity,
+        min: 0.5,
+        max: 25,
+        step: 0.5,
+        label: "Glow emissive intensity",
+      },
+      glowColorScale: {
+        value: tableGlowMaterialDefaults.emissiveColorScale,
+        min: 0.1,
+        max: 1,
+        step: 0.05,
+        label: "Glow color scale",
+      },
+    });
+
+  const tunedGlowMaterial = useMemo(() => {
+    const glow = materials.Glow as MeshStandardMaterial | undefined;
+    if (!glow) return null;
+
+    return createTunedTableGlowMaterial(glow, {
+      emissiveIntensity: glowEmissiveIntensity,
+      emissiveColorScale: glowColorScale,
+    });
+  }, [materials, glowEmissiveIntensity, glowColorScale]);
+
+  const visualNodes = useMemo(() => {
+    const bone = nodes.Bone.clone(true);
+    const bone004 = nodes.Bone004.clone(true);
+
+    if (tunedGlowMaterial) {
+      applyTableGlowMaterial(bone, tunedGlowMaterial);
+      applyTableGlowMaterial(bone004, tunedGlowMaterial);
+    }
+
+    return { bone, bone004 };
+  }, [nodes, tunedGlowMaterial]);
 
   const transformPosition: [number, number, number] = [
     position.x,
@@ -82,8 +121,8 @@ export function TableAndComputer(props: JSX.IntrinsicElements["group"]) {
         scale={transformScale}
       >
         <group scale={1.232}>
-          <primitive object={nodes.Bone} />
-          <primitive object={nodes.Bone004} />
+          <primitive object={visualNodes.bone} />
+          <primitive object={visualNodes.bone004} />
         </group>
       </group>
 
