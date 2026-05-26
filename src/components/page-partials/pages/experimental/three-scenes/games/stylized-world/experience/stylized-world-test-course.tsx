@@ -194,8 +194,8 @@ export function StylizedWorldTestCourse() {
         color="#7ec8a8"
       />
       <BoxObstacle
-        position={[0, climbExitY - plateauHalfHeight, 44]}
-        size={[8, plateauHalfHeight * 2, 4]}
+        position={[0, climbExitY - plateauHalfHeight, 44.15]}
+        size={[8.4, plateauHalfHeight * 2, 4.3]}
         color="#6fbf9b"
       />
       <Ramp

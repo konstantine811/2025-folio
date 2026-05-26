@@ -3,6 +3,8 @@ import type { HeightfieldArgs } from "@react-three/rapier";
 
 export const GROUND_TERRAIN_SEGMENTS = 16;
 export const GROUND_TERRAIN_HEIGHT = 0.58;
+/** Overlap into neighboring tiles so wheel rays cannot slip through seams. */
+export const GROUND_TILE_COLLIDER_OVERLAP = 0.18;
 
 /** Розмір «комірки» для випадкових пагорбів у світових координатах. */
 export const GROUND_TERRAIN_HILL_CELL_SIZE = 18;
@@ -203,13 +205,15 @@ export function createGroundTerrainHeightfieldArgs(
   const points = segments + 1;
   const heights: number[] = [];
   const half = tileSize / 2;
+  const overlap = GROUND_TILE_COLLIDER_OVERLAP;
+  const colliderSize = tileSize + overlap * 2;
   const originX = tileX * tileSize + half;
   const originZ = tileZ * tileSize + half;
 
   for (let xIndex = 0; xIndex < points; xIndex++) {
     for (let zIndex = 0; zIndex < points; zIndex++) {
-      const localX = (xIndex / segments - 0.5) * tileSize;
-      const localZ = (zIndex / segments - 0.5) * tileSize;
+      const localX = (xIndex / segments - 0.5) * colliderSize;
+      const localZ = (zIndex / segments - 0.5) * colliderSize;
       heights.push(
         sampleGroundTerrainHeight({
           worldX: originX + localX,
@@ -220,5 +224,5 @@ export function createGroundTerrainHeightfieldArgs(
     }
   }
 
-  return [segments, segments, heights, { x: tileSize, y: 1, z: tileSize }];
+  return [segments, segments, heights, { x: colliderSize, y: 1, z: colliderSize }];
 }

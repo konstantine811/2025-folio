@@ -27,7 +27,7 @@ const AIRBORNE_WHEEL_VISUAL_SMOOTH = 0.55;
 
 const FLAT_GROUND_NORMAL_Y = 0.97;
 const WHEEL_CONTACT_RAY_START_OFFSET = 0.12;
-const WHEEL_CONTACT_RAY_EXTRA_LENGTH = 0.18;
+const WHEEL_CONTACT_RAY_EXTRA_LENGTH = 0.32;
 
 export function isVehicleOnFlatGround(
   controller: DynamicRayCastVehicleController,

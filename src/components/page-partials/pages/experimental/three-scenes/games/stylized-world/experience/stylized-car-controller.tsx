@@ -70,8 +70,7 @@ const CHASSIS_COLLIDER_Y = 0;
 const CHASSIS_COLLIDER_LENGTH_SCALE = 1;
 const PIVOT_HEIGHT = 0.55;
 const CAMERA_SMOOTHING = 10;
-const CHASSIS_SPAWN_CLEARANCE =
-  WHEEL_RADIUS + SUSPENSION_REST_LENGTH + 0.05;
+const CHASSIS_SPAWN_CLEARANCE = WHEEL_RADIUS + SUSPENSION_REST_LENGTH + 0.05;
 
 function chassisSpawnYAt(worldX: number, worldZ: number, worldSeed: number) {
   return (
@@ -86,6 +85,7 @@ const MAX_ABS_PITCH = 0.2;
 const PITCH_RECOVERY_SMOOTHING = 10;
 const HOP_IMPULSE = 4.5;
 const RECOVER_DROP_HEIGHT = 1.7;
+const VOID_FALL_MARGIN = 0.35;
 
 const WHEEL_INFO_BASE: Omit<WheelInfo, "position"> = {
   axleCs: new Vector3(-1, 0, 0),
@@ -322,6 +322,8 @@ export function StylizedCarController({
     }
 
     const chassisTranslation = chassis.translation();
+    const linvel = chassis.linvel();
+
     if (chassisTranslation.y < -8) {
       chassis.setTranslation(
         {
@@ -337,6 +339,36 @@ export function StylizedCarController({
       );
       chassis.setLinvel({ x: 0, y: 0, z: 0 }, true);
       chassis.setAngvel({ x: 0, y: 0, z: 0 }, true);
+    } else {
+      const groundY = sampleGroundTerrainHeight({
+        worldX: chassisTranslation.x,
+        worldZ: chassisTranslation.z,
+        seed: worldSeed,
+      });
+      const minSafeChassisY = groundY + WHEEL_RADIUS - VOID_FALL_MARGIN;
+      const touchingGround = isVehicleTouchingGround(controller);
+
+      if (
+        chassisTranslation.y < minSafeChassisY &&
+        (!touchingGround || chassisTranslation.y < groundY - 0.2)
+      ) {
+        chassis.setTranslation(
+          {
+            x: chassisTranslation.x,
+            y: chassisSpawnYAt(
+              chassisTranslation.x,
+              chassisTranslation.z,
+              worldSeed,
+            ),
+            z: chassisTranslation.z,
+          },
+          true,
+        );
+        chassis.setLinvel(
+          { x: linvel.x * 0.35, y: Math.max(0, linvel.y), z: linvel.z * 0.35 },
+          true,
+        );
+      }
     }
 
     // Hood faces -Z; Rapier forward axis is +Z — negative force drives forward.
@@ -344,7 +376,6 @@ export function StylizedCarController({
     const wantsBackward = Boolean(backward) && !forward;
     const wantsHandbrake = Boolean(jump);
 
-    const linvel = chassis.linvel();
     worldVelocity.set(linvel.x, 0, linvel.z);
     chassisQuat.set(
       chassis.rotation().x,
@@ -479,6 +510,7 @@ export function StylizedCarController({
         linearDamping={0.08}
         angularDamping={0.35}
         canSleep={false}
+        ccd
       >
         <CuboidCollider
           args={[
