@@ -768,7 +768,6 @@ function Earth() {
 
   useEffect(() => {
     const earthMaterial = earthMaterialRef.current;
-    const cloudsMaterial = cloudsMaterialRef.current;
 
     if (earthMaterial) {
       earthMaterial.uniforms.uCloudSharpness.value = cloudSharpness;
