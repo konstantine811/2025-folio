@@ -2,6 +2,7 @@ import { useGLTF } from "@react-three/drei";
 import { useMemo } from "react";
 import {
   Box3,
+  BufferAttribute,
   BufferGeometry,
   Float32BufferAttribute,
   Vector3,
@@ -61,8 +62,8 @@ function splitGeometryByCenterX(
   keepLeft: boolean,
 ): BufferGeometry {
   const source = geometry.index ? geometry.toNonIndexed() : geometry.clone();
-  const position = source.getAttribute("position");
-  const normal = source.getAttribute("normal");
+  const position = source.getAttribute("position") as BufferAttribute;
+  const normal = source.getAttribute("normal") as BufferAttribute | undefined;
   const positions: number[] = [];
   const normals: number[] = [];
 
