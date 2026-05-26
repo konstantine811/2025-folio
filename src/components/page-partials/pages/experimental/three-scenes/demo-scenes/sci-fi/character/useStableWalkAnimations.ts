@@ -7,6 +7,18 @@ type UseStableWalkAnimationsParams = {
   stableBoneTracks: string[];
 };
 
+function normalizeTrackBoneName(trackName: string) {
+  return trackName
+    .split(".")[0]
+    .replace(/[^a-z0-9]/gi, "")
+    .toLowerCase();
+}
+
+/** Only mixamorig bones are mounted in the R3F scene graph. */
+function isMixamorigTrack(trackName: string) {
+  return normalizeTrackBoneName(trackName).startsWith("mixamorig");
+}
+
 export function useStableWalkAnimations({
   animations,
   walkAnimationNames,
@@ -14,23 +26,34 @@ export function useStableWalkAnimations({
 }: UseStableWalkAnimationsParams) {
   return useMemo(() => {
     return animations.map((clip) => {
-      if (!walkAnimationNames.includes(clip.name)) {
+      const stabilizeWalkHead = walkAnimationNames.includes(clip.name);
+      const hasNonMixamorigTracks = clip.tracks.some(
+        ({ name }) => !isMixamorigTrack(name),
+      );
+
+      if (!stabilizeWalkHead && !hasNonMixamorigTracks) {
         return clip;
       }
 
-      const stableWalkClip = clip.clone();
+      const sanitizedClip = clip.clone();
 
-      stableWalkClip.tracks = stableWalkClip.tracks.filter(({ name }) => {
-        const normalizedTrackName = name
-          .replace(/[^a-z0-9]/gi, "")
-          .toLowerCase();
+      sanitizedClip.tracks = sanitizedClip.tracks.filter(({ name }) => {
+        if (!isMixamorigTrack(name)) {
+          return false;
+        }
+
+        if (!stabilizeWalkHead) {
+          return true;
+        }
+
+        const normalizedTrackName = normalizeTrackBoneName(name);
 
         return !stableBoneTracks.some((boneName) =>
           normalizedTrackName.includes(boneName),
         );
       });
 
-      return stableWalkClip;
+      return sanitizedClip;
     });
   }, [animations, walkAnimationNames, stableBoneTracks]);
 }
