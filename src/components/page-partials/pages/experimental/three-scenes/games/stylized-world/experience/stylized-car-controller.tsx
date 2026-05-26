@@ -4,11 +4,19 @@ import {
   CuboidCollider,
   RapierRigidBody,
   RigidBody,
+  useAfterPhysicsStep,
   useBeforePhysicsStep,
 } from "@react-three/rapier";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type MutableRefObject } from "react";
-import { MathUtils, Quaternion, Euler, Vector3, type Object3D } from "three";
+import {
+  MathUtils,
+  Quaternion,
+  Euler,
+  Vector3,
+  type Group,
+  type Object3D,
+} from "three";
 import { sampleGroundTerrainHeight } from "./ground-terrain";
 import {
   type WheelInfo,
@@ -22,6 +30,7 @@ import type { WheelContactHistoryEntry } from "./wheel-contact-history";
 import { WheelContactHistoryDebugRack } from "./wheel-contact-history-debug";
 import {
   StylizedToyotaCarBodyVisual,
+  WHEEL_MESH_OFFSETS,
   WHEEL_MESH_ROTATION,
   useToyotaWheelVisuals,
 } from "./stylized-toyota-car";
@@ -45,15 +54,15 @@ type StylizedCarControllerProps = {
  *
  * Chassis length along Z, front at -Z. startRotationY = PI faces hood toward +Z.
  */
-const BODY = { width: 1.2, height: 0.45, length: 2 };
+const BODY = { width: 1.2, height: 0.35, length: 2 };
 export const STYLIZED_CAR_GRASS_PUSH_RADIUS =
   Math.hypot(BODY.width, BODY.length) * 0.5 + 0.35;
 const WHEEL_RADIUS = 0.22;
-const WHEEL_Y = -BODY.height / 2;
+const WHEEL_Y = -BODY.height / 1.4;
 const MAX_SUSPENSION_TRAVEL = 0.16;
 const SUSPENSION_REST_LENGTH = BODY.height / 2;
-const FRONT_WHEEL_X = 0.58;
-const REAR_WHEEL_X = 0.52;
+const FRONT_WHEEL_X = 0.38;
+const REAR_WHEEL_X = 0.4;
 const CHASSIS_MASS = 18;
 const DEFAULT_ACCELERATE_FORCE = 3.5;
 const MAX_FORWARD_SPEED = 12;
@@ -109,22 +118,22 @@ const WHEEL_INFO_BASE: Omit<WheelInfo, "position"> = {
 
 const WHEELS: (WheelInfo & { axle: "front" | "rear" })[] = [
   {
-    position: new Vector3(-FRONT_WHEEL_X, WHEEL_Y, -0.7),
+    position: new Vector3(-FRONT_WHEEL_X, WHEEL_Y, -0.83),
     axle: "front",
     ...WHEEL_INFO_BASE,
   },
   {
-    position: new Vector3(FRONT_WHEEL_X, WHEEL_Y, -0.7),
+    position: new Vector3(FRONT_WHEEL_X, WHEEL_Y, -0.83),
     axle: "front",
     ...WHEEL_INFO_BASE,
   },
   {
-    position: new Vector3(-REAR_WHEEL_X, WHEEL_Y, 0.7),
+    position: new Vector3(-REAR_WHEEL_X, WHEEL_Y, 0.6),
     axle: "rear",
     ...WHEEL_INFO_BASE,
   },
   {
-    position: new Vector3(REAR_WHEEL_X, WHEEL_Y, 0.7),
+    position: new Vector3(REAR_WHEEL_X, WHEEL_Y, 0.6),
     axle: "rear",
     ...WHEEL_INFO_BASE,
   },
@@ -144,6 +153,7 @@ export function StylizedCarController({
 }: StylizedCarControllerProps) {
   const chassisRef = useRef<RapierRigidBody>(null);
   const wheelRefs = useRef<(Object3D | null)[]>([]);
+  const visualWheelRefs = useRef<(Group | null)[]>([]);
   const driveStateRef = useRef({
     isFootBraking: false,
     isHandbrake: false,
@@ -158,8 +168,9 @@ export function StylizedCarController({
     () => [startX, chassisSpawnYAt(startX, startZ, worldSeed), startZ],
     [startX, startZ, worldSeed],
   );
-  const { historiesRef: internalContactHistoriesRef } =
-    useWheelContactHistory(wheelsInfo.length);
+  const { historiesRef: internalContactHistoriesRef } = useWheelContactHistory(
+    wheelsInfo.length,
+  );
   const contactHistoriesRef =
     externalContactHistoriesRef ?? internalContactHistoriesRef;
   const { vehicleController } = useVehicleController(
@@ -171,7 +182,24 @@ export function StylizedCarController({
       contactHistoriesRef,
     },
   );
-  const { material: wheelMaterial, wheels: wheelVisuals } = useToyotaWheelVisuals();
+  const { material: wheelMaterial, wheels: wheelVisuals } =
+    useToyotaWheelVisuals();
+
+  useAfterPhysicsStep(() => {
+    wheelsInfo.forEach((wheel, index) => {
+      const physicsWheel = wheelRefs.current[index];
+      const visualWheel = visualWheelRefs.current[index];
+      if (!physicsWheel || !visualWheel) return;
+
+      // X/Z locked to anchor — only Y follows suspension / ground contact.
+      visualWheel.position.set(
+        wheel.position.x,
+        physicsWheel.position.y,
+        wheel.position.z,
+      );
+      visualWheel.quaternion.copy(physicsWheel.quaternion);
+    });
+  });
 
   const forward = useControlStore((s) => s.forward);
   const backward = useControlStore((s) => s.backward);
@@ -542,21 +570,29 @@ export function StylizedCarController({
           if (!wheelVisual) return null;
 
           return (
-            <group
-              key={index}
-              position={position}
-              ref={(node) => {
-                wheelRefs.current[index] = node;
-              }}
-            >
-              <mesh
-                castShadow
-                receiveShadow
-                geometry={wheelVisual.geometry}
-                material={wheelMaterial}
-                rotation={WHEEL_MESH_ROTATION}
-                scale={wheelVisual.scale}
+            <group key={`wheel-${index}`}>
+              <group
+                position={position}
+                ref={(node) => {
+                  wheelRefs.current[index] = node;
+                }}
               />
+              <group
+                position={position}
+                ref={(node) => {
+                  visualWheelRefs.current[index] = node;
+                }}
+              >
+                <mesh
+                  castShadow
+                  receiveShadow
+                  geometry={wheelVisual.geometry}
+                  material={wheelMaterial}
+                  position={WHEEL_MESH_OFFSETS[index] ?? [0, 0, 0]}
+                  rotation={WHEEL_MESH_ROTATION}
+                  scale={wheelVisual.scale}
+                />
+              </group>
             </group>
           );
         })}

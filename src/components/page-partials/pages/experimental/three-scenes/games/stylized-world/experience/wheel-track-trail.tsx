@@ -23,7 +23,7 @@ import {
 import type { WheelContactHistoryEntry } from "./wheel-contact-history";
 import { WHEEL_CONTACT_HISTORY_SIZE } from "./wheel-contact-history";
 
-export const TRACK_HALF_WIDTH = 0.18;
+export const TRACK_HALF_WIDTH = 0.09;
 export const TRACK_Y_OFFSET = 0.035;
 const HIDDEN_Y = -10000;
 

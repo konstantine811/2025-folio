@@ -22,9 +22,11 @@ export const STYLIZED_TOYOTA_CAR_MODEL_ROTATION: [number, number, number] = [
 /** Model wheelbase ~3.03 m; physics wheelbase 1.4 m. */
 export const STYLIZED_TOYOTA_CAR_MODEL_SCALE = 1.4 / 3.027;
 
-/** Drop model so body sits on physics wheel radius. */
+/** Drop model so body sits on physics wheel radius. Shift X if arches look off-center. */
 export const STYLIZED_TOYOTA_CAR_MODEL_OFFSET: [number, number, number] = [
-  0, -0.52, 0,
+  0,
+  -0.52,
+  0,
 ];
 
 /** Must match WHEEL_RADIUS in stylized-car-controller. */
@@ -32,6 +34,20 @@ export const PHYSICS_WHEEL_RADIUS = 0.22;
 
 /** Align glTF wheel mesh roll axis with Rapier axle (-X). */
 export const WHEEL_MESH_ROTATION: [number, number, number] = [0, 0, 0];
+
+/**
+ * Fine-tune each wheel mesh on its physics anchor (chassis space, meters).
+ * Index: 0 FL, 1 FR, 2 RL, 3 RR — negative X pulls left, positive X pulls right.
+ */
+export const WHEEL_MESH_OFFSETS: ReadonlyArray<[number, number, number]> = [
+  [0, 0, 0],
+  [0, 0, 0],
+  [0, 0, 0],
+  [0, 0, 0],
+];
+
+/** Shift left/right split plane in glTF wheel geometry if one side is wider. */
+export const WHEEL_SPLIT_PLANE_X = 0;
 
 export type ToyotaWheelVisual = {
   geometry: BufferGeometry;
@@ -51,7 +67,7 @@ function splitGeometryByCenterX(
   const normals: number[] = [];
 
   const bounds = new Box3().setFromBufferAttribute(position);
-  const centerX = (bounds.min.x + bounds.max.x) * 0.5;
+  const centerX = (bounds.min.x + bounds.max.x) * 0.5 + WHEEL_SPLIT_PLANE_X;
 
   for (let i = 0; i < position.count; i += 3) {
     const centroidX =
@@ -87,13 +103,24 @@ function splitGeometryByCenterX(
   return result;
 }
 
-function centerGeometry(geometry: BufferGeometry) {
+function centerWheelGeometryForHub(geometry: BufferGeometry) {
   const centered = geometry.clone();
   centered.computeBoundingBox();
   if (!centered.boundingBox) return centered;
 
   centered.boundingBox.getCenter(_center);
+  const hubRadius = Math.max(
+    centered.boundingBox.max.y - _center.y,
+    _center.y - centered.boundingBox.min.y,
+    0.001,
+  );
+
   centered.translate(-_center.x, -_center.y, -_center.z);
+  centered.computeBoundingBox();
+  if (centered.boundingBox) {
+    const bottomOffset = centered.boundingBox.min.y + hubRadius;
+    centered.translate(0, bottomOffset, 0);
+  }
   centered.computeBoundingSphere();
   return centered;
 }
@@ -109,7 +136,7 @@ function buildWheelVisual(
   keepLeft: boolean,
 ): ToyotaWheelVisual {
   const split = splitGeometryByCenterX(geometry, keepLeft);
-  const centered = centerGeometry(split);
+  const centered = centerWheelGeometryForHub(split);
   split.dispose();
 
   return {
