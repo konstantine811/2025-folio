@@ -3,6 +3,9 @@ import * as THREE from "three";
 /** Pixels in the 1D history buffer (128 past wheel contact samples). */
 export const WHEEL_CONTACT_HISTORY_SIZE = 128;
 
+/** Per-frame fade for track alpha when history shifts (≈ smooth regrowth). */
+export const WHEEL_TRACK_ALPHA_DECAY = 0.992;
+
 export type WheelContactHistoryEntry = {
   /** Float RGBA — world X/Y/Z + contact (same data for grass + debug). */
   texture: THREE.DataTexture;
@@ -52,13 +55,13 @@ export function shiftAndInsertWheelContact(
     data[dst] = data[src];
     data[dst + 1] = data[src + 1];
     data[dst + 2] = data[src + 2];
-    data[dst + 3] = data[src + 3];
+    data[dst + 3] = data[src + 3] * WHEEL_TRACK_ALPHA_DECAY;
   }
 
   data[0] = x;
   data[1] = y;
   data[2] = z;
-  data[3] = inContact ? 1 : 0;
+  data[3] = inContact ? 1 : Math.max(0, data[3] * WHEEL_TRACK_ALPHA_DECAY);
 }
 
 export function recordWheelContactPoint(

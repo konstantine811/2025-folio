@@ -117,11 +117,10 @@ export function createGrassMaterial(
         .add(0.5),
     );
     const groundDataColor = uniforms.uGroundDataTexture.sample(groundUv);
+    const trackAlpha = smoothstep(float(0.03), float(0.2), groundDataColor.a);
     const trackHeightFactor = select(
       uniforms.uGroundDataEnabled.greaterThan(float(0.5)),
-      float(1).sub(
-        groundDataColor.a.mul(uniforms.uTrackFlattenAmount),
-      ),
+      float(1).sub(trackAlpha.mul(uniforms.uTrackFlattenAmount)),
       float(1),
     );
 

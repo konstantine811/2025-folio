@@ -84,12 +84,17 @@ function WheelTrackTrailMaterial({
       trailData.assign(current);
 
       return current.w
-        .greaterThan(float(0.5))
+        .greaterThan(float(0.02))
         .select(worldPosition, hiddenPosition);
     })();
 
     const opacityNode = Fn(() => {
       const contactAlpha = trailData.w;
+
+      if (isGroundData) {
+        return contactAlpha;
+      }
+
       const trailEndFade = uv()
         .x.oneMinus()
         .remapClamp(float(0), float(0.18), float(0), float(1));
@@ -99,9 +104,7 @@ function WheelTrackTrailMaterial({
         .mul(screenUV.y.remapClamp(float(0), float(0.2), float(0), float(1)))
         .mul(screenUV.y.remapClamp(float(0.8), float(1), float(1), float(0)));
 
-      const alpha = contactAlpha.mul(trailEndFade).mul(renderEdgeAlpha);
-
-      return isGroundData ? alpha : contactAlpha;
+      return contactAlpha.mul(trailEndFade).mul(renderEdgeAlpha);
     })();
 
     const colorNode = isGroundData

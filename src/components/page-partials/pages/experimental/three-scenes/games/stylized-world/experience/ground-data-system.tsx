@@ -2,6 +2,7 @@ import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
 import type { MutableRefObject, RefObject } from "react";
 import type { Vector3 } from "three";
+import { GRASS_GRID_CELL_SIZE } from "./grass/config";
 import {
   GroundData,
   type GrassGroundDataBinding,
@@ -30,8 +31,12 @@ export function GroundDataSystem({
   }, [groundData]);
 
   useFrame(() => {
-    const centerX = focusRef.current.x;
-    const centerZ = focusRef.current.z;
+    const focus = focusRef.current;
+    // Match grass grid snapping so ground UVs stay stable within a cell.
+    const cellX = Math.floor(focus.x / GRASS_GRID_CELL_SIZE);
+    const cellZ = Math.floor(focus.z / GRASS_GRID_CELL_SIZE);
+    const centerX = cellX * GRASS_GRID_CELL_SIZE;
+    const centerZ = cellZ * GRASS_GRID_CELL_SIZE;
 
     groundData.update(gl, centerX, centerZ);
 
