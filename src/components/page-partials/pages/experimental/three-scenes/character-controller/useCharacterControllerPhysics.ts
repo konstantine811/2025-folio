@@ -186,8 +186,8 @@ export function useCharacterControllerPhysics({
 
     const hasMoveInput = forward || backward || leftward || rightward;
     const isActuallyMoving = horizontalSpeed > 0.5;
-    const isMoving = hasMoveInput && isActuallyMoving;
-    const isSprinting = hasMoveInput && isActuallyMoving && run;
+    const isMoving = hasMoveInput && (isGrounded || isActuallyMoving);
+    const isSprinting = isMoving && run;
 
     /**
      * Camera-relative movement

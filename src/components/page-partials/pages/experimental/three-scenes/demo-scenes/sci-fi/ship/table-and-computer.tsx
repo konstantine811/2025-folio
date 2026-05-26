@@ -12,15 +12,14 @@ const modelPath = "/3d-models/sci-fi/table_and_computer.glb";
 
 export function TableAndComputer(props: JSX.IntrinsicElements["group"]) {
   const { nodes } = useGLTF(modelPath);
-  const {
-    position,
-    rotationY,
-    scale,
-  } = useControls("Sci-fi props / Table computer", {
-    position: { value: { x: -2.35, y: 0.1, z: 9.18 }, step: 0.05 },
-    rotationY: { value: 29, min: -180, max: 180, step: 1 },
-    scale: { value: 0.93, min: 0.1, max: 3, step: 0.01 },
-  });
+  const { position, rotationY, scale } = useControls(
+    "Sci-fi props / Table computer",
+    {
+      position: { value: { x: -2.35, y: 0.1, z: 9.18 }, step: 0.05 },
+      rotationY: { value: 29, min: -180, max: 180, step: 1 },
+      scale: { value: 0.93, min: 0.1, max: 3, step: 0.01 },
+    },
+  );
 
   const transformPosition: [number, number, number] = [
     position.x,
@@ -71,14 +70,16 @@ export function TableAndComputer(props: JSX.IntrinsicElements["group"]) {
             scale={[-0.305, -0.035, -0.319]}
             visible={false}
           />
-          <mesh
-            geometry={(nodes.monitor_bottom_collider as Mesh).geometry}
-            visible={false}
-          />
-          <mesh
-            geometry={(nodes.monitor_top_collider as Mesh).geometry}
-            visible={false}
-          />
+          <group position={[0, 0, 0.07]}>
+            <mesh
+              geometry={(nodes.monitor_bottom_collider as Mesh).geometry}
+              visible={false}
+            />
+            <mesh
+              geometry={(nodes.monitor_top_collider as Mesh).geometry}
+              visible={false}
+            />
+          </group>
         </group>
       </RigidBody>
     </>
