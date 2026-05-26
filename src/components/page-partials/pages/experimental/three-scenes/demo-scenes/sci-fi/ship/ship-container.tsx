@@ -1,6 +1,12 @@
 import { JSX, useEffect, useMemo, useRef } from "react";
 import { useGLTF, useTexture } from "@react-three/drei";
-import { Group, Mesh, MeshPhysicalMaterial, MeshStandardMaterial } from "three";
+import {
+  DoubleSide,
+  Group,
+  Mesh,
+  MeshPhysicalMaterial,
+  MeshStandardMaterial,
+} from "three";
 import { useControls } from "leva";
 import { CuboidCollider, RigidBody, interactionGroups } from "@react-three/rapier";
 import { useRegisterCameraCollisionMeshes } from "@/components/common/hooks/camera/useRegisterCameraCollisionMeshes";
@@ -37,55 +43,70 @@ export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
   );
 
   const {
+    highQualityTransmission: gHighQualityTransmission,
     opacity: gOpacity,
     roughness: gRoughness,
-    metalness: gMetalness,
     color: gColor,
     transmission: gTransmission,
     thickness: gThickness,
     ior: gIor,
-  } = useControls("Window glass (mutate GLTF)", {
-    opacity: { value: 0.35, min: 0, max: 1, step: 0.01 },
-    roughness: { value: 0.15, min: 0, max: 1, step: 0.01 },
-    metalness: { value: 0, min: 0, max: 1, step: 0.01 },
-    color: "#ffffff",
-    transmission: { value: 0.9, min: 0, max: 1, step: 0.01 },
-    thickness: { value: 0.5, min: 0, max: 5, step: 0.01 },
-    ior: { value: 1.5, min: 1, max: 2.5, step: 0.01 },
+    clearcoat: gClearcoat,
+    clearcoatRoughness: gClearcoatRoughness,
+    envMapIntensity: gEnvMapIntensity,
+  } = useControls("Window glass", {
+    highQualityTransmission: {
+      value: false,
+      label: "High quality transmission",
+    },
+    opacity: { value: 0.75, min: 0, max: 1, step: 0.01 },
+    roughness: { value: 1, min: 0, max: 1, step: 0.01 },
+    color: "#101010",
+    transmission: { value: 0.96, min: 0, max: 1, step: 0.01 },
+    thickness: { value: 0.58, min: 0, max: 2, step: 0.01 },
+    ior: { value: 1.45, min: 1, max: 2.5, step: 0.01 },
+    clearcoat: { value: 1, min: 0, max: 1, step: 0.01 },
+    clearcoatRoughness: { value: 0.63, min: 0, max: 1, step: 0.01 },
+    envMapIntensity: { value: 2.9, min: 0, max: 5, step: 0.05 },
   });
-
-  useEffect(() => {
-    const m = materials["Glass.001"] as
-      | MeshStandardMaterial
-      | MeshPhysicalMaterial;
-    if (!m) return;
-    m.transparent = gOpacity < 0.999;
-    m.opacity = gOpacity;
-    m.roughness = gRoughness;
-    m.metalness = gMetalness;
-    m.color.set(gColor);
-    if (m instanceof MeshPhysicalMaterial) {
-      m.transmission = gTransmission;
-      m.thickness = gThickness;
-      m.ior = gIor;
-    }
-    m.needsUpdate = true;
-  }, [
-    materials,
-    gOpacity,
-    gRoughness,
-    gMetalness,
-    gColor,
-    gTransmission,
-    gThickness,
-    gIor,
-  ]);
+  const glassMat = useMemo(
+    () =>
+      new MeshPhysicalMaterial({
+        color: gColor,
+        transparent: true,
+        opacity: gOpacity,
+        roughness: gRoughness,
+        metalness: 0,
+        transmission: gHighQualityTransmission ? gTransmission : 0,
+        thickness: gHighQualityTransmission ? gThickness : 0,
+        ior: gIor,
+        clearcoat: gClearcoat,
+        clearcoatRoughness: gClearcoatRoughness,
+        envMapIntensity: gEnvMapIntensity,
+        attenuationColor: gColor,
+        attenuationDistance: 2.5,
+        side: DoubleSide,
+        depthWrite: false,
+      }),
+    [
+      gClearcoat,
+      gClearcoatRoughness,
+      gColor,
+      gEnvMapIntensity,
+      gHighQualityTransmission,
+      gIor,
+      gOpacity,
+      gRoughness,
+      gThickness,
+      gTransmission,
+    ],
+  );
 
   useEffect(
     () => () => {
       bakedMat.dispose();
+      glassMat.dispose();
     },
-    [bakedMat],
+    [bakedMat, glassMat],
   );
   return (
     <group {...props} ref={rootRef} dispose={null} name="ground">
@@ -127,11 +148,11 @@ export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
       </RigidBody>
       <RigidBody type="fixed" colliders="trimesh" friction={0.6}>
         <mesh
-          castShadow
-          receiveShadow
+          receiveShadow={false}
           geometry={(nodes.window_glass as Mesh).geometry}
-          material={materials["Glass.001"]}
+          material={glassMat}
           position={[0, 2.639, -0.951]}
+          renderOrder={20}
           userData={camWall}
         />
       </RigidBody>

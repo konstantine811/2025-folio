@@ -30,10 +30,6 @@ import {
   ResolvedCableProxyBox,
   ResolvedCableProxyCapsule,
 } from "../sci-fi-cable-proxy-limbs";
-import {
-  resolveTableCableProxyBoxes,
-  useSciFiTableCableProxyTransform,
-} from "../../ship/table-cable-proxies";
 
 type HelmetCableRopesProps = {
   head: Object3D;
@@ -451,10 +447,8 @@ export function HelmetCableRopes({
       label: "Helmet absorb fade",
     },
   });
-  const tableCableProxyTransform = useSciFiTableCableProxyTransform();
   const bodyCapsules = useRef<ResolvedCableProxyCapsule[]>([]);
   const bodyBoxes = useRef<ResolvedCableProxyBox[]>([]);
-  const tableBoxes = useRef<ResolvedCableProxyBox[]>([]);
   const propBoxes = useRef<ResolvedCableProxyBox[]>([]);
 
   const resolvePropBoxCollisions = (
@@ -554,12 +548,8 @@ export function HelmetCableRopes({
       bodyBoxes.current.length = 0;
     }
 
-    resolveTableCableProxyBoxes(
-      tableCableProxyTransform,
-      tableBoxes.current,
-    );
     propBoxes.current.length = 0;
-    propBoxes.current.push(...bodyBoxes.current, ...tableBoxes.current);
+    propBoxes.current.push(...bodyBoxes.current);
 
     connectorLocalPositions.forEach((_, ropeIndex) => {
       const mesh = meshRefs.current[ropeIndex];
