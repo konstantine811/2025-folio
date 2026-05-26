@@ -7,6 +7,7 @@ import {
   DataTexture,
   ImageBitmapLoader,
   LinearFilter,
+  LinearMipmapLinearFilter,
   Mesh,
   RGBAFormat,
   ShaderMaterial,
@@ -17,6 +18,7 @@ import {
   UnsignedByteType,
   Vector3,
 } from "three";
+import { earthConfig, earthShaderDefaults } from "./earth.config";
 
 const earthTextures = {
   dayPreview: "/images/textures/earth/three-journey/day-1k.jpg",
@@ -24,18 +26,92 @@ const earthTextures = {
   dayHigh: "/images/textures/earth/NASA/earth_color_8K.jpg",
   nightHigh: "/images/textures/earth/NASA/earth_nightlights_8K.jpg",
   specularClouds: "/images/textures/earth/three-journey/specularClouds-1k.jpg",
+  specularCloudsHigh: "/images/textures/earth/three-journey/specularClouds.jpg",
 };
 
-const earthPosition: [number, number, number] = [-60, -70, -200];
-const earthRadius = 100;
-const earthShaderDefaults = {
-  atmosphereDayColor: "#3e547c",
-  atmosphereTwilightColor: "#4a6f4c",
-  bakedTint: "#f7f7f7",
-  sunPhi: 1.68,
-  sunTheta: 1.93,
-  rotationSpeed: 0.005,
-};
+const earthPosition = earthConfig.position;
+const earthRadius = earthConfig.radius;
+const cloudLayerScale = earthConfig.cloudLayerScale;
+
+const cloudMaskGlsl = /* glsl */ `
+  float sharpenCloudMask(float rawCloud, float sharpness)
+  {
+      float contrasted = clamp((rawCloud - 0.5) * sharpness + 0.5, 0.0, 1.0);
+      float edge = fwidth(contrasted) * 0.55;
+      return smoothstep(0.44 - edge, 0.58 + edge, contrasted);
+  }
+`;
+
+const cloudVolumetricGlsl = /* glsl */ `
+  float cloudHash3(vec3 p)
+  {
+      p = fract(p * 0.3183099 + vec3(0.11, 0.17, 0.13));
+      p *= 17.0;
+      return fract(p.x * p.y * p.z * (dot(p, p) + 0.001));
+  }
+
+  float cloudNoise3(vec3 p)
+  {
+      vec3 i = floor(p);
+      vec3 f = fract(p);
+      f = f * f * (3.0 - 2.0 * f);
+
+      return mix(
+          mix(
+              mix(cloudHash3(i), cloudHash3(i + vec3(1.0, 0.0, 0.0)), f.x),
+              mix(cloudHash3(i + vec3(0.0, 1.0, 0.0)), cloudHash3(i + vec3(1.0, 1.0, 0.0)), f.x),
+              f.y
+          ),
+          mix(
+              mix(cloudHash3(i + vec3(0.0, 0.0, 1.0)), cloudHash3(i + vec3(1.0, 0.0, 1.0)), f.x),
+              mix(cloudHash3(i + vec3(0.0, 1.0, 1.0)), cloudHash3(i + vec3(1.0, 1.0, 1.0)), f.x),
+              f.y
+          ),
+          f.z
+      );
+  }
+
+  float cloudFbm3(vec3 p)
+  {
+      float value = 0.0;
+      float amplitude = 0.5;
+
+      for (int i = 0; i < 3; i++)
+      {
+          value += amplitude * cloudNoise3(p);
+          p = p * 2.04 + vec3(0.17, 0.09, 0.23);
+          amplitude *= 0.5;
+      }
+
+      return value;
+  }
+
+  float cloudDetailNoise(vec3 worldPos, float time, float evolution)
+  {
+      vec3 animate = worldPos * 0.011 + vec3(time * evolution * 0.011);
+      float n1 = cloudFbm3(animate);
+      float n2 = cloudFbm3(animate * 2.15 + vec3(3.7, 1.4, 2.6));
+      return n1 * 0.62 + n2 * 0.38;
+  }
+
+  float cloudVolumetricDensity(
+      vec3 worldPos,
+      vec2 uv,
+      sampler2D cloudTexture,
+      float time,
+      float evolution
+  )
+  {
+      float base = texture2D(cloudTexture, uv).g;
+      if (base < 0.06) {
+          return 0.0;
+      }
+
+      float detail = cloudDetailNoise(worldPos, time, evolution);
+      float shaped = base * mix(0.5, 1.0, smoothstep(0.22, 0.88, detail));
+      return smoothstep(0.34, 0.72, shaped);
+  }
+`;
 
 const earthVertexShader = /* glsl */ `
   varying vec2 vUv;
@@ -56,6 +132,8 @@ const earthVertexShader = /* glsl */ `
 `;
 
 const earthFragmentShader = /* glsl */ `
+  ${cloudMaskGlsl}
+  ${cloudVolumetricGlsl}
   uniform sampler2D uDayTexture;
   uniform sampler2D uNightTexture;
   uniform sampler2D uDayHighTexture;
@@ -66,6 +144,11 @@ const earthFragmentShader = /* glsl */ `
   uniform vec3 uAtmosphereDayColor;
   uniform vec3 uAtmosphereTwilightColor;
   uniform vec3 uBakedTint;
+  uniform float uCloudLayerAngle;
+  uniform float uCloudShadowStrength;
+  uniform float uCloudSharpness;
+  uniform float uCloudTime;
+  uniform float uCloudEvolution;
 
   varying vec2 vUv;
   varying vec3 vNormal;
@@ -90,9 +173,28 @@ const earthFragmentShader = /* glsl */ `
 
       vec2 specularCloudsColor = texture2D(uSpecularCloudsTexture, vUv).rg;
 
-      float cloudsMix = smoothstep(0.5, 1.0, specularCloudsColor.g);
-      cloudsMix *= dayMix;
-      color = mix(color, vec3(1.0), cloudsMix);
+      vec3 sunDir = normalize(uSunDirection);
+      vec3 upReference = abs(normal.y) < 0.999 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+      vec3 tangent = normalize(cross(upReference, normal));
+      vec3 bitangent = cross(normal, tangent);
+
+      vec2 cloudUv = vUv;
+      cloudUv.x = fract(cloudUv.x - uCloudLayerAngle / 6.2831853);
+
+      vec2 sunTangentUv = vec2(dot(tangent, sunDir), dot(bitangent, sunDir));
+      float sunTangentLen = max(length(sunTangentUv), 0.0001);
+      vec2 shadowUv = cloudUv - (sunTangentUv / sunTangentLen) * 0.065;
+      shadowUv.x = fract(shadowUv.x);
+
+      float cloudShadowSample = cloudVolumetricDensity(
+          vPosition,
+          shadowUv,
+          uSpecularCloudsTexture,
+          uCloudTime,
+          uCloudEvolution
+      );
+      float cloudShadow = sharpenCloudMask(cloudShadowSample, uCloudSharpness) * dayMix;
+      color *= 1.0 - cloudShadow * uCloudShadowStrength;
 
       float fresnel = dot(viewDirection, normal) + 1.0;
       fresnel = pow(fresnel, 2.0);
@@ -133,6 +235,90 @@ const atmosphereVertexShader = /* glsl */ `
   }
 `;
 
+const cloudsVertexShader = /* glsl */ `
+  uniform float uCloudDisplacement;
+
+  varying vec2 vUv;
+  varying vec3 vNormal;
+  varying vec3 vPosition;
+
+  void main()
+  {
+      vUv = uv;
+
+      vec3 displaced = position + normal * uCloudDisplacement * 0.15;
+
+      vec4 modelPosition = modelMatrix * vec4(displaced, 1.0);
+      gl_Position = projectionMatrix * viewMatrix * modelPosition;
+
+      vec3 modelNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
+      vNormal = modelNormal;
+      vPosition = modelPosition.xyz;
+  }
+`;
+
+const cloudsFragmentShader = /* glsl */ `
+  ${cloudVolumetricGlsl}
+  uniform sampler2D uCloudsTexture;
+  uniform vec3 uSunDirection;
+  uniform float uCloudTime;
+  uniform float uCloudEvolution;
+  uniform float uCloudVolumeDepth;
+
+  varying vec2 vUv;
+  varying vec3 vNormal;
+  varying vec3 vPosition;
+
+  void main()
+  {
+      vec3 normal = normalize(vNormal);
+      vec3 sunDir = normalize(uSunDirection);
+      vec3 viewDirection = normalize(vPosition - cameraPosition);
+      float dayMix = smoothstep(- 0.25, 0.5, dot(sunDir, normal));
+      float twilightMix = smoothstep(- 0.35, 0.15, dot(sunDir, normal));
+
+      vec2 uv = vUv;
+      uv.x = fract(uv.x);
+
+      float stepSize = uCloudVolumeDepth / 5.0;
+      float densityIntegral = 0.0;
+      float lightIntegral = 0.0;
+
+      for (int i = 0; i < 5; i++)
+      {
+          float layer = float(i) - 2.0;
+          vec3 samplePos = vPosition + normal * layer * stepSize;
+          float density = cloudVolumetricDensity(
+              samplePos,
+              uv,
+              uCloudsTexture,
+              uCloudTime,
+              uCloudEvolution
+          );
+
+          densityIntegral += density * stepSize;
+          float light = max(dot(normal, sunDir), 0.0) * 0.75 + 0.25;
+          lightIntegral += density * light * stepSize;
+      }
+
+      float density = densityIntegral / max(uCloudVolumeDepth, 0.001);
+
+      if (density < 0.015) {
+          discard;
+      }
+
+      vec3 cloudColor = mix(vec3(0.74, 0.78, 0.84), vec3(0.98, 0.99, 1.0), dayMix);
+      cloudColor *= lightIntegral / max(densityIntegral, 0.0001);
+
+      float rim = pow(1.0 - max(dot(viewDirection, normal), 0.0), 2.3);
+      cloudColor += rim * vec3(0.9, 0.94, 1.0) * 0.24 * dayMix;
+
+      float alpha = density * mix(0.38, 0.96, twilightMix);
+
+      gl_FragColor = vec4(cloudColor, alpha);
+  }
+`;
+
 const atmosphereFragmentShader = /* glsl */ `
   uniform vec3 uSunDirection;
   uniform vec3 uAtmosphereDayColor;
@@ -170,14 +356,15 @@ function configureTexture(
   texture: Texture,
   anisotropy: number,
   colorSpace?: Texture["colorSpace"],
+  useMipmaps = false,
 ) {
   if (colorSpace) {
     texture.colorSpace = colorSpace;
   }
 
   texture.anisotropy = anisotropy;
-  texture.generateMipmaps = false;
-  texture.minFilter = LinearFilter;
+  texture.generateMipmaps = useMipmaps;
+  texture.minFilter = useMipmaps ? LinearMipmapLinearFilter : LinearFilter;
   texture.magFilter = LinearFilter;
   texture.needsUpdate = true;
 }
@@ -225,6 +412,7 @@ function loadTextureInBackground(
   anisotropy: number,
   onLoad: (texture: Texture) => void,
   colorSpace?: Texture["colorSpace"],
+  useMipmaps = false,
 ) {
   let cancelled = false;
   const finish = (texture: Texture) => {
@@ -233,7 +421,7 @@ function loadTextureInBackground(
       return;
     }
 
-    configureTexture(texture, anisotropy, colorSpace);
+    configureTexture(texture, anisotropy, colorSpace, useMipmaps);
     onLoad(texture);
   };
 
@@ -260,17 +448,21 @@ function loadTextureInBackground(
 }
 
 function Earth() {
-  const earthRef = useRef<Mesh>(null);
+  const earthMeshRef = useRef<Mesh>(null);
+  const cloudsMeshRef = useRef<Mesh>(null);
   const earthMaterialRef = useRef<ShaderMaterial>(null);
+  const cloudsMaterialRef = useRef<ShaderMaterial>(null);
   const atmosphereMaterialRef = useRef<ShaderMaterial>(null);
   const loadedTexturesRef = useRef<Texture[]>([]);
   const targetTextureBlendRef = useRef(0);
+  const specularCloudsUniformRef = useRef<Uniform<Texture>>(
+    new Uniform(createSolidTexture([0, 0, 0, 255])),
+  );
   const { gl } = useThree();
   const placeholderTextures = useMemo(
     () => ({
       day: createSolidTexture([25, 34, 46, 255], SRGBColorSpace),
       night: createSolidTexture([2, 3, 6, 255], SRGBColorSpace),
-      specularClouds: createSolidTexture([0, 0, 0, 255]),
     }),
     [],
   );
@@ -282,6 +474,12 @@ function Earth() {
     sunPhi,
     sunTheta,
     rotationSpeed,
+    cloudDriftRatio: cloudSpeedControl,
+    cloudShadowStrength,
+    cloudDisplacement,
+    cloudSharpness,
+    cloudEvolution,
+    cloudVolumeDepth,
   } = useControls("Earth shader", {
     atmosphereDayColor: {
       value: earthShaderDefaults.atmosphereDayColor,
@@ -309,6 +507,48 @@ function Earth() {
       max: 0.35,
       step: 0.001,
     },
+    cloudDriftRatio: {
+      value: earthConfig.shader.cloudSpeed,
+      min: 0,
+      max: 1.2,
+      step: 0.001,
+      label: "Cloud speed",
+    },
+    cloudShadowStrength: {
+      value: earthShaderDefaults.cloudShadowStrength,
+      min: 0,
+      max: 1,
+      step: 0.01,
+      label: "Cloud shadow",
+    },
+    cloudDisplacement: {
+      value: earthShaderDefaults.cloudDisplacement,
+      min: 0,
+      max: 6,
+      step: 0.05,
+      label: "Cloud volume",
+    },
+    cloudSharpness: {
+      value: earthShaderDefaults.cloudSharpness,
+      min: 0.8,
+      max: 2.5,
+      step: 0.01,
+      label: "Cloud sharpness",
+    },
+    cloudEvolution: {
+      value: earthConfig.shader.cloudEvolution,
+      min: 0,
+      max: 1.5,
+      step: 0.01,
+      label: "Cloud evolution",
+    },
+    cloudVolumeDepth: {
+      value: earthConfig.shader.cloudVolumeDepth,
+      min: 0.4,
+      max: 4,
+      step: 0.05,
+      label: "Cloud depth",
+    },
     bakedTint: {
       value: earthShaderDefaults.bakedTint,
       label: "Baked tint",
@@ -330,6 +570,10 @@ function Earth() {
       texture: Texture,
     ) => {
       loadedTexturesRef.current.push(texture);
+
+      if (uniformName === "uSpecularCloudsTexture") {
+        specularCloudsUniformRef.current.value = texture;
+      }
 
       const material = earthMaterialRef.current;
       if (!material) return;
@@ -361,6 +605,19 @@ function Earth() {
           anisotropy,
           (texture) => assignTexture("uSpecularCloudsTexture", texture),
         ),
+      );
+      disposers.push(
+        scheduleIdle(() => {
+          disposers.push(
+            loadTextureInBackground(
+              earthTextures.specularCloudsHigh,
+              anisotropy,
+              (texture) => assignTexture("uSpecularCloudsTexture", texture),
+              undefined,
+              true,
+            ),
+          );
+        }, 500),
       );
     };
 
@@ -414,7 +671,8 @@ function Earth() {
     () => () => {
       placeholderTextures.day.dispose();
       placeholderTextures.night.dispose();
-      placeholderTextures.specularClouds.dispose();
+      const placeholderClouds = specularCloudsUniformRef.current.value;
+      placeholderClouds.dispose();
     },
     [placeholderTextures],
   );
@@ -425,6 +683,7 @@ function Earth() {
     sunDirection.setFromSphericalCoords(1, sunPhi, sunTheta);
 
     earthMaterialRef.current?.uniforms.uSunDirection.value.copy(sunDirection);
+    cloudsMaterialRef.current?.uniforms.uSunDirection.value.copy(sunDirection);
     atmosphereMaterialRef.current?.uniforms.uSunDirection.value.copy(
       sunDirection,
     );
@@ -454,7 +713,7 @@ function Earth() {
       uNightTexture: new Uniform(placeholderTextures.night),
       uDayHighTexture: new Uniform(placeholderTextures.day),
       uNightHighTexture: new Uniform(placeholderTextures.night),
-      uSpecularCloudsTexture: new Uniform(placeholderTextures.specularClouds),
+      uSpecularCloudsTexture: specularCloudsUniformRef.current,
       uTextureBlend: new Uniform(0),
       uSunDirection: new Uniform(sunDirection.clone()),
       uAtmosphereDayColor: new Uniform(
@@ -464,8 +723,27 @@ function Earth() {
         new Color(earthShaderDefaults.atmosphereTwilightColor),
       ),
       uBakedTint: new Uniform(new Color(earthShaderDefaults.bakedTint)),
+      uCloudLayerAngle: new Uniform(0),
+      uCloudShadowStrength: new Uniform(
+        earthShaderDefaults.cloudShadowStrength,
+      ),
+      uCloudSharpness: new Uniform(earthShaderDefaults.cloudSharpness),
+      uCloudTime: new Uniform(0),
+      uCloudEvolution: new Uniform(earthConfig.shader.cloudEvolution),
     }),
     [placeholderTextures, sunDirection],
+  );
+
+  const cloudsUniforms = useMemo(
+    () => ({
+      uCloudsTexture: specularCloudsUniformRef.current,
+      uSunDirection: new Uniform(sunDirection.clone()),
+      uCloudDisplacement: new Uniform(earthShaderDefaults.cloudDisplacement),
+      uCloudTime: new Uniform(0),
+      uCloudEvolution: new Uniform(earthConfig.shader.cloudEvolution),
+      uCloudVolumeDepth: new Uniform(earthConfig.shader.cloudVolumeDepth),
+    }),
+    [sunDirection],
   );
 
   const atmosphereUniforms = useMemo(
@@ -481,23 +759,81 @@ function Earth() {
     [sunDirection],
   );
 
-  useFrame((state, delta) => {
-    if (earthRef.current) {
-      earthRef.current.rotation.y = state.clock.elapsedTime * rotationSpeed;
+  useEffect(() => {
+    const material = earthMaterialRef.current;
+    if (material) {
+      material.uniforms.uCloudShadowStrength.value = cloudShadowStrength;
+    }
+  }, [cloudShadowStrength]);
+
+  useEffect(() => {
+    const earthMaterial = earthMaterialRef.current;
+    const cloudsMaterial = cloudsMaterialRef.current;
+
+    if (earthMaterial) {
+      earthMaterial.uniforms.uCloudSharpness.value = cloudSharpness;
+    }
+  }, [cloudSharpness]);
+
+  useEffect(() => {
+    const earthMaterial = earthMaterialRef.current;
+    const cloudsMaterial = cloudsMaterialRef.current;
+
+    if (earthMaterial) {
+      earthMaterial.uniforms.uCloudEvolution.value = cloudEvolution;
     }
 
-    const material = earthMaterialRef.current;
-    if (!material) return;
+    if (cloudsMaterial) {
+      cloudsMaterial.uniforms.uCloudEvolution.value = cloudEvolution;
+      cloudsMaterial.uniforms.uCloudVolumeDepth.value = cloudVolumeDepth;
+    }
+  }, [cloudEvolution, cloudVolumeDepth]);
 
-    const blendUniform = material.uniforms.uTextureBlend;
-    blendUniform.value +=
-      (targetTextureBlendRef.current - blendUniform.value) *
-      (1 - Math.exp(-delta * 0.9));
+  useEffect(() => {
+    const material = cloudsMaterialRef.current;
+    if (material) {
+      material.uniforms.uCloudDisplacement.value = cloudDisplacement;
+    }
+  }, [cloudDisplacement]);
+
+  useFrame((state, delta) => {
+    const elapsed = state.clock.elapsedTime;
+    const earthAngle = elapsed * rotationSpeed;
+    const cloudAngle = -earthAngle * cloudSpeedControl;
+    const cloudLayerAngle = cloudAngle - earthAngle;
+
+    const earthMaterial = earthMaterialRef.current;
+    const cloudsMaterial = cloudsMaterialRef.current;
+
+    if (earthMaterial) {
+      earthMaterial.uniforms.uCloudTime.value = elapsed;
+    }
+
+    if (cloudsMaterial) {
+      cloudsMaterial.uniforms.uCloudTime.value = elapsed;
+    }
+
+    if (earthMeshRef.current) {
+      earthMeshRef.current.rotation.y = earthAngle;
+    }
+
+    if (cloudsMeshRef.current) {
+      cloudsMeshRef.current.rotation.y = cloudAngle;
+    }
+
+    if (earthMaterial) {
+      earthMaterial.uniforms.uCloudLayerAngle.value = cloudLayerAngle;
+
+      const blendUniform = earthMaterial.uniforms.uTextureBlend;
+      blendUniform.value +=
+        (targetTextureBlendRef.current - blendUniform.value) *
+        (1 - Math.exp(-delta * 0.9));
+    }
   });
 
   return (
     <group position={earthPosition} rotation={[0.12, -Math.PI / 1.35, 0]}>
-      <mesh ref={earthRef} name="Earth_Sphere">
+      <mesh ref={earthMeshRef} name="Earth_Sphere">
         <sphereGeometry args={[earthRadius, 128, 96]} />
         <shaderMaterial
           ref={earthMaterialRef}
@@ -517,6 +853,24 @@ function Earth() {
           vertexShader={atmosphereVertexShader}
           fragmentShader={atmosphereFragmentShader}
           uniforms={atmosphereUniforms}
+        />
+      </mesh>
+
+      <mesh
+        ref={cloudsMeshRef}
+        name="Clouds"
+        scale={cloudLayerScale}
+        renderOrder={2}
+      >
+        <sphereGeometry args={[earthRadius, 160, 120]} />
+        <shaderMaterial
+          ref={cloudsMaterialRef}
+          transparent
+          toneMapped={false}
+          depthWrite={false}
+          vertexShader={cloudsVertexShader}
+          fragmentShader={cloudsFragmentShader}
+          uniforms={cloudsUniforms}
         />
       </mesh>
     </group>
