@@ -12,7 +12,12 @@ export function WheelContactHistoryDebugRack({
   return (
     <>
       {historiesRef.current.map((entry, index) => (
-        <WheelTrackTrail key={index} entry={entry} index={index} variant="debug" />
+        <WheelTrackTrail
+          key={index}
+          entry={entry}
+          index={index}
+          variant="debug"
+        />
       ))}
     </>
   );

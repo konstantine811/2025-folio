@@ -2,9 +2,9 @@
 // @ts-nocheck
 import MainWrapperOffset from "@/components/ui-abc/main-wrapper-offset";
 import InitKeyboardController from "@/components/common/game-controller/init-keyboard";
-import { Stats } from "@react-three/drei";
+import { StatsGl } from "@react-three/drei";
 import { Canvas, extend } from "@react-three/fiber";
-import { Suspense, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import {
   MeshBasicNodeMaterial,
   MeshStandardNodeMaterial,
@@ -12,7 +12,6 @@ import {
 } from "three/webgpu";
 import { WebGPURendererParameters } from "three/src/renderers/webgpu/WebGPURenderer.js";
 import ThreeLoader from "../../common/three-loader";
-import { WebGpuPerfPanel, WebGpuPerfTracker } from "../../common/webgpu-perf";
 import Experience from "./experience/experience";
 import { isDev } from "@/utils/check-env";
 
@@ -23,13 +22,12 @@ extend({
 
 const Init = () => {
   const [gpuReady, setGpuReady] = useState(false);
+  const statsParentRef = useRef<HTMLDivElement>(null);
 
   return (
     <MainWrapperOffset isFullHeight className="flex min-h-0 flex-1 flex-col">
       <InitKeyboardController isIgnorePause />
-      <div className="relative min-h-0 flex-1">
-        {isDev && <Stats />}
-        {isDev && <WebGpuPerfPanel top={56} />}
+      <div ref={statsParentRef} className="relative min-h-0 flex-1">
         {!isDev && <ThreeLoader />}
         <Canvas
           className="!absolute inset-0 touch-none"
@@ -56,7 +54,13 @@ const Init = () => {
           <color attach="background" args={["#1c1c1c"]} />
           {gpuReady && (
             <Suspense fallback={null}>
-              {isDev && <WebGpuPerfTracker />}
+              {isDev && (
+                <StatsGl
+                  parent={statsParentRef}
+                  trackGPU
+                  className="pointer-events-auto absolute left-2 top-2 z-50"
+                />
+              )}
               <Experience />
             </Suspense>
           )}
