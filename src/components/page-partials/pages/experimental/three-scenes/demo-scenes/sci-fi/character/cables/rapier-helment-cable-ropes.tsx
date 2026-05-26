@@ -16,6 +16,12 @@ import {
   Vector3,
 } from "three";
 import { RefObject, createRef, useMemo, useRef } from "react";
+import {
+  SCIFI_CABLE_FLOOR_GROUP,
+  SCIFI_CABLE_GROUP,
+  SCIFI_HELMET_GROUP,
+  SCIFI_PROP_COLLIDER_GROUP,
+} from "../../sci-fi-collision-groups";
 
 type Vec3 = [number, number, number];
 
@@ -39,9 +45,9 @@ type CableJointProps = {
 const cableRadius = 0.018;
 const colliderRadius = 0.032;
 const visualSegments = 28;
-const cableCollisionGroup = 4;
-const cableFloorCollisionGroup = 5;
-const helmetCollisionGroup = 6;
+const cableCollisionGroup = SCIFI_CABLE_GROUP;
+const cableFloorCollisionGroup = SCIFI_CABLE_FLOOR_GROUP;
+const helmetCollisionGroup = SCIFI_HELMET_GROUP;
 const cableFloorContactY = 0.115 + colliderRadius;
 const helmetArcSegmentCount = 8;
 const helmetArcSegmentLength = 0.35;
@@ -336,6 +342,12 @@ export function RapierHelmetCable({
             collisionGroups={interactionGroups(cableCollisionGroup, [
               cableFloorCollisionGroup,
               helmetCollisionGroup,
+              SCIFI_PROP_COLLIDER_GROUP,
+            ])}
+            solverGroups={interactionGroups(cableCollisionGroup, [
+              cableFloorCollisionGroup,
+              helmetCollisionGroup,
+              SCIFI_PROP_COLLIDER_GROUP,
             ])}
             friction={2.1}
             restitution={0.7}

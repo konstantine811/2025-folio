@@ -1,9 +1,14 @@
 import { JSX } from "react";
 import { useGLTF } from "@react-three/drei";
-import { interactionGroups, RigidBody } from "@react-three/rapier";
+import {
+  CuboidCollider,
+  interactionGroups,
+  RigidBody,
+} from "@react-three/rapier";
 import { useControls } from "leva";
 import { type Mesh } from "three";
 import {
+  SCIFI_CABLE_GROUP,
   SCIFI_CHARACTER_CONTROLLER_GROUP,
   SCIFI_PROP_COLLIDER_GROUP,
 } from "../sci-fi-collision-groups";
@@ -12,12 +17,41 @@ const modelPath = "/3d-models/sci-fi/table_and_computer.glb";
 
 export function TableAndComputer(props: JSX.IntrinsicElements["group"]) {
   const { nodes } = useGLTF(modelPath);
-  const { position, rotationY, scale } = useControls(
+  const {
+    position,
+    rotationY,
+    scale,
+    showCableProxyWireframes,
+    cableProxyOnePosition,
+    cableProxyOneHalfExtents,
+    cableProxyTwoPosition,
+    cableProxyTwoHalfExtents,
+  } = useControls(
     "Sci-fi props / Table computer",
     {
       position: { value: { x: -2.35, y: 0.1, z: 9.18 }, step: 0.05 },
       rotationY: { value: 29, min: -180, max: 180, step: 1 },
       scale: { value: 0.93, min: 0.1, max: 3, step: 0.01 },
+      showCableProxyWireframes: {
+        value: false,
+        label: "Show cable proxy wireframes",
+      },
+      cableProxyOnePosition: {
+        value: { x: 0, y: 0.49, z: 0.02 },
+        step: 0.01,
+      },
+      cableProxyOneHalfExtents: {
+        value: { x: 1.26, y: 0.5, z: 0.33 },
+        step: 0.01,
+      },
+      cableProxyTwoPosition: {
+        value: { x: 0, y: 1.28, z: 0.08 },
+        step: 0.01,
+      },
+      cableProxyTwoHalfExtents: {
+        value: { x: 0.67, y: 0.32, z: 0.07 },
+        step: 0.01,
+      },
     },
   );
 
@@ -32,10 +66,26 @@ export function TableAndComputer(props: JSX.IntrinsicElements["group"]) {
     0,
   ];
   const transformScale: [number, number, number] = [scale, scale, scale];
+  const scalePosition = (value: { x: number; y: number; z: number }) =>
+    [value.x * scale, value.y * scale, value.z * scale] as [
+      number,
+      number,
+      number,
+    ];
   const propCollisionGroups = interactionGroups(SCIFI_PROP_COLLIDER_GROUP, [
+    SCIFI_CABLE_GROUP,
     SCIFI_CHARACTER_CONTROLLER_GROUP,
     0,
   ]);
+  const cableOnlyCollisionGroups = interactionGroups(SCIFI_PROP_COLLIDER_GROUP, [
+    SCIFI_CABLE_GROUP,
+  ]);
+  const scaleSize = (value: { x: number; y: number; z: number }) =>
+    [value.x * scale * 2, value.y * scale * 2, value.z * scale * 2] as [
+      number,
+      number,
+      number,
+    ];
 
   return (
     <>
@@ -82,6 +132,60 @@ export function TableAndComputer(props: JSX.IntrinsicElements["group"]) {
           </group>
         </group>
       </RigidBody>
+
+      <RigidBody
+        key={`cable_proxy_${position.x}_${position.y}_${position.z}_${rotationY}_${scale}_${cableProxyOnePosition.x}_${cableProxyOnePosition.y}_${cableProxyOnePosition.z}_${cableProxyOneHalfExtents.x}_${cableProxyOneHalfExtents.y}_${cableProxyOneHalfExtents.z}_${cableProxyTwoPosition.x}_${cableProxyTwoPosition.y}_${cableProxyTwoPosition.z}_${cableProxyTwoHalfExtents.x}_${cableProxyTwoHalfExtents.y}_${cableProxyTwoHalfExtents.z}`}
+        type="fixed"
+        colliders={false}
+        position={transformPosition}
+        rotation={transformRotation}
+      >
+        <CuboidCollider
+          args={scalePosition(cableProxyOneHalfExtents)}
+          position={scalePosition(cableProxyOnePosition)}
+          collisionGroups={cableOnlyCollisionGroups}
+          solverGroups={cableOnlyCollisionGroups}
+          friction={2.4}
+          restitution={0}
+        />
+        <CuboidCollider
+          args={scalePosition(cableProxyTwoHalfExtents)}
+          position={scalePosition(cableProxyTwoPosition)}
+          collisionGroups={cableOnlyCollisionGroups}
+          solverGroups={cableOnlyCollisionGroups}
+          friction={2.4}
+          restitution={0}
+        />
+      </RigidBody>
+
+      {showCableProxyWireframes ? (
+        <group
+          position={transformPosition}
+          rotation={transformRotation}
+          userData={{ camExcludeCollision: true }}
+        >
+          <mesh position={scalePosition(cableProxyOnePosition)}>
+            <boxGeometry args={scaleSize(cableProxyOneHalfExtents)} />
+            <meshBasicMaterial
+              color="#39d5ff"
+              wireframe
+              transparent
+              opacity={0.8}
+              depthWrite={false}
+            />
+          </mesh>
+          <mesh position={scalePosition(cableProxyTwoPosition)}>
+            <boxGeometry args={scaleSize(cableProxyTwoHalfExtents)} />
+            <meshBasicMaterial
+              color="#39d5ff"
+              wireframe
+              transparent
+              opacity={0.8}
+              depthWrite={false}
+            />
+          </mesh>
+        </group>
+      ) : null}
     </>
   );
 }

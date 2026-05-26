@@ -16,6 +16,7 @@ export function sciFiCableCollisionGroups() {
     SCIFI_CABLE_FLOOR_GROUP,
     SCIFI_HELMET_GROUP,
     SCIFI_BODY_PROXY_GROUP,
+    SCIFI_PROP_COLLIDER_GROUP,
   ]);
 }
 
