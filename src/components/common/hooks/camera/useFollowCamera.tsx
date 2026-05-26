@@ -22,6 +22,7 @@ interface Props {
   camMoveSpeed?: number;
   camZoomSpeed?: number;
   camCollisionOffset?: number; // percentage
+  camCollisionMinDis?: number;
   camCollisionSpeedMult?: number;
   camListenerTarget?: camListenerTargetType;
   isEditMode?: boolean;
@@ -42,6 +43,7 @@ const useFollowCamera = ({
   camMoveSpeed = 1,
   camZoomSpeed = 1,
   camCollisionOffset = 0.7, // percentage
+  camCollisionMinDis = camMinDis,
   camCollisionSpeedMult = 4,
   camListenerTarget = "domElement",
   isEditMode = false,
@@ -267,7 +269,7 @@ const useFollowCamera = ({
     if (hits.length && hits[0].distance <= -originZDis.current) {
       smallestDistance = Math.min(
         -hits[0].distance * camCollisionOffset,
-        camMinDis,
+        camCollisionMinDis,
       );
     } else {
       smallestDistance = originZDis.current;

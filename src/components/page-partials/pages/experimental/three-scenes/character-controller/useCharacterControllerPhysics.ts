@@ -58,6 +58,7 @@ export function useCharacterControllerPhysics({
     camMoveSpeed: 1,
     camZoomSpeed: 1,
     camCollisionOffset: 0.7,
+    camCollisionMinDis: -0.15,
     camCollisionSpeedMult: 4,
   });
 
