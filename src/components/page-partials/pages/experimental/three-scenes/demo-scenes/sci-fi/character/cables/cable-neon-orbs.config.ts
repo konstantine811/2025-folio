@@ -8,7 +8,7 @@ export const cableNeonOrbDefaults = {
   color: "#3c39db",
   emissiveIntensity: 12,
   spawnFade: 0.08,
-  absorbFade: 0.18,
+  absorbFade: 0.08,
 } as const;
 
 export const cableNeonOrbMaxPerCable = 6;
