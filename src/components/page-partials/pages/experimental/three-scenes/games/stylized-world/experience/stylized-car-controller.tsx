@@ -20,6 +20,11 @@ import type { RefObject } from "react";
 import { useWheelContactHistory } from "./use-wheel-contact-history";
 import type { WheelContactHistoryEntry } from "./wheel-contact-history";
 import { WheelContactHistoryDebugRack } from "./wheel-contact-history-debug";
+import {
+  StylizedToyotaCarBodyVisual,
+  WHEEL_MESH_ROTATION,
+  useToyotaWheelVisuals,
+} from "./stylized-toyota-car";
 
 type StylizedCarControllerProps = {
   focusRef: MutableRefObject<Vector3>;
@@ -44,7 +49,6 @@ const BODY = { width: 1.2, height: 0.45, length: 2 };
 export const STYLIZED_CAR_GRASS_PUSH_RADIUS =
   Math.hypot(BODY.width, BODY.length) * 0.5 + 0.35;
 const WHEEL_RADIUS = 0.22;
-const WHEEL_WIDTH = 0.24;
 const WHEEL_Y = -BODY.height / 2;
 const MAX_SUSPENSION_TRAVEL = 0.16;
 const SUSPENSION_REST_LENGTH = BODY.height / 2;
@@ -167,6 +171,7 @@ export function StylizedCarController({
       contactHistoriesRef,
     },
   );
+  const { material: wheelMaterial, wheels: wheelVisuals } = useToyotaWheelVisuals();
 
   const forward = useControlStore((s) => s.forward);
   const backward = useControlStore((s) => s.backward);
@@ -530,38 +535,31 @@ export function StylizedCarController({
           friction={0}
         />
 
-        <mesh castShadow>
-          <boxGeometry args={[BODY.width, BODY.height, BODY.length]} />
-          <meshBasicMaterial color="#f5f5f5" wireframe />
-        </mesh>
+        <StylizedToyotaCarBodyVisual />
 
-        {WHEELS.map(({ position, axle }, index) => (
-          <group
-            key={index}
-            position={position}
-            ref={(node) => {
-              wheelRefs.current[index] = node;
-            }}
-          >
-            <mesh castShadow rotation={[0, 0, Math.PI / 2]}>
-              <cylinderGeometry
-                args={[WHEEL_RADIUS, WHEEL_RADIUS, WHEEL_WIDTH, 12, 1]}
+        {WHEELS.map(({ position }, index) => {
+          const wheelVisual = wheelVisuals[index];
+          if (!wheelVisual) return null;
+
+          return (
+            <group
+              key={index}
+              position={position}
+              ref={(node) => {
+                wheelRefs.current[index] = node;
+              }}
+            >
+              <mesh
+                castShadow
+                receiveShadow
+                geometry={wheelVisual.geometry}
+                material={wheelMaterial}
+                rotation={WHEEL_MESH_ROTATION}
+                scale={wheelVisual.scale}
               />
-              <meshStandardMaterial
-                color={
-                  axle === "front"
-                    ? index === 0
-                      ? "#d48bb8"
-                      : "#e8a0c4"
-                    : index === 2
-                      ? "#8fd4e8"
-                      : "#a6dce8"
-                }
-                roughness={0.55}
-              />
-            </mesh>
-          </group>
-        ))}
+            </group>
+          );
+        })}
       </RigidBody>
 
       {showWheelTrackDebug && (
