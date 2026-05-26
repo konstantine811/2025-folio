@@ -4,6 +4,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
 import type { MutableRefObject } from "react";
 import * as THREE from "three";
+import type { GrassGroundDataBinding } from "../ground-data";
 import { GrassLOD } from "./grass-lod";
 import type { GrassRuntimeConfig } from "./config";
 import { useGrassCompute } from "./use-grass-compute";
@@ -13,6 +14,7 @@ import { useGrassUniforms } from "./use-grass-uniforms";
 type StylizedGrassProps = {
   focusRef: MutableRefObject<THREE.Vector3>;
   interactionRef?: MutableRefObject<THREE.Vector3>;
+  grassGroundDataRef?: MutableRefObject<GrassGroundDataBinding>;
   visible?: boolean;
   config?: GrassRuntimeConfig;
 };
@@ -20,6 +22,7 @@ type StylizedGrassProps = {
 export function StylizedGrass({
   focusRef,
   interactionRef,
+  grassGroundDataRef,
   visible = true,
   config,
 }: StylizedGrassProps) {
@@ -46,6 +49,19 @@ export function StylizedGrass({
     uniforms.compute.uCharacterWorldPos.value.copy(
       interactionRef?.current ?? focusRef.current,
     );
+
+    const groundData = grassGroundDataRef?.current;
+    if (groundData?.texture) {
+      uniforms.material.uGroundDataTexture.value = groundData.texture;
+      uniforms.material.uGroundDataCenter.value.set(
+        groundData.centerX,
+        groundData.centerZ,
+      );
+      uniforms.material.uGroundDataHalfSize.value = groundData.halfSize;
+      uniforms.material.uGroundDataEnabled.value = 1;
+    } else {
+      uniforms.material.uGroundDataEnabled.value = 0;
+    }
   });
 
   if (!visible || !grassData || lodBuffers.length === 0) return null;

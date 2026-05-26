@@ -3,6 +3,9 @@ import { Physics } from "@react-three/rapier";
 import { useControls } from "leva";
 import { useMemo, useRef } from "react";
 import { Vector3 } from "three";
+import type { GrassGroundDataBinding } from "./ground-data";
+import { DEFAULT_GRASS_GROUND_DATA_BINDING } from "./ground-data";
+import { GroundDataSystem } from "./ground-data-system";
 import { InfiniteStylizedWorld } from "./infinite-stylized-world";
 import {
   STYLIZED_CAR_GRASS_PUSH_RADIUS,
@@ -10,6 +13,7 @@ import {
 } from "./stylized-car-controller";
 import { StylizedWorldGround } from "./stylized-world-ground";
 import { StylizedWorldTestCourse } from "./stylized-world-test-course";
+import { useWheelContactHistory } from "./use-wheel-contact-history";
 
 const Experience = () => {
   const {
@@ -213,6 +217,10 @@ const Experience = () => {
 
   const focusRef = useRef(new Vector3());
   const grassInteractionRef = useRef(new Vector3(9999, 0, 9999));
+  const grassGroundDataRef = useRef<GrassGroundDataBinding>({
+    ...DEFAULT_GRASS_GROUND_DATA_BINDING,
+  });
+  const { historiesRef: wheelContactHistoriesRef } = useWheelContactHistory(4);
   const physicsRadius = viewRadius + 4;
   const visualRadius = physicsRadius + 3;
 
@@ -223,6 +231,11 @@ const Experience = () => {
       timeStep={1 / 60}
       interpolate
     >
+      <GroundDataSystem
+        focusRef={focusRef}
+        contactHistoriesRef={wheelContactHistoriesRef}
+        grassGroundDataRef={grassGroundDataRef}
+      />
       <Environment preset="park" environmentIntensity={0.45} />
       <ambientLight intensity={0.45} />
       <directionalLight position={[4, 8, 3]} intensity={1.1} />
@@ -236,6 +249,7 @@ const Experience = () => {
         showGridDebug={showGridDebug}
         focusRef={focusRef}
         grassInteractionRef={grassInteractionRef}
+        grassGroundDataRef={grassGroundDataRef}
       />
       <StylizedWorldGround
         focusRef={focusRef}
@@ -251,6 +265,7 @@ const Experience = () => {
         brakeForce={brakeForce}
         steerAngle={(steerAngleDeg * Math.PI) / 180}
         showWheelTrackDebug={showWheelTrackDebug}
+        contactHistoriesRef={wheelContactHistoriesRef}
         grassInteractionRef={grassInteractionRef}
       />
     </Physics>

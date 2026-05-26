@@ -2,12 +2,20 @@
 // @ts-nocheck
 import { useCallback, useMemo } from "react";
 import * as THREE from "three";
-import { uniform, vec2, vec3 } from "three/tsl";
+import { uniform, uniformTexture, vec2, vec3 } from "three/tsl";
 import {
   DEFAULT_GRASS_RUNTIME,
   type GrassRuntimeConfig,
   type GrassUniforms,
 } from "./config";
+
+const FALLBACK_GROUND_DATA_TEXTURE = (() => {
+  const data = new Uint8Array([0, 0, 0, 0]);
+  const texture = new THREE.DataTexture(data, 1, 1, THREE.RGBAFormat);
+  texture.needsUpdate = true;
+  texture.colorSpace = THREE.NoColorSpace;
+  return texture;
+})();
 
 function resolveStraightness(straightness: number) {
   const s = THREE.MathUtils.clamp(straightness, 0, 1);
@@ -93,6 +101,11 @@ export function useGrassUniforms(config: GrassRuntimeConfig = {}) {
         uColorNoiseSeed: uniform<number>(params.colorNoiseSeed),
         uFieldColorDark: uniform(vec3(0.26, 0.4, 0.15)),
         uFieldColorLight: uniform(vec3(0.64, 0.74, 0.36)),
+        uGroundDataTexture: uniformTexture(FALLBACK_GROUND_DATA_TEXTURE),
+        uGroundDataCenter: uniform(new THREE.Vector2()),
+        uGroundDataHalfSize: uniform(16),
+        uGroundDataEnabled: uniform(0),
+        uTrackFlattenAmount: uniform(params.trackFlattenAmount),
       },
     }),
     [],
@@ -145,6 +158,7 @@ export function useGrassUniforms(config: GrassRuntimeConfig = {}) {
     uniforms.material.uWindDistanceEnd.value = merged.windDistanceEnd;
     uniforms.material.uColorNoiseScale.value = merged.colorNoiseScale;
     uniforms.material.uColorNoiseSeed.value = merged.colorNoiseSeed;
+    uniforms.material.uTrackFlattenAmount.value = merged.trackFlattenAmount;
   }, [uniforms]);
 
   // Keep GPU uniforms in sync every render (same pattern as bush material).

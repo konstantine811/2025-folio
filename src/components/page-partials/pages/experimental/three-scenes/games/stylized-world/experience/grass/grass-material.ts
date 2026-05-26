@@ -106,6 +106,25 @@ export function createGrassMaterial(
     const worldXZ = vec2(worldBasePos.x, worldBasePos.z);
     const dist = length(cameraPosition.sub(worldBasePos));
 
+    const groundUv = vec2(
+      worldBasePos.x
+        .sub(uniforms.uGroundDataCenter.x)
+        .div(uniforms.uGroundDataHalfSize.mul(2))
+        .add(0.5),
+      worldBasePos.z
+        .sub(uniforms.uGroundDataCenter.y)
+        .div(uniforms.uGroundDataHalfSize.mul(2))
+        .add(0.5),
+    );
+    const groundDataColor = uniforms.uGroundDataTexture.sample(groundUv);
+    const trackHeightFactor = select(
+      uniforms.uGroundDataEnabled.greaterThan(float(0.5)),
+      float(1).sub(
+        groundDataColor.a.mul(uniforms.uTrackFlattenAmount),
+      ),
+      float(1),
+    );
+
     const windDistanceFalloff = select(
       uniforms.uWindDistanceEnd.greaterThan(float(0)),
       oneMinus(
@@ -124,10 +143,12 @@ export function createGrassMaterial(
     const s = uvCoords.x.sub(0.5).mul(2);
 
     const p0 = vec3(0, 0, 0);
-    let p3 = vec3(0, height, 0);
+    let p3 = vec3(0, height.mul(trackHeightFactor), 0);
     const controls = getBezierControlPoints(bladeType, height, bend);
     let p1 = controls.p1;
     let p2 = controls.p2;
+    p1 = vec3(p1.x, p1.y.mul(trackHeightFactor), p1.z);
+    p2 = vec3(p2.x, p2.y.mul(trackHeightFactor), p2.z);
 
     const windDir2 = safeNormalize2D(uniforms.uWindDir);
     const windDir = vec3(windDir2.x, float(0), windDir2.y);

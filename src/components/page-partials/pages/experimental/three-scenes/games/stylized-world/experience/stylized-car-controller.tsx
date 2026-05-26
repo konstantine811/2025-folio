@@ -16,7 +16,9 @@ import {
   isVehicleTouchingGround,
   useVehicleController,
 } from "./use-vehicle-controller";
+import type { RefObject } from "react";
 import { useWheelContactHistory } from "./use-wheel-contact-history";
+import type { WheelContactHistoryEntry } from "./wheel-contact-history";
 import { WheelContactHistoryDebugRack } from "./wheel-contact-history-debug";
 
 type StylizedCarControllerProps = {
@@ -29,6 +31,7 @@ type StylizedCarControllerProps = {
   brakeForce?: number;
   steerAngle?: number;
   showWheelTrackDebug?: boolean;
+  contactHistoriesRef?: RefObject<WheelContactHistoryEntry[]>;
 };
 
 /**
@@ -133,6 +136,7 @@ export function StylizedCarController({
   brakeForce = DEFAULT_BRAKE_FORCE,
   steerAngle = DEFAULT_STEER_ANGLE,
   showWheelTrackDebug = false,
+  contactHistoriesRef: externalContactHistoriesRef,
 }: StylizedCarControllerProps) {
   const chassisRef = useRef<RapierRigidBody>(null);
   const wheelRefs = useRef<(Object3D | null)[]>([]);
@@ -150,14 +154,17 @@ export function StylizedCarController({
     () => [startX, chassisSpawnYAt(startX, startZ, worldSeed), startZ],
     [startX, startZ, worldSeed],
   );
-  const { historiesRef } = useWheelContactHistory(wheelsInfo.length);
+  const { historiesRef: internalContactHistoriesRef } =
+    useWheelContactHistory(wheelsInfo.length);
+  const contactHistoriesRef =
+    externalContactHistoriesRef ?? internalContactHistoriesRef;
   const { vehicleController } = useVehicleController(
     chassisRef,
     wheelRefs,
     wheelsInfo,
     {
       indexForwardAxis: 2,
-      contactHistoriesRef: showWheelTrackDebug ? historiesRef : undefined,
+      contactHistoriesRef,
     },
   );
 
@@ -558,7 +565,7 @@ export function StylizedCarController({
       </RigidBody>
 
       {showWheelTrackDebug && (
-        <WheelContactHistoryDebugRack historiesRef={historiesRef} />
+        <WheelContactHistoryDebugRack historiesRef={contactHistoriesRef} />
       )}
     </>
   );

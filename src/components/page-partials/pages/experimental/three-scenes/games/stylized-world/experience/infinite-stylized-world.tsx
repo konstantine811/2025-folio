@@ -12,6 +12,7 @@ import {
 import { BushNodeMaterial } from "./bush-material";
 import type { GrassRuntimeConfig } from "./grass/config";
 import { StylizedGrass } from "./grass/stylized-grass";
+import type { GrassGroundDataBinding } from "./ground-data";
 import {
   applyGroundTerrainToGeometry,
   createGroundTerrainGeometryTemplate,
@@ -40,6 +41,7 @@ type InfiniteStylizedWorldProps = {
   lookAheadTiles?: number;
   focusRef?: MutableRefObject<THREE.Vector3>;
   grassInteractionRef?: MutableRefObject<THREE.Vector3>;
+  grassGroundDataRef?: MutableRefObject<GrassGroundDataBinding>;
 };
 
 const MAX_INSTANCES_PER_MESH = 1024;
@@ -289,6 +291,7 @@ export function InfiniteStylizedWorld({
   lookAheadTiles = 2,
   focusRef,
   grassInteractionRef,
+  grassGroundDataRef,
 }: InfiniteStylizedWorldProps) {
   const { camera, controls } = useThree();
   const worldFocusRef = useRef(new THREE.Vector3());
@@ -515,6 +518,7 @@ export function InfiniteStylizedWorld({
           <StylizedGrass
             focusRef={focusRef}
             interactionRef={grassInteractionRef}
+            grassGroundDataRef={grassGroundDataRef}
             visible={showGrass}
             config={grassRuntime}
           />

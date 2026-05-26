@@ -91,6 +91,8 @@ export type GrassRuntimeConfig = {
   colorNoiseScale?: number;
   colorNoiseSeed?: number;
   debugLod?: boolean;
+  /** How strongly wheel tracks flatten grass (0–1). */
+  trackFlattenAmount?: number;
 };
 
 export const DEFAULT_GRASS_RUNTIME: Required<GrassRuntimeConfig> = {
@@ -124,4 +126,5 @@ export const DEFAULT_GRASS_RUNTIME: Required<GrassRuntimeConfig> = {
   colorNoiseScale: 0.5,
   colorNoiseSeed: 107,
   debugLod: false,
+  trackFlattenAmount: 1,
 };
