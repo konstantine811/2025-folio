@@ -122,8 +122,8 @@ function useEmbeddedMaps(modelUrl: string, meshName?: string) {
 
   let albedo: Texture | null = null;
 
-  const mat: any = mesh?.material;
-  if (mat?.map) {
+  const mat = Array.isArray(mesh?.material) ? mesh.material[0] : mesh?.material;
+  if (mat && "map" in mat && mat.map) {
     albedo = mat.map as Texture;
     // три.js сам декодує sRGB, якщо текстура позначена sRGB і renderer.outputEncoding налаштований.
     albedo.anisotropy = 8;

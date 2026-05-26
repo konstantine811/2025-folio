@@ -485,6 +485,7 @@ async function embedNodes(
       if (next.startsWith("blob:")) {
         droppedNodeImages++;
         const { imageUrl: _removed, ...rest } = n;
+        void _removed;
         return rest as typeof n;
       }
       return next === n.imageUrl ? n : { ...n, imageUrl: next };
@@ -534,6 +535,7 @@ export async function prepareProjectForFirestore(
     embedAssets(project.images, workspaceScope, project.id),
   ]);
   const { id: _id, ...rest } = project;
+  void _id;
   return {
     ...rest,
     canvasImages,

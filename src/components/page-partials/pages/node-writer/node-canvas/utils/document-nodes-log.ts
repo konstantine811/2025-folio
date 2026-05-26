@@ -23,5 +23,6 @@ export function semanticNodesSnapshot(project: Project): string {
 }
 
 export function logDocumentNodesSummary(_project: Project): void {
+  void _project;
   /* дебаг-лог прибрано з production */
 }

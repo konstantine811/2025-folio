@@ -118,7 +118,9 @@ const Shuffle: React.FC<ShuffleProps> = ({
       }
       try {
         splitRef.current?.revert();
-      } catch {}
+      } catch {
+        // SplitText can throw if the DOM was already restored by React.
+      }
       splitRef.current = null;
       playingRef.current = false;
     };
@@ -192,7 +194,7 @@ const Shuffle: React.FC<ShuffleProps> = ({
         }
 
         gsap.set(inner, { x: startX, force3D: true });
-        if (colorFrom) (inner.style as any).color = colorFrom;
+        if (colorFrom) inner.style.color = colorFrom;
 
         inner.setAttribute("data-final-x", String(finalX));
         inner.setAttribute("data-start-x", String(startX));
@@ -382,7 +384,7 @@ const Shuffle: React.FC<ShuffleProps> = ({
 
   return React.createElement(
     Tag,
-    { ref: ref as any, className: classes, style: commonStyle },
+    { ref: ref as React.Ref<HTMLElement>, className: classes, style: commonStyle },
     text,
   );
 };

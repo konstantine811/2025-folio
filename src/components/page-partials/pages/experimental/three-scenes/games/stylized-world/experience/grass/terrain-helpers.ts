@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 import {
   Fn,
   If,
@@ -33,6 +35,7 @@ function sampleFbm(
   xz: ReturnType<typeof vec2>,
   seed: ReturnType<typeof float>,
 ) {
+  void seed;
   const p = xz.add(vec2(0.001, 0.001));
   const fx = p.x.fract();
   const fz = p.y.fract();

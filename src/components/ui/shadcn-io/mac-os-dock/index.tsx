@@ -16,6 +16,10 @@ interface MacOSDockProps {
   className?: string;
 }
 
+type GsapLike = {
+  to: (target: Element | null, vars: Record<string, unknown>) => void;
+};
+
 const MacOSDock: React.FC<MacOSDockProps> = ({ 
   apps, 
   onAppClick, 
@@ -194,8 +198,9 @@ const MacOSDock: React.FC<MacOSDockProps> = ({
 
   const handleAppClick = (appId: string, index: number) => {
     if (iconRefs.current[index]) {
-      if (typeof window !== 'undefined' && (window as any).gsap) {
-        const gsap = (window as any).gsap;
+      const windowWithGsap = window as Window & { gsap?: GsapLike };
+      if (typeof window !== 'undefined' && windowWithGsap.gsap) {
+        const gsap = windowWithGsap.gsap;
         const bounceHeight = currentScales[index] > 1.3 ? -baseIconSize * 0.2 : -baseIconSize * 0.15;
         
         gsap.to(iconRefs.current[index], {

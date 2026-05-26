@@ -58,7 +58,7 @@ export function worldToTileIndex(
 export function tileToMapGroupPosition(
   gridX: number,
   gridY: number,
-  mapWidth: number,
+  _mapWidth: number,
   mapHeight: number,
 ): [number, number, number] {
   return [gridX + 0.5, 0, mapHeight - gridY - 0.5];

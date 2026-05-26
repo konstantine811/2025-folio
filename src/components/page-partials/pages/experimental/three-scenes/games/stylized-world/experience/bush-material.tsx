@@ -111,7 +111,8 @@ export function useBushMaterialNodes(config: BushConfig = {}) {
 export const BushNodeMaterial = forwardRef<
   THREE.Material,
   BushNodeMaterialProps
->(function BushNodeMaterial({ geometry: _geometry, ...config }, ref) {
+>(function BushNodeMaterial({ geometry: _geometryUnused, ...config }, ref) {
+  void _geometryUnused;
   const materialNodes = useBushMaterialNodes(config);
 
   return (

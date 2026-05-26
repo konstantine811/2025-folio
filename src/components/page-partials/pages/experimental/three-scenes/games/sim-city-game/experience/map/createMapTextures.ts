@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { MapTile, TileType } from "../utils/generateMap";
+import { MapTile } from "../utils/generateMap";
 import { planeLocalToGridUv } from "./mapGridCoords";
 
 const GRASS_RGB: [number, number, number] = [0x55, 0x7a, 0x46];

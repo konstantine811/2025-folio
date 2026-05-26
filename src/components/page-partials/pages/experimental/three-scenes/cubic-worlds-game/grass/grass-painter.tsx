@@ -1,4 +1,5 @@
 // GrassPainter.tsx
+import { ThreeEvent } from "@react-three/fiber";
 import { JSX, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { GrassTile } from "./3d-grass";
@@ -112,19 +113,19 @@ export function GrassPainter({
   };
 
   // --- pointer events ---
-  const onPointerMove = (e: any) => {
+  const onPointerMove = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     if (!planeRef.current) return;
     const p = e.point as THREE.Vector3;
     setCursor(p.clone());
     if (isPainting) paintAt(p.x, p.z);
   };
-  const onPointerDown = (e: any) => {
+  const onPointerDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     setIsPainting(true);
     paintAt(e.point.x, e.point.z);
   };
-  const onPointerUp = (e: any) => {
+  const onPointerUp = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     setIsPainting(false);
   };

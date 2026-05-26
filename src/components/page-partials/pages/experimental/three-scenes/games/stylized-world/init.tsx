@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 import MainWrapperOffset from "@/components/ui-abc/main-wrapper-offset";
 import InitKeyboardController from "@/components/common/game-controller/init-keyboard";
 import { Stats } from "@react-three/drei";

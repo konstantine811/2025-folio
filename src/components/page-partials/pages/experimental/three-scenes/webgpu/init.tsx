@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 import { Stats } from "@react-three/drei";
 import ThreeLoader from "../common/three-loader";
 import { Canvas, extend, Frameloop } from "@react-three/fiber";

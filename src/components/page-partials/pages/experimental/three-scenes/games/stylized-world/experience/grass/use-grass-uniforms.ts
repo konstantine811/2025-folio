@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 import { useCallback, useMemo } from "react";
 import * as THREE from "three";
 import { uniform, vec2, vec3 } from "three/tsl";

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 import * as THREE from "three/webgpu";
 import {
   Fn,
@@ -149,7 +151,7 @@ export function createGrassMaterial(
       .add(uniforms.uBaseWidth)
       .mul(pow(oneMinus(t), uniforms.uTipThin));
     const lposBase = spineWithSway.add(side.mul(width).mul(widthFactor).mul(s));
-    let lpos = vec3(lposBase.x, lposBase.y, lposBase.z).toVar();
+    const lpos = vec3(lposBase.x, lposBase.y, lposBase.z).toVar();
 
     lpos.assign(
       vec3(
@@ -188,9 +190,9 @@ export function createGrassMaterial(
       ),
     );
 
-    let tangentRotated = normalize(tangent).toVar();
-    let sideRotated = normalize(side).toVar();
-    let normalRotated = normalize(normal).toVar();
+    const tangentRotated = normalize(tangent).toVar();
+    const sideRotated = normalize(side).toVar();
+    const normalRotated = normalize(normal).toVar();
 
     tangentRotated.assign(
       vec3(

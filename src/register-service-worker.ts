@@ -1,10 +1,5 @@
 import { registerSW } from "virtual:pwa-register";
 
-let hasReloadedForServiceWorkerUpdate = false;
-let updateServiceWorker:
-  | ((reloadPage?: boolean) => Promise<void>)
-  | undefined;
-
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (hasReloadedForServiceWorkerUpdate) return;
@@ -13,7 +8,10 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-updateServiceWorker = registerSW({
+let hasReloadedForServiceWorkerUpdate = false;
+const updateServiceWorker:
+  | ((reloadPage?: boolean) => Promise<void>)
+  | undefined = registerSW({
   immediate: true,
   onNeedRefresh() {
     void updateServiceWorker?.(true);

@@ -29,6 +29,7 @@ export function stripEphemeralMediaFromProjects(projects: Project[]): Project[] 
       if (!u) return n;
       if (u.startsWith("blob:") || u.startsWith("data:")) {
         const { imageUrl: _removed, ...rest } = n;
+        void _removed;
         return rest as typeof n;
       }
       return { ...n, imageUrl: toPersistableNodeWriterMediaUrl(u) };

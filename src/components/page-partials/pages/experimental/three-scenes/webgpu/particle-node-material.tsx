@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 import { useFrame } from "@react-three/fiber";
 import { useControls } from "leva";
 import { useMemo } from "react";

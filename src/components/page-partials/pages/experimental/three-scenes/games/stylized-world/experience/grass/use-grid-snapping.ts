@@ -4,8 +4,6 @@ import type { MutableRefObject } from "react";
 import type { Vector3 } from "three";
 import {
   BLADE_STEPS_PER_CELL,
-  BLADES_PER_AXIS,
-  GRASS_AREA_SIZE,
   GRASS_GRID_CELL_SIZE,
 } from "./config";
 

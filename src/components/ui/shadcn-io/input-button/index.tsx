@@ -140,7 +140,7 @@ function InputButtonSubmit({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.2 }}
         >
-          {React.createElement(Icon as React.ComponentType<any>, {
+          {React.createElement(Icon as React.ComponentType<{ className?: string }>, {
             className: "size-4",
           })}
         </motion.span>

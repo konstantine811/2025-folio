@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  type ComponentType,
   useState,
   useId,
   useRef,
@@ -125,7 +126,7 @@ function MorphingPopoverTrigger({
 
   if (asChild && isValidElement(children)) {
     const MotionComponent = motion.create(
-      children.type as React.ForwardRefExoticComponent<any>
+      children.type as ComponentType<Record<string, unknown>>
     );
     const childProps = children.props as Record<string, unknown>;
 
