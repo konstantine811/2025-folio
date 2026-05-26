@@ -22,13 +22,18 @@ import {
   getCableNeonOrbSizeFactor,
 } from "./cable-neon-orbs.config";
 import {
-  pushPointOutOfBox,
+  pushPointOutOfBoxWithMotion,
   pushPointOutOfCapsule,
+  pushSegmentOutOfBoxes,
   resolveCableProxyBoxes,
   resolveCableProxyCapsules,
   ResolvedCableProxyBox,
   ResolvedCableProxyCapsule,
 } from "../sci-fi-cable-proxy-limbs";
+import {
+  resolveTableCableProxyBoxes,
+  useSciFiTableCableProxyTransform,
+} from "../../ship/table-cable-proxies";
 
 type HelmetCableRopesProps = {
   head: Object3D;
@@ -63,7 +68,8 @@ const floorY = 0.057;
 const gravity = new Vector3(0, -9.8, 0);
 const segmentCount = 94;
 const segmentLength = 0.13;
-const constraintIterations = 5;
+const constraintIterations = 8;
+const boxCollisionPasses = 3;
 const damping = 0.91;
 const floorFriction = 0.98;
 const floorContactEpsilon = 0.03;
@@ -445,8 +451,25 @@ export function HelmetCableRopes({
       label: "Helmet absorb fade",
     },
   });
+  const tableCableProxyTransform = useSciFiTableCableProxyTransform();
   const bodyCapsules = useRef<ResolvedCableProxyCapsule[]>([]);
   const bodyBoxes = useRef<ResolvedCableProxyBox[]>([]);
+  const tableBoxes = useRef<ResolvedCableProxyBox[]>([]);
+  const propBoxes = useRef<ResolvedCableProxyBox[]>([]);
+
+  const resolvePropBoxCollisions = (
+    point: RopePoint,
+    boxes: readonly ResolvedCableProxyBox[],
+  ) => {
+    for (const box of boxes) {
+      pushPointOutOfBoxWithMotion(
+        point.current,
+        point.previous,
+        box,
+        cableRadius,
+      );
+    }
+  };
   const anchorWorldMatrices = useRef(
     connectorLocalPositions.map(() => new Matrix4()),
   );
@@ -530,6 +553,13 @@ export function HelmetCableRopes({
       bodyCapsules.current.length = 0;
       bodyBoxes.current.length = 0;
     }
+
+    resolveTableCableProxyBoxes(
+      tableCableProxyTransform,
+      tableBoxes.current,
+    );
+    propBoxes.current.length = 0;
+    propBoxes.current.push(...bodyBoxes.current, ...tableBoxes.current);
 
     connectorLocalPositions.forEach((_, ropeIndex) => {
       const mesh = meshRefs.current[ropeIndex];
@@ -673,9 +703,45 @@ export function HelmetCableRopes({
             pushPointOutOfCapsule(point.current, capsule, cableRadius);
           }
 
-          for (const box of bodyBoxes.current) {
-            pushPointOutOfBox(point.current, box, cableRadius);
-          }
+          resolvePropBoxCollisions(point, propBoxes.current);
+        }
+
+        for (
+          let index = pinnedArcPhysicsPointCount;
+          index < points.length - 1;
+          index += 1
+        ) {
+          pushSegmentOutOfBoxes(
+            points[index].current,
+            points[index + 1].current,
+            propBoxes.current,
+            cableRadius,
+          );
+        }
+      }
+
+      for (let pass = 0; pass < boxCollisionPasses; pass += 1) {
+        pinArcPoints(points, anchorWorldMatrix, ropeIndex);
+
+        for (
+          let index = pinnedArcPhysicsPointCount;
+          index < points.length;
+          index += 1
+        ) {
+          resolvePropBoxCollisions(points[index], propBoxes.current);
+        }
+
+        for (
+          let index = pinnedArcPhysicsPointCount;
+          index < points.length - 1;
+          index += 1
+        ) {
+          pushSegmentOutOfBoxes(
+            points[index].current,
+            points[index + 1].current,
+            propBoxes.current,
+            cableRadius,
+          );
         }
       }
 

@@ -276,9 +276,183 @@ export function pushPointOutOfCapsule(
 }
 
 const tmpBoxLocal = new Vector3();
+const tmpBoxPrevLocal = new Vector3();
 const tmpBoxClosestLocal = new Vector3();
 const tmpBoxDelta = new Vector3();
+const tmpBoxNormalLocal = new Vector3();
+const tmpBoxNormalWorld = new Vector3();
 const tmpBoxInvQuat = new Quaternion();
+
+const isInsideExpandedBox = (
+  point: Vector3,
+  halfExtentsX: number,
+  halfExtentsY: number,
+  halfExtentsZ: number,
+) =>
+  Math.abs(point.x) < halfExtentsX &&
+  Math.abs(point.y) < halfExtentsY &&
+  Math.abs(point.z) < halfExtentsZ;
+
+const clipSegmentToExpandedBoxEntry = (
+  start: Vector3,
+  end: Vector3,
+  halfExtentsX: number,
+  halfExtentsY: number,
+  halfExtentsZ: number,
+) => {
+  let tMin = 0;
+  let tMax = 1;
+
+  const clipAxis = (
+    origin: number,
+    delta: number,
+    minBound: number,
+    maxBound: number,
+  ) => {
+    if (Math.abs(delta) < 1e-8) {
+      return origin >= minBound && origin <= maxBound;
+    }
+
+    const inverseDelta = 1 / delta;
+    let t0 = (minBound - origin) * inverseDelta;
+    let t1 = (maxBound - origin) * inverseDelta;
+
+    if (t0 > t1) {
+      const swap = t0;
+      t0 = t1;
+      t1 = swap;
+    }
+
+    tMin = Math.max(tMin, t0);
+    tMax = Math.min(tMax, t1);
+    return tMin <= tMax;
+  };
+
+  if (
+    !clipAxis(start.x, end.x - start.x, -halfExtentsX, halfExtentsX) ||
+    !clipAxis(start.y, end.y - start.y, -halfExtentsY, halfExtentsY) ||
+    !clipAxis(start.z, end.z - start.z, -halfExtentsZ, halfExtentsZ)
+  ) {
+    return null;
+  }
+
+  if (tMin > tMax || tMax < 0 || tMin > 1) {
+    return null;
+  }
+
+  return Math.max(0, Math.min(1, tMin));
+};
+
+const resolveBoxContactNormalWorld = (
+  worldPoint: Vector3,
+  box: ResolvedCableProxyBox,
+  out: Vector3,
+) => {
+  tmpBoxInvQuat.copy(box.quaternion).invert();
+  tmpBoxLocal.copy(worldPoint).sub(box.center).applyQuaternion(tmpBoxInvQuat);
+
+  const hx = box.halfExtents.x;
+  const hy = box.halfExtents.y;
+  const hz = box.halfExtents.z;
+
+  tmpBoxClosestLocal.set(
+    Math.max(-hx, Math.min(hx, tmpBoxLocal.x)),
+    Math.max(-hy, Math.min(hy, tmpBoxLocal.y)),
+    Math.max(-hz, Math.min(hz, tmpBoxLocal.z)),
+  );
+
+  tmpBoxNormalLocal.subVectors(tmpBoxLocal, tmpBoxClosestLocal);
+
+  if (tmpBoxNormalLocal.lengthSq() < 1e-10) {
+    const penX = hx - Math.abs(tmpBoxLocal.x);
+    const penY = hy - Math.abs(tmpBoxLocal.y);
+    const penZ = hz - Math.abs(tmpBoxLocal.z);
+
+    if (penX <= penY && penX <= penZ) {
+      tmpBoxNormalLocal.set(Math.sign(tmpBoxLocal.x || 1), 0, 0);
+    } else if (penY <= penZ) {
+      tmpBoxNormalLocal.set(0, Math.sign(tmpBoxLocal.y || 1), 0);
+    } else {
+      tmpBoxNormalLocal.set(0, 0, Math.sign(tmpBoxLocal.z || 1));
+    }
+  } else {
+    tmpBoxNormalLocal.normalize();
+  }
+
+  out.copy(tmpBoxNormalLocal).applyQuaternion(box.quaternion).normalize();
+};
+
+const dampPointVelocityAgainstBox = (
+  current: Vector3,
+  previous: Vector3,
+  box: ResolvedCableProxyBox,
+  friction = 0.62,
+) => {
+  resolveBoxContactNormalWorld(current, box, tmpBoxNormalWorld);
+
+  tmpBoxDelta.subVectors(current, previous);
+  const normalSpeed = tmpBoxDelta.dot(tmpBoxNormalWorld);
+
+  if (normalSpeed < 0) {
+    previous.copy(current).addScaledVector(tmpBoxNormalWorld, -normalSpeed);
+  }
+
+  tmpBoxDelta.subVectors(current, previous);
+  tmpBoxDelta.multiplyScalar(friction);
+  previous.copy(current).sub(tmpBoxDelta);
+};
+
+const sweepPointOutOfBox = (
+  current: Vector3,
+  previous: Vector3,
+  box: ResolvedCableProxyBox,
+  pointRadius: number,
+) => {
+  tmpBoxInvQuat.copy(box.quaternion).invert();
+
+  tmpBoxLocal.copy(current).sub(box.center).applyQuaternion(tmpBoxInvQuat);
+  tmpBoxPrevLocal.copy(previous).sub(box.center).applyQuaternion(tmpBoxInvQuat);
+
+  const expandedX = box.halfExtents.x + pointRadius;
+  const expandedY = box.halfExtents.y + pointRadius;
+  const expandedZ = box.halfExtents.z + pointRadius;
+
+  const currentInside = isInsideExpandedBox(
+    tmpBoxLocal,
+    expandedX,
+    expandedY,
+    expandedZ,
+  );
+
+  if (!currentInside) {
+    return false;
+  }
+
+  const previousInside = isInsideExpandedBox(
+    tmpBoxPrevLocal,
+    expandedX,
+    expandedY,
+    expandedZ,
+  );
+
+  if (!previousInside) {
+    const entryT = clipSegmentToExpandedBoxEntry(
+      tmpBoxPrevLocal,
+      tmpBoxLocal,
+      expandedX,
+      expandedY,
+      expandedZ,
+    );
+
+    if (entryT !== null) {
+      tmpBoxLocal.lerpVectors(tmpBoxPrevLocal, tmpBoxLocal, entryT);
+      tmpBoxLocal.applyQuaternion(box.quaternion);
+      current.copy(box.center).add(tmpBoxLocal);
+    }
+  }
+
+  return true;
+};
 
 export function pushPointOutOfBox(
   point: Vector3,
@@ -335,4 +509,63 @@ export function pushPointOutOfBox(
 
   tmpBoxClosestLocal.applyQuaternion(box.quaternion);
   point.copy(box.center).add(tmpBoxClosestLocal);
+}
+
+/** Swept + positional box resolve; damps Verlet velocity into the surface. */
+export function pushPointOutOfBoxWithMotion(
+  current: Vector3,
+  previous: Vector3,
+  box: ResolvedCableProxyBox,
+  pointRadius = CABLE_PROXY_POINT_RADIUS,
+) {
+  const beforeX = current.x;
+  const beforeY = current.y;
+  const beforeZ = current.z;
+
+  sweepPointOutOfBox(current, previous, box, pointRadius);
+  pushPointOutOfBox(current, box, pointRadius);
+
+  if (
+    current.x !== beforeX ||
+    current.y !== beforeY ||
+    current.z !== beforeZ
+  ) {
+    dampPointVelocityAgainstBox(current, previous, box);
+  }
+}
+
+/** Reduces segment tunneling by resolving the segment midpoint against boxes. */
+export function pushSegmentOutOfBoxes(
+  pointA: Vector3,
+  pointB: Vector3,
+  boxes: readonly ResolvedCableProxyBox[],
+  pointRadius = CABLE_PROXY_POINT_RADIUS,
+) {
+  if (boxes.length === 0) return;
+
+  tmpClosest.lerpVectors(pointA, pointB, 0.5);
+  const beforeX = tmpClosest.x;
+  const beforeY = tmpClosest.y;
+  const beforeZ = tmpClosest.z;
+
+  for (const box of boxes) {
+    pushPointOutOfBox(tmpClosest, box, pointRadius);
+  }
+
+  if (
+    tmpClosest.x === beforeX &&
+    tmpClosest.y === beforeY &&
+    tmpClosest.z === beforeZ
+  ) {
+    return;
+  }
+
+  tmpBoxDelta.set(
+    tmpClosest.x - beforeX,
+    tmpClosest.y - beforeY,
+    tmpClosest.z - beforeZ,
+  ).multiplyScalar(0.5);
+
+  pointA.add(tmpBoxDelta);
+  pointB.add(tmpBoxDelta);
 }

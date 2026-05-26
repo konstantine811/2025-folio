@@ -12,6 +12,10 @@ import {
   SCIFI_CHARACTER_CONTROLLER_GROUP,
   SCIFI_PROP_COLLIDER_GROUP,
 } from "../sci-fi-collision-groups";
+import {
+  TABLE_CABLE_PROXY_CONTROLS_PATH,
+  useSciFiTableCableProxyTransform,
+} from "./table-cable-proxies";
 
 const modelPath = "/3d-models/sci-fi/table_and_computer.glb";
 
@@ -21,36 +25,17 @@ export function TableAndComputer(props: JSX.IntrinsicElements["group"]) {
     position,
     rotationY,
     scale,
-    showCableProxyWireframes,
     cableProxyOnePosition,
     cableProxyOneHalfExtents,
     cableProxyTwoPosition,
     cableProxyTwoHalfExtents,
-  } = useControls(
-    "Sci-fi props / Table computer",
+  } = useSciFiTableCableProxyTransform();
+  const { showCableProxyWireframes } = useControls(
+    TABLE_CABLE_PROXY_CONTROLS_PATH,
     {
-      position: { value: { x: -2.35, y: 0.1, z: 9.18 }, step: 0.05 },
-      rotationY: { value: 29, min: -180, max: 180, step: 1 },
-      scale: { value: 0.93, min: 0.1, max: 3, step: 0.01 },
       showCableProxyWireframes: {
         value: false,
         label: "Show cable proxy wireframes",
-      },
-      cableProxyOnePosition: {
-        value: { x: 0, y: 0.49, z: 0.02 },
-        step: 0.01,
-      },
-      cableProxyOneHalfExtents: {
-        value: { x: 1.26, y: 0.5, z: 0.33 },
-        step: 0.01,
-      },
-      cableProxyTwoPosition: {
-        value: { x: 0, y: 1.28, z: 0.08 },
-        step: 0.01,
-      },
-      cableProxyTwoHalfExtents: {
-        value: { x: 0.67, y: 0.32, z: 0.07 },
-        step: 0.01,
       },
     },
   );
