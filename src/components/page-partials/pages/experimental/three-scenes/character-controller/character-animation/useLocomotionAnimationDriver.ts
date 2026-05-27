@@ -28,6 +28,17 @@ export function useLocomotionAnimationDriver({
   const isActionsReady = Object.keys(actions).length > 0;
 
   useEffect(() => {
+    if (!enabled || !isActionsReady) return;
+
+    const idleAction = actions[animationType.idle];
+    if (!idleAction) return;
+
+    if (currentActionRef.current === null) {
+      playAction(actions, currentActionRef, animationType.idle, animationConfig.locomotion);
+    }
+  }, [enabled, isActionsReady, actions, animationType, currentActionRef]);
+
+  useEffect(() => {
     if (!enabled) return;
     if (!isActionsReady) return;
     const target = resolveLocomotionAnimation({

@@ -32,6 +32,9 @@ type CharacterControllerProps = {
   /** Initial visual Y rotation for modelRef (radians). Default: 0 */
   startModelRotationY?: number;
 
+  /** When false, external code drives the main camera during play. */
+  manageCamera?: boolean;
+
   renderCharacter: (props: CharacterRenderProps) => ReactNode;
 };
 
@@ -44,6 +47,7 @@ export function CharacterController({
   raycastFilterGroups,
   raycastMembershipGroup,
   startModelRotationY = 0,
+  manageCamera = true,
   renderCharacter,
 }: CharacterControllerProps) {
   const playerRef = useRef<EntityType>(null);
@@ -58,6 +62,7 @@ export function CharacterController({
     raycastMembershipGroup,
     raycastFilterGroups,
     startModelRotationY,
+    manageCamera,
   });
   return (
     <>

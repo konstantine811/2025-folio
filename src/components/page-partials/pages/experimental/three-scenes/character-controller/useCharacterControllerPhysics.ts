@@ -29,6 +29,15 @@ type UseCharacterControllerPhysicsParams = {
 
   /** Initial visual Y rotation for modelRef (radians). Default: 0 */
   startModelRotationY?: number;
+
+  /**
+   * Treat character as grounded for this many physics frames after mount.
+   * Avoids FallingIdle flash and ground-snap jitter on Play.
+   */
+  spawnGroundGraceFrames?: number;
+
+  /** When false, pivot still tracks the player but camera is driven externally. */
+  manageCamera?: boolean;
 };
 
 export function useCharacterControllerPhysics({
@@ -39,6 +48,8 @@ export function useCharacterControllerPhysics({
   raycastMembershipGroup = 0,
   raycastFilterGroups = [1, 2],
   startModelRotationY = 0,
+  spawnGroundGraceFrames = 20,
+  manageCamera = true,
 }: UseCharacterControllerPhysicsParams) {
   const setPlayerPosition = usePlayerPositionStore((s) => s.setPosition);
 
@@ -67,12 +78,13 @@ export function useCharacterControllerPhysics({
       moveSpeed: 0,
       jumpForce: 0,
       airControl: 0,
-      isGrounded: false,
+      isGrounded: true,
       isMoving: false,
       isSprinting: false,
       velocity: { x: 0, y: 0, z: 0 },
     });
 
+  const spawnFrameRef = useRef(0);
   const prevPosition = useRef(new Vector3());
   const targetRotation = useRef(startModelRotationY);
   const currentRotation = useRef(startModelRotationY);
@@ -123,10 +135,12 @@ export function useCharacterControllerPhysics({
 
     pivot.position.lerp(pivotPosition, 1 - Math.exp(-11));
 
-    followCam.getWorldPosition(followCamPosition);
+    if (manageCamera) {
+      followCam.getWorldPosition(followCamPosition);
 
-    camera.position.lerp(followCamPosition, 1 - Math.exp(-11));
-    camera.lookAt(pivot.position);
+      camera.position.lerp(followCamPosition, 1 - Math.exp(-11));
+      camera.lookAt(pivot.position);
+    }
 
     cameraCollisionDetect(delta);
 
@@ -176,7 +190,17 @@ export function useCharacterControllerPhysics({
       }
     }
 
-    const linvel = characterRigidBody.linvel();
+    let linvel = characterRigidBody.linvel();
+
+    const inSpawnGrace = spawnFrameRef.current < spawnGroundGraceFrames;
+    spawnFrameRef.current += 1;
+
+    const isGroundedStable = isGrounded || inSpawnGrace;
+
+    if (inSpawnGrace && Math.abs(linvel.y) > 0.02) {
+      characterRigidBody.setLinvel({ x: linvel.x, y: 0, z: linvel.z }, true);
+      linvel = characterRigidBody.linvel();
+    }
 
     /**
      * Movement state
@@ -187,7 +211,8 @@ export function useCharacterControllerPhysics({
 
     const hasMoveInput = forward || backward || leftward || rightward;
     const isActuallyMoving = horizontalSpeed > 0.5;
-    const isMoving = hasMoveInput && (isGrounded || isActuallyMoving);
+    const isMoving =
+      hasMoveInput && (isGroundedStable || isActuallyMoving) && !inSpawnGrace;
     const isSprinting = isMoving && run;
 
     /**
@@ -202,7 +227,7 @@ export function useCharacterControllerPhysics({
     );
 
     if (pivotAngle !== null) {
-      const moveForce = 9 * (isGrounded ? 1 : 0.75);
+      const moveForce = 9 * (isGroundedStable ? 1 : 0.75);
       const sprintMultiplier = run ? 1 : 0.35;
       const speed = moveForce * sprintMultiplier;
 
@@ -237,7 +262,7 @@ export function useCharacterControllerPhysics({
       } else {
         velocity = createMovementVelocity(dirX, dirZ, speed, linvel.y);
 
-        if (isGrounded) {
+        if (isGroundedStable) {
           const smoothing = 0.25;
 
           velocity.x = velocity.x * smoothing + linvel.x * (1 - smoothing);
@@ -274,7 +299,7 @@ export function useCharacterControllerPhysics({
     /**
      * Jump
      */
-    if (jump && isGrounded) {
+    if (jump && isGroundedStable && !inSpawnGrace) {
       characterRigidBody.setLinvel(
         {
           x: linvel.x,
@@ -293,7 +318,7 @@ export function useCharacterControllerPhysics({
     /**
      * Ground snap
      */
-    if (isGrounded && !jump) {
+    if (isGroundedStable && !jump && !inSpawnGrace) {
       const snapForce = createFallForce(0.5);
       characterRigidBody.applyImpulse(snapForce, true);
 
@@ -312,7 +337,7 @@ export function useCharacterControllerPhysics({
       }
     }
 
-    if (isGrounded) {
+    if (isGroundedStable) {
       prevPosition.current.copy(currentPos);
     }
 
@@ -320,7 +345,7 @@ export function useCharacterControllerPhysics({
       moveSpeed: 9,
       jumpForce: 2.5,
       airControl: 0.75,
-      isGrounded,
+      isGrounded: isGroundedStable,
       isMoving,
       isSprinting,
       velocity: linvel,

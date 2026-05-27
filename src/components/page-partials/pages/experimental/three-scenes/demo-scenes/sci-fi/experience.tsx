@@ -1,60 +1,20 @@
 import { CameraControls, Stars } from "@react-three/drei";
-import { useFrame, useThree } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
-import { RefObject, useEffect, useRef } from "react";
-import { Vector3 } from "three";
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { ShipContainer } from "./ship/ship-container";
 import Earth from "./ship/earth";
 import type { CameraMode } from "./init";
-import { normalizeRange } from "@/utils/math/normalize";
 import { SciFiToggleCharacter } from "./character/sci-fi-character-controller";
+import { SciFiCameraController } from "./sci-fi-camera-controller";
 import { CharacterAnimations } from "../../character-controller/models/character-controller.model";
 import { usePauseStore } from "@/components/common/game-controller/store/usePauseMode";
-import {
-  SciFiCharacterAnimations,
-  sciFiScrollPlacement,
-  sciFiCharacterConfig,
-} from "./character/sci-fi.config";
+import { SciFiCharacterAnimations } from "./character/sci-fi.config";
 import { useControls } from "leva";
 
 type ExperienceProps = {
   cameraMode: CameraMode;
   scrollProgressRef: RefObject<number>;
-};
-
-const characterStartZ = sciFiScrollPlacement.startZ;
-const walkScrollStart = sciFiCharacterConfig.scroll.walkScrollStart;
-const walkScrollEnd = sciFiCharacterConfig.scroll.walkScrollEnd;
-const walkDistance = sciFiCharacterConfig.scroll.walkDistance;
-
-type FollowCharacterCameraProps = {
-  scrollProgressRef: RefObject<number>;
-};
-
-const FollowCharacterCamera = ({
-  scrollProgressRef,
-}: FollowCharacterCameraProps) => {
-  const { camera } = useThree();
-  const cameraPosition = useRef(new Vector3());
-  const lookAtTarget = useRef(new Vector3());
-
-  useFrame((_, delta) => {
-    const walkProgress = normalizeRange(
-      scrollProgressRef.current ?? 0,
-      walkScrollStart,
-      walkScrollEnd,
-    );
-    const characterZ = characterStartZ - walkDistance * walkProgress;
-
-    cameraPosition.current.set(0, 1.7, characterZ + 10.2);
-    lookAtTarget.current.set(0, 1.35, characterZ - 0.8);
-
-    camera.position.lerp(cameraPosition.current, 1 - Math.exp(-delta * 5));
-    camera.lookAt(lookAtTarget.current);
-  });
-
-  return null;
 };
 
 const InspectCameraControls = () => {
@@ -77,15 +37,32 @@ const InspectCameraControls = () => {
 
 const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
   const isPaused = usePauseStore((s) => s.isPaused);
+  const [playCameraHandoffDone, setPlayCameraHandoffDone] = useState(false);
   const { isDebugPhysics } = useControls({
     isDebugPhysics: { value: false },
   });
 
+  useEffect(() => {
+    if (isPaused) setPlayCameraHandoffDone(false);
+  }, [isPaused]);
+
+  const handleCameraHandoffComplete = useCallback(() => {
+    setPlayCameraHandoffDone(true);
+  }, []);
+
   const characterMode = isPaused ? "scroll" : "controller";
+  const useSciFiScrollCamera =
+    cameraMode === "Scroll" && (isPaused || !playCameraHandoffDone);
+
   return (
     <>
-      {characterMode === "scroll" && cameraMode === "Scroll" ? (
-        <FollowCharacterCamera scrollProgressRef={scrollProgressRef} />
+      {useSciFiScrollCamera ? (
+        <SciFiCameraController
+          isPaused={isPaused}
+          scrollProgressRef={scrollProgressRef}
+          pivotRotationY={Math.PI}
+          onHandoffComplete={handleCameraHandoffComplete}
+        />
       ) : cameraMode === "CameraControls" ? (
         <InspectCameraControls />
       ) : null}
@@ -102,6 +79,7 @@ const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
         <SciFiToggleCharacter
           mode={characterMode}
           scrollProgressRef={scrollProgressRef}
+          manageCamera={!isPaused && playCameraHandoffDone}
           scrollModelRotationY={Math.PI}
           animationType={
             {

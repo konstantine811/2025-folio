@@ -29,6 +29,9 @@ type SciFiToggleCharacterProps = {
   scrollModelRotationY?: number;
   /** Visual facing offset for controller mode (radians). */
   controllerModelRotationY?: number;
+
+  /** Pass false while scroll→play camera handoff runs. */
+  manageCamera?: boolean;
 };
 
 export function SciFiToggleCharacter({
@@ -37,6 +40,7 @@ export function SciFiToggleCharacter({
   animationType,
   scrollModelRotationY = 0,
   controllerModelRotationY = 0,
+  manageCamera = true,
 }: SciFiToggleCharacterProps) {
   const controllerStartPosition = useMemo((): [number, number, number] => {
     if (mode !== "controller") {
@@ -68,6 +72,7 @@ export function SciFiToggleCharacter({
       key={controllerStartPosition.join(",")}
       startPosition={controllerStartPosition}
       startModelRotationY={scrollModelRotationY}
+      manageCamera={manageCamera}
       capsuleHalfHeight={sciFiCapsuleHalfHeight}
       capsuleRadius={sciFiCapsuleRadius}
       hasWeaponSensor={false}
