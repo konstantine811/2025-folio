@@ -1,5 +1,6 @@
 // PlayerCharacterController.tsx
 
+import { interactionGroups } from "@react-three/rapier";
 import { CharacterController } from "./character-controller";
 import { CharacterAnimations } from "../models/character-controller.model";
 import CharacterModel from "./character-model";
@@ -15,9 +16,14 @@ export function PlayerCharacterController({
   animationType,
   modelWeaponPath,
 }: PlayerCharacterControllerProps) {
+  const collidesWith = [0, 1, 2] as const;
+
   return (
     <CharacterController
       hasWeaponSensor
+      capsuleCollisionGroups={interactionGroups(0, [...collidesWith])}
+      raycastMembershipGroup={0}
+      raycastFilterGroups={collidesWith}
       renderCharacter={({ modelRef, weaponAttachmentRef, controllerState }) => (
         <group ref={modelRef} position={[0, -1.2, 0]} scale={5.5}>
           <CharacterModel
