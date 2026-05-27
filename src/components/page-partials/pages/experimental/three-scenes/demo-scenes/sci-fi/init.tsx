@@ -8,23 +8,81 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
+  useState,
 } from "react";
 import { Perf } from "r3f-perf";
-import { useControls } from "leva";
+import { Leva, useControls } from "leva";
 import ThreeLoader from "../../common/three-loader";
 import { isDev } from "@/utils/check-env";
-import { Button } from "@/components/ui/button";
-import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
-import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import InitKeyboardController from "@/components/common/game-controller/init-keyboard";
 import { usePauseStore } from "@/components/common/game-controller/store/usePauseMode";
+import { SciFiScrollOverlay } from "./sci-fi-scroll-overlay";
+import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 
 export type CameraMode = "Scroll" | "CameraControls";
+
+const isDebugHash = () => window.location.hash === "#debug";
+
+type SceneReadyReporterProps = {
+  onReady: () => void;
+};
+
+const SceneReadyReporter = ({ onReady }: SceneReadyReporterProps) => {
+  useEffect(() => {
+    const frameId = requestAnimationFrame(onReady);
+
+    return () => cancelAnimationFrame(frameId);
+  }, [onReady]);
+
+  return null;
+};
+
+const SciFiSceneLoadingOverlay = () => (
+  <div className="flex min-h-[var(--sci-fi-viewport-height)] items-center justify-center bg-black/20 px-5 text-zinc-300">
+    <div className="w-full max-w-5xl">
+      <div className="mb-4 text-center font-mono text-[10px] uppercase tracking-[0.42em] text-cyan-100/70 sm:text-xs">
+        Loading
+      </div>
+      <div className="relative mx-auto h-px w-full overflow-hidden bg-white/10">
+        <div className="sci-fi-loading-line absolute left-1/2 top-0 h-px w-full origin-center bg-cyan-100/80 shadow-[0_0_18px_rgba(165,243,252,0.82)]" />
+      </div>
+      <div className="mx-auto mt-3 h-px w-24 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+      <style>{`
+        .sci-fi-loading-line {
+          transform: translateX(-50%) scaleX(0);
+          animation: sci-fi-loading-expand 1.7s cubic-bezier(0.7, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes sci-fi-loading-expand {
+          0% {
+            transform: translateX(-50%) scaleX(0);
+            opacity: 0;
+          }
+          18% {
+            opacity: 1;
+          }
+          72% {
+            transform: translateX(-50%) scaleX(1);
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(-50%) scaleX(1);
+            opacity: 0;
+          }
+        }
+      `}</style>
+    </div>
+  </div>
+);
 
 const Init = () => {
   const scrollProgressRef = useRef(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollTopRef = useRef(0);
+  const sceneReadyTimeoutRef = useRef<number | null>(null);
+  const [sceneReady, setSceneReady] = useState(false);
+  const [isDebugPanelVisible, setIsDebugPanelVisible] = useState(isDebugHash);
+  const headerSize = useHeaderSizeStore((s) => s.size);
 
   const isPaused = usePauseStore((s) => s.isPaused);
   const setIsPaused = usePauseStore((s) => s.setIsPaused);
@@ -40,6 +98,14 @@ const Init = () => {
 
   const selectedCameraMode = cameraMode as CameraMode;
   const isCameraControlsMode = selectedCameraMode === "CameraControls";
+
+  const handleSceneReady = useCallback(() => {
+    if (sceneReadyTimeoutRef.current !== null) return;
+
+    sceneReadyTimeoutRef.current = window.setTimeout(() => {
+      setSceneReady(true);
+    }, 850);
+  }, []);
 
   const handleScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
@@ -58,9 +124,36 @@ const Init = () => {
     [setIsPaused],
   );
 
+  const handleStartScene = useCallback(() => {
+    scrollTopRef.current = scrollContainerRef.current?.scrollTop ?? 0;
+
+    setIsPaused(false);
+    setIsGameStarted(true);
+  }, [setIsGameStarted, setIsPaused]);
+
   useEffect(() => {
     setIsPaused(true);
   }, [setIsPaused]);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setIsDebugPanelVisible(isDebugHash());
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (sceneReadyTimeoutRef.current !== null) {
+        window.clearTimeout(sceneReadyTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useLayoutEffect(() => {
     if (!scrollContainerRef.current) return;
@@ -79,6 +172,7 @@ const Init = () => {
   return (
     <MainWrapperOffset>
       {!isDev && <ThreeLoader />}
+      <Leva hidden={!isDebugPanelVisible} collapsed />
 
       <InitKeyboardController />
 
@@ -93,12 +187,13 @@ const Init = () => {
         }}
       >
         <Suspense fallback={null}>
-          {isDev && <Perf position="top-left" />}
+          {isDev && isDebugPanelVisible && <Perf position="top-left" />}
 
           <Experience
             cameraMode={selectedCameraMode}
             scrollProgressRef={scrollProgressRef}
           />
+          <SceneReadyReporter onReady={handleSceneReady} />
         </Suspense>
       </Canvas>
 
@@ -108,40 +203,27 @@ const Init = () => {
           data-lenis-prevent-touch
           data-lenis-prevent-wheel
           ref={scrollContainerRef}
-          className="absolute inset-0 z-10 overflow-y-auto"
+          className="absolute inset-x-0 bottom-0 z-10 overflow-y-auto"
           onScroll={handleScroll}
           onTouchMove={(event) => event.stopPropagation()}
           onWheel={(event) => event.stopPropagation()}
           style={{
+            top: headerSize,
+            ["--sci-fi-viewport-height" as string]: `calc(100dvh - ${headerSize}px)`,
             WebkitOverflowScrolling: "touch",
             overscrollBehavior: "contain",
             pointerEvents: isCameraControlsMode ? "none" : "auto",
             touchAction: "pan-y",
           }}
         >
-          <div className="h-[300vh]">
-            <div className="relative top-[200px] flex justify-center">
-              <SoundHoverElement
-                className="rounded-full"
-                hoverTypeElement={SoundTypeElement.SELECT_2}
-                hoverStyleElement={HoverStyleElement.quad}
-              >
-                <Button
-                  variant="default"
-                  className="hover:bg-background cursor-pointer hover:text-foreground flex items-center justify-center bg-card/80"
-                  onClick={() => {
-                    scrollTopRef.current =
-                      scrollContainerRef.current?.scrollTop ?? 0;
-
-                    setIsPaused(false);
-                    setIsGameStarted(true);
-                  }}
-                >
-                  Play
-                </Button>
-              </SoundHoverElement>
-            </div>
-          </div>
+          {sceneReady ? (
+            <SciFiScrollOverlay
+              scrollContainerRef={scrollContainerRef}
+              onStart={handleStartScene}
+            />
+          ) : (
+            <SciFiSceneLoadingOverlay />
+          )}
         </div>
       )}
     </MainWrapperOffset>

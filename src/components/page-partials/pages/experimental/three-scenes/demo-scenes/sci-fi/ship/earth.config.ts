@@ -15,8 +15,8 @@ export const earthConfig = {
      * Cloud speed relative to Earth, opposite spin direction.
      * 0.78 → clouds rotate at 78% of Earth speed, backwards.
      */
-    cloudSpeed: 0.3,
-    cloudShadowStrength: 0.43,
+    cloudSpeed: 0.05,
+    cloudShadowStrength: 0.13,
     /** Multiplier for cloud layer alpha (0–1). */
     cloudOpacity: 0.33,
     cloudDisplacement: 0.25,
