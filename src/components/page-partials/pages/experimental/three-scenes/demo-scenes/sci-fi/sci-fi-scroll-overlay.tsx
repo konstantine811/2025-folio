@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
-import { ArrowDown, Play, Radio } from "lucide-react";
+import { Play } from "lucide-react";
 import { CSSProperties, RefObject, useEffect, useMemo, useState } from "react";
 
 type SciFiScrollOverlayProps = {
@@ -11,16 +11,35 @@ type SciFiScrollOverlayProps = {
 
 const titleLines = ["DIGITAL", "ARCHITECT"];
 
-const telemetryItems = [
-  "КООРДИНАТИ: 48.9226° N, 24.7111° E",
-  "ВЕРСІЯ СИСТЕМИ: 1.0.114",
-];
+const systemVersion = "ВЕРСІЯ СИСТЕМИ: 1.0.114";
+
+const heroDescription =
+  "Перетворюю мільйони точок даних на інтерактивні 3D веб-проекти. Спеціалізуюся на WebGL, React Three Fiber та високопродуктивних картографічних системах.";
+
+const matrixTypeBaseMs = 26;
+const matrixTypeStartDelayMs = 1100;
+const matrixScrambleChars = "アイウエオカ01239$#%&<>[]{}|/\\";
+
+const getMatrixTypeDelay = (char: string) => {
+  if (char === "." || char === ",") return matrixTypeBaseMs * 5;
+  if (char === " ") return matrixTypeBaseMs * 0.55;
+  return matrixTypeBaseMs;
+};
 
 const projectStats = [
-  ["12+", "WebGL сцен"],
-  ["3D", "React Three Fiber"],
-  ["60fps", "інтерактивні карти"],
-];
+  { value: "12+", label: "WebGL сцен", tone: "cyan" },
+  { value: "3D", label: "React Three Fiber", tone: "mint" },
+  { value: "60fps", label: "інтерактивні карти", tone: "sky" },
+] as const;
+
+const statLabelNeonClass: Record<
+  (typeof projectStats)[number]["tone"],
+  string
+> = {
+  cyan: "text-cyan-300 drop-shadow-[0_0_10px_rgba(103,232,249,0.75)]",
+  mint: "text-emerald-300 drop-shadow-[0_0_10px_rgba(110,231,183,0.7)]",
+  sky: "text-sky-300 drop-shadow-[0_0_10px_rgba(125,211,252,0.75)]",
+};
 
 const slotDigits = ["7", "2", "9", "4", "0", "6", "3", "8"];
 const dialFrames = 6;
@@ -117,6 +136,111 @@ const DialLetter = ({
   );
 };
 
+const MatrixTypewriter = ({
+  text,
+  startDelay = matrixTypeStartDelayMs,
+}: {
+  text: string;
+  startDelay?: number;
+}) => {
+  const [visibleCount, setVisibleCount] = useState(0);
+  const [scrambleChar, setScrambleChar] = useState("");
+  const [isActive, setIsActive] = useState(false);
+  const prefersReducedMotion = useMemo(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    [],
+  );
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setVisibleCount(text.length);
+      return;
+    }
+
+    const startTimer = window.setTimeout(() => setIsActive(true), startDelay);
+    return () => window.clearTimeout(startTimer);
+  }, [prefersReducedMotion, startDelay, text.length]);
+
+  useEffect(() => {
+    if (!isActive || prefersReducedMotion) return;
+    if (visibleCount >= text.length) {
+      setScrambleChar("");
+      return;
+    }
+
+    let cancelled = false;
+    const timers: number[] = [];
+    const nextChar = text[visibleCount];
+    const maxScrambleTicks = nextChar === " " ? 0 : 2;
+    const pauseBefore =
+      visibleCount === 0
+        ? 0
+        : getMatrixTypeDelay(text[visibleCount - 1] ?? " ");
+
+    const schedule = (delay: number, fn: () => void) => {
+      timers.push(window.setTimeout(fn, delay));
+    };
+
+    schedule(pauseBefore, () => {
+      if (cancelled) return;
+
+      let scrambleTicks = 0;
+
+      const runScramble = () => {
+        if (cancelled) return;
+
+        if (scrambleTicks >= maxScrambleTicks) {
+          setScrambleChar("");
+          setVisibleCount((count) => count + 1);
+          return;
+        }
+
+        const randomIndex = Math.floor(
+          Math.random() * matrixScrambleChars.length,
+        );
+        setScrambleChar(matrixScrambleChars[randomIndex] ?? "0");
+        scrambleTicks += 1;
+        schedule(matrixTypeBaseMs * 0.85, runScramble);
+      };
+
+      runScramble();
+    });
+
+    return () => {
+      cancelled = true;
+      timers.forEach((id) => window.clearTimeout(id));
+    };
+  }, [isActive, prefersReducedMotion, text, visibleCount]);
+
+  const typedText = text.slice(0, visibleCount);
+  const isComplete = visibleCount >= text.length;
+
+  if (prefersReducedMotion) {
+    return (
+      <p className="sci-fi-matrix-type max-w-2xl font-mono text-xs leading-7 tracking-[0.18em] uppercase sm:text-sm">
+        {text}
+      </p>
+    );
+  }
+
+  return (
+    <p
+      className="sci-fi-matrix-type max-w-2xl font-mono text-xs leading-7 tracking-[0.18em] uppercase sm:text-sm"
+      aria-label={text}
+    >
+      {typedText}
+      {!isComplete && scrambleChar ? (
+        <span className="sci-fi-matrix-scramble">{scrambleChar}</span>
+      ) : null}
+      <span className="sci-fi-matrix-cursor" aria-hidden>
+        ▌
+      </span>
+    </p>
+  );
+};
+
 const SlotWord = ({ word, lineIndex }: { word: string; lineIndex: number }) => {
   return (
     <span className="block whitespace-nowrap">
@@ -133,53 +257,30 @@ const SlotWord = ({ word, lineIndex }: { word: string; lineIndex: number }) => {
 };
 
 export const SciFiScrollOverlay = ({
-  scrollContainerRef,
+  scrollContainerRef: _scrollContainerRef,
   onStart,
 }: SciFiScrollOverlayProps) => {
-  const scrollToPortfolio = () => {
-    scrollContainerRef.current?.scrollTo({
-      top: window.innerHeight,
-      behavior: "smooth",
-    });
-  };
-
   return (
-    <div className="relative min-h-[300vh] text-zinc-100">
+    <div className="sci-fi-overlay-enter relative min-h-[300vh] text-zinc-100">
       <div
-        className="pointer-events-none absolute top-0 left-1/2 z-0 min-h-full w-screen max-w-none -translate-x-1/2 bg-black/20"
+        className="pointer-events-none absolute inset-0 left-1/2 z-0 w-screen max-w-none -translate-x-1/2"
         aria-hidden
-      />
+      >
+        <div className="absolute inset-0 bg-black/20" />
+        <div className="sci-fi-scanline absolute inset-0 opacity-25" />
+      </div>
       <ScrollGlyphs />
 
-      <section className="relative flex min-h-[var(--sci-fi-viewport-height)] flex-col overflow-hidden pt-12 pb-8">
-        <div
-          className="pointer-events-none absolute top-0 left-1/2 z-0 h-full w-screen max-w-none -translate-x-1/2"
-          aria-hidden
-        >
-          <div className="absolute inset-x-0 top-0 h-px bg-white/10" />
-          <div className="sci-fi-scanline absolute inset-0 opacity-25" />
-        </div>
-
-        <div className="relative z-10 flex flex-1 flex-col px-5 sm:px-8 lg:px-[11vw]">
-        <div className="flex items-start justify-between gap-6 font-mono text-[10px] tracking-[0.28em] text-zinc-500 sm:text-xs">
+      <section className="relative z-10 flex min-h-[var(--sci-fi-viewport-height)] flex-col pt-12 pb-8">
+        <div className="relative flex flex-1 flex-col px-5 sm:px-8 lg:px-[11vw]">
+        <div className="flex items-start gap-6 font-mono text-[10px] tracking-[0.28em] text-zinc-500 sm:text-xs">
           <div className="mt-1 h-1 w-1 rounded-full bg-blue-400 shadow-[0_0_14px_rgba(96,165,250,0.9)]" />
-          <div className="mr-auto border-l border-white/10 pl-4 uppercase leading-relaxed sm:pl-5">
-            {telemetryItems.map((item) => (
-              <div key={item}>{item}</div>
-            ))}
-          </div>
-          <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-black/35 px-4 py-2 uppercase text-zinc-400 md:flex">
-            <Radio className="h-3.5 w-3.5 text-emerald-400" />
-            live signal
+          <div className="border-l border-white/10 pl-4 uppercase leading-relaxed sm:pl-5">
+            {systemVersion}
           </div>
         </div>
 
-        <div className="mt-[14vh] flex w-fit items-center gap-3 rounded-full border border-white/10 bg-black/45 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.34em] text-zinc-300 sm:text-xs">
-          <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.95)]" />
-          доступний для проектів
-        </div>
-
-        <div className="mt-auto w-full max-w-[1180px] pb-[10vh]">
+        <div className="mt-auto w-full max-w-[1180px] pb-[10vh] pt-[14vh]">
           <h1
             className="sci-fi-hero-title font-display text-[clamp(3rem,10.3vw,9.5rem)] leading-[1.02] font-normal uppercase text-zinc-200"
             aria-label="Digital Architect"
@@ -190,41 +291,22 @@ export const SciFiScrollOverlay = ({
           </h1>
 
           <div className="mt-12 grid max-w-5xl gap-8 border-l border-white/10 pl-5 sm:ml-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:pl-8">
-            <p className="max-w-2xl font-mono text-xs leading-7 tracking-[0.2em] text-zinc-500 uppercase sm:text-sm">
-              Перетворюю мільйони точок даних на інтерактивні 3D веб-проекти.
-              Спеціалізуюся на WebGL, React Three Fiber та високопродуктивних
-              картографічних системах.
-            </p>
+            <MatrixTypewriter text={heroDescription} />
 
             <div className="grid grid-cols-3 gap-3 sm:min-w-[360px]">
-              {projectStats.map(([value, label]) => (
+              {projectStats.map(({ value, label, tone }) => (
                 <div key={label} className="border-t border-white/10 pt-3">
                   <div className="font-display text-2xl text-zinc-200">
                     {value}
                   </div>
-                  <div className="mt-1 font-mono text-[9px] uppercase tracking-[0.22em] text-zinc-600">
+                  <div
+                    className={`mt-1 font-mono text-[9px] uppercase tracking-[0.22em] ${statLabelNeonClass[tone]}`}
+                  >
                     {label}
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="mt-7 flex flex-wrap items-center gap-6 pl-5 sm:pl-12">
-            <button
-              type="button"
-              className="group flex items-center gap-2 border-b border-zinc-200 pb-1 font-mono text-xs uppercase tracking-[0.18em] text-zinc-100 transition-colors hover:text-cyan-200"
-              onClick={scrollToPortfolio}
-            >
-              переглянути портфоліо
-              <ArrowDown className="h-3.5 w-3.5 transition-transform group-hover:translate-y-1" />
-            </button>
-            <a
-              className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500 transition-colors hover:text-zinc-200"
-              href="mailto:hello@abcfolio.dev"
-            >
-              зв'язатися
-            </a>
           </div>
         </div>
         </div>
@@ -309,9 +391,63 @@ export const SciFiScrollOverlay = ({
           background-size: 100% 4px, 100% 100%;
         }
 
+        .sci-fi-matrix-type {
+          color: #86efac;
+          text-shadow:
+            0 0 8px rgba(74, 222, 128, 0.65),
+            0 0 20px rgba(16, 185, 129, 0.28);
+        }
+
+        .sci-fi-matrix-scramble {
+          color: #4ade80;
+          text-shadow: 0 0 12px rgba(74, 222, 128, 0.9);
+        }
+
+        .sci-fi-matrix-cursor {
+          margin-left: 1px;
+          color: #34d399;
+          text-shadow: 0 0 10px rgba(52, 211, 153, 0.85);
+          animation: sci-fi-matrix-cursor-blink 0.9s step-end infinite;
+        }
+
+        @keyframes sci-fi-matrix-cursor-blink {
+          0%,
+          45% {
+            opacity: 1;
+          }
+
+          50%,
+          100% {
+            opacity: 0.15;
+          }
+        }
+
+        .sci-fi-overlay-enter {
+          animation: sci-fi-overlay-enter 0.85s ease-out both;
+        }
+
+        @keyframes sci-fi-overlay-enter {
+          from {
+            opacity: 0;
+          }
+
+          to {
+            opacity: 1;
+          }
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .sci-fi-scanline {
             animation: none;
+          }
+
+          .sci-fi-overlay-enter {
+            animation: none;
+          }
+
+          .sci-fi-matrix-cursor {
+            animation: none;
+            opacity: 1;
           }
         }
       `}</style>

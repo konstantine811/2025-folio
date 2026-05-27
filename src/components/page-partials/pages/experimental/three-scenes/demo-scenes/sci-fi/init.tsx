@@ -17,7 +17,13 @@ import { isDev } from "@/utils/check-env";
 import InitKeyboardController from "@/components/common/game-controller/init-keyboard";
 import { usePauseStore } from "@/components/common/game-controller/store/usePauseMode";
 import { SciFiScrollOverlay } from "./sci-fi-scroll-overlay";
+import {
+  sciFiLoadingFadeMs,
+  sciFiSceneReadyFrames,
+  sciFiSceneWarmupMs,
+} from "./sci-fi-intro.config";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
+import { cn } from "@/lib/utils";
 
 export type CameraMode = "Scroll" | "CameraControls";
 
@@ -29,16 +35,30 @@ type SceneReadyReporterProps = {
 
 const SceneReadyReporter = ({ onReady }: SceneReadyReporterProps) => {
   useEffect(() => {
-    const frameId = requestAnimationFrame(onReady);
+    let frame = 0;
+    let rafId = 0;
 
-    return () => cancelAnimationFrame(frameId);
+    const tick = () => {
+      frame += 1;
+      if (frame >= sciFiSceneReadyFrames) {
+        onReady();
+        return;
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+
+    return () => cancelAnimationFrame(rafId);
   }, [onReady]);
 
   return null;
 };
 
+type IntroPhase = "loading" | "fade-out" | "content";
+
 const SciFiSceneLoadingOverlay = () => (
-  <div className="flex min-h-[var(--sci-fi-viewport-height)] items-center justify-center bg-black/20 px-5 text-zinc-300">
+  <div className="flex min-h-[var(--sci-fi-viewport-height)] items-center justify-center px-5 text-zinc-300">
     <div className="w-full max-w-5xl">
       <div className="mb-4 text-center font-mono text-[10px] uppercase tracking-[0.42em] text-cyan-100/70 sm:text-xs">
         Loading
@@ -79,8 +99,9 @@ const Init = () => {
   const scrollProgressRef = useRef(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollTopRef = useRef(0);
-  const sceneReadyTimeoutRef = useRef<number | null>(null);
-  const [sceneReady, setSceneReady] = useState(false);
+  const introTimersRef = useRef<number[]>([]);
+  const sceneWarmupStartedRef = useRef(false);
+  const [introPhase, setIntroPhase] = useState<IntroPhase>("loading");
   const [isDebugPanelVisible, setIsDebugPanelVisible] = useState(isDebugHash);
   const headerSize = useHeaderSizeStore((s) => s.size);
 
@@ -99,13 +120,36 @@ const Init = () => {
   const selectedCameraMode = cameraMode as CameraMode;
   const isCameraControlsMode = selectedCameraMode === "CameraControls";
 
-  const handleSceneReady = useCallback(() => {
-    if (sceneReadyTimeoutRef.current !== null) return;
-
-    sceneReadyTimeoutRef.current = window.setTimeout(() => {
-      setSceneReady(true);
-    }, 850);
+  const clearIntroTimers = useCallback(() => {
+    introTimersRef.current.forEach((id) => window.clearTimeout(id));
+    introTimersRef.current = [];
   }, []);
+
+  const handleSceneReady = useCallback(() => {
+    if (sceneWarmupStartedRef.current) return;
+    sceneWarmupStartedRef.current = true;
+
+    const warmupId = window.setTimeout(() => {
+      setIntroPhase("fade-out");
+    }, sciFiSceneWarmupMs);
+    introTimersRef.current.push(warmupId);
+  }, []);
+
+  const handleLoadingFadeEnd = useCallback(() => {
+    setIntroPhase((phase) => (phase === "fade-out" ? "content" : phase));
+  }, []);
+
+  useEffect(() => {
+    if (introPhase !== "fade-out") return;
+
+    const fallbackId = window.setTimeout(
+      handleLoadingFadeEnd,
+      sciFiLoadingFadeMs + 80,
+    );
+    introTimersRef.current.push(fallbackId);
+
+    return () => window.clearTimeout(fallbackId);
+  }, [introPhase, handleLoadingFadeEnd]);
 
   const handleScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
@@ -147,13 +191,7 @@ const Init = () => {
     };
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (sceneReadyTimeoutRef.current !== null) {
-        window.clearTimeout(sceneReadyTimeoutRef.current);
-      }
-    };
-  }, []);
+  useEffect(() => clearIntroTimers, [clearIntroTimers]);
 
   useLayoutEffect(() => {
     if (!scrollContainerRef.current) return;
@@ -221,15 +259,36 @@ const Init = () => {
               touchAction: "pan-y",
             }}
           >
-            {sceneReady ? (
+            {introPhase === "content" ? (
               <SciFiScrollOverlay
                 scrollContainerRef={scrollContainerRef}
                 onStart={handleStartScene}
               />
             ) : (
-              <SciFiSceneLoadingOverlay />
+              <div
+                aria-hidden
+                className="min-h-[var(--sci-fi-viewport-height)]"
+              />
             )}
           </div>
+          {introPhase !== "content" && (
+            <div
+              className={cn(
+                "absolute inset-0 z-40 bg-black/35 transition-opacity ease-out",
+                introPhase === "fade-out"
+                  ? "pointer-events-none opacity-0"
+                  : "opacity-100",
+              )}
+              style={{ transitionDuration: `${sciFiLoadingFadeMs}ms` }}
+              onTransitionEnd={(event) => {
+                if (event.target !== event.currentTarget) return;
+                if (event.propertyName !== "opacity") return;
+                handleLoadingFadeEnd();
+              }}
+            >
+              <SciFiSceneLoadingOverlay />
+            </div>
+          )}
           <div
             className="pointer-events-none absolute inset-0 z-30"
             aria-hidden
