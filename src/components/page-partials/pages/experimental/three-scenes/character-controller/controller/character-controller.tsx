@@ -35,6 +35,11 @@ type CharacterControllerProps = {
   /** When false, external code drives the main camera during play. */
   manageCamera?: boolean;
 
+  gravityScale?: number;
+  moveSpeed?: number;
+  jumpForce?: number;
+  airControl?: number;
+
   renderCharacter: (props: CharacterRenderProps) => ReactNode;
 };
 
@@ -48,6 +53,10 @@ export function CharacterController({
   raycastMembershipGroup,
   startModelRotationY = 0,
   manageCamera = true,
+  gravityScale = 3,
+  moveSpeed,
+  jumpForce,
+  airControl,
   renderCharacter,
 }: CharacterControllerProps) {
   const playerRef = useRef<EntityType>(null);
@@ -63,6 +72,9 @@ export function CharacterController({
     raycastFilterGroups,
     startModelRotationY,
     manageCamera,
+    moveSpeed,
+    jumpForce,
+    airControl,
   });
   return (
     <>
@@ -74,7 +86,7 @@ export function CharacterController({
             position={startPosition}
             enabledRotations={[false, false, false]}
             lockRotations
-            gravityScale={3}
+            gravityScale={gravityScale}
             friction={0.5}
             linearDamping={1}
             angularDamping={1}

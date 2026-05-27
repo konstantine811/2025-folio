@@ -45,6 +45,13 @@ export const sciFiCharacterConfig = {
     halfHeight: 0.68,
     radius: 0.4,
   },
+
+  /** Tuned for Sholom walk cycle — default controller uses moveSpeed 9, jump 2.5, gravityScale 3. */
+  controllerMovement: {
+    moveSpeed: 6,
+    jumpForce: 1,
+    gravityScale: 2,
+  },
 };
 
 export function getSciFiCapsuleFeetToCenterOffset() {

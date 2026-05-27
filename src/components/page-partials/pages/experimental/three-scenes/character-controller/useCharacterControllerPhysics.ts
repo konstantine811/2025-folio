@@ -38,6 +38,10 @@ type UseCharacterControllerPhysicsParams = {
 
   /** When false, pivot still tracks the player but camera is driven externally. */
   manageCamera?: boolean;
+
+  moveSpeed?: number;
+  jumpForce?: number;
+  airControl?: number;
 };
 
 export function useCharacterControllerPhysics({
@@ -50,6 +54,9 @@ export function useCharacterControllerPhysics({
   startModelRotationY = 0,
   spawnGroundGraceFrames = 20,
   manageCamera = true,
+  moveSpeed = 9,
+  jumpForce = 2.5,
+  airControl = 0.75,
 }: UseCharacterControllerPhysicsParams) {
   const setPlayerPosition = usePlayerPositionStore((s) => s.setPosition);
 
@@ -227,7 +234,7 @@ export function useCharacterControllerPhysics({
     );
 
     if (pivotAngle !== null) {
-      const moveForce = 9 * (isGroundedStable ? 1 : 0.75);
+      const moveForce = moveSpeed * (isGroundedStable ? 1 : airControl);
       const sprintMultiplier = run ? 1 : 0.35;
       const speed = moveForce * sprintMultiplier;
 
@@ -310,7 +317,7 @@ export function useCharacterControllerPhysics({
       );
 
       characterRigidBody.applyImpulse(
-        createJumpImpulse(2.5, { y: linvel.y }),
+        createJumpImpulse(jumpForce, { y: linvel.y }),
         true,
       );
     }
@@ -342,9 +349,9 @@ export function useCharacterControllerPhysics({
     }
 
     setControllerState({
-      moveSpeed: 9,
-      jumpForce: 2.5,
-      airControl: 0.75,
+      moveSpeed,
+      jumpForce,
+      airControl,
       isGrounded: isGroundedStable,
       isMoving,
       isSprinting,

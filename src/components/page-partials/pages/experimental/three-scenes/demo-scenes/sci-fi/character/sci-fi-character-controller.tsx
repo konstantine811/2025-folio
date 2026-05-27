@@ -75,6 +75,9 @@ export function SciFiToggleCharacter({
       manageCamera={manageCamera}
       capsuleHalfHeight={sciFiCapsuleHalfHeight}
       capsuleRadius={sciFiCapsuleRadius}
+      moveSpeed={sciFiCharacterConfig.controllerMovement.moveSpeed}
+      jumpForce={sciFiCharacterConfig.controllerMovement.jumpForce}
+      gravityScale={sciFiCharacterConfig.controllerMovement.gravityScale}
       hasWeaponSensor={false}
       capsuleCollisionGroups={sciFiControllerCapsuleCollisionGroups()}
       raycastMembershipGroup={SCIFI_CHARACTER_CONTROLLER_GROUP}
