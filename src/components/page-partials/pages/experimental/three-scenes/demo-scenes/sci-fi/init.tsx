@@ -11,8 +11,8 @@ import {
   useState,
 } from "react";
 import { Perf } from "r3f-perf";
+import { useProgress } from "@react-three/drei";
 import { Leva, useControls } from "leva";
-import ThreeLoader from "../../common/three-loader";
 import { isDev } from "@/utils/check-env";
 import InitKeyboardController from "@/components/common/game-controller/init-keyboard";
 import { usePauseStore } from "@/components/common/game-controller/store/usePauseMode";
@@ -57,43 +57,26 @@ const SceneReadyReporter = ({ onReady }: SceneReadyReporterProps) => {
 
 type IntroPhase = "loading" | "fade-out" | "content";
 
-const SciFiSceneLoadingOverlay = () => (
-  <div className="flex min-h-[var(--sci-fi-viewport-height)] items-center justify-center px-5 text-zinc-300">
-    <div className="w-full max-w-5xl">
-      <div className="mb-4 text-center font-mono text-[10px] uppercase tracking-[0.42em] text-cyan-100/70 sm:text-xs">
-        Loading
-      </div>
-      <div className="relative mx-auto h-px w-full overflow-hidden bg-white/10">
-        <div className="sci-fi-loading-line absolute left-1/2 top-0 h-px w-full origin-center bg-cyan-100/80 shadow-[0_0_18px_rgba(165,243,252,0.82)]" />
-      </div>
-      <div className="mx-auto mt-3 h-px w-24 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
-      <style>{`
-        .sci-fi-loading-line {
-          transform: translateX(-50%) scaleX(0);
-          animation: sci-fi-loading-expand 1.7s cubic-bezier(0.7, 0, 0.2, 1) infinite;
-        }
+const SciFiSceneLoadingOverlay = ({ progress }: { progress: number }) => {
+  const pct = Math.min(100, Math.max(0, progress));
 
-        @keyframes sci-fi-loading-expand {
-          0% {
-            transform: translateX(-50%) scaleX(0);
-            opacity: 0;
-          }
-          18% {
-            opacity: 1;
-          }
-          72% {
-            transform: translateX(-50%) scaleX(1);
-            opacity: 1;
-          }
-          100% {
-            transform: translateX(-50%) scaleX(1);
-            opacity: 0;
-          }
-        }
-      `}</style>
+  return (
+    <div className="flex min-h-[var(--sci-fi-viewport-height)] items-center justify-center px-5 text-zinc-300">
+      <div className="w-full max-w-5xl">
+        <div className="mb-4 text-center font-mono text-[10px] uppercase tracking-[0.42em] text-cyan-100/70 sm:text-xs">
+          Loading {Math.floor(pct)}%
+        </div>
+        <div className="relative mx-auto h-px w-full overflow-hidden bg-white/10">
+          <div
+            className="h-px bg-cyan-100/80 shadow-[0_0_18px_rgba(165,243,252,0.82)] transition-[width] duration-300 ease-out"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <div className="mx-auto mt-3 h-px w-24 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const Init = () => {
   const scrollProgressRef = useRef(0);
@@ -102,8 +85,13 @@ const Init = () => {
   const introTimersRef = useRef<number[]>([]);
   const sceneWarmupStartedRef = useRef(false);
   const [introPhase, setIntroPhase] = useState<IntroPhase>("loading");
+  const [sceneWarmupDone, setSceneWarmupDone] = useState(false);
   const [isDebugPanelVisible, setIsDebugPanelVisible] = useState(isDebugHash);
   const headerSize = useHeaderSizeStore((s) => s.size);
+  const { progress, active } = useProgress();
+  const [sceneContentMounted, setSceneContentMounted] = useState(false);
+  /** Suspense resolved + first frames — do not wait on useProgress (unreliable with Perf / cache). */
+  const displayProgress = sceneContentMounted ? 100 : progress;
 
   const isPaused = usePauseStore((s) => s.isPaused);
   const setIsPaused = usePauseStore((s) => s.setIsPaused);
@@ -128,12 +116,20 @@ const Init = () => {
   const handleSceneReady = useCallback(() => {
     if (sceneWarmupStartedRef.current) return;
     sceneWarmupStartedRef.current = true;
+    setSceneContentMounted(true);
 
     const warmupId = window.setTimeout(() => {
-      setIntroPhase("fade-out");
+      setSceneWarmupDone(true);
     }, sciFiSceneWarmupMs);
     introTimersRef.current.push(warmupId);
   }, []);
+
+  useEffect(() => {
+    if (introPhase !== "loading") return;
+    if (sceneWarmupDone) {
+      setIntroPhase("fade-out");
+    }
+  }, [introPhase, sceneWarmupDone]);
 
   const handleLoadingFadeEnd = useCallback(() => {
     setIntroPhase((phase) => (phase === "fade-out" ? "content" : phase));
@@ -209,7 +205,6 @@ const Init = () => {
 
   return (
     <MainWrapperOffset>
-      {!isDev && <ThreeLoader />}
       <Leva hidden={!isDebugPanelVisible} collapsed />
 
       <InitKeyboardController />
@@ -225,14 +220,15 @@ const Init = () => {
         }}
       >
         <Suspense fallback={null}>
-          {isDev && isDebugPanelVisible && <Perf position="top-left" />}
-
           <Experience
             cameraMode={selectedCameraMode}
             scrollProgressRef={scrollProgressRef}
           />
           <SceneReadyReporter onReady={handleSceneReady} />
         </Suspense>
+        {isDev && isDebugPanelVisible && introPhase === "content" && (
+          <Perf position="top-left" />
+        )}
       </Canvas>
 
       {isPaused && (
@@ -286,7 +282,7 @@ const Init = () => {
                 handleLoadingFadeEnd();
               }}
             >
-              <SciFiSceneLoadingOverlay />
+              <SciFiSceneLoadingOverlay progress={displayProgress} />
             </div>
           )}
           <div

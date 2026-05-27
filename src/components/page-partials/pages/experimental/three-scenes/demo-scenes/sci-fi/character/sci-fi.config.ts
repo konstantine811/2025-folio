@@ -48,7 +48,7 @@ export const sciFiCharacterConfig = {
 
   /** Tuned for Sholom walk cycle — default controller uses moveSpeed 9, jump 2.5, gravityScale 3. */
   controllerMovement: {
-    moveSpeed: 6,
+    moveSpeed: 5,
     jumpForce: 1,
     gravityScale: 2,
   },
