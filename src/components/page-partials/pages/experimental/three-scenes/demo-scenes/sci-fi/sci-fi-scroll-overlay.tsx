@@ -42,7 +42,7 @@ const letterWidths: Record<string, string> = {
 const getSlotWidth = (letter: string) => letterWidths[letter] ?? "0.58em";
 
 const ScrollGlyphs = () => (
-  <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-20">
+  <div className="pointer-events-none absolute top-0 left-1/2 z-0 min-h-full w-screen max-w-none -translate-x-1/2 overflow-hidden opacity-20">
     {Array.from({ length: 8 }).map((_, index) => (
       <span
         key={index}
@@ -144,15 +144,24 @@ export const SciFiScrollOverlay = ({
   };
 
   return (
-    <div className="relative min-h-[300vh] bg-black/12 text-zinc-100">
+    <div className="relative min-h-[300vh] text-zinc-100">
+      <div
+        className="pointer-events-none absolute top-0 left-1/2 z-0 min-h-full w-screen max-w-none -translate-x-1/2 bg-black/20"
+        aria-hidden
+      />
       <ScrollGlyphs />
 
-      <section className="relative flex min-h-[var(--sci-fi-viewport-height)] flex-col overflow-hidden px-5 pt-12 pb-8 [contain:paint] sm:px-8 lg:px-[11vw]">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/10" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/75 to-transparent" />
-        <div className="sci-fi-scanline pointer-events-none absolute inset-0 opacity-25" />
+      <section className="relative flex min-h-[var(--sci-fi-viewport-height)] flex-col overflow-hidden pt-12 pb-8">
+        <div
+          className="pointer-events-none absolute top-0 left-1/2 z-0 h-full w-screen max-w-none -translate-x-1/2"
+          aria-hidden
+        >
+          <div className="absolute inset-x-0 top-0 h-px bg-white/10" />
+          <div className="sci-fi-scanline absolute inset-0 opacity-25" />
+        </div>
 
-        <div className="relative z-10 flex items-start justify-between gap-6 font-mono text-[10px] tracking-[0.28em] text-zinc-500 sm:text-xs">
+        <div className="relative z-10 flex flex-1 flex-col px-5 sm:px-8 lg:px-[11vw]">
+        <div className="flex items-start justify-between gap-6 font-mono text-[10px] tracking-[0.28em] text-zinc-500 sm:text-xs">
           <div className="mt-1 h-1 w-1 rounded-full bg-blue-400 shadow-[0_0_14px_rgba(96,165,250,0.9)]" />
           <div className="mr-auto border-l border-white/10 pl-4 uppercase leading-relaxed sm:pl-5">
             {telemetryItems.map((item) => (
@@ -165,12 +174,12 @@ export const SciFiScrollOverlay = ({
           </div>
         </div>
 
-        <div className="relative z-10 mt-[14vh] flex w-fit items-center gap-3 rounded-full border border-white/10 bg-black/45 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.34em] text-zinc-300 sm:text-xs">
+        <div className="mt-[14vh] flex w-fit items-center gap-3 rounded-full border border-white/10 bg-black/45 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.34em] text-zinc-300 sm:text-xs">
           <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.95)]" />
           доступний для проектів
         </div>
 
-        <div className="relative z-10 mt-auto w-full max-w-[1180px] pb-[10vh]">
+        <div className="mt-auto w-full max-w-[1180px] pb-[10vh]">
           <h1
             className="sci-fi-hero-title font-display text-[clamp(3rem,10.3vw,9.5rem)] leading-[1.02] font-normal uppercase text-zinc-200"
             aria-label="Digital Architect"
@@ -217,6 +226,7 @@ export const SciFiScrollOverlay = ({
               зв'язатися
             </a>
           </div>
+        </div>
         </div>
       </section>
 

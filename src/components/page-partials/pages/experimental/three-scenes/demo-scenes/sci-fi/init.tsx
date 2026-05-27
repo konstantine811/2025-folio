@@ -199,31 +199,43 @@ const Init = () => {
 
       {isPaused && (
         <div
-          data-lenis-prevent
-          data-lenis-prevent-touch
-          data-lenis-prevent-wheel
-          ref={scrollContainerRef}
-          className="absolute inset-x-0 bottom-0 z-10 overflow-y-auto"
-          onScroll={handleScroll}
-          onTouchMove={(event) => event.stopPropagation()}
-          onWheel={(event) => event.stopPropagation()}
+          className="absolute inset-x-0 bottom-0 z-10"
           style={{
             top: headerSize,
             ["--sci-fi-viewport-height" as string]: `calc(100dvh - ${headerSize}px)`,
-            WebkitOverflowScrolling: "touch",
-            overscrollBehavior: "contain",
-            pointerEvents: isCameraControlsMode ? "none" : "auto",
-            touchAction: "pan-y",
           }}
         >
-          {sceneReady ? (
-            <SciFiScrollOverlay
-              scrollContainerRef={scrollContainerRef}
-              onStart={handleStartScene}
-            />
-          ) : (
-            <SciFiSceneLoadingOverlay />
-          )}
+          <div
+            data-lenis-prevent
+            data-lenis-prevent-touch
+            data-lenis-prevent-wheel
+            ref={scrollContainerRef}
+            className="sci-fi-scroll-panel custom-scrollbar h-full w-full overflow-x-hidden overflow-y-scroll"
+            onScroll={handleScroll}
+            onTouchMove={(event) => event.stopPropagation()}
+            onWheel={(event) => event.stopPropagation()}
+            style={{
+              WebkitOverflowScrolling: "touch",
+              overscrollBehavior: "contain",
+              pointerEvents: isCameraControlsMode ? "none" : "auto",
+              touchAction: "pan-y",
+            }}
+          >
+            {sceneReady ? (
+              <SciFiScrollOverlay
+                scrollContainerRef={scrollContainerRef}
+                onStart={handleStartScene}
+              />
+            ) : (
+              <SciFiSceneLoadingOverlay />
+            )}
+          </div>
+          <div
+            className="pointer-events-none absolute inset-0 z-30"
+            aria-hidden
+          >
+            <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/75 to-transparent" />
+          </div>
         </div>
       )}
     </MainWrapperOffset>
