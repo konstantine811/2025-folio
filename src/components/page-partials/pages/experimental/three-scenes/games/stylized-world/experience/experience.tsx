@@ -186,7 +186,7 @@ function TerrainEditMode({
   const isDrawingRef = useRef(false);
   const lastStrokeRef = useRef<Vector3 | null>(null);
   const spacingRef = useRef(0.35);
-  const cameraControlsRef = useRef<any>(null);
+  const cameraControlsRef = useRef<CameraControls>(null);
   const brushRadiusRef = useRef(brushRadius);
   const brushStrengthRef = useRef(brushStrength);
   const didInitCameraRef = useRef(false);

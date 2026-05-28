@@ -8,8 +8,14 @@ import {
   MeshStandardMaterial,
 } from "three";
 import { useControls } from "leva";
-import { CuboidCollider, RigidBody, interactionGroups } from "@react-three/rapier";
+import {
+  CuboidCollider,
+  RigidBody,
+  interactionGroups,
+} from "@react-three/rapier";
 import { useRegisterCameraCollisionMeshes } from "@/components/common/hooks/camera/useRegisterCameraCollisionMeshes";
+import { ShipContainerBack } from "./ship-container-back";
+import { ShipDoor } from "./ship-door";
 
 const modelPath = "/3d-models/sci-fi/ship-container.glb";
 const texturePath = "/3d-models/sci-fi/ship_baking.jpg";
@@ -192,6 +198,8 @@ export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
         material={materials["Material.003"]}
         position={[0, 5.178, 1.543]}
       />
+      <ShipContainerBack />
+      <ShipDoor position={[0, 0.17, 0]} />
     </group>
   );
 }
