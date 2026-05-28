@@ -1,4 +1,5 @@
 import { Html, useGLTF } from "@react-three/drei";
+import { useControls } from "leva";
 import { useFrame } from "@react-three/fiber";
 import {
   interactionGroups,
@@ -25,6 +26,9 @@ import {
 } from "../sci-fi-collision-groups";
 
 const modelPath = "/3d-models/sci-fi/ship-door.glb";
+
+/** Leva folder (visible with #debug) — how far each door panel slides along local X. */
+export const SHIP_DOOR_CONTROLS_PATH = "Sci-fi props / Ship door";
 
 const doorMaterialKey = "04";
 const doorAssemblyPosition: [number, number, number] = [0, -0.101, 36.546];
@@ -53,12 +57,7 @@ const doorLeftColliderScale: [number, number, number] = [
   doorRightColliderScale[2],
 ];
 
-const DOOR_OPEN_DISTANCE = 0.55;
-const DOOR_OPEN_SPEED = 5;
 const DOOR_COLLIDER_OFF_PROGRESS = 0.92;
-const panelInteractLocal: [number, number, number] = [0, 1.05, -1.15];
-const PANEL_INTERACT_RADIUS_XZ = 2.5;
-const PANEL_INTERACT_RADIUS_Y = 2.4;
 
 const camWall = { camIncludeCollision: true } as const;
 
@@ -124,7 +123,8 @@ function KinematicDoorCollider({
 export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
   const rootRef = useRef<Group>(null);
   const assemblyRef = useRef<Group>(null);
-  const panelAnchorRef = useRef<Group>(null);
+  /** E prompt + proximity anchor (local to door assembly, on the PC). */
+  const pcInteractRef = useRef<Group>(null);
   const frameRightRef = useRef<Mesh>(null);
   const frameLeftRef = useRef<Mesh>(null);
   const rightDoorBodyRef = useRef<RapierRigidBody>(null);
@@ -138,7 +138,10 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
 
   const { nodes, materials } = useGLTF(modelPath);
   const material = useMemo(
-    () => createOpaqueDoorMaterial(materials[doorMaterialKey] as MeshStandardMaterial),
+    () =>
+      createOpaqueDoorMaterial(
+        materials[doorMaterialKey] as MeshStandardMaterial,
+      ),
     [materials],
   );
 
@@ -149,18 +152,77 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
   const frameColliderMesh = getMesh(nodes, "frame_collider");
   const doorColliderMesh = getMesh(nodes, "door_right_collider");
 
+  const {
+    openDistance,
+    openSpeed,
+    promptPositionX,
+    promptPositionY,
+    promptPositionZ,
+    pcInteractRadiusXZ,
+    pcInteractRadiusY,
+  } = useControls(SHIP_DOOR_CONTROLS_PATH, {
+    openDistance: {
+      value: 1.47,
+      min: 0,
+      max: 2.5,
+      step: 0.01,
+      label: "Open distance (each side)",
+    },
+    openSpeed: {
+      value: 2,
+      min: 0.5,
+      max: 25,
+      step: 0.5,
+      label: "Open speed",
+    },
+    promptPositionX: {
+      value: 2.27,
+      min: -5,
+      max: 5,
+      step: 0.01,
+      label: "E prompt X (on PC)",
+    },
+    promptPositionY: {
+      value: 1.78,
+      min: -2,
+      max: 3,
+      step: 0.01,
+      label: "E prompt Y",
+    },
+    promptPositionZ: {
+      value: 0.83,
+      min: -3,
+      max: 3,
+      step: 0.01,
+      label: "E prompt Z",
+    },
+    pcInteractRadiusXZ: {
+      value: 1.4,
+      min: 0.2,
+      max: 3,
+      step: 0.05,
+      label: "PC interact radius (XZ)",
+    },
+    pcInteractRadiusY: {
+      value: 1.75,
+      min: 0.2,
+      max: 3,
+      step: 0.05,
+      label: "PC interact radius (Y)",
+    },
+  });
+
   const isPaused = usePauseStore((s) => s.isPaused);
   const playerPosition = usePlayerPositionStore((s) => s.position);
 
   const [nearPanel, setNearPanel] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [doorsBlockPhysics, setDoorsBlockPhysics] = useState(true);
-  const [openProgressUi, setOpenProgressUi] = useState(0);
 
   useRegisterCameraCollisionMeshes(rootRef, [nodes]);
 
-  const applyDoorSlide = (progress: number) => {
-    const slide = DOOR_OPEN_DISTANCE * progress;
+  const applyDoorSlide = (progress: number, distance: number) => {
+    const slide = distance * progress;
 
     if (frameRightRef.current) {
       frameRightRef.current.position.x = frameRightLocalX + slide;
@@ -200,30 +262,25 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
   useFrame((_, delta) => {
     const target = isOpen ? 1 : 0;
     openProgressRef.current +=
-      (target - openProgressRef.current) *
-      Math.min(1, DOOR_OPEN_SPEED * delta);
+      (target - openProgressRef.current) * Math.min(1, openSpeed * delta);
 
     const progress = openProgressRef.current;
-    applyDoorSlide(progress);
+    applyDoorSlide(progress, openDistance);
 
     const shouldBlock = progress < DOOR_COLLIDER_OFF_PROGRESS;
     if (shouldBlock !== doorsBlockPhysics) {
       setDoorsBlockPhysics(shouldBlock);
     }
 
-    if (Math.abs(progress - openProgressUi) > 0.002) {
-      setOpenProgressUi(progress);
-    }
-
-    const anchor = panelAnchorRef.current;
-    if (!isPaused && playerPosition && anchor) {
-      anchor.getWorldPosition(panelWorldPos);
+    const interact = pcInteractRef.current;
+    if (!isPaused && playerPosition && interact) {
+      interact.getWorldPosition(panelWorldPos);
       const dx = playerPosition.x - panelWorldPos.x;
       const dy = playerPosition.y - panelWorldPos.y;
       const dz = playerPosition.z - panelWorldPos.z;
       const near =
-        Math.hypot(dx, dz) <= PANEL_INTERACT_RADIUS_XZ &&
-        Math.abs(dy) <= PANEL_INTERACT_RADIUS_Y;
+        Math.hypot(dx, dz) <= pcInteractRadiusXZ &&
+        Math.abs(dy) <= pcInteractRadiusY;
       if (near !== nearPanelRef.current) {
         nearPanelRef.current = near;
         setNearPanel(near);
@@ -234,21 +291,22 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
     }
   });
 
-  const handleOpen = useCallback(() => {
-    if (!nearPanel || isOpen || isPaused) return;
-    setIsOpen(true);
-  }, [nearPanel, isOpen, isPaused]);
+  const handleDoorToggle = useCallback(() => {
+    if (!nearPanel || isPaused) return;
+    setIsOpen((open) => !open);
+  }, [nearPanel, isPaused]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.code !== Key.E) return;
-      handleOpen();
+      handleDoorToggle();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [handleOpen]);
+  }, [handleDoorToggle]);
 
-  const showPrompt = !isPaused && nearPanel && !isOpen && openProgressUi < 0.02;
+  const showPrompt = !isPaused && nearPanel;
+  const doorActionLabel = isOpen ? "закрити двері" : "відкрити двері";
 
   return (
     <group {...props} ref={rootRef} dispose={null}>
@@ -287,14 +345,12 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
           geometry={pcMesh.geometry}
           material={material}
         />
-
         <group
-          ref={panelAnchorRef}
-          position={panelInteractLocal}
+          ref={pcInteractRef}
+          position={[promptPositionX, promptPositionY, promptPositionZ]}
         >
           {showPrompt && (
             <Html
-              position={[0, 0.35, 0]}
               center
               distanceFactor={7}
               wrapperClass="pointer-events-none"
@@ -304,7 +360,7 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
                 <span className="mr-2 inline-flex h-6 min-w-6 items-center justify-center rounded border border-sky-400/60 bg-sky-500/20 px-1.5 font-bold text-sky-200">
                   E
                 </span>
-                відкрити двері
+                {doorActionLabel}
               </div>
             </Html>
           )}

@@ -199,7 +199,7 @@ export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
         position={[0, 5.178, 1.543]}
       />
       <ShipContainerBack />
-      <ShipDoor position={[0, 0.17, 0]} />
+      <ShipDoor position={[0, 0.17, 0.2]} />
     </group>
   );
 }
