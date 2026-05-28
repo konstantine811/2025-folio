@@ -51,9 +51,12 @@ const Init = () => {
               powerPreference: "high-performance",
               antialias: true,
             });
-            renderer.init().then(() => {
-              setGpuReady(true);
-            });
+            renderer
+              .init()
+              .then(() => setGpuReady(true))
+              .catch((err) =>
+                console.error("[StylizedWorld] WebGPU init failed:", err),
+              );
             return renderer;
           }}
         >

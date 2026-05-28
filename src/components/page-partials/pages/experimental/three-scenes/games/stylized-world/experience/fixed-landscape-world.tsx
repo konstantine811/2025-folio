@@ -27,7 +27,6 @@ import {
   collectBushMatricesForTiles,
   computeGroundColor,
 } from "./world-visual-helpers";
-
 type FixedLandscapeWorldProps = {
   bounds: LandscapeBounds;
   tileSize?: number;
@@ -39,7 +38,7 @@ type FixedLandscapeWorldProps = {
   showGridDebug?: boolean;
   showGridCrosses?: boolean;
   showTileBounds?: boolean;
-  focusRef?: MutableRefObject<THREE.Vector3>;
+  focusRef: MutableRefObject<THREE.Vector3>;
   terrainProfile?: TerrainProfile;
   terrainRevision?: number;
 };
@@ -141,7 +140,7 @@ const BushInstances = memo(function BushInstances({
           key={`bush-chunk-${chunkIndex}`}
           ref={bushChunkRefCallbacks[chunkIndex]}
           args={[bushGeometry, bushMaterial, MAX_INSTANCES_PER_MESH]}
-          frustumCulled={false}
+          frustumCulled
         />
       ))}
     </>
@@ -165,6 +164,7 @@ export function FixedLandscapeWorld({
 }: FixedLandscapeWorldProps) {
   const tileMeshesRef = useRef<Map<string, THREE.Mesh>>(new Map());
   const bushChunkRefs = useRef<(THREE.InstancedMesh | null)[]>([]);
+  const bushesSyncedRef = useRef(false);
   const gridSyncRef = useRef<GridDebugSyncRef | null>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const bushMaterialRef = useRef<THREE.Material | null>(null);
@@ -237,19 +237,7 @@ export function FixedLandscapeWorld({
     setBushMaterialReady(true);
   }, []);
 
-  const bushChunkRefCallbacks = useMemo(
-    () =>
-      Array.from({ length: bushChunkCount }, (_, chunkIndex) => {
-        return (mesh: THREE.InstancedMesh | null) => {
-          bushChunkRefs.current[chunkIndex] = mesh;
-        };
-      }),
-    [bushChunkCount],
-  );
-
-  useLayoutEffect(() => {
-    bushChunkRefs.current = new Array(bushChunkCount).fill(null);
-
+  const syncBushes = useCallback(() => {
     const matrices = collectBushMatricesForTiles({
       tiles,
       tileSize,
@@ -259,8 +247,34 @@ export function FixedLandscapeWorld({
       dummy,
     });
     assignMatricesToInstancedChunks(bushChunkRefs.current, matrices);
+  }, [
+    tiles,
+    tileSize,
+    bushesPerTile,
+    worldSeed,
+    terrainProfile,
+    dummy,
+  ]);
 
+  const bushChunkRefCallbacks = useMemo(
+    () =>
+      Array.from({ length: bushChunkCount }, (_, chunkIndex) => {
+        return (mesh: THREE.InstancedMesh | null) => {
+          bushChunkRefs.current[chunkIndex] = mesh;
+          if (!mesh) bushesSyncedRef.current = false;
+        };
+      }),
+    [bushChunkCount],
+  );
+
+  useLayoutEffect(() => {
+    bushChunkRefs.current = new Array(bushChunkCount).fill(null);
+    bushesSyncedRef.current = false;
     gridSyncRef.current?.(gridCenterTile.x, gridCenterTile.z);
+  }, [bushChunkCount, gridCenterTile.x, gridCenterTile.z]);
+
+  useLayoutEffect(() => {
+    bushesSyncedRef.current = false;
   }, [
     tiles,
     tileSize,
@@ -269,29 +283,37 @@ export function FixedLandscapeWorld({
     terrainProfile,
     terrainRevision,
     bushChunkCount,
-    dummy,
-    gridCenterTile.x,
-    gridCenterTile.z,
   ]);
 
   useFrame(() => {
     const focus = focusRef?.current;
-    if (!focus) return;
+    if (focus) {
+      for (const { tileX, tileZ } of tiles) {
+        const key = `${tileX}_${tileZ}`;
+        const mesh = tileMeshesRef.current.get(key);
+        if (!mesh) continue;
+        mesh.visible = isTileWithinView(
+          tileX,
+          tileZ,
+          tileSize,
+          focus.x,
+          focus.z,
+          viewRadiusTiles,
+        );
+      }
+    }
 
-    const viewRadius = viewRadiusTiles;
+    const bushChunksReady =
+      bushesPerTile <= 0 ||
+      bushChunkRefs.current.filter(Boolean).length === bushChunkCount;
 
-    for (const { tileX, tileZ } of tiles) {
-      const key = `${tileX}_${tileZ}`;
-      const mesh = tileMeshesRef.current.get(key);
-      if (!mesh) continue;
-      mesh.visible = isTileWithinView(
-        tileX,
-        tileZ,
-        tileSize,
-        focus.x,
-        focus.z,
-        viewRadius,
-      );
+    if (
+      !bushesSyncedRef.current &&
+      bushChunksReady &&
+      bushMaterialRef.current
+    ) {
+      syncBushes();
+      bushesSyncedRef.current = true;
     }
   });
 
@@ -316,8 +338,20 @@ export function FixedLandscapeWorld({
               terrainTemplate={terrainTemplate}
               onMeshReady={(mesh) => {
                 const key = `${tileX}_${tileZ}`;
-                if (mesh) tileMeshesRef.current.set(key, mesh);
-                else tileMeshesRef.current.delete(key);
+                if (mesh) {
+                  tileMeshesRef.current.set(key, mesh);
+                  const focus = focusRef.current;
+                  mesh.visible = isTileWithinView(
+                    tileX,
+                    tileZ,
+                    tileSize,
+                    focus.x,
+                    focus.z,
+                    viewRadiusTiles,
+                  );
+                } else {
+                  tileMeshesRef.current.delete(key);
+                }
               }}
             />
           ))}
@@ -340,6 +374,7 @@ export function FixedLandscapeWorld({
             bushChunkRefCallbacks={bushChunkRefCallbacks}
           />
         )}
+
       </group>
     </>
   );

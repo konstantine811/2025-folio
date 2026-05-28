@@ -3,7 +3,7 @@
  * Set `enabled` to false to restore landscape / terrain pipeline.
  */
 export const FLAT_GRID_DEBUG_ARENA = {
-  enabled: true,
+  enabled: false,
   /** Visual + physics floor extent (meters, full width). */
   arenaSize: 220,
   tileSize: 8,

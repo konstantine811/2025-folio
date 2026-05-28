@@ -2,7 +2,7 @@ import { CameraControls, CameraControlsImpl, Environment } from "@react-three/dr
 import { useThree } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
 import GUI from "lil-gui";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MutableRefObject } from "react";
 import { Plane, PlaneGeometry, Raycaster, Vector2, Vector3 } from "three";
 import { DebugFlatArena } from "./debug-flat-arena";
@@ -51,7 +51,7 @@ const DEFAULT_CONTROLS: StylizedWorldControls = {
   windStrength: 1,
   windSpeed: 0.05,
   bushesPerTile: 1,
-  viewRadius: 6,
+  viewRadius: 3,
   showGridDebug: false,
   showTestCourse: true,
   accelerateForce: 8.5,
@@ -523,12 +523,14 @@ const Experience = () => {
   );
 
   const { historiesRef: wheelContactHistoriesRef } = useWheelContactHistory(4);
-  const viewRadiusTiles = controls.viewRadius + 4;
+  const viewRadiusTiles = controls.viewRadius + 1;
 
   if (flatDebug) {
     return (
       <>
-        <Environment preset="park" environmentIntensity={0.45} />
+        <Suspense fallback={null}>
+          <Environment preset="park" environmentIntensity={0.45} />
+        </Suspense>
         <ambientLight intensity={0.45} />
         <directionalLight position={[4, 8, 3]} intensity={1.1} />
 
@@ -541,18 +543,20 @@ const Experience = () => {
           interpolate
         >
           <DebugFlatGround />
-          <StylizedCarController
-            focusRef={focusRef}
-            flatGround
-            startPosition={FLAT_DEBUG_SPAWN}
-            worldSeed={controls.terrainSeed}
-            terrainProfile={terrainProfile}
-            accelerateForce={controls.accelerateForce}
-            brakeForce={controls.brakeForce}
-            steerAngle={(controls.steerAngleDeg * Math.PI) / 180}
-            showWheelTrackDebug={controls.showWheelTrackDebug}
-            contactHistoriesRef={wheelContactHistoriesRef}
-          />
+          <Suspense fallback={null}>
+            <StylizedCarController
+              focusRef={focusRef}
+              flatGround
+              startPosition={FLAT_DEBUG_SPAWN}
+              worldSeed={controls.terrainSeed}
+              terrainProfile={terrainProfile}
+              accelerateForce={controls.accelerateForce}
+              brakeForce={controls.brakeForce}
+              steerAngle={(controls.steerAngleDeg * Math.PI) / 180}
+              showWheelTrackDebug={controls.showWheelTrackDebug}
+              contactHistoriesRef={wheelContactHistoriesRef}
+            />
+          </Suspense>
         </Physics>
       </>
     );
@@ -560,7 +564,9 @@ const Experience = () => {
 
   return (
     <>
-      <Environment preset="park" environmentIntensity={0.45} />
+      <Suspense fallback={null}>
+        <Environment preset="park" environmentIntensity={0.45} />
+      </Suspense>
       <ambientLight intensity={0.45} />
       <directionalLight position={[4, 8, 3]} intensity={1.1} />
 
@@ -607,18 +613,20 @@ const Experience = () => {
             terrainRevision={terrainRevision}
           />
           {controls.showTestCourse && <StylizedWorldTestCourse />}
-          <StylizedCarController
-            focusRef={focusRef}
-            landscapeBounds={landscapeBounds}
-            startPosition={spawnPosition}
-            worldSeed={controls.terrainSeed}
-            terrainProfile={terrainProfile}
-            accelerateForce={controls.accelerateForce}
-            brakeForce={controls.brakeForce}
-            steerAngle={(controls.steerAngleDeg * Math.PI) / 180}
-            showWheelTrackDebug={controls.showWheelTrackDebug}
-            contactHistoriesRef={wheelContactHistoriesRef}
-          />
+          <Suspense fallback={null}>
+            <StylizedCarController
+              focusRef={focusRef}
+              landscapeBounds={landscapeBounds}
+              startPosition={spawnPosition}
+              worldSeed={controls.terrainSeed}
+              terrainProfile={terrainProfile}
+              accelerateForce={controls.accelerateForce}
+              brakeForce={controls.brakeForce}
+              steerAngle={(controls.steerAngleDeg * Math.PI) / 180}
+              showWheelTrackDebug={controls.showWheelTrackDebug}
+              contactHistoriesRef={wheelContactHistoriesRef}
+            />
+          </Suspense>
         </Physics>
       )}
     </>

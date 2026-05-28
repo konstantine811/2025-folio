@@ -1,7 +1,5 @@
-# Grass — rebuild
+# Grass — not in scene
 
-Full design: **[ARCHITECTURE.md](./ARCHITECTURE.md)**
+Instanced / compute experiments removed (FPS + quality).
 
-**Status:** not rendered yet (stack removed for clean slate).
-
-**Next step:** implement **Phase 1** (flat debug arena, wind, circular mask placeholder).
+Design notes: **ARCHITECTURE.md**
