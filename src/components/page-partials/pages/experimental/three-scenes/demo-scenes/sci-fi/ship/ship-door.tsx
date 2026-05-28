@@ -24,6 +24,7 @@ import {
   SCIFI_CHARACTER_CONTROLLER_GROUP,
   SCIFI_PROP_COLLIDER_GROUP,
 } from "../sci-fi-collision-groups";
+import { PORTAL_ENTER_MIN_PROGRESS, ShipDoorPortal } from "./ship-door-portal";
 
 const modelPath = "/3d-models/sci-fi/ship-door.glb";
 
@@ -36,6 +37,8 @@ const doorAssemblyRotation: [number, number, number] = [Math.PI, 0, Math.PI];
 
 const frameRightLocalX = -0.022;
 const frameLeftLocalX = 0;
+/** Closed-state shift (+X in door assembly) — aligns panels with frame opening. */
+const defaultDoorPanelsOffsetX = 0.02;
 
 const frameColliderPosition: [number, number, number] = [
   0.0139617919921875, 2.8340907096862793, 36.289939880371094,
@@ -131,10 +134,13 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
   const leftDoorBodyRef = useRef<RapierRigidBody>(null);
   const openProgressRef = useRef(0);
   const nearPanelRef = useRef(false);
+  const nearPortalRef = useRef(false);
+  const enterPortalRef = useRef<(() => void) | null>(null);
   const panelWorldPos = useMemo(() => new Vector3(), []);
   const slideOrigin = useMemo(() => new Vector3(), []);
   const slideTip = useMemo(() => new Vector3(), []);
   const worldSlide = useMemo(() => new Vector3(), []);
+  const worldPanelOffset = useMemo(() => new Vector3(), []);
 
   const { nodes, materials } = useGLTF(modelPath);
   const material = useMemo(
@@ -155,6 +161,7 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
   const {
     openDistance,
     openSpeed,
+    doorPanelsOffsetX,
     promptPositionX,
     promptPositionY,
     promptPositionZ,
@@ -174,6 +181,13 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
       max: 25,
       step: 0.5,
       label: "Open speed",
+    },
+    doorPanelsOffsetX: {
+      value: defaultDoorPanelsOffsetX,
+      min: -0.15,
+      max: 0.15,
+      step: 0.005,
+      label: "Door panels offset X (right)",
     },
     promptPositionX: {
       value: 2.27,
@@ -223,16 +237,23 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
 
   const applyDoorSlide = (progress: number, distance: number) => {
     const slide = distance * progress;
+    const panelX = doorPanelsOffsetX;
 
     if (frameRightRef.current) {
-      frameRightRef.current.position.x = frameRightLocalX + slide;
+      frameRightRef.current.position.x = frameRightLocalX + panelX + slide;
     }
     if (frameLeftRef.current) {
-      frameLeftRef.current.position.x = frameLeftLocalX - slide;
+      frameLeftRef.current.position.x = frameLeftLocalX + panelX - slide;
     }
 
     const assembly = assemblyRef.current;
     if (!assembly) return;
+
+    slideOrigin.set(0, 0, 0);
+    slideTip.set(panelX, 0, 0);
+    assembly.localToWorld(slideOrigin);
+    assembly.localToWorld(slideTip);
+    worldPanelOffset.subVectors(slideTip, slideOrigin);
 
     slideOrigin.set(0, 0, 0);
     slideTip.set(slide, 0, 0);
@@ -243,18 +264,18 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
     const rightBody = rightDoorBodyRef.current;
     if (rightBody) {
       rightBody.setNextKinematicTranslation({
-        x: doorRightColliderPosition[0] + worldSlide.x,
-        y: doorRightColliderPosition[1] + worldSlide.y,
-        z: doorRightColliderPosition[2] + worldSlide.z,
+        x: doorRightColliderPosition[0] + worldPanelOffset.x + worldSlide.x,
+        y: doorRightColliderPosition[1] + worldPanelOffset.y + worldSlide.y,
+        z: doorRightColliderPosition[2] + worldPanelOffset.z + worldSlide.z,
       });
     }
 
     const leftBody = leftDoorBodyRef.current;
     if (leftBody) {
       leftBody.setNextKinematicTranslation({
-        x: doorLeftColliderPosition[0] - worldSlide.x,
-        y: doorLeftColliderPosition[1] - worldSlide.y,
-        z: doorLeftColliderPosition[2] - worldSlide.z,
+        x: doorLeftColliderPosition[0] + worldPanelOffset.x - worldSlide.x,
+        y: doorLeftColliderPosition[1] + worldPanelOffset.y - worldSlide.y,
+        z: doorLeftColliderPosition[2] + worldPanelOffset.z - worldSlide.z,
       });
     }
   };
@@ -292,9 +313,22 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
   });
 
   const handleDoorToggle = useCallback(() => {
-    if (!nearPanel || isPaused) return;
-    setIsOpen((open) => !open);
-  }, [nearPanel, isPaused]);
+    if (isPaused) return;
+
+    // PC prompt uses nearPanel state; E must read the same ref updated in useFrame.
+    if (nearPanelRef.current) {
+      setIsOpen((open) => !open);
+      return;
+    }
+
+    if (
+      nearPortalRef.current &&
+      (openProgressRef.current ?? 0) >= PORTAL_ENTER_MIN_PROGRESS &&
+      enterPortalRef.current
+    ) {
+      enterPortalRef.current();
+    }
+  }, [isPaused]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -328,7 +362,9 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
           receiveShadow
           geometry={frameLeftMesh.geometry}
           material={material}
+          position={[frameLeftLocalX + defaultDoorPanelsOffsetX, 0, 0]}
           userData={camWall}
+          scale={1.01}
         />
         <mesh
           ref={frameRightRef}
@@ -336,8 +372,9 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
           receiveShadow
           geometry={frameRightMesh.geometry}
           material={material}
-          position={[frameRightLocalX, 0, 0]}
+          position={[frameRightLocalX + defaultDoorPanelsOffsetX, 0, 0]}
           userData={camWall}
+          scale={1.01}
         />
         <mesh
           castShadow
@@ -395,6 +432,20 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
         closedPosition={doorLeftColliderPosition}
         colliderScale={doorLeftColliderScale}
         collidersEnabled={doorsBlockPhysics}
+      />
+
+      <ShipDoorPortal
+        assemblyPosition={doorAssemblyPosition}
+        assemblyRotation={doorAssemblyRotation}
+        openProgressRef={openProgressRef}
+        openDistance={openDistance}
+        doorPanelsOffsetX={doorPanelsOffsetX}
+        onNearPortalChange={(near) => {
+          nearPortalRef.current = near;
+        }}
+        registerEnter={(enter) => {
+          enterPortalRef.current = enter;
+        }}
       />
     </group>
   );

@@ -317,12 +317,16 @@ export function FixedLandscapeWorld({
     }
   });
 
+  const enableBushes = bushesPerTile > 0;
+
   return (
     <>
-      <mesh visible={false} frustumCulled={false}>
-        <boxGeometry args={[0.001, 0.001, 0.001]} />
-        <BushNodeMaterial ref={assignBushMaterial} {...bushConfig} />
-      </mesh>
+      {enableBushes && (
+        <mesh visible={false} frustumCulled={false}>
+          <boxGeometry args={[0.001, 0.001, 0.001]} />
+          <BushNodeMaterial ref={assignBushMaterial} {...bushConfig} />
+        </mesh>
+      )}
 
       <group>
         {showGround &&
@@ -366,7 +370,7 @@ export function FixedLandscapeWorld({
           />
         )}
 
-        {bushMaterialReady && bushMaterialRef.current && (
+        {enableBushes && bushMaterialReady && bushMaterialRef.current && (
           <BushInstances
             bushChunkCount={bushChunkCount}
             bushGeometry={bushGeometry}

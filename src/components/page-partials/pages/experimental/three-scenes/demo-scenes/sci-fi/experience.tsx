@@ -4,6 +4,9 @@ import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { ShipContainer } from "./ship/ship-container";
 import Earth from "./ship/earth";
+import { SciFiPlayerTeleportSync } from "./sci-fi-player-teleport-sync";
+import { SciFiStylizedWorldZone } from "./sci-fi-stylized-world-zone";
+import { useSciFiWorldPhaseStore } from "./sci-fi-world-phase-store";
 import type { CameraMode } from "./init";
 import { SciFiToggleCharacter } from "./character/sci-fi-character-controller";
 import { SciFiCameraController } from "./sci-fi-camera-controller";
@@ -50,6 +53,7 @@ const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
     setPlayCameraHandoffDone(true);
   }, []);
 
+  const worldPhase = useSciFiWorldPhaseStore((s) => s.phase);
   const characterMode = isPaused ? "scroll" : "controller";
   const useSciFiScrollCamera =
     cameraMode === "Scroll" && (isPaused || !playCameraHandoffDone);
@@ -66,16 +70,22 @@ const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
       ) : cameraMode === "CameraControls" ? (
         <InspectCameraControls />
       ) : null}
-      <ambientLight intensity={1.7} />
-      <directionalLight castShadow position={[1, 3, 1]} intensity={3} />
-      {/* <Environment preset="sunset" /> */}
+      {worldPhase === "stylized" ? (
+        <color attach="background" args={["#87c8e8"]} />
+      ) : null}
+      {worldPhase === "ship" ? (
+        <>
+          <ambientLight intensity={1.7} />
+          <directionalLight castShadow position={[1, 3, 1]} intensity={3} />
+        </>
+      ) : null}
       <Physics
         debug={isDebugPhysics}
         gravity={[0, -9.81, 0]}
         interpolate={false}
       >
-        <ShipContainer />
-        {/* <Character scrollProgress={scrollProgress} /> */}
+        <SciFiPlayerTeleportSync />
+        {worldPhase === "ship" ? <ShipContainer /> : <SciFiStylizedWorldZone />}
         <SciFiToggleCharacter
           mode={characterMode}
           scrollProgressRef={scrollProgressRef}
@@ -92,16 +102,20 @@ const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
           }
         />
       </Physics>
-      <Stars
-        radius={1}
-        depth={500}
-        count={15000}
-        factor={20}
-        saturation={0}
-        speed={1.2}
-        fade
-      />
-      <Earth />
+      {worldPhase === "ship" ? (
+        <>
+          <Stars
+            radius={1}
+            depth={500}
+            count={15000}
+            factor={20}
+            saturation={0}
+            speed={1.2}
+            fade
+          />
+          <Earth />
+        </>
+      ) : null}
       <EffectComposer multisampling={0}>
         <Bloom
           intensity={0.9}
