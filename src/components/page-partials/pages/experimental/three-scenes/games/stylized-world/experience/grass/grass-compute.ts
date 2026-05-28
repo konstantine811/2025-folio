@@ -119,22 +119,37 @@ export function createGrassCompute(
     uniforms.uTerrainNoiseScale,
     uniforms.uTerrainHillCellSize,
   );
-  const sampleGroundNormal = getTerrainNormal(sampleGroundHeight);
+  const sampleHeightFromTexture = Fn(([worldXZ]: [ReturnType<typeof vec2>]) => {
+    const uv = vec2(
+      worldXZ.x
+        .sub(uniforms.uTerrainHeightCenter.x)
+        .div(uniforms.uTerrainHeightHalfSize.mul(2))
+        .add(0.5),
+      worldXZ.y
+        .sub(uniforms.uTerrainHeightCenter.y)
+        .div(uniforms.uTerrainHeightHalfSize.mul(2))
+        .add(0.5),
+    );
+    return uniforms.uTerrainHeightTexture.sample(uv).r;
+  });
+  const sampleTerrainHeight = Fn(([worldXZ]: [ReturnType<typeof vec2>]) =>
+    select(
+      uniforms.uTerrainHeightEnabled.greaterThan(float(0.5)),
+      sampleHeightFromTexture(worldXZ),
+      sampleGroundHeight(worldXZ),
+    ),
+  );
+  const sampleTerrainNormal = getTerrainNormal(sampleTerrainHeight);
 
   const performCulling = Fn(([worldPos]: [ReturnType<typeof vec3>]) => {
-    const radius = float(1.5);
-    const clipPos = uniforms.uViewProjectionMatrix.mul(
-      vec4(worldPos.x, worldPos.y, worldPos.z, float(1)),
+    // 360° radial gate around patch center — not camera frustum (tracks stay visible behind camera).
+    const radialVisible = length(worldPos.sub(uniforms.uGroupOffset)).lessThan(
+      grassAreaSize.mul(0.62),
     );
-    const isInFront = clipPos.w.greaterThan(radius.negate());
-    const xIn = abs(clipPos.x).lessThan(clipPos.w.add(radius));
-    const yIn = abs(clipPos.y).lessThan(clipPos.w.add(radius));
-    const zIn = clipPos.z.lessThan(clipPos.w.add(radius));
-    const inFrustum = isInFront.and(xIn).and(yIn).and(zIn);
-    const isInCircle = length(worldPos.sub(uniforms.uGroupOffset)).lessThan(
+    const isInPatch = length(worldPos.sub(uniforms.uGroupOffset)).lessThan(
       grassAreaSize.mul(0.5),
     );
-    return inFrustum.and(isInCircle);
+    return radialVisible.and(isInPatch);
   });
 
   const computeFn = Fn(() => {
@@ -168,19 +183,17 @@ export function createGrassCompute(
       uniforms.uGroupOffset,
     );
 
-    const diff = worldPos.sub(uniforms.uCameraPosition);
-    const distToCamera = length(diff);
-    const isCloseEnough = abs(diff.x).add(abs(diff.z)).lessThan(float(3));
-    const isVisible = isCloseEnough.or(performCulling(worldPos));
+    const distToCamera = length(worldPos.sub(uniforms.uCameraPosition));
+    const isVisible = performCulling(worldPos);
 
     If(isVisible, () => {
       const maxSubBlades = uniforms.uDensity.mul(float(BLADES_PER_CELL));
 
       If(float(subIdx).lessThan(maxSubBlades), () => {
       const worldXZ = vec2(worldPos.x, worldPos.z);
-      const terrainY = sampleGroundHeight(worldXZ);
+      const terrainY = sampleTerrainHeight(worldXZ);
       const finalPos = vec3(worldPos.x, terrainY, worldPos.z);
-      const tn = sampleGroundNormal(worldXZ);
+      const tn = sampleTerrainNormal(worldXZ);
 
       const bladesPerClump = uniforms.uClumpSize.div(bladeSpacing);
       const cx = floor(float(globalGridX).div(bladesPerClump));

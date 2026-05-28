@@ -1,5 +1,5 @@
 import { CameraControls, CameraControlsImpl, Environment } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
 import GUI from "lil-gui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -7,6 +7,10 @@ import type { MutableRefObject } from "react";
 import { Plane, PlaneGeometry, Raycaster, Vector2, Vector3 } from "three";
 import type { GrassGroundDataBinding } from "./ground-data";
 import { DEFAULT_GRASS_GROUND_DATA_BINDING } from "./ground-data";
+import {
+  createGrassStreamSnap,
+  updateGrassStreamSnap,
+} from "./grass/grass-stream-snap";
 import { GroundDataSystem } from "./ground-data-system";
 import { InfiniteStylizedWorld } from "./infinite-stylized-world";
 import {
@@ -602,6 +606,7 @@ const Experience = () => {
   );
 
   const focusRef = useRef(new Vector3());
+  const grassStreamSnapRef = useRef(createGrassStreamSnap());
   const grassInteractionRef = useRef(new Vector3(9999, 0, 9999));
   const grassGroundDataRef = useRef<GrassGroundDataBinding>({
     ...DEFAULT_GRASS_GROUND_DATA_BINDING,
@@ -609,6 +614,11 @@ const Experience = () => {
   const { historiesRef: wheelContactHistoriesRef } = useWheelContactHistory(4);
   const physicsRadius = controls.viewRadius + 4;
   const visualRadius = physicsRadius + 3;
+
+  useFrame(() => {
+    const focus = focusRef.current;
+    updateGrassStreamSnap(grassStreamSnapRef.current, focus.x, focus.z);
+  }, -1);
 
   return (
     <>
@@ -626,6 +636,7 @@ const Experience = () => {
         showGrass={isTerrainEditMode ? false : controls.showGrass}
         showGridDebug={isTerrainEditMode ? false : controls.showGridDebug}
         focusRef={focusRef}
+        streamSnapRef={grassStreamSnapRef}
         grassInteractionRef={grassInteractionRef}
         grassGroundDataRef={grassGroundDataRef}
         worldSeed={controls.terrainSeed}
@@ -655,7 +666,7 @@ const Experience = () => {
           interpolate
         >
           <GroundDataSystem
-            focusRef={focusRef}
+            streamSnapRef={grassStreamSnapRef}
             contactHistoriesRef={wheelContactHistoriesRef}
             grassGroundDataRef={grassGroundDataRef}
           />

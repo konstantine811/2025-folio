@@ -13,6 +13,7 @@ import { BushNodeMaterial } from "./bush-material";
 import type { GrassRuntimeConfig } from "./grass/config";
 import { StylizedGrass } from "./grass/stylized-grass";
 import type { GrassGroundDataBinding } from "./ground-data";
+import type { GrassStreamSnap } from "./grass/grass-stream-snap";
 import {
   applyGroundTerrainToGeometry,
   createGroundTerrainGeometryTemplate,
@@ -45,6 +46,7 @@ type InfiniteStylizedWorldProps = {
   focusRef?: MutableRefObject<THREE.Vector3>;
   grassInteractionRef?: MutableRefObject<THREE.Vector3>;
   grassGroundDataRef?: MutableRefObject<GrassGroundDataBinding>;
+  streamSnapRef?: MutableRefObject<GrassStreamSnap>;
   terrainProfile?: TerrainProfile;
   terrainRevision?: number;
 };
@@ -310,6 +312,7 @@ export function InfiniteStylizedWorld({
   focusRef,
   grassInteractionRef,
   grassGroundDataRef,
+  streamSnapRef,
   terrainProfile = DEFAULT_TERRAIN_PROFILE,
   terrainRevision = 0,
 }: InfiniteStylizedWorldProps) {
@@ -541,11 +544,13 @@ export function InfiniteStylizedWorld({
         <BushNodeMaterial ref={assignBushMaterial} {...bushConfig} />
       </mesh>
       <group key={worldKey}>
-        {showGrass && focusRef && (
+        {showGrass && focusRef && streamSnapRef && (
           <StylizedGrass
             focusRef={focusRef}
+            streamSnapRef={streamSnapRef}
             interactionRef={grassInteractionRef}
             grassGroundDataRef={grassGroundDataRef}
+            terrainProfile={terrainProfile}
             visible={showGrass}
             config={grassRuntime}
           />

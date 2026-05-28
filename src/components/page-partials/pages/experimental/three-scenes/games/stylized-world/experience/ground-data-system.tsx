@@ -1,8 +1,7 @@
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
 import type { MutableRefObject, RefObject } from "react";
-import type { Vector3 } from "three";
-import { GRASS_GRID_CELL_SIZE } from "./grass/config";
+import type { GrassStreamSnap } from "./grass/grass-stream-snap";
 import {
   GroundData,
   type GrassGroundDataBinding,
@@ -11,13 +10,13 @@ import type { WheelContactHistoryEntry } from "./wheel-contact-history";
 import { WheelTrackTrail } from "./wheel-track-trail";
 
 type GroundDataSystemProps = {
-  focusRef: MutableRefObject<Vector3>;
+  streamSnapRef: MutableRefObject<GrassStreamSnap>;
   contactHistoriesRef: RefObject<WheelContactHistoryEntry[]>;
   grassGroundDataRef: MutableRefObject<GrassGroundDataBinding>;
 };
 
 export function GroundDataSystem({
-  focusRef,
+  streamSnapRef,
   contactHistoriesRef,
   grassGroundDataRef,
 }: GroundDataSystemProps) {
@@ -31,11 +30,7 @@ export function GroundDataSystem({
   }, [groundData]);
 
   useFrame(() => {
-    const focus = focusRef.current;
-    const cellX = Math.floor(focus.x / GRASS_GRID_CELL_SIZE);
-    const cellZ = Math.floor(focus.z / GRASS_GRID_CELL_SIZE);
-    const centerX = cellX * GRASS_GRID_CELL_SIZE;
-    const centerZ = cellZ * GRASS_GRID_CELL_SIZE;
+    const { centerX, centerZ } = streamSnapRef.current;
 
     groundData.update(gl, centerX, centerZ);
 

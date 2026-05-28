@@ -1,11 +1,7 @@
 import { useFrame } from "@react-three/fiber";
-import { useRef } from "react";
-import type { MutableRefObject } from "react";
-import type { Vector3 } from "three";
-import {
-  BLADE_STEPS_PER_CELL,
-  GRASS_GRID_CELL_SIZE,
-} from "./config";
+import { useRef, type MutableRefObject } from "react";
+import { BLADE_STEPS_PER_CELL } from "./config";
+import type { GrassStreamSnap } from "./grass-stream-snap";
 
 export type GridSnapResult = {
   snappedX: number;
@@ -14,33 +10,31 @@ export type GridSnapResult = {
   currentCellZ: number;
 };
 
+/** Reacts to shared stream snap (updated once per frame in Experience). */
 export function useGridSnapping(
-  focusRef: MutableRefObject<Vector3>,
+  streamSnapRef: MutableRefObject<GrassStreamSnap>,
   onSnap: (result: GridSnapResult) => void,
 ) {
-  const currentCellX = useRef<number | null>(null);
-  const currentCellZ = useRef<number | null>(null);
+  const lastCenterXRef = useRef(Number.NaN);
+  const lastCenterZRef = useRef(Number.NaN);
 
   useFrame(() => {
-    const focus = focusRef.current;
-    const cellX = Math.floor(focus.x / GRASS_GRID_CELL_SIZE);
-    const cellZ = Math.floor(focus.z / GRASS_GRID_CELL_SIZE);
-
+    const snap = streamSnapRef.current;
     if (
-      currentCellX.current === cellX &&
-      currentCellZ.current === cellZ
+      snap.centerX === lastCenterXRef.current &&
+      snap.centerZ === lastCenterZRef.current
     ) {
       return;
     }
 
-    currentCellX.current = cellX;
-    currentCellZ.current = cellZ;
+    lastCenterXRef.current = snap.centerX;
+    lastCenterZRef.current = snap.centerZ;
 
     onSnap({
-      snappedX: cellX * GRASS_GRID_CELL_SIZE,
-      snappedZ: cellZ * GRASS_GRID_CELL_SIZE,
-      currentCellX: cellX,
-      currentCellZ: cellZ,
+      snappedX: snap.centerX,
+      snappedZ: snap.centerZ,
+      currentCellX: snap.cellX,
+      currentCellZ: snap.cellZ,
     });
   });
 }

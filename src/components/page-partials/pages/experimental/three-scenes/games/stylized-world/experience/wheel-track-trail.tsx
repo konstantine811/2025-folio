@@ -10,7 +10,6 @@ import {
   float,
   Fn,
   positionGeometry,
-  screenUV,
   sign,
   sin,
   texture,
@@ -99,16 +98,12 @@ function WheelTrackTrailMaterial({
         return contactAlpha;
       }
 
+      // Fade only along trail age (UV), not screen edges — screenUV fade cut tracks behind camera.
       const trailEndFade = uv()
         .x.oneMinus()
         .remapClamp(float(0), float(0.18), float(0), float(1));
-      const renderEdgeAlpha = screenUV.x
-        .remapClamp(float(0), float(0.2), float(0), float(1))
-        .mul(screenUV.x.remapClamp(float(0.8), float(1), float(1), float(0)))
-        .mul(screenUV.y.remapClamp(float(0), float(0.2), float(0), float(1)))
-        .mul(screenUV.y.remapClamp(float(0.8), float(1), float(1), float(0)));
 
-      return contactAlpha.mul(trailEndFade).mul(renderEdgeAlpha);
+      return contactAlpha.mul(trailEndFade);
     })();
 
     const colorNode = isGroundData
