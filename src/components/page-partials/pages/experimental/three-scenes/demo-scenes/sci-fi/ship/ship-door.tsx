@@ -24,7 +24,13 @@ import {
   SCIFI_CHARACTER_CONTROLLER_GROUP,
   SCIFI_PROP_COLLIDER_GROUP,
 } from "../sci-fi-collision-groups";
+import type { PortalDirection } from "./ship-door-portal";
 import { PORTAL_ENTER_MIN_PROGRESS, ShipDoorPortal } from "./ship-door-portal";
+import {
+  colliderLocalFromShipDoorExport,
+  SHIP_DOOR_EXPORT_ASSEMBLY_POSITION,
+  SHIP_DOOR_EXPORT_ASSEMBLY_ROTATION,
+} from "./ship-door-config";
 
 const modelPath = "/3d-models/sci-fi/ship-door.glb";
 
@@ -32,8 +38,6 @@ const modelPath = "/3d-models/sci-fi/ship-door.glb";
 export const SHIP_DOOR_CONTROLS_PATH = "Sci-fi props / Ship door";
 
 const doorMaterialKey = "04";
-const doorAssemblyPosition: [number, number, number] = [0, -0.101, 36.546];
-const doorAssemblyRotation: [number, number, number] = [Math.PI, 0, Math.PI];
 
 const frameRightLocalX = -0.022;
 const frameLeftLocalX = 0;
@@ -123,7 +127,20 @@ function KinematicDoorCollider({
   );
 }
 
-export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
+type ShipDoorProps = JSX.IntrinsicElements["group"] & {
+  portalDirection?: PortalDirection;
+  doorAssemblyPosition?: [number, number, number];
+  doorAssemblyRotation?: [number, number, number];
+  initialDoorOpen?: boolean;
+};
+
+export function ShipDoor({
+  portalDirection = "to-stylized",
+  doorAssemblyPosition = SHIP_DOOR_EXPORT_ASSEMBLY_POSITION,
+  doorAssemblyRotation = SHIP_DOOR_EXPORT_ASSEMBLY_ROTATION,
+  initialDoorOpen = false,
+  ...props
+}: ShipDoorProps) {
   const rootRef = useRef<Group>(null);
   const assemblyRef = useRef<Group>(null);
   /** E prompt + proximity anchor (local to door assembly, on the PC). */
@@ -132,15 +149,25 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
   const frameLeftRef = useRef<Mesh>(null);
   const rightDoorBodyRef = useRef<RapierRigidBody>(null);
   const leftDoorBodyRef = useRef<RapierRigidBody>(null);
-  const openProgressRef = useRef(0);
+  const openProgressRef = useRef(initialDoorOpen ? 1 : 0);
   const nearPanelRef = useRef(false);
   const nearPortalRef = useRef(false);
   const enterPortalRef = useRef<(() => void) | null>(null);
   const panelWorldPos = useMemo(() => new Vector3(), []);
-  const slideOrigin = useMemo(() => new Vector3(), []);
-  const slideTip = useMemo(() => new Vector3(), []);
-  const worldSlide = useMemo(() => new Vector3(), []);
-  const worldPanelOffset = useMemo(() => new Vector3(), []);
+  const kinematicPos = useMemo(() => new Vector3(), []);
+
+  const frameColliderLocal = useMemo(
+    () => colliderLocalFromShipDoorExport(frameColliderPosition),
+    [],
+  );
+  const doorRightLocal = useMemo(
+    () => colliderLocalFromShipDoorExport(doorRightColliderPosition),
+    [],
+  );
+  const doorLeftLocal = useMemo(
+    () => colliderLocalFromShipDoorExport(doorLeftColliderPosition),
+    [],
+  );
 
   const { nodes, materials } = useGLTF(modelPath);
   const material = useMemo(
@@ -230,7 +257,7 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
   const playerPosition = usePlayerPositionStore((s) => s.position);
 
   const [nearPanel, setNearPanel] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(initialDoorOpen);
   const [doorsBlockPhysics, setDoorsBlockPhysics] = useState(true);
 
   useRegisterCameraCollisionMeshes(rootRef, [nodes]);
@@ -249,33 +276,33 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
     const assembly = assemblyRef.current;
     if (!assembly) return;
 
-    slideOrigin.set(0, 0, 0);
-    slideTip.set(panelX, 0, 0);
-    assembly.localToWorld(slideOrigin);
-    assembly.localToWorld(slideTip);
-    worldPanelOffset.subVectors(slideTip, slideOrigin);
-
-    slideOrigin.set(0, 0, 0);
-    slideTip.set(slide, 0, 0);
-    assembly.localToWorld(slideOrigin);
-    assembly.localToWorld(slideTip);
-    worldSlide.subVectors(slideTip, slideOrigin);
-
     const rightBody = rightDoorBodyRef.current;
     if (rightBody) {
+      kinematicPos.set(
+        doorRightLocal[0] + panelX + slide,
+        doorRightLocal[1],
+        doorRightLocal[2],
+      );
+      assembly.localToWorld(kinematicPos);
       rightBody.setNextKinematicTranslation({
-        x: doorRightColliderPosition[0] + worldPanelOffset.x + worldSlide.x,
-        y: doorRightColliderPosition[1] + worldPanelOffset.y + worldSlide.y,
-        z: doorRightColliderPosition[2] + worldPanelOffset.z + worldSlide.z,
+        x: kinematicPos.x,
+        y: kinematicPos.y,
+        z: kinematicPos.z,
       });
     }
 
     const leftBody = leftDoorBodyRef.current;
     if (leftBody) {
+      kinematicPos.set(
+        doorLeftLocal[0] + panelX - slide,
+        doorLeftLocal[1],
+        doorLeftLocal[2],
+      );
+      assembly.localToWorld(kinematicPos);
       leftBody.setNextKinematicTranslation({
-        x: doorLeftColliderPosition[0] + worldPanelOffset.x - worldSlide.x,
-        y: doorLeftColliderPosition[1] + worldPanelOffset.y - worldSlide.y,
-        z: doorLeftColliderPosition[2] + worldPanelOffset.z - worldSlide.z,
+        x: kinematicPos.x,
+        y: kinematicPos.y,
+        z: kinematicPos.z,
       });
     }
   };
@@ -402,39 +429,40 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
             </Html>
           )}
         </group>
+
+        <RigidBody
+          type="fixed"
+          colliders="trimesh"
+          includeInvisible
+          friction={0.9}
+          position={frameColliderLocal}
+          collisionGroups={propCollisionGroups}
+        >
+          <mesh
+            geometry={frameColliderMesh.geometry}
+            scale={frameColliderScale}
+            material-visible={false}
+          />
+        </RigidBody>
+
+        <KinematicDoorCollider
+          bodyRef={rightDoorBodyRef}
+          colliderGeometry={doorColliderMesh.geometry}
+          closedPosition={doorRightLocal}
+          colliderScale={doorRightColliderScale}
+          collidersEnabled={doorsBlockPhysics}
+        />
+        <KinematicDoorCollider
+          bodyRef={leftDoorBodyRef}
+          colliderGeometry={doorColliderMesh.geometry}
+          closedPosition={doorLeftLocal}
+          colliderScale={doorLeftColliderScale}
+          collidersEnabled={doorsBlockPhysics}
+        />
       </group>
 
-      <RigidBody
-        type="fixed"
-        colliders="trimesh"
-        includeInvisible
-        friction={0.9}
-        position={frameColliderPosition}
-        collisionGroups={propCollisionGroups}
-      >
-        <mesh
-          geometry={frameColliderMesh.geometry}
-          scale={frameColliderScale}
-          material-visible={false}
-        />
-      </RigidBody>
-
-      <KinematicDoorCollider
-        bodyRef={rightDoorBodyRef}
-        colliderGeometry={doorColliderMesh.geometry}
-        closedPosition={doorRightColliderPosition}
-        colliderScale={doorRightColliderScale}
-        collidersEnabled={doorsBlockPhysics}
-      />
-      <KinematicDoorCollider
-        bodyRef={leftDoorBodyRef}
-        colliderGeometry={doorColliderMesh.geometry}
-        closedPosition={doorLeftColliderPosition}
-        colliderScale={doorLeftColliderScale}
-        collidersEnabled={doorsBlockPhysics}
-      />
-
       <ShipDoorPortal
+        direction={portalDirection}
         assemblyPosition={doorAssemblyPosition}
         assemblyRotation={doorAssemblyRotation}
         openProgressRef={openProgressRef}
