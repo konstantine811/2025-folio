@@ -1,10 +1,9 @@
 import {
   HeightfieldCollider,
-  RapierRigidBody,
   RigidBody,
 } from "@react-three/rapier";
 import { useFrame } from "@react-three/fiber";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import type { MutableRefObject } from "react";
 import type { Vector3 } from "three";
 import {
@@ -12,6 +11,7 @@ import {
   getTileWorldCenter,
   readPlayerTile,
   shouldRecenterStream,
+  VISUAL_STREAM_RECENTER_MARGIN,
   type TileCoord,
 } from "./stylized-world-streaming";
 import {
@@ -22,8 +22,11 @@ import {
 
 type StylizedWorldGroundProps = {
   focusRef: MutableRefObject<Vector3>;
+  /** When set, physics tiles follow the same stream center as visual ground (look-ahead). */
+  streamTileRef?: MutableRefObject<TileCoord>;
   tileSize?: number;
   radius?: number;
+  streamMargin?: number;
   worldSeed?: number;
   terrainProfile?: TerrainProfile;
   terrainRevision?: number;
@@ -31,49 +34,18 @@ type StylizedWorldGroundProps = {
 
 const GROUND_COLLIDER_Y = 0;
 
-function syncPhysicsGroundPool({
-  bodyRefs,
-  offsets,
-  streamCenter,
-  tileSize,
-}: {
-  bodyRefs: (RapierRigidBody | null)[];
-  offsets: { dx: number; dz: number }[];
-  streamCenter: TileCoord;
-  tileSize: number;
-}) {
-  for (let index = 0; index < offsets.length; index++) {
-    const body = bodyRefs[index];
-    if (!body) continue;
-
-    const { dx, dz } = offsets[index];
-    const center = getTileWorldCenter(
-      streamCenter.x + dx,
-      streamCenter.z + dz,
-      tileSize,
-    );
-
-    body.setTranslation(
-      { x: center.x, y: GROUND_COLLIDER_Y, z: center.z },
-      true,
-    );
-  }
-}
-
 function PhysicsGroundTile({
   tileX,
   tileZ,
   tileSize,
   worldSeed,
   terrainProfile,
-  bodyRef,
 }: {
   tileX: number;
   tileZ: number;
   tileSize: number;
   worldSeed: number;
   terrainProfile: TerrainProfile;
-  bodyRef: (body: RapierRigidBody | null) => void;
 }) {
   const center = useMemo(
     () => getTileWorldCenter(tileX, tileZ, tileSize),
@@ -94,7 +66,6 @@ function PhysicsGroundTile({
 
   return (
     <RigidBody
-      ref={bodyRef}
       type="fixed"
       colliders={false}
       position={[center.x, GROUND_COLLIDER_Y, center.z]}
@@ -112,71 +83,50 @@ function PhysicsGroundTile({
 
 export function StylizedWorldGround({
   focusRef,
+  streamTileRef,
   tileSize = 8,
   radius = 10,
+  streamMargin = VISUAL_STREAM_RECENTER_MARGIN,
   worldSeed = 42,
   terrainProfile = DEFAULT_TERRAIN_PROFILE,
   terrainRevision = 0,
 }: StylizedWorldGroundProps) {
-  const streamCenterRef = useRef<TileCoord>({ x: 0, z: 0 });
-  const bodyRefs = useRef<(RapierRigidBody | null)[]>([]);
-  const hasSyncedRef = useRef(false);
-  const [streamEpoch, setStreamEpoch] = useState(0);
+  const readStreamTile = () =>
+    streamTileRef?.current ?? readPlayerTile(focusRef.current, tileSize);
+
+  const [streamCenter, setStreamCenter] = useState<TileCoord>(() =>
+    readStreamTile(),
+  );
   const offsets = useMemo(() => getTilePoolOffsets(radius), [radius]);
 
-  const runSync = (streamCenter: TileCoord) => {
-    syncPhysicsGroundPool({
-      bodyRefs: bodyRefs.current,
-      offsets,
-      streamCenter,
-      tileSize,
-    });
-    hasSyncedRef.current = true;
-  };
-
   useLayoutEffect(() => {
-    const streamCenter = readPlayerTile(focusRef.current, tileSize);
-    streamCenterRef.current = streamCenter;
-    hasSyncedRef.current = false;
-    setStreamEpoch((epoch) => epoch + 1);
-  }, [focusRef, tileSize, radius, offsets, worldSeed, terrainProfile, terrainRevision]);
+    setStreamCenter(readStreamTile());
+  }, [focusRef, streamTileRef, tileSize, radius, offsets, worldSeed, terrainProfile, terrainRevision]);
 
   useFrame(() => {
-    const readyCount = bodyRefs.current.filter(Boolean).length;
-    if (!hasSyncedRef.current && readyCount === offsets.length) {
-      runSync(streamCenterRef.current);
-    }
-
-    const playerTile = readPlayerTile(focusRef.current, tileSize);
+    const playerTile = readStreamTile();
 
     if (
-      !shouldRecenterStream(playerTile, streamCenterRef.current, radius)
+      shouldRecenterStream(playerTile, streamCenter, radius, streamMargin)
     ) {
-      return;
+      setStreamCenter(playerTile);
     }
-
-    streamCenterRef.current = playerTile;
-    setStreamEpoch((epoch) => epoch + 1);
-    runSync(playerTile);
   });
 
   return (
     <>
-      {offsets.map(({ dx, dz }, index) => {
-        const tileX = streamCenterRef.current.x + dx;
-        const tileZ = streamCenterRef.current.z + dz;
+      {offsets.map(({ dx, dz }) => {
+        const tileX = streamCenter.x + dx;
+        const tileZ = streamCenter.z + dz;
 
         return (
           <PhysicsGroundTile
-            key={`${streamEpoch}_${dx}_${dz}`}
+            key={`physics_${dx}_${dz}`}
             tileX={tileX}
             tileZ={tileZ}
             tileSize={tileSize}
             worldSeed={worldSeed}
             terrainProfile={terrainProfile}
-            bodyRef={(body) => {
-              bodyRefs.current[index] = body;
-            }}
           />
         );
       })}

@@ -10,10 +10,6 @@ import {
   type BushConfig,
 } from "./bush-core";
 import { BushNodeMaterial } from "./bush-material";
-import type { GrassRuntimeConfig } from "./grass/config";
-import { StylizedGrass } from "./grass/stylized-grass";
-import type { GrassGroundDataBinding } from "./ground-data";
-import type { GrassStreamSnap } from "./grass/grass-stream-snap";
 import {
   applyGroundTerrainToGeometry,
   createGroundTerrainGeometryTemplate,
@@ -23,9 +19,11 @@ import {
 } from "./ground-terrain";
 import { ImperativeGridDebug, type GridDebugSyncRef } from "./grid-debug";
 import {
+  computeLookAheadStreamTile,
   readPlayerTile,
   shouldRecenterStream,
   VISUAL_STREAM_RECENTER_MARGIN,
+  type TileCoord,
 } from "./stylized-world-streaming";
 
 type InfiniteStylizedWorldProps = {
@@ -35,18 +33,15 @@ type InfiniteStylizedWorldProps = {
   bushesPerTile?: number;
   worldSeed?: number;
   bush?: BushConfig;
-  grass?: GrassRuntimeConfig;
   showGround?: boolean;
-  showGrass?: boolean;
   showGridDebug?: boolean;
   showGridCrosses?: boolean;
   showTileBounds?: boolean;
   streamMargin?: number;
   lookAheadTiles?: number;
   focusRef?: MutableRefObject<THREE.Vector3>;
-  grassInteractionRef?: MutableRefObject<THREE.Vector3>;
-  grassGroundDataRef?: MutableRefObject<GrassGroundDataBinding>;
-  streamSnapRef?: MutableRefObject<GrassStreamSnap>;
+  /** Shared with physics ground — one stream center for mesh + colliders. */
+  streamTileRef?: MutableRefObject<TileCoord>;
   terrainProfile?: TerrainProfile;
   terrainRevision?: number;
 };
@@ -301,18 +296,14 @@ export function InfiniteStylizedWorld({
   bushesPerTile = 6,
   worldSeed = 42,
   bush,
-  grass,
   showGround = true,
-  showGrass = true,
   showGridDebug = false,
   showGridCrosses = true,
   showTileBounds = true,
   streamMargin = VISUAL_STREAM_RECENTER_MARGIN,
   lookAheadTiles = 2,
   focusRef,
-  grassInteractionRef,
-  grassGroundDataRef,
-  streamSnapRef,
+  streamTileRef,
   terrainProfile = DEFAULT_TERRAIN_PROFILE,
   terrainRevision = 0,
 }: InfiniteStylizedWorldProps) {
@@ -320,7 +311,6 @@ export function InfiniteStylizedWorld({
   const worldFocusRef = useRef(new THREE.Vector3());
   const lastFocusRef = useRef(new THREE.Vector3());
   const hasPreviousFocusRef = useRef(false);
-  const lookAheadFocusRef = useRef(new THREE.Vector3());
   const tileCenterRef = useRef({ x: 0, z: 0 });
   const groundSlotsRef = useRef<Array<GroundPoolSlot | undefined>>([]);
   const bushChunkRefs = useRef<(THREE.InstancedMesh | null)[]>([]);
@@ -352,18 +342,6 @@ export function InfiniteStylizedWorld({
       bush?.normalMix,
       bush?.debug,
     ],
-  );
-
-  const grassRuntime = useMemo(
-    () => ({
-      bladeHeightMin: grass?.bladeHeightMin ?? 0.28,
-      bladeHeightMax: grass?.bladeHeightMax ?? 0.62,
-      windSwayStrength: grass?.windSwayStrength ?? 0.85,
-      pushRadius: grass?.pushRadius ?? 1.4,
-      terrainSeed: grass?.terrainSeed ?? worldSeed,
-      ...grass,
-    }),
-    [grass, worldSeed],
   );
 
   const bushGeometry = useMemo(
@@ -405,6 +383,10 @@ export function InfiniteStylizedWorld({
   const worldKey = `${renderRadius}-${bushChunkCount}-${bushesPerTile}`;
 
   const readTileCenter = () => {
+    if (streamTileRef) {
+      return streamTileRef.current;
+    }
+
     const focus = focusRef
       ? focusRef.current
       : controls && "target" in controls
@@ -413,26 +395,16 @@ export function InfiniteStylizedWorld({
           )
         : worldFocusRef.current.copy(camera.position);
 
-    lookAheadFocusRef.current.copy(focus);
-
-    if (!hasPreviousFocusRef.current) {
-      lastFocusRef.current.copy(focus);
-      hasPreviousFocusRef.current = true;
-      return readPlayerTile(focus, tileSize);
-    }
-
-    const moveX = focus.x - lastFocusRef.current.x;
-    const moveZ = focus.z - lastFocusRef.current.z;
+    const tile = computeLookAheadStreamTile(
+      focus,
+      lastFocusRef.current,
+      hasPreviousFocusRef.current,
+      tileSize,
+      lookAheadTiles,
+    );
     lastFocusRef.current.copy(focus);
-
-    const moveDistance = Math.hypot(moveX, moveZ);
-    if (moveDistance > 0.0001) {
-      const aheadDistance = Math.min(tileSize * lookAheadTiles, moveDistance * 18);
-      lookAheadFocusRef.current.x += (moveX / moveDistance) * aheadDistance;
-      lookAheadFocusRef.current.z += (moveZ / moveDistance) * aheadDistance;
-    }
-
-    return readPlayerTile(lookAheadFocusRef.current, tileSize);
+    hasPreviousFocusRef.current = true;
+    return tile;
   };
 
   const syncWorld = (tileX: number, tileZ: number) => {
@@ -544,17 +516,6 @@ export function InfiniteStylizedWorld({
         <BushNodeMaterial ref={assignBushMaterial} {...bushConfig} />
       </mesh>
       <group key={worldKey}>
-        {showGrass && focusRef && streamSnapRef && (
-          <StylizedGrass
-            focusRef={focusRef}
-            streamSnapRef={streamSnapRef}
-            interactionRef={grassInteractionRef}
-            grassGroundDataRef={grassGroundDataRef}
-            terrainProfile={terrainProfile}
-            visible={showGrass}
-            config={grassRuntime}
-          />
-        )}
         {showGround && (
           <GroundPool
             radius={renderRadius}

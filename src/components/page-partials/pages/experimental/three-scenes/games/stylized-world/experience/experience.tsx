@@ -1,23 +1,22 @@
 import { CameraControls, CameraControlsImpl, Environment } from "@react-three/drei";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useThree } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
 import GUI from "lil-gui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MutableRefObject } from "react";
 import { Plane, PlaneGeometry, Raycaster, Vector2, Vector3 } from "three";
-import type { GrassGroundDataBinding } from "./ground-data";
-import { DEFAULT_GRASS_GROUND_DATA_BINDING } from "./ground-data";
+import { DebugFlatArena } from "./debug-flat-arena";
+import { DebugFlatGround } from "./debug-flat-ground";
+import { FixedLandscapeWorld } from "./fixed-landscape-world";
+import { FixedLandscapeGround } from "./fixed-landscape-ground";
+import { isFlatGridDebugArena } from "./world-debug-mode";
 import {
-  createGrassStreamSnap,
-  updateGrassStreamSnap,
-} from "./grass/grass-stream-snap";
-import { GroundDataSystem } from "./ground-data-system";
-import { InfiniteStylizedWorld } from "./infinite-stylized-world";
-import {
-  STYLIZED_CAR_GRASS_PUSH_RADIUS,
-  StylizedCarController,
-} from "./stylized-car-controller";
-import { StylizedWorldGround } from "./stylized-world-ground";
+  createLandscapeBounds,
+  DEFAULT_LANDSCAPE_SIZE,
+  LANDSCAPE_TILE_SIZE,
+  type LandscapeBounds,
+} from "./landscape-config";
+import { StylizedCarController } from "./stylized-car-controller";
 import { StylizedWorldTestCourse } from "./stylized-world-test-course";
 import { useWheelContactHistory } from "./use-wheel-contact-history";
 import {
@@ -35,20 +34,6 @@ type StylizedWorldControls = {
   viewRadius: number;
   showGridDebug: boolean;
   showTestCourse: boolean;
-  showGrass: boolean;
-  grassBladeHeight: number;
-  grassClumpSize: number;
-  grassClumpBlend: number;
-  grassDensity: number;
-  grassStraightness: number;
-  grassHeightVariation: number;
-  grassBladeRandomness: number;
-  grassWidthRandomness: number;
-  grassBendRandomness: number;
-  grassWindFacing: number;
-  grassWindDistanceStart: number;
-  grassWindDistanceEnd: number;
-  grassDebugLod: boolean;
   accelerateForce: number;
   brakeForce: number;
   steerAngleDeg: number;
@@ -69,20 +54,6 @@ const DEFAULT_CONTROLS: StylizedWorldControls = {
   viewRadius: 6,
   showGridDebug: false,
   showTestCourse: true,
-  showGrass: true,
-  grassBladeHeight: 0.52,
-  grassClumpSize: 0.8,
-  grassClumpBlend: 0.2,
-  grassDensity: 1,
-  grassStraightness: 1,
-  grassHeightVariation: 0.85,
-  grassBladeRandomness: 0.3,
-  grassWidthRandomness: 0.3,
-  grassBendRandomness: 0.2,
-  grassWindFacing: 0.6,
-  grassWindDistanceStart: 10,
-  grassWindDistanceEnd: 30,
-  grassDebugLod: false,
   accelerateForce: 8.5,
   brakeForce: 0.08,
   steerAngleDeg: 34,
@@ -124,7 +95,16 @@ function TerrainSketchSurface({
   terrainProfile: TerrainProfile;
   strokes: TerrainStroke[];
 }) {
-  const geometry = useMemo(() => new PlaneGeometry(220, 220, 140, 140), []);
+  const geometry = useMemo(
+    () =>
+      new PlaneGeometry(
+        DEFAULT_LANDSCAPE_SIZE,
+        DEFAULT_LANDSCAPE_SIZE,
+        140,
+        140,
+      ),
+    [],
+  );
 
   useEffect(() => {
     const position = geometry.attributes.position;
@@ -368,7 +348,10 @@ function TerrainEditMode({
   );
 }
 
+const FLAT_DEBUG_SPAWN: [number, number, number] = [0, 0.45, 0];
+
 const Experience = () => {
+  const flatDebug = isFlatGridDebugArena();
   const [controls, setControls] =
     useState<StylizedWorldControls>(DEFAULT_CONTROLS);
   const [terrainRevision, setTerrainRevision] = useState(0);
@@ -377,8 +360,17 @@ const Experience = () => {
   const [spawnPosition, setSpawnPosition] = useState<[number, number, number]>([
     0, 0, 0,
   ]);
+  const [landscapeBounds, setLandscapeBounds] = useState<LandscapeBounds>(() =>
+    createLandscapeBounds(0, 0),
+  );
   const [pendingTerrainStrokes, setPendingTerrainStrokes] = useState<TerrainStroke[]>([]);
   const pendingTerrainStrokesRef = useRef<TerrainStroke[]>([]);
+  const focusRef = useRef(new Vector3());
+
+  useEffect(() => {
+    if (!flatDebug) return;
+    clearTerrainStrokes();
+  }, [flatDebug]);
 
   useEffect(() => {
     pendingTerrainStrokesRef.current = pendingTerrainStrokes;
@@ -407,10 +399,13 @@ const Experience = () => {
     for (const stroke of pendingTerrainStrokesRef.current) {
       addTerrainStroke(stroke);
     }
+    setLandscapeBounds(
+      createLandscapeBounds(focusRef.current.x, focusRef.current.z),
+    );
     setTerrainRevision((v) => v + 1);
     setIsTerrainEditMode(false);
     setIsSelectingSpawn(false);
-  }, []);
+  }, [focusRef]);
 
   const handleSketchStroke = useCallback(
     (x: number, z: number, strength: number, radius: number) => {
@@ -421,6 +416,7 @@ const Experience = () => {
 
   const handleSelectSpawn = useCallback((x: number, z: number) => {
     setSpawnPosition([x, 0, z]);
+    setLandscapeBounds(createLandscapeBounds(x, z));
     setIsSelectingSpawn(false);
   }, []);
 
@@ -445,22 +441,6 @@ const Experience = () => {
     const windFolder = gui.addFolder("Wind");
     windFolder.add(state, "windStrength", 0, 5, 0.05).name("Strength").onChange((v: number) => update("windStrength", v));
     windFolder.add(state, "windSpeed", 0, 0.2, 0.005).name("Speed").onChange((v: number) => update("windSpeed", v));
-
-    const grassFolder = gui.addFolder("Grass");
-    grassFolder.add(state, "showGrass").name("Visible").onChange((v: boolean) => update("showGrass", v));
-    grassFolder.add(state, "grassDebugLod").name("LOD debug").onChange((v: boolean) => update("grassDebugLod", v));
-    grassFolder.add(state, "grassBladeHeight", 0.2, 1.2, 0.02).name("Blade height").onChange((v: number) => update("grassBladeHeight", v));
-    grassFolder.add(state, "grassClumpSize", 0.2, 2.5, 0.05).name("Clump size").onChange((v: number) => update("grassClumpSize", v));
-    grassFolder.add(state, "grassClumpBlend", 0.05, 0.6, 0.01).name("Clump blend").onChange((v: number) => update("grassClumpBlend", v));
-    grassFolder.add(state, "grassDensity", 0.1, 1, 0.01).name("Density").onChange((v: number) => update("grassDensity", v));
-    grassFolder.add(state, "grassStraightness", 0, 1, 0.01).name("Straightness").onChange((v: number) => update("grassStraightness", v));
-    grassFolder.add(state, "grassHeightVariation", 0, 1, 0.01).name("Height variation").onChange((v: number) => update("grassHeightVariation", v));
-    grassFolder.add(state, "grassBladeRandomness", 0, 0.6, 0.01).name("Blade random X").onChange((v: number) => update("grassBladeRandomness", v));
-    grassFolder.add(state, "grassWidthRandomness", 0, 0.6, 0.01).name("Blade random Y").onChange((v: number) => update("grassWidthRandomness", v));
-    grassFolder.add(state, "grassBendRandomness", 0, 0.6, 0.01).name("Blade random Z").onChange((v: number) => update("grassBendRandomness", v));
-    grassFolder.add(state, "grassWindFacing", 0, 1, 0.01).name("Wind facing").onChange((v: number) => update("grassWindFacing", v));
-    grassFolder.add(state, "grassWindDistanceStart", 0, 80, 1).name("Wind fade start").onChange((v: number) => update("grassWindDistanceStart", v));
-    grassFolder.add(state, "grassWindDistanceEnd", 1, 120, 1).name("Wind fade end").onChange((v: number) => update("grassWindDistanceEnd", v));
 
     const carFolder = gui.addFolder("Car");
     carFolder.add(state, "accelerateForce", 0.5, 10, 0.1).name("Accelerate force").onChange((v: number) => update("accelerateForce", v));
@@ -529,69 +509,6 @@ const Experience = () => {
     [controls.windStrength, controls.windSpeed],
   );
 
-  const grass = useMemo(
-    () => ({
-      bladeHeightMin: controls.grassBladeHeight * 0.35,
-      bladeHeightMax: controls.grassBladeHeight * 1.45,
-      windSwayStrength: controls.windStrength * 0.85,
-      windScale: 0.25,
-      windSpeed: controls.windSpeed * 12,
-      windStrength: controls.windStrength * 2.8,
-      windFacing: controls.grassWindFacing,
-      windDistanceStart: controls.grassWindDistanceStart,
-      windDistanceEnd: Math.max(
-        controls.grassWindDistanceStart + 1,
-        controls.grassWindDistanceEnd,
-      ),
-      windDirX: 0.85,
-      windDirZ: 0.35,
-      pushRadius: STYLIZED_CAR_GRASS_PUSH_RADIUS,
-      // Perimeter-based chassis interaction (not radial): edge bends, inside sags.
-      pushAmount: 0,
-      flattenAmount: 0,
-      // Closer to physical chassis bounds so footprint is not overly wide.
-      chassisHalfWidth: 0.62,
-      chassisHalfLength: 1.06,
-      chassisEdgeBand: 0.34,
-      clumpSize: controls.grassClumpSize,
-      clumpBlend: controls.grassClumpBlend,
-      density: controls.grassDensity,
-      straightness: controls.grassStraightness,
-      // Keep grass anchored to terrain surface; random height variation causes visual float.
-      heightVariation: 0,
-      bladeRandomnessX: controls.grassBladeRandomness,
-      bladeRandomnessY: controls.grassWidthRandomness,
-      bladeRandomnessZ: controls.grassBendRandomness,
-      terrainSeed: controls.terrainSeed,
-      terrainRevision,
-      terrainHeightScale: controls.terrainHeightScale,
-      terrainNoiseScale: controls.terrainNoiseScale,
-      terrainHillCellSize: controls.terrainHillCellSize,
-      debugLod: controls.grassDebugLod,
-    }),
-    [
-      controls.grassBladeHeight,
-      controls.windStrength,
-      controls.windSpeed,
-      controls.grassClumpSize,
-      controls.grassClumpBlend,
-      controls.grassDensity,
-      controls.grassStraightness,
-      controls.grassBladeRandomness,
-      controls.grassWidthRandomness,
-      controls.grassBendRandomness,
-      controls.grassWindFacing,
-      controls.grassWindDistanceStart,
-      controls.grassWindDistanceEnd,
-      controls.grassDebugLod,
-      controls.terrainSeed,
-      terrainRevision,
-      controls.terrainHeightScale,
-      controls.terrainNoiseScale,
-      controls.terrainHillCellSize,
-    ],
-  );
-
   const terrainProfile = useMemo<TerrainProfile>(
     () => ({
       heightScale: controls.terrainHeightScale,
@@ -605,20 +522,41 @@ const Experience = () => {
     ],
   );
 
-  const focusRef = useRef(new Vector3());
-  const grassStreamSnapRef = useRef(createGrassStreamSnap());
-  const grassInteractionRef = useRef(new Vector3(9999, 0, 9999));
-  const grassGroundDataRef = useRef<GrassGroundDataBinding>({
-    ...DEFAULT_GRASS_GROUND_DATA_BINDING,
-  });
   const { historiesRef: wheelContactHistoriesRef } = useWheelContactHistory(4);
-  const physicsRadius = controls.viewRadius + 4;
-  const visualRadius = physicsRadius + 3;
+  const viewRadiusTiles = controls.viewRadius + 4;
 
-  useFrame(() => {
-    const focus = focusRef.current;
-    updateGrassStreamSnap(grassStreamSnapRef.current, focus.x, focus.z);
-  }, -1);
+  if (flatDebug) {
+    return (
+      <>
+        <Environment preset="park" environmentIntensity={0.45} />
+        <ambientLight intensity={0.45} />
+        <directionalLight position={[4, 8, 3]} intensity={1.1} />
+
+        <DebugFlatArena focusRef={focusRef} />
+
+        <Physics
+          debug={controls.isDebug}
+          gravity={[0, -9.81, 0]}
+          timeStep={1 / 60}
+          interpolate
+        >
+          <DebugFlatGround />
+          <StylizedCarController
+            focusRef={focusRef}
+            flatGround
+            startPosition={FLAT_DEBUG_SPAWN}
+            worldSeed={controls.terrainSeed}
+            terrainProfile={terrainProfile}
+            accelerateForce={controls.accelerateForce}
+            brakeForce={controls.brakeForce}
+            steerAngle={(controls.steerAngleDeg * Math.PI) / 180}
+            showWheelTrackDebug={controls.showWheelTrackDebug}
+            contactHistoriesRef={wheelContactHistoriesRef}
+          />
+        </Physics>
+      </>
+    );
+  }
 
   return (
     <>
@@ -626,19 +564,15 @@ const Experience = () => {
       <ambientLight intensity={0.45} />
       <directionalLight position={[4, 8, 3]} intensity={1.1} />
 
-      <InfiniteStylizedWorld
-        tileSize={8}
-        radius={visualRadius}
+      <FixedLandscapeWorld
+        bounds={landscapeBounds}
+        tileSize={LANDSCAPE_TILE_SIZE}
+        viewRadiusTiles={viewRadiusTiles}
         showGround={!isTerrainEditMode}
         bushesPerTile={isTerrainEditMode ? 0 : controls.bushesPerTile}
         bush={bush}
-        grass={grass}
-        showGrass={isTerrainEditMode ? false : controls.showGrass}
         showGridDebug={isTerrainEditMode ? false : controls.showGridDebug}
         focusRef={focusRef}
-        streamSnapRef={grassStreamSnapRef}
-        grassInteractionRef={grassInteractionRef}
-        grassGroundDataRef={grassGroundDataRef}
         worldSeed={controls.terrainSeed}
         terrainProfile={terrainProfile}
         terrainRevision={terrainRevision}
@@ -665,15 +599,9 @@ const Experience = () => {
           timeStep={1 / 60}
           interpolate
         >
-          <GroundDataSystem
-            streamSnapRef={grassStreamSnapRef}
-            contactHistoriesRef={wheelContactHistoriesRef}
-            grassGroundDataRef={grassGroundDataRef}
-          />
-          <StylizedWorldGround
-            focusRef={focusRef}
-            tileSize={8}
-            radius={physicsRadius}
+          <FixedLandscapeGround
+            bounds={landscapeBounds}
+            tileSize={LANDSCAPE_TILE_SIZE}
             worldSeed={controls.terrainSeed}
             terrainProfile={terrainProfile}
             terrainRevision={terrainRevision}
@@ -681,6 +609,7 @@ const Experience = () => {
           {controls.showTestCourse && <StylizedWorldTestCourse />}
           <StylizedCarController
             focusRef={focusRef}
+            landscapeBounds={landscapeBounds}
             startPosition={spawnPosition}
             worldSeed={controls.terrainSeed}
             terrainProfile={terrainProfile}
@@ -689,7 +618,6 @@ const Experience = () => {
             steerAngle={(controls.steerAngleDeg * Math.PI) / 180}
             showWheelTrackDebug={controls.showWheelTrackDebug}
             contactHistoriesRef={wheelContactHistoriesRef}
-            grassInteractionRef={grassInteractionRef}
           />
         </Physics>
       )}

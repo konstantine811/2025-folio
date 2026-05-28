@@ -21,6 +21,7 @@ import {
 } from "three/tsl";
 import type { WheelContactHistoryEntry } from "./wheel-contact-history";
 import { WHEEL_CONTACT_HISTORY_SIZE } from "./wheel-contact-history";
+import { TRACK_SIMPLE_MODE } from "./track-simple-mode";
 
 export const TRACK_HALF_WIDTH = 0.09;
 export const TRACK_Y_OFFSET = 0.035;
@@ -58,7 +59,9 @@ function WheelTrackTrailMaterial({
     const sideSign = sign(positionGeometry.y).mul(-1);
     const isGroundData = variant === "groundData";
 
-    const tangentStep = isGroundData ? float(4) : float(1);
+    const tangentStep = TRACK_SIMPLE_MODE.groundDataTrailRender && isGroundData
+      ? float(4)
+      : float(1);
 
     const positionNode = Fn(() => {
       const sampleU = clamp(uv().x.sub(halfPixel), halfPixel, maxPixelCenter);
@@ -98,7 +101,10 @@ function WheelTrackTrailMaterial({
         return contactAlpha;
       }
 
-      // Fade only along trail age (UV), not screen edges — screenUV fade cut tracks behind camera.
+      if (TRACK_SIMPLE_MODE.debugOpacityMinimal) {
+        return contactAlpha;
+      }
+
       const trailEndFade = uv()
         .x.oneMinus()
         .remapClamp(float(0), float(0.18), float(0), float(1));

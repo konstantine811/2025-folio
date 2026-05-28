@@ -11,6 +11,7 @@ import {
   recordWheelContactPoint,
   type WheelContactHistoryEntry,
 } from "./wheel-contact-history";
+import { areWheelTracksEnabled, TRACK_SIMPLE_MODE } from "./track-simple-mode";
 
 const up = new Vector3(0, 1, 0);
 const wheelSteeringQuat = new Quaternion();
@@ -188,12 +189,41 @@ export function useVehicleController(
     const histories = contactHistoriesRef?.current;
     const wheelCount = controller.numWheels();
 
-    if (histories?.length) {
+    if (areWheelTracksEnabled() && histories?.length) {
       for (let index = 0; index < wheelCount; index += 1) {
         const history = histories[index];
         const wheelInfo = wheelsInfo[index];
+        const wheel = wheels?.[index] ?? null;
 
         if (!history || !wheelInfo) continue;
+
+        if (TRACK_SIMPLE_MODE.rawWheelContactsOnly) {
+          const inContact = controller.wheelIsInContact(index);
+          const contact = controller.wheelContactPoint(index);
+
+          if (inContact && contact) {
+            recordWheelContactPoint(
+              history,
+              contact.x,
+              contact.y,
+              contact.z,
+              true,
+            );
+          } else if (wheel && isVehicleTouchingGround(controller)) {
+            wheel.getWorldPosition(tmpWheelWorld);
+            recordWheelContactPoint(
+              history,
+              tmpWheelWorld.x,
+              tmpWheelWorld.y - wheelInfo.radius,
+              tmpWheelWorld.z,
+              true,
+            );
+          } else {
+            const d = history.data;
+            recordWheelContactPoint(history, d[0], d[1], d[2], false);
+          }
+          continue;
+        }
 
         const recordContact = (
           x: number,

@@ -18,6 +18,32 @@ export function readPlayerTile(focus: Vector3, tileSize: number): TileCoord {
   };
 }
 
+/**
+ * Same look-ahead tile as visual ground streaming (keeps mesh + Rapier colliders aligned).
+ */
+export function computeLookAheadStreamTile(
+  focus: Vector3,
+  lastFocus: Vector3,
+  hasLastFocus: boolean,
+  tileSize: number,
+  lookAheadTiles = 2,
+): TileCoord {
+  const ahead = focus.clone();
+
+  if (hasLastFocus) {
+    const moveX = focus.x - lastFocus.x;
+    const moveZ = focus.z - lastFocus.z;
+    const moveDistance = Math.hypot(moveX, moveZ);
+    if (moveDistance > 0.0001) {
+      const aheadDistance = Math.min(tileSize * lookAheadTiles, moveDistance * 18);
+      ahead.x += (moveX / moveDistance) * aheadDistance;
+      ahead.z += (moveZ / moveDistance) * aheadDistance;
+    }
+  }
+
+  return readPlayerTile(ahead, tileSize);
+}
+
 export function shouldRecenterStream(
   playerTile: TileCoord,
   streamCenter: TileCoord,

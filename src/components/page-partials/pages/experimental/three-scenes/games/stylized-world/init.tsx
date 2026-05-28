@@ -63,7 +63,6 @@ const Init = () => {
               {isDev && (
                 <StatsGl
                   parent={statsParentRef}
-                  trackGPU
                   className="pointer-events-auto absolute left-2 top-2 z-50"
                 />
               )}

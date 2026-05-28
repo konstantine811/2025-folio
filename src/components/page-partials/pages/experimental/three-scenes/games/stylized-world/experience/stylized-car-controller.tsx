@@ -18,6 +18,11 @@ import {
   type Object3D,
 } from "three";
 import {
+  clampWorldToLandscape,
+  type LandscapeBounds,
+} from "./landscape-config";
+import { FLAT_GRID_DEBUG_ARENA } from "./world-debug-mode";
+import {
   DEFAULT_TERRAIN_PROFILE,
   sampleGroundTerrainHeight,
   type TerrainProfile,
@@ -41,7 +46,8 @@ import {
 
 type StylizedCarControllerProps = {
   focusRef: MutableRefObject<Vector3>;
-  grassInteractionRef?: MutableRefObject<Vector3>;
+  landscapeBounds?: LandscapeBounds;
+  flatGround?: boolean;
   startPosition?: [number, number, number];
   worldSeed?: number;
   startRotationY?: number;
@@ -60,8 +66,6 @@ type StylizedCarControllerProps = {
  * Chassis length along Z, front at -Z. startRotationY = PI faces hood toward +Z.
  */
 const BODY = { width: 1.2, height: 0.35, length: 2 };
-export const STYLIZED_CAR_GRASS_PUSH_RADIUS =
-  Math.hypot(BODY.width, BODY.length) * 0.5 + 0.75;
 const WHEEL_RADIUS = 0.22;
 const WHEEL_Y = -BODY.height / 1.4;
 const MAX_SUSPENSION_TRAVEL = 0.16;
@@ -98,16 +102,17 @@ function chassisSpawnYAt(
   worldZ: number,
   worldSeed: number,
   terrainProfile: TerrainProfile,
+  flatGround = false,
 ) {
-  return (
-    sampleGroundTerrainHeight({
-      worldX,
-      worldZ,
-      seed: worldSeed,
-      profile: terrainProfile,
-    }) +
-    CHASSIS_SPAWN_CLEARANCE
-  );
+  const groundY = flatGround
+    ? FLAT_GRID_DEBUG_ARENA.flatGroundY
+    : sampleGroundTerrainHeight({
+        worldX,
+        worldZ,
+        seed: worldSeed,
+        profile: terrainProfile,
+      });
+  return groundY + CHASSIS_SPAWN_CLEARANCE;
 }
 const BRAKE_PITCH_SPEED = 0.5;
 const BRAKE_PITCH_FROM_SPEED = 0.035;
@@ -156,7 +161,8 @@ const WHEELS: (WheelInfo & { axle: "front" | "rear" })[] = [
 
 export function StylizedCarController({
   focusRef,
-  grassInteractionRef,
+  landscapeBounds,
+  flatGround = false,
   startPosition = [0, 0, 0],
   worldSeed = 42,
   startRotationY = Math.PI,
@@ -181,8 +187,12 @@ export function StylizedCarController({
   const startX = startPosition[0];
   const startZ = startPosition[2];
   const resolvedStartPosition = useMemo<[number, number, number]>(
-    () => [startX, chassisSpawnYAt(startX, startZ, worldSeed, terrainProfile), startZ],
-    [startX, startZ, worldSeed, terrainProfile],
+    () => [
+      startX,
+      chassisSpawnYAt(startX, startZ, worldSeed, terrainProfile, flatGround),
+      startZ,
+    ],
+    [startX, startZ, worldSeed, terrainProfile, flatGround],
   );
   const { historiesRef: internalContactHistoriesRef } = useWheelContactHistory(
     wheelsInfo.length,
@@ -366,6 +376,52 @@ export function StylizedCarController({
     }
   });
 
+  useAfterPhysicsStep(() => {
+    const bounds = flatGround
+      ? {
+          centerX: 0,
+          centerZ: 0,
+          sizeX: FLAT_GRID_DEBUG_ARENA.arenaSize - 8,
+          sizeZ: FLAT_GRID_DEBUG_ARENA.arenaSize - 8,
+        }
+      : landscapeBounds;
+
+    if (!bounds) return;
+
+    const chassis = chassisRef.current;
+    if (!chassis) return;
+
+    const translation = chassis.translation();
+    const clamped = clampWorldToLandscape(
+      translation.x,
+      translation.z,
+      bounds,
+      3,
+    );
+
+    if (
+      clamped.x === translation.x &&
+      clamped.z === translation.z
+    ) {
+      return;
+    }
+
+    chassis.setTranslation(
+      { x: clamped.x, y: translation.y, z: clamped.z },
+      true,
+    );
+
+    const linvel = chassis.linvel();
+    chassis.setLinvel(
+      {
+        x: clamped.x !== translation.x ? 0 : linvel.x,
+        y: linvel.y,
+        z: clamped.z !== translation.z ? 0 : linvel.z,
+      },
+      true,
+    );
+  });
+
   useFrame(({ camera }, delta) => {
     if (delta > 1) delta %= 1;
 
@@ -389,6 +445,7 @@ export function StylizedCarController({
             chassisTranslation.z,
             worldSeed,
             terrainProfile,
+            flatGround,
           ),
           z: chassisTranslation.z,
         },
@@ -397,12 +454,14 @@ export function StylizedCarController({
       chassis.setLinvel({ x: 0, y: 0, z: 0 }, true);
       chassis.setAngvel({ x: 0, y: 0, z: 0 }, true);
     } else {
-      const groundY = sampleGroundTerrainHeight({
-        worldX: chassisTranslation.x,
-        worldZ: chassisTranslation.z,
-        seed: worldSeed,
-        profile: terrainProfile,
-      });
+      const groundY = flatGround
+        ? FLAT_GRID_DEBUG_ARENA.flatGroundY
+        : sampleGroundTerrainHeight({
+            worldX: chassisTranslation.x,
+            worldZ: chassisTranslation.z,
+            seed: worldSeed,
+            profile: terrainProfile,
+          });
       const minSafeChassisY = groundY + WHEEL_RADIUS - VOID_FALL_MARGIN;
       const touchingGround = isVehicleTouchingGround(controller);
 
@@ -418,6 +477,7 @@ export function StylizedCarController({
               chassisTranslation.z,
               worldSeed,
               terrainProfile,
+              flatGround,
             ),
             z: chassisTranslation.z,
           },
@@ -539,19 +599,6 @@ export function StylizedCarController({
       chassisTranslation.z,
     );
     focusRef.current.copy(chassisPosition);
-
-    if (grassInteractionRef) {
-      if (isVehicleTouchingGround(controller)) {
-        const heading = Math.atan2(worldForward.x, worldForward.z);
-        grassInteractionRef.current.set(
-          chassisPosition.x,
-          heading,
-          chassisPosition.z,
-        );
-      } else {
-        grassInteractionRef.current.set(9999, 0, 9999);
-      }
-    }
 
     // Keep camera target attached to chassis Y so climbs/descents follow terrain.
     pivotPosition.set(
