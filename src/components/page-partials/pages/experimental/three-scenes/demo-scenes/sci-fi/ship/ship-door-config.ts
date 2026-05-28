@@ -17,11 +17,3 @@ export function colliderLocalFromShipDoorExport(
     worldPos[2] - SHIP_DOOR_EXPORT_ASSEMBLY_POSITION[2],
   ];
 }
-
-/** Return portal in stylized landscape (faces spawn at +Z). */
-export const STYLIZED_RETURN_DOOR_WORLD = {
-  rootPosition: [0, 0, 2] as [number, number, number],
-  assemblyPosition: [0, 0, 0] as [number, number, number],
-  assemblyRotation: [0, Math.PI, 0] as [number, number, number],
-  terrainSampleZ: 2,
-};

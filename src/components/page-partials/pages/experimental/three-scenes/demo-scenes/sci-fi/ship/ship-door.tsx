@@ -24,8 +24,6 @@ import {
   SCIFI_CHARACTER_CONTROLLER_GROUP,
   SCIFI_PROP_COLLIDER_GROUP,
 } from "../sci-fi-collision-groups";
-import type { PortalDirection } from "./ship-door-portal";
-import { PORTAL_ENTER_MIN_PROGRESS, ShipDoorPortal } from "./ship-door-portal";
 import {
   colliderLocalFromShipDoorExport,
   SHIP_DOOR_EXPORT_ASSEMBLY_POSITION,
@@ -127,20 +125,9 @@ function KinematicDoorCollider({
   );
 }
 
-type ShipDoorProps = JSX.IntrinsicElements["group"] & {
-  portalDirection?: PortalDirection;
-  doorAssemblyPosition?: [number, number, number];
-  doorAssemblyRotation?: [number, number, number];
-  initialDoorOpen?: boolean;
-};
-
-export function ShipDoor({
-  portalDirection = "to-stylized",
-  doorAssemblyPosition = SHIP_DOOR_EXPORT_ASSEMBLY_POSITION,
-  doorAssemblyRotation = SHIP_DOOR_EXPORT_ASSEMBLY_ROTATION,
-  initialDoorOpen = false,
-  ...props
-}: ShipDoorProps) {
+export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
+  const doorAssemblyPosition = SHIP_DOOR_EXPORT_ASSEMBLY_POSITION;
+  const doorAssemblyRotation = SHIP_DOOR_EXPORT_ASSEMBLY_ROTATION;
   const rootRef = useRef<Group>(null);
   const assemblyRef = useRef<Group>(null);
   /** E prompt + proximity anchor (local to door assembly, on the PC). */
@@ -149,10 +136,8 @@ export function ShipDoor({
   const frameLeftRef = useRef<Mesh>(null);
   const rightDoorBodyRef = useRef<RapierRigidBody>(null);
   const leftDoorBodyRef = useRef<RapierRigidBody>(null);
-  const openProgressRef = useRef(initialDoorOpen ? 1 : 0);
+  const openProgressRef = useRef(0);
   const nearPanelRef = useRef(false);
-  const nearPortalRef = useRef(false);
-  const enterPortalRef = useRef<(() => void) | null>(null);
   const panelWorldPos = useMemo(() => new Vector3(), []);
   const kinematicPos = useMemo(() => new Vector3(), []);
 
@@ -257,7 +242,7 @@ export function ShipDoor({
   const playerPosition = usePlayerPositionStore((s) => s.position);
 
   const [nearPanel, setNearPanel] = useState(false);
-  const [isOpen, setIsOpen] = useState(initialDoorOpen);
+  const [isOpen, setIsOpen] = useState(false);
   const [doorsBlockPhysics, setDoorsBlockPhysics] = useState(true);
 
   useRegisterCameraCollisionMeshes(rootRef, [nodes]);
@@ -340,21 +325,8 @@ export function ShipDoor({
   });
 
   const handleDoorToggle = useCallback(() => {
-    if (isPaused) return;
-
-    // PC prompt uses nearPanel state; E must read the same ref updated in useFrame.
-    if (nearPanelRef.current) {
-      setIsOpen((open) => !open);
-      return;
-    }
-
-    if (
-      nearPortalRef.current &&
-      (openProgressRef.current ?? 0) >= PORTAL_ENTER_MIN_PROGRESS &&
-      enterPortalRef.current
-    ) {
-      enterPortalRef.current();
-    }
+    if (isPaused || !nearPanelRef.current) return;
+    setIsOpen((open: boolean) => !open);
   }, [isPaused]);
 
   useEffect(() => {
@@ -460,21 +432,6 @@ export function ShipDoor({
           collidersEnabled={doorsBlockPhysics}
         />
       </group>
-
-      <ShipDoorPortal
-        direction={portalDirection}
-        assemblyPosition={doorAssemblyPosition}
-        assemblyRotation={doorAssemblyRotation}
-        openProgressRef={openProgressRef}
-        openDistance={openDistance}
-        doorPanelsOffsetX={doorPanelsOffsetX}
-        onNearPortalChange={(near) => {
-          nearPortalRef.current = near;
-        }}
-        registerEnter={(enter) => {
-          enterPortalRef.current = enter;
-        }}
-      />
     </group>
   );
 }

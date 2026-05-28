@@ -5,7 +5,6 @@ import {
   Group,
   Mesh,
   MeshPhysicalMaterial,
-  MeshStandardMaterial,
 } from "three";
 import { useControls } from "leva";
 import {
@@ -25,36 +24,11 @@ const cableFloorCollisionGroup = 5;
 const camWall = { camIncludeCollision: true } as const;
 const camFloorExclude = { camExcludeCollision: true } as const;
 
-type ShipContainerProps = JSX.IntrinsicElements["group"] & {
-  /** FBO / preview only — meshes without Rapier or interactive door. */
-  visualOnly?: boolean;
-};
-
-export function ShipContainer({
-  visualOnly = false,
-  ...props
-}: ShipContainerProps) {
+export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
   const rootRef = useRef<Group>(null);
   const { nodes, materials } = useGLTF(modelPath);
 
   useRegisterCameraCollisionMeshes(rootRef, [nodes]);
-
-  const bakedTexture = useTexture(texturePath);
-  bakedTexture.flipY = false;
-  bakedTexture.colorSpace = "srgb";
-  const { tint } = useControls({
-    tint: { value: "#7f7986", label: "Baked tint" },
-  });
-  const bakedMat = useMemo(
-    () =>
-      new MeshStandardMaterial({
-        map: bakedTexture,
-        roughness: 0.77,
-        metalness: 0.8,
-        color: tint,
-      }),
-    [bakedTexture, tint],
-  );
 
   const {
     highQualityTransmission: gHighQualityTransmission,
@@ -117,10 +91,9 @@ export function ShipContainer({
 
   useEffect(
     () => () => {
-      bakedMat.dispose();
       glassMat.dispose();
     },
-    [bakedMat, glassMat],
+    [glassMat],
   );
   return (
     <group {...props} ref={rootRef} dispose={null} name="ground">
@@ -140,91 +113,57 @@ export function ShipContainer({
         position={[0, 5.272, 17.861]}
         userData={camWall}
       />
-      {visualOnly ? (
-        <>
-          <mesh
-            castShadow
-            receiveShadow
-            geometry={(nodes.ship_floor as Mesh).geometry}
-            material={bakedMat}
-            position={[0, 0.057, 17.861]}
-          />
-          <mesh
-            castShadow
-            receiveShadow
-            geometry={(nodes.ship_husk as Mesh).geometry}
-            material={bakedMat}
-            position={[0, 2.671, 17.861]}
-          />
-          <mesh
-            geometry={(nodes.window_glass as Mesh).geometry}
-            material={glassMat}
-            position={[0, 2.639, -0.951]}
-            renderOrder={20}
-          />
-          <mesh
-            castShadow
-            receiveShadow
-            geometry={(nodes.window_frame as Mesh).geometry}
-            material={materials["Material.004"]}
-            position={[0, 2.639, -0.92]}
-          />
-        </>
-      ) : (
-        <>
-          <RigidBody type="fixed" colliders="trimesh" friction={1}>
-            <mesh
-              castShadow
-              receiveShadow
-              geometry={(nodes.ship_floor as Mesh).geometry}
-              material={materials.floor}
-              position={[0, 0.057, 17.861]}
-              userData={camFloorExclude}
-            />
-          </RigidBody>
-          <RigidBody type="fixed" colliders="trimesh" friction={1}>
-            <mesh
-              castShadow
-              receiveShadow
-              geometry={(nodes.ship_husk as Mesh).geometry}
-              material={materials.shop_husk}
-              position={[0, 2.671, 17.861]}
-              userData={camWall}
-            />
-          </RigidBody>
-          <RigidBody type="fixed" colliders="trimesh" friction={0.6}>
-            <mesh
-              receiveShadow={false}
-              geometry={(nodes.window_glass as Mesh).geometry}
-              material={glassMat}
-              position={[0, 2.639, -0.951]}
-              renderOrder={20}
-              userData={camWall}
-            />
-          </RigidBody>
-          <RigidBody type="fixed" colliders="trimesh" friction={1}>
-            <mesh
-              castShadow
-              receiveShadow
-              geometry={(nodes.window_frame as Mesh).geometry}
-              material={materials["Material.004"]}
-              position={[0, 2.639, -0.92]}
-              userData={camWall}
-            />
-          </RigidBody>
-          <RigidBody type="fixed" colliders={false}>
-            <CuboidCollider
-              args={[5.8, 0.08, 12.5]}
-              position={[0, 0.035, 17.861]}
-              collisionGroups={interactionGroups(cableFloorCollisionGroup, [
-                cableCollisionGroup,
-              ])}
-              friction={2.2}
-              restitution={0}
-            />
-          </RigidBody>
-        </>
-      )}
+      <RigidBody type="fixed" colliders="trimesh" friction={1}>
+        <mesh
+          castShadow
+          receiveShadow
+          geometry={(nodes.ship_floor as Mesh).geometry}
+          material={materials.floor}
+          position={[0, 0.057, 17.861]}
+          userData={camFloorExclude}
+        />
+      </RigidBody>
+      <RigidBody type="fixed" colliders="trimesh" friction={1}>
+        <mesh
+          castShadow
+          receiveShadow
+          geometry={(nodes.ship_husk as Mesh).geometry}
+          material={materials.shop_husk}
+          position={[0, 2.671, 17.861]}
+          userData={camWall}
+        />
+      </RigidBody>
+      <RigidBody type="fixed" colliders="trimesh" friction={0.6}>
+        <mesh
+          receiveShadow={false}
+          geometry={(nodes.window_glass as Mesh).geometry}
+          material={glassMat}
+          position={[0, 2.639, -0.951]}
+          renderOrder={20}
+          userData={camWall}
+        />
+      </RigidBody>
+      <RigidBody type="fixed" colliders="trimesh" friction={1}>
+        <mesh
+          castShadow
+          receiveShadow
+          geometry={(nodes.window_frame as Mesh).geometry}
+          material={materials["Material.004"]}
+          position={[0, 2.639, -0.92]}
+          userData={camWall}
+        />
+      </RigidBody>
+      <RigidBody type="fixed" colliders={false}>
+        <CuboidCollider
+          args={[5.8, 0.08, 12.5]}
+          position={[0, 0.035, 17.861]}
+          collisionGroups={interactionGroups(cableFloorCollisionGroup, [
+            cableCollisionGroup,
+          ])}
+          friction={2.2}
+          restitution={0}
+        />
+      </RigidBody>
       <mesh
         castShadow
         receiveShadow
@@ -240,12 +179,8 @@ export function ShipContainer({
         material={materials["Material.003"]}
         position={[0, 5.178, 1.543]}
       />
-      {!visualOnly && (
-        <>
-          <ShipContainerBack />
-          <ShipDoor position={[0, 0.17, 0.2]} portalDirection="to-stylized" />
-        </>
-      )}
+      <ShipContainerBack />
+      <ShipDoor position={[0, 0.17, 0.2]} />
     </group>
   );
 }
