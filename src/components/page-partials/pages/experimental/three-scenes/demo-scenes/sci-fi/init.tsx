@@ -88,7 +88,7 @@ const Init = () => {
   const [sceneWarmupDone, setSceneWarmupDone] = useState(false);
   const [isDebugPanelVisible, setIsDebugPanelVisible] = useState(isDebugHash);
   const headerSize = useHeaderSizeStore((s) => s.size);
-  const { progress, active } = useProgress();
+  const { progress } = useProgress();
   const [sceneContentMounted, setSceneContentMounted] = useState(false);
   /** Suspense resolved + first frames — do not wait on useProgress (unreliable with Perf / cache). */
   const displayProgress = sceneContentMounted ? 100 : progress;

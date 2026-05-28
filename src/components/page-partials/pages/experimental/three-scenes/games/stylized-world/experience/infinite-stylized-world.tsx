@@ -20,7 +20,6 @@ import {
 import { ImperativeGridDebug, type GridDebugSyncRef } from "./grid-debug";
 import {
   computeLookAheadStreamTile,
-  readPlayerTile,
   shouldRecenterStream,
   VISUAL_STREAM_RECENTER_MARGIN,
   type TileCoord,

@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
+import { useCallback, useLayoutEffect, useRef } from "react";
 import type { MutableRefObject } from "react";
 import type * as THREE from "three";
 import { GridFloorMaterial } from "./grid-floor-material";
