@@ -124,11 +124,13 @@ const groundTerrainFbm = Fn(
 );
 
 const accumulateHillCell = Fn(
-  ([worldX, worldZ, seed, sum, cellX, cellZ, dx, dz]: [
+  ([worldX, worldZ, seed, sum, cellX, cellZ, hillCellSize, heightScale, dx, dz]: [
     ReturnType<typeof float>,
     ReturnType<typeof float>,
     ReturnType<typeof int>,
     ReturnType<typeof import("three/tsl").ShaderNodeObject<typeof float>>,
+    ReturnType<typeof float>,
+    ReturnType<typeof float>,
     ReturnType<typeof float>,
     ReturnType<typeof float>,
     number,
@@ -140,14 +142,14 @@ const accumulateHillCell = Fn(
     const czInt = int(cz);
     const peakX = cx
       .add(groundTerrainHash2(cxInt, czInt, seed.add(int(11))))
-      .mul(float(GROUND_TERRAIN_HILL_CELL_SIZE));
+      .mul(hillCellSize);
     const peakZ = cz
       .add(groundTerrainHash2(cxInt, czInt, seed.add(int(17))))
-      .mul(float(GROUND_TERRAIN_HILL_CELL_SIZE));
+      .mul(hillCellSize);
     const amp = float(0.45)
       .add(groundTerrainHash2(cxInt, czInt, seed.add(int(23))).mul(0.85))
-      .mul(float(GROUND_TERRAIN_HEIGHT));
-    const radius = float(GROUND_TERRAIN_HILL_CELL_SIZE).mul(
+      .mul(heightScale);
+    const radius = hillCellSize.mul(
       float(0.32).add(
         groundTerrainHash2(cxInt, czInt, seed.add(int(31))).mul(0.22),
       ),
@@ -164,26 +166,34 @@ const accumulateHillCell = Fn(
 /** Height in world XZ — matches `sampleGroundTerrainHeight` in `ground-terrain.ts`. */
 export function getGroundTerrainHeight(
   terrainSeed: ReturnType<typeof import("three/tsl").uniform>,
+  terrainHeightScale: ReturnType<typeof import("three/tsl").uniform>,
+  terrainNoiseScale: ReturnType<typeof import("three/tsl").uniform>,
+  terrainHillCellSize: ReturnType<typeof import("three/tsl").uniform>,
 ) {
   return Fn(([xz]: [ReturnType<typeof vec2>]) => {
     const seed = int(terrainSeed);
     const worldX = xz.x;
     const worldZ = xz.y;
-    const base = groundTerrainFbm(worldX, worldZ, seed).mul(
-      float(GROUND_TERRAIN_HEIGHT),
-    );
-    const cellX = floor(worldX.div(float(GROUND_TERRAIN_HILL_CELL_SIZE)));
-    const cellZ = floor(worldZ.div(float(GROUND_TERRAIN_HILL_CELL_SIZE)));
+    const scaleSafe = max(terrainHeightScale, float(0.001));
+    const noiseScaleSafe = max(terrainNoiseScale, float(0.0001));
+    const hillCellSafe = max(terrainHillCellSize, float(1));
+    const base = groundTerrainFbm(
+      worldX.mul(noiseScaleSafe.div(float(GROUND_TERRAIN_NOISE_SCALE))),
+      worldZ.mul(noiseScaleSafe.div(float(GROUND_TERRAIN_NOISE_SCALE))),
+      seed,
+    ).mul(scaleSafe);
+    const cellX = floor(worldX.div(hillCellSafe));
+    const cellZ = floor(worldZ.div(hillCellSafe));
     const hills = float(0).toVar();
-    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, -1, -1);
-    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, 0, -1);
-    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, 1, -1);
-    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, -1, 0);
-    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, 0, 0);
-    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, 1, 0);
-    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, -1, 1);
-    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, 0, 1);
-    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, 1, 1);
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, hillCellSafe, scaleSafe, -1, -1);
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, hillCellSafe, scaleSafe, 0, -1);
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, hillCellSafe, scaleSafe, 1, -1);
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, hillCellSafe, scaleSafe, -1, 0);
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, hillCellSafe, scaleSafe, 0, 0);
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, hillCellSafe, scaleSafe, 1, 0);
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, hillCellSafe, scaleSafe, -1, 1);
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, hillCellSafe, scaleSafe, 0, 1);
+    accumulateHillCell(worldX, worldZ, seed, hills, cellX, cellZ, hillCellSafe, scaleSafe, 1, 1);
     return base.add(hills);
   });
 }

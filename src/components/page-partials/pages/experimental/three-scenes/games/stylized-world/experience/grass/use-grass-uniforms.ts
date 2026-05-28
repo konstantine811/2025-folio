@@ -17,6 +17,14 @@ const FALLBACK_GROUND_DATA_TEXTURE = (() => {
   return texture;
 })();
 
+const FALLBACK_TERRAIN_HEIGHT_TEXTURE = (() => {
+  const data = new Float32Array([0]);
+  const texture = new THREE.DataTexture(data, 1, 1, THREE.RedFormat, THREE.FloatType);
+  texture.needsUpdate = true;
+  texture.colorSpace = THREE.NoColorSpace;
+  return texture;
+})();
+
 function resolveStraightness(straightness: number) {
   const s = THREE.MathUtils.clamp(straightness, 0, 1);
   return {
@@ -63,6 +71,9 @@ export function useGrassUniforms(config: GrassRuntimeConfig = {}) {
         uCharacterWorldPos: uniform(new THREE.Vector3(9999, 0, 9999)),
         uCharacterPushRadius: uniform(params.pushRadius),
         uCharacterPushAmount: uniform(params.pushAmount),
+        uChassisHalfWidth: uniform(params.chassisHalfWidth),
+        uChassisHalfLength: uniform(params.chassisHalfLength),
+        uChassisEdgeBand: uniform(params.chassisEdgeBand),
         uWindDir: uniform(
           new THREE.Vector2(params.windDirX, params.windDirZ).normalize(),
         ),
@@ -72,6 +83,13 @@ export function useGrassUniforms(config: GrassRuntimeConfig = {}) {
         uWindFacing: uniform(params.windFacing),
         uTime: uniform(0),
         uTerrainSeed: uniform(params.terrainSeed),
+        uTerrainHeightTexture: uniformTexture(FALLBACK_TERRAIN_HEIGHT_TEXTURE),
+        uTerrainHeightCenter: uniform(new THREE.Vector2()),
+        uTerrainHeightHalfSize: uniform(64),
+        uTerrainHeightEnabled: uniform(0),
+        uTerrainHeightScale: uniform(params.terrainHeightScale),
+        uTerrainNoiseScale: uniform(params.terrainNoiseScale),
+        uTerrainHillCellSize: uniform(params.terrainHillCellSize),
       },
       material: {
         uWindDir: uniform(
@@ -88,7 +106,11 @@ export function useGrassUniforms(config: GrassRuntimeConfig = {}) {
         uTipThin: uniform(0.9),
         uThicknessStrength: uniform(0.1),
         uGroupOffset: uniform(new THREE.Vector3()),
+        uCharacterWorldPos: uniform(new THREE.Vector3(9999, 0, 9999)),
         uCharacterFlattenAmount: uniform(params.flattenAmount),
+        uChassisHalfWidth: uniform(params.chassisHalfWidth),
+        uChassisHalfLength: uniform(params.chassisHalfLength),
+        uChassisEdgeBand: uniform(params.chassisEdgeBand),
         uDebugLod: uniform(params.debugLod ? 1 : 0),
         uMidSoft: uniform(0.25),
         uRimPos: uniform(0.42),
@@ -139,6 +161,9 @@ export function useGrassUniforms(config: GrassRuntimeConfig = {}) {
     );
     uniforms.compute.uCharacterPushRadius.value = merged.pushRadius;
     uniforms.compute.uCharacterPushAmount.value = merged.pushAmount;
+    uniforms.compute.uChassisHalfWidth.value = merged.chassisHalfWidth;
+    uniforms.compute.uChassisHalfLength.value = merged.chassisHalfLength;
+    uniforms.compute.uChassisEdgeBand.value = merged.chassisEdgeBand;
     uniforms.compute.uWindDir.value
       .set(merged.windDirX, merged.windDirZ)
       .normalize();
@@ -147,9 +172,17 @@ export function useGrassUniforms(config: GrassRuntimeConfig = {}) {
     uniforms.compute.uWindStrength.value = merged.windStrength;
     uniforms.compute.uWindFacing.value = merged.windFacing;
     uniforms.compute.uTerrainSeed.value = merged.terrainSeed;
+    uniforms.compute.uTerrainHeightEnabled.value =
+      uniforms.compute.uTerrainHeightEnabled.value > 0.5 ? 1 : 0;
+    uniforms.compute.uTerrainHeightScale.value = merged.terrainHeightScale;
+    uniforms.compute.uTerrainNoiseScale.value = merged.terrainNoiseScale;
+    uniforms.compute.uTerrainHillCellSize.value = merged.terrainHillCellSize;
     uniforms.material.uWindSwayStrength.value = merged.windSwayStrength;
     uniforms.material.uWindSpeed.value = merged.windSpeed;
     uniforms.material.uCharacterFlattenAmount.value = merged.flattenAmount;
+    uniforms.material.uChassisHalfWidth.value = merged.chassisHalfWidth;
+    uniforms.material.uChassisHalfLength.value = merged.chassisHalfLength;
+    uniforms.material.uChassisEdgeBand.value = merged.chassisEdgeBand;
     uniforms.material.uDebugLod.value = merged.debugLod ? 1 : 0;
     uniforms.material.uWindDir.value
       .set(merged.windDirX, merged.windDirZ)

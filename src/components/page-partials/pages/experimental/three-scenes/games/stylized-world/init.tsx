@@ -36,7 +36,13 @@ const Init = () => {
           frameloop={gpuReady ? "always" : "never"}
           onPointerDown={(e) => {
             if (e.pointerType === "mouse") {
-              (e.target as HTMLCanvasElement).requestPointerLock();
+              const isTerrainEditMode = Boolean(
+                (window as Window & { __stylizedTerrainEditMode?: boolean })
+                  .__stylizedTerrainEditMode,
+              );
+              if (!isTerrainEditMode) {
+                (e.target as HTMLCanvasElement).requestPointerLock();
+              }
             }
           }}
           gl={(props) => {

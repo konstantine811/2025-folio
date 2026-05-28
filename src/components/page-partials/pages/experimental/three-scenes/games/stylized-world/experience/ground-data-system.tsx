@@ -32,7 +32,6 @@ export function GroundDataSystem({
 
   useFrame(() => {
     const focus = focusRef.current;
-    // Match grass grid snapping so ground UVs stay stable within a cell.
     const cellX = Math.floor(focus.x / GRASS_GRID_CELL_SIZE);
     const cellZ = Math.floor(focus.z / GRASS_GRID_CELL_SIZE);
     const centerX = cellX * GRASS_GRID_CELL_SIZE;

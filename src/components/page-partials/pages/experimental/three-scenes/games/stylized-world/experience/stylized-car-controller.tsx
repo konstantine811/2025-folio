@@ -17,7 +17,11 @@ import {
   type Group,
   type Object3D,
 } from "three";
-import { sampleGroundTerrainHeight } from "./ground-terrain";
+import {
+  DEFAULT_TERRAIN_PROFILE,
+  sampleGroundTerrainHeight,
+  type TerrainProfile,
+} from "./ground-terrain";
 import {
   type WheelInfo,
   isVehicleOnFlatGround,
@@ -44,6 +48,7 @@ type StylizedCarControllerProps = {
   accelerateForce?: number;
   brakeForce?: number;
   steerAngle?: number;
+  terrainProfile?: TerrainProfile;
   showWheelTrackDebug?: boolean;
   contactHistoriesRef?: RefObject<WheelContactHistoryEntry[]>;
 };
@@ -56,7 +61,7 @@ type StylizedCarControllerProps = {
  */
 const BODY = { width: 1.2, height: 0.35, length: 2 };
 export const STYLIZED_CAR_GRASS_PUSH_RADIUS =
-  Math.hypot(BODY.width, BODY.length) * 0.5 + 0.35;
+  Math.hypot(BODY.width, BODY.length) * 0.5 + 0.75;
 const WHEEL_RADIUS = 0.22;
 const WHEEL_Y = -BODY.height / 1.4;
 const MAX_SUSPENSION_TRAVEL = 0.16;
@@ -88,9 +93,19 @@ const PIVOT_HEIGHT = 0.55;
 const CAMERA_SMOOTHING = 10;
 const CHASSIS_SPAWN_CLEARANCE = WHEEL_RADIUS + SUSPENSION_REST_LENGTH + 0.05;
 
-function chassisSpawnYAt(worldX: number, worldZ: number, worldSeed: number) {
+function chassisSpawnYAt(
+  worldX: number,
+  worldZ: number,
+  worldSeed: number,
+  terrainProfile: TerrainProfile,
+) {
   return (
-    sampleGroundTerrainHeight({ worldX, worldZ, seed: worldSeed }) +
+    sampleGroundTerrainHeight({
+      worldX,
+      worldZ,
+      seed: worldSeed,
+      profile: terrainProfile,
+    }) +
     CHASSIS_SPAWN_CLEARANCE
   );
 }
@@ -148,6 +163,7 @@ export function StylizedCarController({
   accelerateForce = DEFAULT_ACCELERATE_FORCE,
   brakeForce = DEFAULT_BRAKE_FORCE,
   steerAngle = DEFAULT_STEER_ANGLE,
+  terrainProfile = DEFAULT_TERRAIN_PROFILE,
   showWheelTrackDebug = false,
   contactHistoriesRef: externalContactHistoriesRef,
 }: StylizedCarControllerProps) {
@@ -165,8 +181,8 @@ export function StylizedCarController({
   const startX = startPosition[0];
   const startZ = startPosition[2];
   const resolvedStartPosition = useMemo<[number, number, number]>(
-    () => [startX, chassisSpawnYAt(startX, startZ, worldSeed), startZ],
-    [startX, startZ, worldSeed],
+    () => [startX, chassisSpawnYAt(startX, startZ, worldSeed, terrainProfile), startZ],
+    [startX, startZ, worldSeed, terrainProfile],
   );
   const { historiesRef: internalContactHistoriesRef } = useWheelContactHistory(
     wheelsInfo.length,
@@ -372,6 +388,7 @@ export function StylizedCarController({
             chassisTranslation.x,
             chassisTranslation.z,
             worldSeed,
+            terrainProfile,
           ),
           z: chassisTranslation.z,
         },
@@ -384,6 +401,7 @@ export function StylizedCarController({
         worldX: chassisTranslation.x,
         worldZ: chassisTranslation.z,
         seed: worldSeed,
+        profile: terrainProfile,
       });
       const minSafeChassisY = groundY + WHEEL_RADIUS - VOID_FALL_MARGIN;
       const touchingGround = isVehicleTouchingGround(controller);
@@ -399,6 +417,7 @@ export function StylizedCarController({
               chassisTranslation.x,
               chassisTranslation.z,
               worldSeed,
+              terrainProfile,
             ),
             z: chassisTranslation.z,
           },
@@ -523,13 +542,23 @@ export function StylizedCarController({
 
     if (grassInteractionRef) {
       if (isVehicleTouchingGround(controller)) {
-        grassInteractionRef.current.copy(chassisPosition);
+        const heading = Math.atan2(worldForward.x, worldForward.z);
+        grassInteractionRef.current.set(
+          chassisPosition.x,
+          heading,
+          chassisPosition.z,
+        );
       } else {
         grassInteractionRef.current.set(9999, 0, 9999);
       }
     }
 
-    pivotPosition.set(chassisPosition.x, PIVOT_HEIGHT, chassisPosition.z);
+    // Keep camera target attached to chassis Y so climbs/descents follow terrain.
+    pivotPosition.set(
+      chassisPosition.x,
+      chassisPosition.y + PIVOT_HEIGHT,
+      chassisPosition.z,
+    );
     pivot.position.lerp(pivotPosition, 1 - Math.exp(-CAMERA_SMOOTHING * delta));
 
     followCam.getWorldPosition(followCamPosition);

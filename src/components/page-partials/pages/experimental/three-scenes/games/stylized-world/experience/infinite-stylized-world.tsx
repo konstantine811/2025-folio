@@ -16,7 +16,9 @@ import type { GrassGroundDataBinding } from "./ground-data";
 import {
   applyGroundTerrainToGeometry,
   createGroundTerrainGeometryTemplate,
+  DEFAULT_TERRAIN_PROFILE,
   sampleGroundTerrainHeight,
+  type TerrainProfile,
 } from "./ground-terrain";
 import { ImperativeGridDebug, type GridDebugSyncRef } from "./grid-debug";
 import {
@@ -33,6 +35,7 @@ type InfiniteStylizedWorldProps = {
   worldSeed?: number;
   bush?: BushConfig;
   grass?: GrassRuntimeConfig;
+  showGround?: boolean;
   showGrass?: boolean;
   showGridDebug?: boolean;
   showGridCrosses?: boolean;
@@ -42,6 +45,8 @@ type InfiniteStylizedWorldProps = {
   focusRef?: MutableRefObject<THREE.Vector3>;
   grassInteractionRef?: MutableRefObject<THREE.Vector3>;
   grassGroundDataRef?: MutableRefObject<GrassGroundDataBinding>;
+  terrainProfile?: TerrainProfile;
+  terrainRevision?: number;
 };
 
 const MAX_INSTANCES_PER_MESH = 1024;
@@ -58,6 +63,7 @@ function collectBushMatrices({
   radius,
   bushesPerTile,
   worldSeed,
+  terrainProfile,
   dummy,
 }: {
   tileCenter: { x: number; z: number };
@@ -65,6 +71,7 @@ function collectBushMatrices({
   radius: number;
   bushesPerTile: number;
   worldSeed: number;
+  terrainProfile: TerrainProfile;
   dummy: THREE.Object3D;
 }) {
   const matrices: THREE.Matrix4[] = [];
@@ -87,7 +94,12 @@ function collectBushMatrices({
 
         dummy.position.set(
           worldX,
-          sampleGroundTerrainHeight({ worldX, worldZ, seed: worldSeed }),
+          sampleGroundTerrainHeight({
+            worldX,
+            worldZ,
+            seed: worldSeed,
+            profile: terrainProfile,
+          }),
           worldZ,
         );
         dummy.rotation.set(0, yaw, 0);
@@ -109,6 +121,7 @@ function syncBushChunks(
   radius: number,
   bushesPerTile: number,
   worldSeed: number,
+  terrainProfile: TerrainProfile,
   dummy: THREE.Object3D,
 ) {
   if (bushesPerTile <= 0) {
@@ -126,6 +139,7 @@ function syncBushChunks(
     radius,
     bushesPerTile,
     worldSeed,
+    terrainProfile,
     dummy,
   });
 
@@ -213,13 +227,15 @@ function syncGroundPool(
   tileSize: number,
   seed: number,
   terrainTemplate: THREE.BufferGeometry,
+  terrainProfile: TerrainProfile,
+  terrainRevision: number,
 ) {
   for (const slot of slots) {
     if (!slot) continue;
     const { dx, dz, mesh } = slot;
     const worldTileX = tileX + dx;
     const worldTileZ = tileZ + dz;
-    const terrainKey = `${worldTileX}_${worldTileZ}`;
+    const terrainKey = `${worldTileX}_${worldTileZ}_${terrainRevision}`;
 
     if (mesh.userData.terrainKey !== terrainKey) {
       if (!mesh.userData.terrainGeometry) {
@@ -232,6 +248,7 @@ function syncGroundPool(
         worldTileZ,
         tileSize,
         seed,
+        terrainProfile,
       );
       mesh.userData.terrainKey = terrainKey;
     }
@@ -283,6 +300,7 @@ export function InfiniteStylizedWorld({
   worldSeed = 42,
   bush,
   grass,
+  showGround = true,
   showGrass = true,
   showGridDebug = false,
   showGridCrosses = true,
@@ -292,6 +310,8 @@ export function InfiniteStylizedWorld({
   focusRef,
   grassInteractionRef,
   grassGroundDataRef,
+  terrainProfile = DEFAULT_TERRAIN_PROFILE,
+  terrainRevision = 0,
 }: InfiniteStylizedWorldProps) {
   const { camera, controls } = useThree();
   const worldFocusRef = useRef(new THREE.Vector3());
@@ -420,6 +440,8 @@ export function InfiniteStylizedWorld({
       tileSize,
       worldSeed,
       groundTerrainTemplate,
+      terrainProfile,
+      terrainRevision,
     );
     syncBushChunks(
       bushChunkRefs.current,
@@ -429,6 +451,7 @@ export function InfiniteStylizedWorld({
       renderRadius,
       bushesPerTile,
       worldSeed,
+      terrainProfile,
       dummy,
     );
     gridSyncRef.current?.(tileX, tileZ);
@@ -450,11 +473,15 @@ export function InfiniteStylizedWorld({
       tileSize,
       worldSeed,
       groundTerrainTemplate,
+      terrainProfile,
+      terrainRevision,
     );
   }, [
     worldKey,
     tileSize,
     worldSeed,
+    terrainProfile,
+    terrainRevision,
     bushGeometry,
     bushChunkCount,
     showGridDebug,
@@ -523,11 +550,13 @@ export function InfiniteStylizedWorld({
             config={grassRuntime}
           />
         )}
-        <GroundPool
-          radius={renderRadius}
-          geometry={groundTerrainTemplate}
-          slotsRef={groundSlotsRef}
-        />
+        {showGround && (
+          <GroundPool
+            radius={renderRadius}
+            geometry={groundTerrainTemplate}
+            slotsRef={groundSlotsRef}
+          />
+        )}
         {showGridDebug && (
           <ImperativeGridDebug
             key={`grid-${worldKey}`}

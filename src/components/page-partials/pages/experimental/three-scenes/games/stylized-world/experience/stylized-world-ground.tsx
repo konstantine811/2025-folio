@@ -14,13 +14,19 @@ import {
   shouldRecenterStream,
   type TileCoord,
 } from "./stylized-world-streaming";
-import { createGroundTerrainHeightfieldArgs } from "./ground-terrain";
+import {
+  createGroundTerrainHeightfieldArgs,
+  DEFAULT_TERRAIN_PROFILE,
+  type TerrainProfile,
+} from "./ground-terrain";
 
 type StylizedWorldGroundProps = {
   focusRef: MutableRefObject<Vector3>;
   tileSize?: number;
   radius?: number;
   worldSeed?: number;
+  terrainProfile?: TerrainProfile;
+  terrainRevision?: number;
 };
 
 const GROUND_COLLIDER_Y = 0;
@@ -59,12 +65,14 @@ function PhysicsGroundTile({
   tileZ,
   tileSize,
   worldSeed,
+  terrainProfile,
   bodyRef,
 }: {
   tileX: number;
   tileZ: number;
   tileSize: number;
   worldSeed: number;
+  terrainProfile: TerrainProfile;
   bodyRef: (body: RapierRigidBody | null) => void;
 }) {
   const center = useMemo(
@@ -79,8 +87,9 @@ function PhysicsGroundTile({
         tileSize,
         undefined,
         worldSeed,
+        terrainProfile,
       ),
-    [tileX, tileZ, tileSize, worldSeed],
+    [tileX, tileZ, tileSize, worldSeed, terrainProfile],
   );
 
   return (
@@ -106,6 +115,8 @@ export function StylizedWorldGround({
   tileSize = 8,
   radius = 10,
   worldSeed = 42,
+  terrainProfile = DEFAULT_TERRAIN_PROFILE,
+  terrainRevision = 0,
 }: StylizedWorldGroundProps) {
   const streamCenterRef = useRef<TileCoord>({ x: 0, z: 0 });
   const bodyRefs = useRef<(RapierRigidBody | null)[]>([]);
@@ -128,7 +139,7 @@ export function StylizedWorldGround({
     streamCenterRef.current = streamCenter;
     hasSyncedRef.current = false;
     setStreamEpoch((epoch) => epoch + 1);
-  }, [focusRef, tileSize, radius, offsets, worldSeed]);
+  }, [focusRef, tileSize, radius, offsets, worldSeed, terrainProfile, terrainRevision]);
 
   useFrame(() => {
     const readyCount = bodyRefs.current.filter(Boolean).length;
@@ -162,6 +173,7 @@ export function StylizedWorldGround({
             tileZ={tileZ}
             tileSize={tileSize}
             worldSeed={worldSeed}
+            terrainProfile={terrainProfile}
             bodyRef={(body) => {
               bodyRefs.current[index] = body;
             }}

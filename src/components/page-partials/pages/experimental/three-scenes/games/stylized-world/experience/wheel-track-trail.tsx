@@ -59,16 +59,20 @@ function WheelTrackTrailMaterial({
     const sideSign = sign(positionGeometry.y).mul(-1);
     const isGroundData = variant === "groundData";
 
+    const tangentStep = isGroundData ? float(4) : float(1);
+
     const positionNode = Fn(() => {
       const sampleU = clamp(uv().x.sub(halfPixel), halfPixel, maxPixelCenter);
       const previousU = clamp(
-        sampleU.add(pixelSize),
+        sampleU.add(pixelSize.mul(tangentStep)),
         halfPixel,
         maxPixelCenter,
       );
       const current = texture(entry.texture, vec2(sampleU, 0.5));
       const previous = texture(entry.texture, vec2(previousU, 0.5));
-      const angle = atan(current.z.sub(previous.z), current.x.sub(previous.x));
+      const tangentX = current.x.sub(previous.x);
+      const tangentZ = current.z.sub(previous.z);
+      const angle = atan(tangentZ, tangentX);
       const perpendicularAngle = angle.add(sideSign.mul(Math.PI * 0.5));
       const sideOffset = vec2(
         cos(perpendicularAngle),

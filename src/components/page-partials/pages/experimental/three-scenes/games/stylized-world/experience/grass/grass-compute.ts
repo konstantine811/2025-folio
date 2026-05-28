@@ -113,7 +113,12 @@ export function createGrassCompute(
     lodConfigs,
     uniforms.uLODNoiseScale,
   );
-  const sampleGroundHeight = getGroundTerrainHeight(uniforms.uTerrainSeed);
+  const sampleGroundHeight = getGroundTerrainHeight(
+    uniforms.uTerrainSeed,
+    uniforms.uTerrainHeightScale,
+    uniforms.uTerrainNoiseScale,
+    uniforms.uTerrainHillCellSize,
+  );
   const sampleGroundNormal = getTerrainNormal(sampleGroundHeight);
 
   const performCulling = Fn(([worldPos]: [ReturnType<typeof vec3>]) => {

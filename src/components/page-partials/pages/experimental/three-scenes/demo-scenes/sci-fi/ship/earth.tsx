@@ -713,7 +713,7 @@ function Earth() {
     <group position={earthPosition} rotation={[0.12, -Math.PI / 1.35, 0]}>
       <group ref={earthGroupRef}>
         <mesh ref={earthMeshRef} name="Earth_Sphere">
-          <sphereGeometry args={[earthRadius, 128, 96]} />
+          <sphereGeometry args={[earthRadius, 64, 46]} />
           <shaderMaterial
             ref={earthMaterialRef}
             vertexShader={earthVertexShader}
@@ -728,7 +728,7 @@ function Earth() {
           scale={cloudLayerScale}
           renderOrder={2}
         >
-          <sphereGeometry args={[earthRadius, 128, 96]} />
+          <sphereGeometry args={[earthRadius, 32, 32]} />
           <shaderMaterial
             ref={cloudsMaterialRef}
             transparent
@@ -741,8 +741,8 @@ function Earth() {
           />
         </mesh>
 
-        <mesh name="Atmosphere" scale={1.03}>
-          <sphereGeometry args={[earthRadius, 128, 96]} />
+        <mesh name="Atmosphere" scale={1.1}>
+          <sphereGeometry args={[earthRadius, 32, 32]} />
           <shaderMaterial
             ref={atmosphereMaterialRef}
             side={BackSide}

@@ -2,7 +2,7 @@ export const earthConfig = {
   position: [-60, -70, -200] as [number, number, number],
   radius: 100,
   /** Cloud shell sits slightly above the surface (Three.js Journey style). */
-  cloudLayerScale: 1.001,
+  cloudLayerScale: 1.02,
   shader: {
     atmosphereDayColor: "#3e547c",
     atmosphereTwilightColor: "#4a6f4c",

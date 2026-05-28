@@ -77,6 +77,11 @@ export type GrassRuntimeConfig = {
   pushRadius?: number;
   pushAmount?: number;
   flattenAmount?: number;
+  /** Chassis footprint half-size (meters) for body grass interaction. */
+  chassisHalfWidth?: number;
+  chassisHalfLength?: number;
+  /** Width of perimeter interaction band (meters). */
+  chassisEdgeBand?: number;
   windSwayStrength?: number;
   windDirX?: number;
   windDirZ?: number;
@@ -88,6 +93,12 @@ export type GrassRuntimeConfig = {
   windDistanceEnd?: number;
   /** Must match `worldSeed` used for ground mesh / physics heightfield. */
   terrainSeed?: number;
+  /** Increment when terrain sculpt is regenerated to refresh grass height cache. */
+  terrainRevision?: number;
+  /** Must match runtime terrain profile used by world mesh/heightfield. */
+  terrainHeightScale?: number;
+  terrainNoiseScale?: number;
+  terrainHillCellSize?: number;
   colorNoiseScale?: number;
   colorNoiseSeed?: number;
   debugLod?: boolean;
@@ -113,6 +124,9 @@ export const DEFAULT_GRASS_RUNTIME: Required<GrassRuntimeConfig> = {
   pushRadius: 1.4,
   pushAmount: 0.32,
   flattenAmount: 0.5,
+  chassisHalfWidth: 0.75,
+  chassisHalfLength: 1.25,
+  chassisEdgeBand: 0.35,
   windSwayStrength: 0.85,
   windDirX: 0.85,
   windDirZ: 0.35,
@@ -123,6 +137,10 @@ export const DEFAULT_GRASS_RUNTIME: Required<GrassRuntimeConfig> = {
   windDistanceStart: 10,
   windDistanceEnd: 30,
   terrainSeed: 42,
+  terrainRevision: 0,
+  terrainHeightScale: 0.58,
+  terrainNoiseScale: 0.11,
+  terrainHillCellSize: 18,
   colorNoiseScale: 0.5,
   colorNoiseSeed: 107,
   debugLod: false,

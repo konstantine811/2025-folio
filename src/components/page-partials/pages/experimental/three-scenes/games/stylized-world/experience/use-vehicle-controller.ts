@@ -28,6 +28,7 @@ const AIRBORNE_WHEEL_VISUAL_SMOOTH = 0.55;
 const FLAT_GROUND_NORMAL_Y = 0.97;
 const WHEEL_CONTACT_RAY_START_OFFSET = 0.12;
 const WHEEL_CONTACT_RAY_EXTRA_LENGTH = 0.32;
+const WHEEL_CONTACT_XZ_SMOOTH = 0.38;
 
 export function isVehicleOnFlatGround(
   controller: DynamicRayCastVehicleController,
@@ -131,6 +132,7 @@ export function useVehicleController(
   const { world, rapier } = useRapier();
   const vehicleController = useRef<DynamicRayCastVehicleController | null>(null);
   const smoothedWheelPosRef = useRef<(Vector3 | undefined)[]>([]);
+  const smoothedContactRef = useRef<(Vector3 | undefined)[]>([]);
 
   useEffect(() => {
     const chassis = chassisRef.current;
@@ -161,10 +163,12 @@ export function useVehicleController(
 
     vehicleController.current = vehicle;
     smoothedWheelPosRef.current = [];
+    smoothedContactRef.current = [];
 
     return () => {
       vehicleController.current = null;
       smoothedWheelPosRef.current = [];
+      smoothedContactRef.current = [];
       world.removeVehicleController(vehicle);
     };
   }, [chassisRef, indexForwardAxis, wheelsInfo, world]);
@@ -191,17 +195,41 @@ export function useVehicleController(
 
         if (!history || !wheelInfo) continue;
 
+        const recordContact = (
+          x: number,
+          y: number,
+          z: number,
+          active: boolean,
+        ) => {
+          if (!active) {
+            recordWheelContactPoint(history, x, y, z, false);
+            return;
+          }
+
+          let smoothed = smoothedContactRef.current[index];
+          if (!smoothed) {
+            smoothed = new Vector3(x, y, z);
+            smoothedContactRef.current[index] = smoothed;
+          } else {
+            smoothed.x += (x - smoothed.x) * WHEEL_CONTACT_XZ_SMOOTH;
+            smoothed.z += (z - smoothed.z) * WHEEL_CONTACT_XZ_SMOOTH;
+            smoothed.y = y;
+          }
+
+          recordWheelContactPoint(
+            history,
+            smoothed.x,
+            smoothed.y,
+            smoothed.z,
+            true,
+          );
+        };
+
         const inContact = controller.wheelIsInContact(index);
         const contact = controller.wheelContactPoint(index);
 
         if (inContact && contact) {
-          recordWheelContactPoint(
-            history,
-            contact.x,
-            contact.y,
-            contact.z,
-            true,
-          );
+          recordContact(contact.x, contact.y, contact.z, true);
         } else {
           const hardPoint = controller.wheelHardPoint(index);
           const rayOrigin = hardPoint
@@ -230,8 +258,7 @@ export function useVehicleController(
             : null;
 
           if (rayHit) {
-            recordWheelContactPoint(
-              history,
+            recordContact(
               rayOrigin.x,
               rayOrigin.y + rayDir.y * rayHit.timeOfImpact,
               rayOrigin.z,
@@ -239,15 +266,14 @@ export function useVehicleController(
             );
           } else if (hardPoint) {
             const suspension = controller.wheelSuspensionLength(index) ?? 0;
-            recordWheelContactPoint(
-              history,
+            recordContact(
               hardPoint.x,
               hardPoint.y - suspension - wheelInfo.radius,
               hardPoint.z,
               false,
             );
           } else {
-            recordWheelContactPoint(history, 0, 0, 0, false);
+            recordContact(0, 0, 0, false);
           }
         }
       }
