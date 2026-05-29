@@ -43,18 +43,18 @@ const frameLeftLocalX = 0;
 const defaultDoorPanelsOffsetX = 0.02;
 
 const frameColliderPosition: [number, number, number] = [
-  0.0139617919921875, 2.8340907096862793, 36.289939880371094,
+  0.0139617919921875, 2.8340907096862793, 36.8,
 ];
 const frameColliderScale = 0.3830612897872925;
 
 const doorRightColliderPosition: [number, number, number] = [
-  -0.7432982325553894, -0.10104800015687943, 36.51607131958008,
+  0.75, -0.10104800015687943, 36.57,
 ];
 const doorRightColliderScale: [number, number, number] = [
   0.7626287937164307, 0.6459335088729858, 0.11735648661851883,
 ];
 const doorLeftColliderPosition: [number, number, number] = [
-  0.7432982325553894, -0.10104800015687943, 36.51607131958008,
+  -0.77, -0.10104800015687943, 36.57,
 ];
 const doorLeftColliderScale: [number, number, number] = [
   -doorRightColliderScale[0],
