@@ -1,11 +1,12 @@
-import { JSX, useLayoutEffect, useMemo, useRef } from "react";
+import { JSX, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useGLTF } from "@react-three/drei";
 import { useControls } from "leva";
 import {
+  Color,
   InstancedMesh,
-  Material,
   Matrix4,
   Mesh,
+  MeshStandardMaterial,
   Quaternion,
   Vector3,
 } from "three";
@@ -40,35 +41,79 @@ export function ShipWallSupport(props: JSX.IntrinsicElements["group"]) {
   const meshRef = useRef<InstancedMesh>(null);
 
   const geometry = (nodes.edge_ribs as Mesh).geometry;
-  const material = materials.edge_ribs as Material;
+  const sourceMaterial = materials.edge_ribs as MeshStandardMaterial;
 
-  const { count, direction, spacing, offsetX, offsetY, offsetZ } = useControls(
-    SHIP_WALL_SUPPORT_CONTROLS_PATH,
-    {
-      count: {
-        value: 187,
-        min: 1,
-        max: MAX_INSTANCES,
-        step: 1,
-        label: "Copies",
-      },
-      direction: {
-        value: "-Z" as AxisKey,
-        options: axisOptions,
-        label: "Direction",
-      },
-      spacing: {
-        value: 0.2,
-        min: 0.01,
-        max: 5,
-        step: 0.01,
-        label: "Spacing",
-      },
-      offsetX: { value: 0, min: -20, max: 20, step: 0.01, label: "Offset X" },
-      offsetY: { value: 0, min: -20, max: 20, step: 0.01, label: "Offset Y" },
-      offsetZ: { value: -1, min: -40, max: 40, step: 0.01, label: "Offset Z" },
-    },
+  /** Clone so darkening this prop never mutates the shared GLTF material. */
+  const material = useMemo(() => sourceMaterial.clone(), [sourceMaterial]);
+  const baseColor = useMemo(
+    () => sourceMaterial.color.clone(),
+    [sourceMaterial],
   );
+
+  const {
+    darkness,
+    roughness,
+    metalness,
+    count,
+    direction,
+    spacing,
+    offsetX,
+    offsetY,
+    offsetZ,
+  } = useControls(SHIP_WALL_SUPPORT_CONTROLS_PATH, {
+    darkness: {
+      value: 0.18,
+      min: 0.1,
+      max: 1,
+      step: 0.01,
+      label: "Brightness",
+    },
+    roughness: {
+      value: 0.6,
+      min: 0,
+      max: 1,
+      step: 0.01,
+      label: "Roughness",
+    },
+    metalness: {
+      value: 0.29,
+      min: 0,
+      max: 1,
+      step: 0.01,
+      label: "Metalness",
+    },
+    count: {
+      value: 187,
+      min: 1,
+      max: MAX_INSTANCES,
+      step: 1,
+      label: "Copies",
+    },
+    direction: {
+      value: "-Z" as AxisKey,
+      options: axisOptions,
+      label: "Direction",
+    },
+    spacing: {
+      value: 0.2,
+      min: 0.01,
+      max: 5,
+      step: 0.01,
+      label: "Spacing",
+    },
+    offsetX: { value: 0, min: -20, max: 20, step: 0.01, label: "Offset X" },
+    offsetY: { value: 0, min: -20, max: 20, step: 0.01, label: "Offset Y" },
+    offsetZ: { value: -1, min: -40, max: 40, step: 0.01, label: "Offset Z" },
+  });
+
+  useEffect(() => {
+    material.color = new Color().copy(baseColor).multiplyScalar(darkness);
+    material.roughness = roughness;
+    material.metalness = metalness;
+    material.needsUpdate = true;
+  }, [material, baseColor, darkness, roughness, metalness]);
+
+  useEffect(() => () => material.dispose(), [material]);
 
   const temp = useMemo(
     () => ({
