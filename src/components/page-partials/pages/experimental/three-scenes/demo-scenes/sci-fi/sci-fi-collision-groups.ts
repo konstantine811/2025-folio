@@ -31,3 +31,12 @@ export function sciFiControllerCapsuleCollisionGroups() {
 export function sciFiBodyProxyCollisionGroups() {
   return interactionGroups(SCIFI_BODY_PROXY_GROUP, [SCIFI_CABLE_GROUP]);
 }
+
+/** Dynamic props (chair, etc.) — world, player capsule, and cable segments. */
+export function sciFiPropDynamicCollisionGroups() {
+  return interactionGroups(SCIFI_PROP_COLLIDER_GROUP, [
+    0,
+    SCIFI_CHARACTER_CONTROLLER_GROUP,
+    SCIFI_CABLE_GROUP,
+  ]);
+}

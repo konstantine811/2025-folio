@@ -125,7 +125,11 @@ function KinematicDoorCollider({
   );
 }
 
-export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
+type ShipDoorProps = JSX.IntrinsicElements["group"] & {
+  hideHtmlOverlay?: boolean;
+};
+
+export function ShipDoor({ hideHtmlOverlay = false, ...props }: ShipDoorProps) {
   const doorAssemblyPosition = SHIP_DOOR_EXPORT_ASSEMBLY_POSITION;
   const doorAssemblyRotation = SHIP_DOOR_EXPORT_ASSEMBLY_ROTATION;
   const rootRef = useRef<Group>(null);
@@ -338,7 +342,7 @@ export function ShipDoor(props: JSX.IntrinsicElements["group"]) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [handleDoorToggle]);
 
-  const showPrompt = !isPaused && nearPanel;
+  const showPrompt = !hideHtmlOverlay && !isPaused && nearPanel;
   const doorActionLabel = isOpen ? "закрити двері" : "відкрити двері";
 
   return (

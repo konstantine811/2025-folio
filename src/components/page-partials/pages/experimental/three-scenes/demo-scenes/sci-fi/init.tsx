@@ -221,6 +221,7 @@ const Init = () => {
         camera={{ position: [15, 10, -5], fov: 30 }}
         style={{ height: "100%" }}
         onPointerDown={(e) => {
+          if (isCameraControlsMode) return;
           if (e.pointerType === "mouse") {
             (e.target as HTMLCanvasElement).requestPointerLock();
           }
@@ -238,7 +239,7 @@ const Init = () => {
         )}
       </Canvas>
 
-      {isPaused && (
+      {isPaused && !isCameraControlsMode && (
         <div
           className="absolute inset-x-0 bottom-0 z-10"
           style={{

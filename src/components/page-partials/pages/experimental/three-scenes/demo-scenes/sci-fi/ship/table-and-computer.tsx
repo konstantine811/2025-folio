@@ -1,4 +1,4 @@
-import { JSX, useMemo } from "react";
+import { JSX, useEffect, useMemo, useRef } from "react";
 import { useGLTF } from "@react-three/drei";
 import {
   CuboidCollider,
@@ -12,9 +12,13 @@ import {
   SCIFI_CHARACTER_CONTROLLER_GROUP,
   SCIFI_PROP_COLLIDER_GROUP,
 } from "../sci-fi-collision-groups";
+import type { ResolvedCableProxyBox } from "../character/sci-fi-cable-proxy-limbs";
+import { registerSciFiVerletPropBoxProvider } from "../sci-fi-verlet-prop-boxes";
 import {
+  resolveTableCableProxyBoxes,
   TABLE_CABLE_PROXY_CONTROLS_PATH,
   useSciFiTableCableProxyTransform,
+  type TableCableProxyTransform,
 } from "./table-cable-proxies";
 import {
   applyTableGlowMaterial,
@@ -35,6 +39,37 @@ export function TableAndComputer(props: JSX.IntrinsicElements["group"]) {
     cableProxyTwoPosition,
     cableProxyTwoHalfExtents,
   } = useSciFiTableCableProxyTransform();
+
+  const verletBoxesRef = useRef<ResolvedCableProxyBox[]>([]);
+  const tableTransformRef = useRef<TableCableProxyTransform>({
+    position,
+    rotationY,
+    scale,
+    cableProxyOnePosition,
+    cableProxyOneHalfExtents,
+    cableProxyTwoPosition,
+    cableProxyTwoHalfExtents,
+  });
+  tableTransformRef.current = {
+    position,
+    rotationY,
+    scale,
+    cableProxyOnePosition,
+    cableProxyOneHalfExtents,
+    cableProxyTwoPosition,
+    cableProxyTwoHalfExtents,
+  };
+
+  useEffect(() => {
+    return registerSciFiVerletPropBoxProvider(() => {
+      resolveTableCableProxyBoxes(
+        tableTransformRef.current,
+        verletBoxesRef.current,
+      );
+      return verletBoxesRef.current;
+    });
+  }, []);
+
   const { showCableProxyWireframes, glowEmissiveIntensity, glowColorScale } =
     useControls(TABLE_CABLE_PROXY_CONTROLS_PATH, {
       showCableProxyWireframes: {

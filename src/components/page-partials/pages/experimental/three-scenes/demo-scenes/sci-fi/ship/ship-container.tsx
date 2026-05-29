@@ -17,6 +17,7 @@ import { ShipContainerBack } from "./ship-container-back";
 import { ShipDoor } from "./ship-door";
 import { ShipWallSupport } from "./ship-wall-support";
 import { ShipChair } from "./ship-chair";
+import { useSciFiChairControls } from "./ship-chair-cable-proxies";
 
 const modelPath = "/3d-models/sci-fi/ship-container.glb";
 const texturePath = "/3d-models/sci-fi/ship_baking.jpg";
@@ -26,8 +27,17 @@ const cableFloorCollisionGroup = 5;
 const camWall = { camIncludeCollision: true } as const;
 const camFloorExclude = { camExcludeCollision: true } as const;
 
-export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
+type ShipContainerProps = JSX.IntrinsicElements["group"] & {
+  /** Hide in-canvas Html prompts (e.g. CameraControls inspect mode). */
+  hideSceneHtml?: boolean;
+};
+
+export function ShipContainer({
+  hideSceneHtml = false,
+  ...props
+}: ShipContainerProps) {
   const rootRef = useRef<Group>(null);
+  const chairControls = useSciFiChairControls();
   const { nodes, materials } = useGLTF(modelPath);
 
   useRegisterCameraCollisionMeshes(rootRef, [nodes]);
@@ -182,9 +192,11 @@ export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
         position={[0, 5.178, 1.543]}
       />
       <ShipContainerBack />
-      <ShipDoor position={[0, 0.17, 0.2]} />
+      <ShipDoor position={[0, 0.17, 0.2]} hideHtmlOverlay={hideSceneHtml} />
       <ShipWallSupport />
-      <ShipChair />
+      {chairControls.chairEnabled ? (
+        <ShipChair controls={chairControls} />
+      ) : null}
     </group>
   );
 }

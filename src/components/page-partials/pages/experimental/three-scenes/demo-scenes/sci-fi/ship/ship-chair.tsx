@@ -1,19 +1,35 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import {
   MeshCollider,
+  RapierRigidBody,
   RigidBody,
   type RigidBodyProps,
-  interactionGroups,
 } from "@react-three/rapier";
-import { Mesh, MeshStandardMaterial } from "three";
+import { usePauseStore } from "@/components/common/game-controller/store/usePauseMode";
+import { Group, Mesh, MeshStandardMaterial, Vector3 } from "three";
+import { sciFiPropDynamicCollisionGroups } from "../sci-fi-collision-groups";
+import { registerSciFiVerletPropBoxProvider } from "../sci-fi-verlet-prop-boxes";
 import {
-  SCIFI_CABLE_GROUP,
-  SCIFI_CHARACTER_CONTROLLER_GROUP,
-  SCIFI_PROP_COLLIDER_GROUP,
-} from "../sci-fi-collision-groups";
+  resolveChairCableProxyBoxes,
+  type SciFiChairControls,
+} from "./ship-chair-cable-proxies";
+import type { ResolvedCableProxyBox } from "../character/sci-fi-cable-proxy-limbs";
 
 const modelPath = "/3d-models/sci-fi/chairglb.glb";
+
+const SHIP_CHAIR_DEFAULT_POSITION: [number, number, number] = [0, 0.1, 7];
+
+function resetChairToDefaultPose(body: RapierRigidBody | null) {
+  if (!body) return;
+
+  const [x, y, z] = SHIP_CHAIR_DEFAULT_POSITION;
+  body.setTranslation({ x, y, z }, true);
+  body.setRotation({ x: 0, y: 0, z: 0, w: 1 }, true);
+  body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+  body.setAngvel({ x: 0, y: 0, z: 0 }, true);
+}
 
 /** < 1 darkens albedo; emissive is cleared to stop blow-out under scene lights. */
 const CHAIR_MATERIAL_BRIGHTNESS = 0.5;
@@ -34,15 +50,75 @@ function useTunedChairMaterial(source: MeshStandardMaterial) {
   return material;
 }
 
-/** Dynamic chair — pushable by the controller capsule, world and cables. */
-const chairCollisionGroups = interactionGroups(SCIFI_PROP_COLLIDER_GROUP, [
-  0,
-  SCIFI_CHARACTER_CONTROLLER_GROUP,
-  SCIFI_CABLE_GROUP,
-]);
+type ChairVerletProxyWireframeProps = {
+  show: boolean;
+  resolveBoxes: () => readonly ResolvedCableProxyBox[];
+};
+
+const PROXY_WIREFRAME_COLORS = ["#39d5ff", "#a78bfa"] as const;
+
+function ChairVerletProxyWireframe({
+  show,
+  resolveBoxes,
+}: ChairVerletProxyWireframeProps) {
+  const groupRefs = useRef<(Group | null)[]>([]);
+  const sizeRef = useRef(new Vector3());
+
+  useFrame(() => {
+    if (!show) return;
+
+    const boxes = resolveBoxes();
+    for (let i = 0; i < groupRefs.current.length; i += 1) {
+      const group = groupRefs.current[i];
+      const box = boxes[i];
+      if (!group) continue;
+
+      if (!box) {
+        group.visible = false;
+        continue;
+      }
+
+      group.visible = true;
+      group.position.copy(box.center);
+      group.quaternion.copy(box.quaternion);
+      sizeRef.current.copy(box.halfExtents).multiplyScalar(2);
+      group.scale.copy(sizeRef.current);
+    }
+  });
+
+  if (!show) return null;
+
+  return (
+    <group userData={{ camExcludeCollision: true }}>
+      {PROXY_WIREFRAME_COLORS.map((color, index) => (
+        <group
+          key={index}
+          ref={(node) => {
+            groupRefs.current[index] = node;
+          }}
+        >
+          <mesh>
+            <boxGeometry args={[1, 1, 1]} />
+            <meshBasicMaterial
+              color={color}
+              wireframe
+              transparent
+              opacity={0.85}
+              depthWrite={false}
+            />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
+type ShipChairProps = RigidBodyProps & {
+  controls: SciFiChairControls;
+};
 
 /** Chair the character sits on at the start of the scroll timeline. */
-export function ShipChair(props: RigidBodyProps) {
+export function ShipChair({ controls, ...props }: ShipChairProps) {
   const { nodes, materials } = useGLTF(modelPath);
 
   const seat = nodes["Chair-ADDE001"] as Mesh;
@@ -56,45 +132,100 @@ export function ShipChair(props: RigidBodyProps) {
     materials["Chair-Metal.001"] as MeshStandardMaterial,
   );
 
-  return (
-    <RigidBody
-      {...props}
-      type="dynamic"
-      colliders={false}
-      includeInvisible
-      friction={1}
-      restitution={0}
-      linearDamping={0.4}
-      angularDamping={0.6}
-      position={[0, 0, 7]}
-      collisionGroups={chairCollisionGroups}
-    >
-      <group position={[0, 0.055, 6.801]}>
-        <group position={[0, 0.4, -0.073]} scale={0.961}>
-          <mesh
-            castShadow
-            receiveShadow
-            geometry={seat.geometry}
-            material={plasticMaterial}
-          />
-          <mesh
-            castShadow
-            receiveShadow
-            geometry={frame.geometry}
-            material={metalMaterial}
-          />
-        </group>
-      </group>
+  const bodyRef = useRef<RapierRigidBody>(null);
+  const colliderMeshRef = useRef<Mesh>(null);
+  const verletBoxesRef = useRef<ResolvedCableProxyBox[]>([]);
+  const proxyConfigRef = useRef(controls);
+  proxyConfigRef.current = controls;
 
-      <MeshCollider type="hull">
-        <mesh
-          geometry={collider.geometry}
-          position={[0, 0.282, 6.719]}
-          scale={0.214}
-          material-visible={false}
-        />
-      </MeshCollider>
-    </RigidBody>
+  const isPaused = usePauseStore((s) => s.isPaused);
+  const wasPausedRef = useRef(isPaused);
+
+  useEffect(() => {
+    if (!wasPausedRef.current && isPaused) {
+      resetChairToDefaultPose(bodyRef.current);
+    }
+    wasPausedRef.current = isPaused;
+  }, [isPaused]);
+
+  const resolveVerletBoxes = () => {
+    const mesh = colliderMeshRef.current;
+    if (!mesh) return [];
+
+    mesh.updateWorldMatrix(true, false);
+    const {
+      baseHalfExtents,
+      baseLocalOffset,
+      backHalfExtents,
+      backLocalOffset,
+    } = proxyConfigRef.current;
+    resolveChairCableProxyBoxes(
+      mesh.matrixWorld,
+      [
+        { halfExtents: baseHalfExtents, localOffset: baseLocalOffset },
+        { halfExtents: backHalfExtents, localOffset: backLocalOffset },
+      ],
+      verletBoxesRef.current,
+    );
+    return verletBoxesRef.current;
+  };
+
+  useEffect(() => {
+    return registerSciFiVerletPropBoxProvider(resolveVerletBoxes);
+  }, []);
+
+  const chairCollision = sciFiPropDynamicCollisionGroups();
+
+  return (
+    <>
+      <RigidBody
+        ref={bodyRef}
+        {...props}
+        type="dynamic"
+        colliders={false}
+        includeInvisible
+        friction={1.2}
+        restitution={0}
+        mass={12}
+        linearDamping={0.4}
+        angularDamping={0.6}
+        position={SHIP_CHAIR_DEFAULT_POSITION}
+        collisionGroups={chairCollision}
+        solverGroups={chairCollision}
+      >
+        <group position={[0, 0.055, 6.801]}>
+          <group position={[0, 0.4, -0.073]} scale={0.961}>
+            <mesh
+              castShadow
+              receiveShadow
+              geometry={seat.geometry}
+              material={plasticMaterial}
+            />
+            <mesh
+              castShadow
+              receiveShadow
+              geometry={frame.geometry}
+              material={metalMaterial}
+            />
+          </group>
+        </group>
+
+        <MeshCollider type="trimesh">
+          <mesh
+            ref={colliderMeshRef}
+            geometry={collider.geometry}
+            position={[0, 0.282, 6.719]}
+            scale={0.214}
+            material-visible={false}
+          />
+        </MeshCollider>
+      </RigidBody>
+
+      <ChairVerletProxyWireframe
+        show={controls.showWireframe}
+        resolveBoxes={resolveVerletBoxes}
+      />
+    </>
   );
 }
 

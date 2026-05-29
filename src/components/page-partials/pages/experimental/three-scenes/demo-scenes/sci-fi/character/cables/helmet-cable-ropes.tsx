@@ -30,6 +30,7 @@ import {
   ResolvedCableProxyBox,
   ResolvedCableProxyCapsule,
 } from "../sci-fi-cable-proxy-limbs";
+import { appendSciFiVerletPropBoxes } from "../../sci-fi-verlet-prop-boxes";
 
 type HelmetCableRopesProps = {
   head: Object3D;
@@ -550,6 +551,7 @@ export function HelmetCableRopes({
 
     propBoxes.current.length = 0;
     propBoxes.current.push(...bodyBoxes.current);
+    appendSciFiVerletPropBoxes(propBoxes.current);
 
     connectorLocalPositions.forEach((_, ropeIndex) => {
       const mesh = meshRefs.current[ropeIndex];

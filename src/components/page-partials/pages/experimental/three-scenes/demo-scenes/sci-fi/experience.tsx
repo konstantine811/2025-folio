@@ -74,7 +74,7 @@ const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
         gravity={[0, -9.81, 0]}
         interpolate={false}
       >
-        <ShipContainer />
+        <ShipContainer hideSceneHtml={cameraMode === "CameraControls"} />
         <SciFiToggleCharacter
           mode={characterMode}
           scrollProgressRef={scrollProgressRef}
