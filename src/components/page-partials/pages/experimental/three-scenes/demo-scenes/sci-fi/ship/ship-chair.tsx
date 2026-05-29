@@ -194,8 +194,10 @@ export function ShipChair({ controls, ...props }: ShipChairProps) {
 
   const chairCollision = sciFiPropDynamicCollisionGroups();
 
+  const camExcludeCollision = { camExcludeCollision: true } as const;
+
   return (
-    <>
+    <group userData={camExcludeCollision}>
       <RigidBody
         ref={bodyRef}
         {...props}
@@ -260,7 +262,7 @@ export function ShipChair({ controls, ...props }: ShipChairProps) {
         show={controls.showWireframe}
         resolveBoxes={resolveVerletBoxes}
       />
-    </>
+    </group>
   );
 }
 

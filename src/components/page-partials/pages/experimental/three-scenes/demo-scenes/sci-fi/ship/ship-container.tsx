@@ -1,12 +1,6 @@
 import { JSX, useEffect, useMemo, useRef } from "react";
 import { useGLTF, useTexture } from "@react-three/drei";
-import {
-  DoubleSide,
-  Group,
-  Mesh,
-  MeshPhysicalMaterial,
-} from "three";
-import { useControls } from "leva";
+import { Group, Mesh, MeshPhysicalMaterial } from "three";
 import {
   CuboidCollider,
   RigidBody,
@@ -25,7 +19,8 @@ const cableCollisionGroup = 4;
 const cableFloorCollisionGroup = 5;
 
 const camWall = { camIncludeCollision: true } as const;
-const camFloorExclude = { camExcludeCollision: true } as const;
+const camExcludeCollision = { camExcludeCollision: true } as const;
+const camFloorExclude = camExcludeCollision;
 
 type ShipContainerProps = JSX.IntrinsicElements["group"] & {
   /** Hide in-canvas Html prompts (e.g. CameraControls inspect mode). */
@@ -42,71 +37,26 @@ export function ShipContainer({
 
   useRegisterCameraCollisionMeshes(rootRef, [nodes]);
 
-  const {
-    highQualityTransmission: gHighQualityTransmission,
-    opacity: gOpacity,
-    roughness: gRoughness,
-    color: gColor,
-    transmission: gTransmission,
-    thickness: gThickness,
-    ior: gIor,
-    clearcoat: gClearcoat,
-    clearcoatRoughness: gClearcoatRoughness,
-    envMapIntensity: gEnvMapIntensity,
-  } = useControls("Window glass", {
-    highQualityTransmission: {
-      value: false,
-      label: "High quality transmission",
-    },
-    opacity: { value: 0.75, min: 0, max: 1, step: 0.01 },
-    roughness: { value: 1, min: 0, max: 1, step: 0.01 },
-    color: "#101010",
-    transmission: { value: 0.96, min: 0, max: 1, step: 0.01 },
-    thickness: { value: 0.58, min: 0, max: 2, step: 0.01 },
-    ior: { value: 1.45, min: 1, max: 2.5, step: 0.01 },
-    clearcoat: { value: 1, min: 0, max: 1, step: 0.01 },
-    clearcoatRoughness: { value: 0.63, min: 0, max: 1, step: 0.01 },
-    envMapIntensity: { value: 2.9, min: 0, max: 5, step: 0.05 },
-  });
-  const glassMat = useMemo(
-    () =>
-      new MeshPhysicalMaterial({
-        color: gColor,
-        transparent: true,
-        opacity: gOpacity,
-        roughness: gRoughness,
-        metalness: 0,
-        transmission: gHighQualityTransmission ? gTransmission : 0,
-        thickness: gHighQualityTransmission ? gThickness : 0,
-        ior: gIor,
-        clearcoat: gClearcoat,
-        clearcoatRoughness: gClearcoatRoughness,
-        envMapIntensity: gEnvMapIntensity,
-        attenuationColor: gColor,
-        attenuationDistance: 2.5,
-        side: DoubleSide,
-        depthWrite: false,
-      }),
-    [
-      gClearcoat,
-      gClearcoatRoughness,
-      gColor,
-      gEnvMapIntensity,
-      gHighQualityTransmission,
-      gIor,
-      gOpacity,
-      gRoughness,
-      gThickness,
-      gTransmission,
-    ],
-  );
+  const windowGlassMat = useMemo(() => {
+    const mesh = nodes.window_glass as Mesh;
+    const source = (
+      Array.isArray(mesh.material) ? mesh.material[0] : mesh.material
+    ) as MeshPhysicalMaterial | undefined;
 
-  useEffect(
-    () => () => {
-      glassMat.dispose();
-    },
-    [glassMat],
-  );
+    if (!source?.clone) {
+      throw new Error(
+        `Ship window_glass material missing. GLB keys: ${Object.keys(materials).join(", ")}`,
+      );
+    }
+
+    const mat = source.clone();
+    mat.normalScale.set(0, 0);
+    mat.opacity = 0.3;
+    return mat;
+  }, [nodes, materials]);
+
+  useEffect(() => () => windowGlassMat.dispose(), [windowGlassMat]);
+
   return (
     <group {...props} ref={rootRef} dispose={null} name="ground">
       <mesh
@@ -115,7 +65,7 @@ export function ShipContainer({
         geometry={(nodes.support as Mesh).geometry}
         material={materials.support}
         position={[0.054, 2.533, -0.042]}
-        userData={camWall}
+        userData={camExcludeCollision}
       />
       <mesh
         castShadow
@@ -149,7 +99,7 @@ export function ShipContainer({
         <mesh
           receiveShadow={false}
           geometry={(nodes.window_glass as Mesh).geometry}
-          material={glassMat}
+          material={windowGlassMat}
           position={[0, 2.639, -0.951]}
           renderOrder={20}
           userData={camWall}

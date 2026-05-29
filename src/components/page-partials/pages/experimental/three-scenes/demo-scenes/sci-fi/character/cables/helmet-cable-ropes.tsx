@@ -813,6 +813,7 @@ export function HelmetCableRopes({
           frustumCulled={false}
           geometry={placeholderGeometries[index]}
           material={material}
+          userData={{ camExcludeCollision: true }}
         />
       ))}
       <instancedMesh
@@ -820,6 +821,7 @@ export function HelmetCableRopes({
         args={[orbGeometry, orbMaterial, cableNeonOrbInstanceCount]}
         frustumCulled={false}
         visible={neonOrbsEnabled}
+        userData={{ camExcludeCollision: true }}
       />
     </>,
     scene,

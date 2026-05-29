@@ -31,6 +31,8 @@ const earthTextures = {
   specularCloudsHigh: "/images/textures/earth/three-journey/specularClouds.jpg",
 };
 
+const camExcludeCollision = { camExcludeCollision: true } as const;
+
 const earthPosition = earthConfig.position;
 const earthRadius = earthConfig.radius;
 const cloudLayerScale = earthConfig.cloudLayerScale;
@@ -715,7 +717,11 @@ function Earth() {
   });
 
   return (
-    <group position={earthPosition} rotation={[0.12, -Math.PI / 1.35, 0]}>
+    <group
+      position={earthPosition}
+      rotation={[0.12, -Math.PI / 1.35, 0]}
+      userData={camExcludeCollision}
+    >
       <group ref={earthGroupRef}>
         <mesh ref={earthMeshRef} name="Earth_Sphere">
           <sphereGeometry args={[earthRadius, 64, 46]} />

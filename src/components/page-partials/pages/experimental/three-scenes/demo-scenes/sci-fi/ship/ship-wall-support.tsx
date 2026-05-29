@@ -17,8 +17,9 @@ const modelPath = "/3d-models/sci-fi/ship-wall-support.glb";
 export const SHIP_WALL_SUPPORT_CONTROLS_PATH = "Sci-fi props / Wall support";
 
 const MAX_INSTANCES = 1000;
+/** Smaller chunks → tighter bounding volumes → better frustum culling. */
+const INSTANCE_CHUNK_SIZE = 48;
 
-/** Base transform of the rib mesh as exported by gltfjsx. */
 const baseRibPosition: [number, number, number] = [0, 0.002, 1.148];
 const baseRibScale: [number, number, number] = [1, 1, 0.802];
 
@@ -35,15 +36,96 @@ type AxisKey = keyof typeof axisVectors;
 
 const axisOptions = Object.keys(axisVectors) as AxisKey[];
 
-/** Repeated wall-support ribs (vestibule) — InstancedMesh, tunable via Leva. */
+/** Excluded from follow-camera raycast (see useFollowCamera customTraverseAdd). */
+const camExcludeCollision = { camExcludeCollision: true } as const;
+
+const instanceCompose = {
+  matrix: new Matrix4(),
+  position: new Vector3(),
+  quaternion: new Quaternion(),
+  scale: new Vector3(...baseRibScale),
+};
+
+function writeInstanceMatrices(
+  mesh: InstancedMesh,
+  globalStart: number,
+  localCount: number,
+  direction: AxisKey,
+  spacing: number,
+) {
+  const dir = axisVectors[direction];
+
+  for (let local = 0; local < localCount; local += 1) {
+    const index = globalStart + local;
+    instanceCompose.position.set(
+      baseRibPosition[0] + dir[0] * spacing * index,
+      baseRibPosition[1] + dir[1] * spacing * index,
+      baseRibPosition[2] + dir[2] * spacing * index,
+    );
+    instanceCompose.matrix.compose(
+      instanceCompose.position,
+      instanceCompose.quaternion,
+      instanceCompose.scale,
+    );
+    mesh.setMatrixAt(local, instanceCompose.matrix);
+  }
+
+  mesh.count = localCount;
+  mesh.instanceMatrix.needsUpdate = true;
+  mesh.computeBoundingSphere();
+}
+
+type RibInstanceChunkProps = {
+  geometry: Mesh["geometry"];
+  material: MeshStandardMaterial;
+  globalStart: number;
+  localCount: number;
+  direction: AxisKey;
+  spacing: number;
+  castShadow: boolean;
+  receiveShadow: boolean;
+};
+
+function RibInstanceChunk({
+  geometry,
+  material,
+  globalStart,
+  localCount,
+  direction,
+  spacing,
+  castShadow,
+  receiveShadow,
+}: RibInstanceChunkProps) {
+  const meshRef = useRef<InstancedMesh>(null);
+
+  useLayoutEffect(() => {
+    const mesh = meshRef.current;
+    if (!mesh || localCount <= 0) return;
+
+    writeInstanceMatrices(mesh, globalStart, localCount, direction, spacing);
+  }, [globalStart, localCount, direction, spacing]);
+
+  if (localCount <= 0) return null;
+
+  return (
+    <instancedMesh
+      ref={meshRef}
+      args={[geometry, material, localCount]}
+      castShadow={castShadow}
+      receiveShadow={receiveShadow}
+      frustumCulled
+      userData={camExcludeCollision}
+    />
+  );
+}
+
+/** Repeated wall-support ribs (vestibule) — chunked InstancedMesh for culling + perf toggles. */
 export function ShipWallSupport(props: JSX.IntrinsicElements["group"]) {
   const { nodes, materials } = useGLTF(modelPath);
-  const meshRef = useRef<InstancedMesh>(null);
 
   const geometry = (nodes.edge_ribs as Mesh).geometry;
   const sourceMaterial = materials.edge_ribs as MeshStandardMaterial;
 
-  /** Clone so darkening this prop never mutates the shared GLTF material. */
   const material = useMemo(() => sourceMaterial.clone(), [sourceMaterial]);
   const baseColor = useMemo(
     () => sourceMaterial.color.clone(),
@@ -51,9 +133,12 @@ export function ShipWallSupport(props: JSX.IntrinsicElements["group"]) {
   );
 
   const {
+    enabled,
     darkness,
     roughness,
     metalness,
+    castShadow,
+    receiveShadow,
     count,
     direction,
     spacing,
@@ -61,6 +146,7 @@ export function ShipWallSupport(props: JSX.IntrinsicElements["group"]) {
     offsetY,
     offsetZ,
   } = useControls(SHIP_WALL_SUPPORT_CONTROLS_PATH, {
+    enabled: { value: true, label: "Enable ribs" },
     darkness: {
       value: 0.18,
       min: 0.1,
@@ -82,6 +168,8 @@ export function ShipWallSupport(props: JSX.IntrinsicElements["group"]) {
       step: 0.01,
       label: "Metalness",
     },
+    castShadow: { value: false, label: "Cast shadows" },
+    receiveShadow: { value: false, label: "Receive shadows" },
     count: {
       value: 187,
       min: 1,
@@ -115,46 +203,35 @@ export function ShipWallSupport(props: JSX.IntrinsicElements["group"]) {
 
   useEffect(() => () => material.dispose(), [material]);
 
-  const temp = useMemo(
-    () => ({
-      matrix: new Matrix4(),
-      position: new Vector3(),
-      quaternion: new Quaternion(),
-      scale: new Vector3(...baseRibScale),
-    }),
-    [],
-  );
-
-  useLayoutEffect(() => {
-    const mesh = meshRef.current;
-    if (!mesh) return;
-
-    const dir = axisVectors[direction];
-    for (let i = 0; i < count; i += 1) {
-      temp.position.set(
-        baseRibPosition[0] + dir[0] * spacing * i,
-        baseRibPosition[1] + dir[1] * spacing * i,
-        baseRibPosition[2] + dir[2] * spacing * i,
-      );
-      temp.matrix.compose(temp.position, temp.quaternion, temp.scale);
-      mesh.setMatrixAt(i, temp.matrix);
+  const chunks = useMemo(() => {
+    const list: { globalStart: number; localCount: number }[] = [];
+    for (let start = 0; start < count; start += INSTANCE_CHUNK_SIZE) {
+      list.push({
+        globalStart: start,
+        localCount: Math.min(INSTANCE_CHUNK_SIZE, count - start),
+      });
     }
+    return list;
+  }, [count]);
 
-    mesh.count = count;
-    mesh.instanceMatrix.needsUpdate = true;
-    mesh.computeBoundingSphere();
-  }, [count, direction, spacing, temp]);
+  if (!enabled) return null;
 
   return (
-    <group {...props} dispose={null}>
-      <group position={[offsetX, offsetY, offsetZ]}>
-        <instancedMesh
-          ref={meshRef}
-          args={[geometry, material, MAX_INSTANCES]}
-          castShadow
-          receiveShadow
-          frustumCulled={false}
-        />
+    <group {...props} dispose={null} userData={camExcludeCollision}>
+      <group position={[offsetX, offsetY, offsetZ]} userData={camExcludeCollision}>
+        {chunks.map(({ globalStart, localCount }, chunkIndex) => (
+          <RibInstanceChunk
+            key={`${chunkIndex}-${globalStart}-${localCount}-${direction}-${spacing}`}
+            geometry={geometry}
+            material={material}
+            globalStart={globalStart}
+            localCount={localCount}
+            direction={direction}
+            spacing={spacing}
+            castShadow={castShadow}
+            receiveShadow={receiveShadow}
+          />
+        ))}
       </group>
     </group>
   );
