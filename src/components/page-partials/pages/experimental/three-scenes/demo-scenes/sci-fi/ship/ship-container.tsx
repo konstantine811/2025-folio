@@ -16,6 +16,7 @@ import { useRegisterCameraCollisionMeshes } from "@/components/common/hooks/came
 import { ShipContainerBack } from "./ship-container-back";
 import { ShipDoor } from "./ship-door";
 import { ShipWallSupport } from "./ship-wall-support";
+import { ShipChair } from "./ship-chair";
 
 const modelPath = "/3d-models/sci-fi/ship-container.glb";
 const texturePath = "/3d-models/sci-fi/ship_baking.jpg";
@@ -183,6 +184,7 @@ export function ShipContainer(props: JSX.IntrinsicElements["group"]) {
       <ShipContainerBack />
       <ShipDoor position={[0, 0.17, 0.2]} />
       <ShipWallSupport />
+      <ShipChair />
     </group>
   );
 }
