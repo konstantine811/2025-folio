@@ -24,6 +24,7 @@ import {
 } from "./sci-fi-intro.config";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { cn } from "@/lib/utils";
+import { getDprCap, isMobileDevice } from "@/utils/device-capabilities";
 
 export type CameraMode = "Scroll" | "CameraControls";
 
@@ -211,6 +212,12 @@ const Init = () => {
 
       <Canvas
         shadows
+        dpr={getDprCap()}
+        gl={{
+          powerPreference: "high-performance",
+          failIfMajorPerformanceCaveat: false,
+          antialias: !isMobileDevice,
+        }}
         camera={{ position: [15, 10, -5], fov: 30 }}
         style={{ height: "100%" }}
         onPointerDown={(e) => {

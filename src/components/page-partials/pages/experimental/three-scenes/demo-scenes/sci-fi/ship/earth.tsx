@@ -20,6 +20,7 @@ import {
   Vector3,
 } from "three";
 import { earthConfig, earthShaderDefaults } from "./earth.config";
+import { prefersLightweightTextures } from "@/utils/device-capabilities";
 
 const earthTextures = {
   dayPreview: "/images/textures/earth/three-journey/day-1k.jpg",
@@ -510,19 +511,21 @@ function Earth() {
           (texture) => assignTexture("uSpecularCloudsTexture", texture),
         ),
       );
-      disposers.push(
-        scheduleIdle(() => {
-          disposers.push(
-            loadTextureInBackground(
-              earthTextures.specularCloudsHigh,
-              anisotropy,
-              (texture) => assignTexture("uSpecularCloudsTexture", texture),
-              undefined,
-              true,
-            ),
-          );
-        }, 500),
-      );
+      if (!prefersLightweightTextures) {
+        disposers.push(
+          scheduleIdle(() => {
+            disposers.push(
+              loadTextureInBackground(
+                earthTextures.specularCloudsHigh,
+                anisotropy,
+                (texture) => assignTexture("uSpecularCloudsTexture", texture),
+                undefined,
+                true,
+              ),
+            );
+          }, 500),
+        );
+      }
     };
 
     const assignHighTexture = (
@@ -562,7 +565,9 @@ function Earth() {
     };
 
     disposers.push(scheduleIdle(loadPreviewTextures, 80));
-    disposers.push(scheduleIdle(loadHighTextures, 1300));
+    if (!prefersLightweightTextures) {
+      disposers.push(scheduleIdle(loadHighTextures, 1300));
+    }
 
     return () => {
       disposers.forEach((dispose) => dispose());

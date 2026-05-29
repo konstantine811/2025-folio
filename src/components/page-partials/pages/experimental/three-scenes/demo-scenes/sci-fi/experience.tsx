@@ -11,6 +11,7 @@ import { CharacterAnimations } from "../../character-controller/models/character
 import { usePauseStore } from "@/components/common/game-controller/store/usePauseMode";
 import { SciFiCharacterAnimations } from "./character/sci-fi.config";
 import { useControls } from "leva";
+import { isMobileDevice } from "@/utils/device-capabilities";
 
 type ExperienceProps = {
   cameraMode: CameraMode;
@@ -93,7 +94,7 @@ const Experience = ({ cameraMode, scrollProgressRef }: ExperienceProps) => {
       <Stars
         radius={1}
         depth={500}
-        count={15000}
+        count={isMobileDevice ? 5000 : 15000}
         factor={20}
         saturation={0}
         speed={1.2}
