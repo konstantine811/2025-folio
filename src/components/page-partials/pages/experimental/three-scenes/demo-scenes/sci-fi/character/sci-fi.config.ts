@@ -61,7 +61,7 @@ export function getSciFiCapsuleFeetToCenterOffset() {
 
 /** Scroll group placement — must stay in sync with sci-fi-character-controller scroll wrapper. */
 export const sciFiScrollPlacement = {
-  groupY: 0.1,
+  groupY: 0.06,
   startZ: 13.821,
   floorY: 0.057,
 };

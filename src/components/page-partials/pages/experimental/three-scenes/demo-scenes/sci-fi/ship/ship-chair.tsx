@@ -20,6 +20,7 @@ import type { ResolvedCableProxyBox } from "../character/sci-fi-cable-proxy-limb
 const modelPath = "/3d-models/sci-fi/chairglb.glb";
 
 const SHIP_CHAIR_DEFAULT_POSITION: [number, number, number] = [0, 0.1, 7];
+const SHIP_CHAIR_FALL_RESET_Y = -0.7;
 
 /** Anchor for proxy + physics cuboids (matches exported chair_collider). */
 const CHAIR_COLLIDER_ANCHOR: [number, number, number] = [0, 0.282, 6.719];
@@ -166,6 +167,15 @@ export function ShipChair({ controls, ...props }: ShipChairProps) {
     wasPausedRef.current = isPaused;
   }, [isPaused]);
 
+  useFrame(() => {
+    const body = bodyRef.current;
+    if (!body) return;
+
+    if (body.translation().y < SHIP_CHAIR_FALL_RESET_Y) {
+      resetChairToDefaultPose(body);
+    }
+  });
+
   const resolveVerletBoxes = () => {
     const mesh = colliderMeshRef.current;
     if (!mesh) return [];
@@ -201,21 +211,21 @@ export function ShipChair({ controls, ...props }: ShipChairProps) {
       <RigidBody
         ref={bodyRef}
         {...props}
-      type="dynamic"
-      colliders={false}
-      ccd
-      canSleep={false}
-      friction={CHAIR_PHYSICS_FRICTION}
-      restitution={0}
-      mass={10}
-      linearDamping={0.25}
-      angularDamping={0.5}
+        type="dynamic"
+        colliders={false}
+        ccd
+        canSleep={false}
+        friction={CHAIR_PHYSICS_FRICTION}
+        restitution={0}
+        mass={10}
+        linearDamping={0.25}
+        angularDamping={0.5}
         position={SHIP_CHAIR_DEFAULT_POSITION}
         collisionGroups={chairCollision}
         solverGroups={chairCollision}
       >
-        <group position={[0, 0.055, 6.801]}>
-          <group position={[0, 0.4, -0.073]} scale={0.961}>
+        <group position={[0, 0.014, 6.901]}>
+          <group position={[0, 0.39, -0.073]} scale={1.1}>
             <mesh
               castShadow
               receiveShadow
@@ -231,31 +241,35 @@ export function ShipChair({ controls, ...props }: ShipChairProps) {
           </group>
         </group>
 
-      <CuboidCollider
-        args={[
-          controls.baseHalfExtents.x,
-          controls.baseHalfExtents.y,
-          controls.baseHalfExtents.z,
-        ]}
-        position={cuboidColliderPosition(controls.baseLocalOffset)}
-        friction={CHAIR_PHYSICS_FRICTION}
-      />
-      <CuboidCollider
-        args={[
-          controls.backHalfExtents.x,
-          controls.backHalfExtents.y,
-          controls.backHalfExtents.z,
-        ]}
-        position={cuboidColliderPosition(controls.backLocalOffset)}
-        friction={CHAIR_PHYSICS_FRICTION}
-      />
-      <mesh
-        ref={colliderMeshRef}
-        geometry={collider.geometry}
-        position={CHAIR_COLLIDER_ANCHOR}
-        scale={0.214}
-        visible={false}
-      />
+        <CuboidCollider
+          args={[
+            controls.baseHalfExtents.x,
+            controls.baseHalfExtents.y,
+            controls.baseHalfExtents.z,
+          ]}
+          position={cuboidColliderPosition(controls.baseLocalOffset)}
+          collisionGroups={chairCollision}
+          solverGroups={chairCollision}
+          friction={CHAIR_PHYSICS_FRICTION}
+        />
+        <CuboidCollider
+          args={[
+            controls.backHalfExtents.x,
+            controls.backHalfExtents.y,
+            controls.backHalfExtents.z,
+          ]}
+          position={cuboidColliderPosition(controls.backLocalOffset)}
+          collisionGroups={chairCollision}
+          solverGroups={chairCollision}
+          friction={CHAIR_PHYSICS_FRICTION}
+        />
+        <mesh
+          ref={colliderMeshRef}
+          geometry={collider.geometry}
+          position={CHAIR_COLLIDER_ANCHOR}
+          scale={0.214}
+          visible={false}
+        />
       </RigidBody>
 
       <ChairVerletProxyWireframe

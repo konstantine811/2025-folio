@@ -1,24 +1,44 @@
 import { JSX, useEffect, useMemo, useRef } from "react";
 import { useGLTF } from "@react-three/drei";
 import { useControls } from "leva";
-import { Group, Mesh, MeshStandardMaterial } from "three";
+import { Color, Group, Mesh, MeshStandardMaterial } from "three";
 import { RigidBody } from "@react-three/rapier";
 import { useRegisterCameraCollisionMeshes } from "@/components/common/hooks/camera/useRegisterCameraCollisionMeshes";
 
 const modelPath = "/3d-models/sci-fi/ship-container_back.glb";
 
 const camWall = { camIncludeCollision: true } as const;
+const tintColorScratch = new Color();
 
 /** Leva folder (visible with #debug). */
 export const SHIP_BACK_WALL_CONTROLS_PATH = "Sci-fi props / Ship back wall";
 
-function useBackWallMaterial(source: MeshStandardMaterial) {
-  const material = useMemo(() => source.clone(), [source]);
+type ShipContainerBackProps = JSX.IntrinsicElements["group"] & {
+  /** Textured hull material from ship-container.glb (back GLB has no bake map). */
+  hullMaterial: MeshStandardMaterial;
+};
 
-  const { color, brightness, roughness, metalness } = useControls(
-    SHIP_BACK_WALL_CONTROLS_PATH,
-    {
-      color: { value: "#b8bcc4", label: "Albedo" },
+/** Back wall with door opening — trimesh collider (not a simple box). */
+export function ShipContainerBack({
+  hullMaterial,
+  ...props
+}: ShipContainerBackProps) {
+  const rootRef = useRef<Group>(null);
+  const { nodes } = useGLTF(modelPath);
+
+  const wallMaterial = useMemo(() => {
+    const next = hullMaterial.clone();
+    next.name = "ship_back_wall";
+    return next;
+  }, [hullMaterial]);
+
+  const { tint, brightness, wallRoughness, wallMetalness, useBakeMap } =
+    useControls(SHIP_BACK_WALL_CONTROLS_PATH, {
+      useBakeMap: { value: true, label: "Bake texture" },
+      tint: {
+        value: "#ffffff",
+        label: "Tint (× bake map)",
+      },
       brightness: {
         value: 1,
         min: 0.1,
@@ -26,42 +46,30 @@ function useBackWallMaterial(source: MeshStandardMaterial) {
         step: 0.01,
         label: "Brightness",
       },
-      roughness: {
-        value: source.roughness,
+      wallRoughness: {
+        value: 0.6,
         min: 0,
         max: 1,
         step: 0.01,
         label: "Roughness",
       },
-      metalness: {
-        value: source.metalness,
+      wallMetalness: {
+        value: 0,
         min: 0,
         max: 1,
         step: 0.01,
         label: "Metalness",
       },
-    },
-  );
+    });
 
-  useEffect(() => {
-    material.color.set(color).multiplyScalar(brightness);
-    material.roughness = roughness;
-    material.metalness = metalness;
-    material.needsUpdate = true;
-  }, [material, color, brightness, roughness, metalness]);
+  tintColorScratch.set(tint).multiplyScalar(brightness);
+  wallMaterial.color.copy(tintColorScratch);
+  wallMaterial.roughness = wallRoughness;
+  wallMaterial.metalness = wallMetalness;
+  wallMaterial.map = useBakeMap ? hullMaterial.map : null;
+  wallMaterial.needsUpdate = true;
 
-  useEffect(() => () => material.dispose(), [material]);
-
-  return material;
-}
-
-/** Back wall with door opening — trimesh collider (not a simple box). */
-export function ShipContainerBack(props: JSX.IntrinsicElements["group"]) {
-  const rootRef = useRef<Group>(null);
-  const { nodes, materials } = useGLTF(modelPath);
-  const wallMaterial = useBackWallMaterial(
-    materials.shop_husk as MeshStandardMaterial,
-  );
+  useEffect(() => () => wallMaterial.dispose(), [wallMaterial]);
 
   useRegisterCameraCollisionMeshes(rootRef, [nodes]);
 

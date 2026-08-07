@@ -54,7 +54,7 @@ export function SciFiToggleCharacter({
     return (
       <group
         position={[0, sciFiScrollPlacement.groupY, sciFiScrollPlacement.startZ]}
-        scale={1}
+        scale={1.2}
       >
         <SciFiCharacter
           driver="scroll"

@@ -24,17 +24,17 @@ export function useSciFiChairControls() {
       label: "Enable chair",
     },
     baseHalfExtents: {
-      value: { x: 0.29, y: 0.24, z: 0.26 },
+      value: { x: 0.31, y: 0.28, z: 0.26 },
       step: 0.01,
       label: "Base half extents",
     },
     baseLocalOffset: {
-      value: { x: 0, y: 0, z: 0 },
+      value: { x: 0, y: 0, z: 0.09 },
       step: 0.01,
       label: "Base local offset",
     },
     backHalfExtents: {
-      value: { x: 0.26, y: 0.18, z: 0.04 },
+      value: { x: 0.26, y: 0.1, z: 0.04 },
       step: 0.01,
       label: "Back half extents",
     },
@@ -44,7 +44,7 @@ export function useSciFiChairControls() {
       label: "Back local offset",
     },
     showWireframe: {
-      value: false,
+      value: true,
       label: "Show proxy wireframe",
     },
   });

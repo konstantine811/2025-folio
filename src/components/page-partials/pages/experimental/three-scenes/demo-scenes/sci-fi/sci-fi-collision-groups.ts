@@ -40,3 +40,8 @@ export function sciFiPropDynamicCollisionGroups() {
     SCIFI_CABLE_GROUP,
   ]);
 }
+
+/** Simple floor support for dynamic props to avoid tunneling through detailed trimeshes. */
+export function sciFiPropFloorCollisionGroups() {
+  return interactionGroups(0, [SCIFI_PROP_COLLIDER_GROUP]);
+}

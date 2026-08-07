@@ -1,6 +1,6 @@
 import { JSX, useEffect, useMemo, useRef } from "react";
 import { useGLTF, useTexture } from "@react-three/drei";
-import { Group, Mesh, MeshPhysicalMaterial } from "three";
+import { Group, Mesh, MeshPhysicalMaterial, MeshStandardMaterial } from "three";
 import {
   CuboidCollider,
   RigidBody,
@@ -12,11 +12,13 @@ import { ShipDoor } from "./ship-door";
 import { ShipWallSupport } from "./ship-wall-support";
 import { ShipChair } from "./ship-chair";
 import { useSciFiChairControls } from "./ship-chair-cable-proxies";
+import { sciFiPropFloorCollisionGroups } from "../sci-fi-collision-groups";
 
 const modelPath = "/3d-models/sci-fi/ship-container.glb";
 const texturePath = "/3d-models/sci-fi/ship_baking.jpg";
 const cableCollisionGroup = 4;
 const cableFloorCollisionGroup = 5;
+const propFloorCollision = sciFiPropFloorCollisionGroups();
 
 const camWall = { camIncludeCollision: true } as const;
 const camExcludeCollision = { camExcludeCollision: true } as const;
@@ -117,6 +119,14 @@ export function ShipContainer({
       </RigidBody>
       <RigidBody type="fixed" colliders={false}>
         <CuboidCollider
+          args={[5.8, 0.12, 12.5]}
+          position={[0, 0.025, 17.861]}
+          collisionGroups={propFloorCollision}
+          solverGroups={propFloorCollision}
+          friction={1}
+          restitution={0}
+        />
+        <CuboidCollider
           args={[5.8, 0.08, 12.5]}
           position={[0, 0.035, 17.861]}
           collisionGroups={interactionGroups(cableFloorCollisionGroup, [
@@ -141,7 +151,9 @@ export function ShipContainer({
         material={materials["Material.003"]}
         position={[0, 5.178, 1.543]}
       />
-      <ShipContainerBack />
+      <ShipContainerBack
+        hullMaterial={materials.shop_husk as MeshStandardMaterial}
+      />
       <ShipDoor position={[0, 0.17, 0.2]} hideHtmlOverlay={hideSceneHtml} />
       <ShipWallSupport />
       {chairControls.chairEnabled ? (
