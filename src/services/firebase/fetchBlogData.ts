@@ -41,22 +41,39 @@ export const fetchTranslatedArticle = async (
 };
 
 export const fetchPosts = async (lang: LanguageType): Promise<PostCover[]> => {
-  const q = query(
-    collection(db, FirebaseCollection.articles),
-    where(BlogArticleProps.lang, "==", lang),
-    ...(process.env.NODE_ENV === "production"
-      ? [where(BlogArticleProps.isPublished, "==", true)]
-      : [])
-  );
+  try {
+    const q = query(
+      collection(db, FirebaseCollection.articles),
+      where(BlogArticleProps.lang, "==", lang),
+      ...(process.env.NODE_ENV === "production"
+        ? [where(BlogArticleProps.isPublished, "==", true)]
+        : [])
+    );
 
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => {
-    const rest = d.data() as PostCover;
-    return {
-      ...rest,
-      id: d.id, // Firestore ID
-    };
-  });
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => {
+      const rest = d.data() as PostCover;
+      return {
+        ...rest,
+        id: d.id, // Firestore ID
+      };
+    });
+  } catch (error) {
+    const code =
+      typeof error === "object" && error !== null && "code" in error
+        ? String(error.code)
+        : null;
+
+    if (code === "permission-denied") {
+      console.warn(
+        "Blog articles are not readable with the current Firestore rules. Deploy firestore.rules to project abc-folio."
+      );
+      return [];
+    }
+
+    console.error("Error fetching blog posts:", error);
+    return [];
+  }
 };
 
 export async function getBlogArticleId(
