@@ -1,6 +1,6 @@
 import { RefObject, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
-import { interactionGroups, useRapier } from "@react-three/rapier";
+import { interactionGroups, useBeforePhysicsStep, useRapier } from "@react-three/rapier";
 import { Group, MathUtils, Vector3 } from "three";
 
 import useFollowCamera from "@/components/common/hooks/camera/useFollowCamera";
@@ -14,6 +14,13 @@ import {
 import { usePlayerPositionStore } from "@/components/page-partials/pages/experimental/three-scenes/character-controller/physics-world/usePlayerPositionStore";
 import { CharacterControllerState } from "./store/character-controller-store";
 import { EntityType } from "./ecs";
+
+/**
+ * Grounded move blend rate. Tuned so at 60 FPS ≈ old fixed `smoothing = 0.25`:
+ * `1 - Math.exp(-MOVE_SMOOTH_RATE / 60) ≈ 0.25`.
+ * At lower FPS each frame blends harder toward target speed (FPS-independent feel).
+ */
+const MOVE_SMOOTH_RATE = -60 * Math.log(0.75);
 
 type UseCharacterControllerPhysicsParams = {
   playerRef: RefObject<EntityType | null>;
@@ -92,7 +99,7 @@ export function useCharacterControllerPhysics({
     });
 
   const spawnFrameRef = useRef(0);
-  const prevPosition = useRef(new Vector3());
+  const jumpHeldRef = useRef(false);
   const targetRotation = useRef(startModelRotationY);
   const currentRotation = useRef(startModelRotationY);
 
@@ -113,17 +120,10 @@ export function useCharacterControllerPhysics({
 
     const translationStable = characterRigidBody.translation();
 
-    setPlayerPosition({
-      x: translationStable.x,
-      y: translationStable.y,
-      z: translationStable.z,
-    });
-
-    const currentPos = new Vector3(
-      translationStable.x,
-      translationStable.y,
-      translationStable.z,
-    );
+    // Follow the interpolated render transform, not the 60 Hz physics pose.
+    const currentPos = modelRef.current?.parent
+      ? modelRef.current.parent.getWorldPosition(pivotPosition)
+      : pivotPosition.set(translationStable.x, translationStable.y, translationStable.z);
 
     /**
      * Camera follow
@@ -140,16 +140,25 @@ export function useCharacterControllerPhysics({
       .addScaledVector(pivotYAxis, capsuleHalfHeight + capsuleRadius / 2)
       .addScaledVector(pivotZAxis, 0);
 
-    pivot.position.lerp(pivotPosition, 1 - Math.exp(-11));
+    pivot.position.lerp(pivotPosition, 1 - Math.exp(-11 * delta));
 
     if (manageCamera) {
       followCam.getWorldPosition(followCamPosition);
 
-      camera.position.lerp(followCamPosition, 1 - Math.exp(-11));
+      camera.position.lerp(followCamPosition, 1 - Math.exp(-11 * delta));
       camera.lookAt(pivot.position);
     }
 
     cameraCollisionDetect(delta);
+
+  });
+
+  useBeforePhysicsStep(() => {
+    const characterRigidBody = playerRef.current?.rigidBody;
+    if (!characterRigidBody) return;
+    const delta = world.timestep;
+    const translationStable = characterRigidBody.translation();
+    setPlayerPosition(translationStable);
 
     /**
      * Ground detection
@@ -189,10 +198,9 @@ export function useCharacterControllerPhysics({
         characterRigidBody,
       );
 
-      closestHitRay = ray;
-
       if (hit && (!closestHit || hit.timeOfImpact < closestHit.timeOfImpact)) {
         closestHit = hit;
+        closestHitRay = ray;
         isGrounded = true;
       }
     }
@@ -270,7 +278,9 @@ export function useCharacterControllerPhysics({
         velocity = createMovementVelocity(dirX, dirZ, speed, linvel.y);
 
         if (isGroundedStable) {
-          const smoothing = 0.25;
+          // Cap so a single hitch (~<20 FPS frame) doesn't snap velocity.
+          const step = Math.min(delta, 1 / 20);
+          const smoothing = 1 - Math.exp(-MOVE_SMOOTH_RATE * step);
 
           velocity.x = velocity.x * smoothing + linvel.x * (1 - smoothing);
           velocity.z = velocity.z * smoothing + linvel.z * (1 - smoothing);
@@ -306,7 +316,9 @@ export function useCharacterControllerPhysics({
     /**
      * Jump
      */
-    if (jump && isGroundedStable && !inSpawnGrace) {
+    const jumpPressed = jump && !jumpHeldRef.current;
+    jumpHeldRef.current = jump;
+    if (jumpPressed && isGroundedStable && !inSpawnGrace) {
       characterRigidBody.setLinvel(
         {
           x: linvel.x,
@@ -325,7 +337,7 @@ export function useCharacterControllerPhysics({
     /**
      * Ground snap
      */
-    if (isGroundedStable && !jump && !inSpawnGrace) {
+    if (isGroundedStable && !jump && !inSpawnGrace && linvel.y <= 0) {
       const snapForce = createFallForce(0.5);
       characterRigidBody.applyImpulse(snapForce, true);
 
@@ -333,26 +345,23 @@ export function useCharacterControllerPhysics({
         const point = closestHitRay.pointAt(closestHit.timeOfImpact);
         const targetY = point.y + capsuleHalfHeight + capsuleRadius;
 
-        characterRigidBody.setTranslation(
-          {
-            x: translationStable.x,
-            y: targetY,
-            z: translationStable.z,
-          },
-          true,
-        );
+        // Let contacts hold the capsule on the ground. Teleporting every frame
+        // invalidates interpolation; only snap a small downward gap on descent.
+        const gap = translationStable.y - targetY;
+        if (gap > 0.02 && gap < 0.3) {
+          characterRigidBody.setTranslation(
+            { x: translationStable.x, y: targetY, z: translationStable.z },
+            true,
+          );
+        }
       }
-    }
-
-    if (isGroundedStable) {
-      prevPosition.current.copy(currentPos);
     }
 
     setControllerState({
       moveSpeed,
       jumpForce,
       airControl,
-      isGrounded: isGroundedStable,
+      isGrounded: isGroundedStable && linvel.y <= 0.2,
       isMoving,
       isSprinting,
       velocity: linvel,

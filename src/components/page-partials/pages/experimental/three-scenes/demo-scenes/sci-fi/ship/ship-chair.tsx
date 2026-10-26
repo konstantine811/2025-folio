@@ -19,7 +19,6 @@ import type { ResolvedCableProxyBox } from "../character/sci-fi-cable-proxy-limb
 
 const modelPath = "/3d-models/sci-fi/chairglb.glb";
 
-const SHIP_CHAIR_DEFAULT_POSITION: [number, number, number] = [0, 0.1, 7];
 const SHIP_CHAIR_FALL_RESET_Y = -0.7;
 
 /** Anchor for proxy + physics cuboids (matches exported chair_collider). */
@@ -40,12 +39,20 @@ function cuboidColliderPosition(offset: {
   ];
 }
 
-function resetChairToDefaultPose(body: RapierRigidBody | null) {
+function yawQuaternion(rotationYDeg: number) {
+  const half = (rotationYDeg * Math.PI) / 360;
+  return { x: 0, y: Math.sin(half), z: 0, w: Math.cos(half) };
+}
+
+function applyChairPose(
+  body: RapierRigidBody | null,
+  position: { x: number; y: number; z: number },
+  rotationYDeg: number,
+) {
   if (!body) return;
 
-  const [x, y, z] = SHIP_CHAIR_DEFAULT_POSITION;
-  body.setTranslation({ x, y, z }, true);
-  body.setRotation({ x: 0, y: 0, z: 0, w: 1 }, true);
+  body.setTranslation(position, true);
+  body.setRotation(yawQuaternion(rotationYDeg), true);
   body.setLinvel({ x: 0, y: 0, z: 0 }, true);
   body.setAngvel({ x: 0, y: 0, z: 0 }, true);
 }
@@ -158,21 +165,38 @@ export function ShipChair({ controls, ...props }: ShipChairProps) {
   proxyConfigRef.current = controls;
 
   const isPaused = usePauseStore((s) => s.isPaused);
-  const wasPausedRef = useRef(isPaused);
+  // Freeze while paused OR while proxy wireframes are on (Leva tuning): a dynamic
+  // body resting on the base cuboid cancels localOffset.y by lifting the mesh.
+  const freezeForTuning = isPaused || controls.showWireframe;
+  const freezeForTuningRef = useRef(freezeForTuning);
+  freezeForTuningRef.current = freezeForTuning;
+  const wasFrozenRef = useRef(freezeForTuning);
 
   useEffect(() => {
-    if (!wasPausedRef.current && isPaused) {
-      resetChairToDefaultPose(bodyRef.current);
+    if (!wasFrozenRef.current && freezeForTuning) {
+      applyChairPose(
+        bodyRef.current,
+        proxyConfigRef.current.position,
+        proxyConfigRef.current.rotationY,
+      );
     }
-    wasPausedRef.current = isPaused;
-  }, [isPaused]);
+    wasFrozenRef.current = freezeForTuning;
+  }, [freezeForTuning]);
 
   useFrame(() => {
     const body = bodyRef.current;
     if (!body) return;
 
+    const { position, rotationY } = proxyConfigRef.current;
+
+    if (freezeForTuningRef.current) {
+      body.setNextKinematicTranslation(position);
+      body.setNextKinematicRotation(yawQuaternion(rotationY));
+      return;
+    }
+
     if (body.translation().y < SHIP_CHAIR_FALL_RESET_Y) {
-      resetChairToDefaultPose(body);
+      applyChairPose(body, position, rotationY);
     }
   });
 
@@ -211,7 +235,7 @@ export function ShipChair({ controls, ...props }: ShipChairProps) {
       <RigidBody
         ref={bodyRef}
         {...props}
-        type="dynamic"
+        type={freezeForTuning ? "kinematicPosition" : "dynamic"}
         colliders={false}
         ccd
         canSleep={false}
@@ -220,7 +244,12 @@ export function ShipChair({ controls, ...props }: ShipChairProps) {
         mass={10}
         linearDamping={0.25}
         angularDamping={0.5}
-        position={SHIP_CHAIR_DEFAULT_POSITION}
+        position={[
+          controls.position.x,
+          controls.position.y,
+          controls.position.z,
+        ]}
+        rotation={[0, (controls.rotationY * Math.PI) / 180, 0]}
         collisionGroups={chairCollision}
         solverGroups={chairCollision}
       >

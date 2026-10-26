@@ -248,6 +248,10 @@ const ThreeSciFi = lazyPage(
     import("../components/page-partials/pages/experimental/three-scenes/demo-scenes/sci-fi/init"),
 );
 
+const AnimationStudio = lazyPage(
+  () => import('../components/page-partials/pages/experimental/animation-studio/AnimationStudio'),
+);
+
 export enum RoutPath {
   HOME = "/",
   EXPERIMENTAL = "/labs",
@@ -298,6 +302,7 @@ export enum RoutPath {
   EXPERIMENTAL_THREE_CHARACTER_CONTROLLER = "three-character-controller",
   EXPERIMENTAL_THREE_LEARN_CAMERA = "three-learn-camera",
   EXPERIMENTAL_THREE_SCI_FI = "three-sci-fi",
+  EXPERIMENTAL_ANIMATION_STUDIO = "animation-studio",
 }
 
 export const DEFAULT_LOCALE_PLUG = "https://custom.local";
@@ -334,6 +339,15 @@ const imagePath = (imageName: string, format = "jpg") => {
 };
 
 export const EXPERIMENTAL_ROUTERS: AppRoute[] = [
+  {
+    path: RoutPath.EXPERIMENTAL_ANIMATION_STUDIO,
+    Component: AnimationStudio,
+    id: "Animation Studio · Mixamo",
+    imageUrl: "/images/animation-studio.svg",
+    description: "Import Mixamo characters, compose animations and export glTF / GLB.",
+    icon: "🎬",
+    type: ExperimentalTypes.games,
+  },
   // {
   //   path: RoutPath.EXPERIMENTAL_TEST,
   //   Component: Test,

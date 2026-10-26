@@ -18,7 +18,7 @@ export type ThreeGameDemoDefinition = {
   icon: string;
   /** File name under images/three-views-scene/page_images/ (without extension) */
   imageName: string;
-  imageFormat?: "jpg" | "png" | "webp";
+  imageFormat?: "jpg" | "png" | "webp" | "svg";
 };
 
 /** Static loaders — Vite must see full import paths. */
@@ -26,6 +26,8 @@ const gameLoaders: Record<
   string,
   () => Promise<{ default: ComponentType<object> }>
 > = {
+  "codeworlds": () =>
+    import("@/components/page-partials/pages/experimental/three-scenes/games/codeworlds/init"),
   "sim-city-game": () =>
     import(
       "@/components/page-partials/pages/experimental/three-scenes/games/sim-city-game/init"
@@ -37,6 +39,15 @@ const gameLoaders: Record<
 };
 
 export const THREE_GAME_DEMOS: ThreeGameDemoDefinition[] = [
+  {
+    slug: "three-codeworlds",
+    folder: "codeworlds",
+    id: "experimental-three-codeworlds",
+    icon: "🌍",
+    description: "Codeworlds — початкова сцена з керованим персонажем та анімаціями.",
+    imageName: "codeworlds",
+    imageFormat: "svg",
+  },
   {
     slug: "three-sim-city-game",
     folder: "sim-city-game",

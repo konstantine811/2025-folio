@@ -1,5 +1,5 @@
 import { CapsuleCollider, RigidBody } from "@react-three/rapier";
-import { ReactNode, useRef } from "react";
+import { ReactNode, useMemo, useRef } from "react";
 import { Group } from "three";
 
 import { useCharacterControllerPhysics } from "../useCharacterControllerPhysics";
@@ -62,6 +62,12 @@ export function CharacterController({
   const playerRef = useRef<EntityType>(null);
   const modelRef = useRef<Group>(null);
   const weaponAttachmentRef = useRef<Group>(null);
+  // Rapier reapplies transforms when userData changes. A fresh object on each
+  // controller-state render rewinds physics to the interpolated visual position.
+  const rigidBodyUserData = useMemo(
+    () => ({ camExcludeCollision: true, type: "player" }),
+    [],
+  );
 
   const { controllerState } = useCharacterControllerPhysics({
     playerRef,
@@ -93,7 +99,7 @@ export function CharacterController({
             restitution={0}
             ccd={true}
             type="dynamic"
-            userData={{ camExcludeCollision: true, type: "player" }}
+            userData={rigidBodyUserData}
           >
             <CapsuleCollider
               args={[capsuleHalfHeight, capsuleRadius]}

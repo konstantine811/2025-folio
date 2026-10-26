@@ -31,6 +31,7 @@ function App() {
     setIsTouch(isTouchDevice);
   }, []);
   const hideFooter =
+    location.pathname === `/${RoutPath.EXPERIMENTAL_ANIMATION_STUDIO}` ||
     location.pathname.startsWith("/three-") ||
     location.pathname.startsWith(RoutPath.NODE_WRITER);
   const useFullViewportShell = hideFooter;
