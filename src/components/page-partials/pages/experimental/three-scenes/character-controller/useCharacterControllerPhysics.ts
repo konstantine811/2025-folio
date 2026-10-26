@@ -48,6 +48,8 @@ type UseCharacterControllerPhysicsParams = {
 
   moveSpeed?: number;
   jumpForce?: number;
+  jumpStartDelay?: number;
+  movingJumpStartDelay?: number;
   airControl?: number;
 };
 
@@ -63,6 +65,8 @@ export function useCharacterControllerPhysics({
   manageCamera = true,
   moveSpeed = 9,
   jumpForce = 2.5,
+  jumpStartDelay = 0,
+  movingJumpStartDelay = jumpStartDelay,
   airControl = 0.75,
 }: UseCharacterControllerPhysicsParams) {
   const setPlayerPosition = usePlayerPositionStore((s) => s.setPosition);
@@ -93,6 +97,8 @@ export function useCharacterControllerPhysics({
       jumpForce: 0,
       airControl: 0,
       isGrounded: true,
+      isJumpPreparing: false,
+      isMovingJump: false,
       isMoving: false,
       isSprinting: false,
       velocity: { x: 0, y: 0, z: 0 },
@@ -100,6 +106,8 @@ export function useCharacterControllerPhysics({
 
   const spawnFrameRef = useRef(0);
   const jumpHeldRef = useRef(false);
+  const movingJumpRef = useRef(false);
+  const jumpPreparationRef = useRef<number | null>(null);
   const targetRotation = useRef(startModelRotationY);
   const currentRotation = useRef(startModelRotationY);
 
@@ -316,22 +324,31 @@ export function useCharacterControllerPhysics({
     /**
      * Jump
      */
+    if (isGroundedStable && linvel.y <= 0.2 && jumpPreparationRef.current === null) {
+      movingJumpRef.current = false;
+    }
     const jumpPressed = jump && !jumpHeldRef.current;
     jumpHeldRef.current = jump;
-    if (jumpPressed && isGroundedStable && !inSpawnGrace) {
-      characterRigidBody.setLinvel(
-        {
-          x: linvel.x,
-          y: 0,
-          z: linvel.z,
-        },
-        true,
-      );
+    if (jumpPreparationRef.current !== null) {
+      // Leaving a ledge during anticipation cancels the queued jump.
+      jumpPreparationRef.current = isGroundedStable
+        ? Math.max(0, jumpPreparationRef.current - delta)
+        : null;
+    } else if (jumpPressed && isGroundedStable && !inSpawnGrace && linvel.y <= 0.2) {
+      // Latch the takeoff mode; releasing movement midair must not start a crouch.
+      movingJumpRef.current = isMoving;
+      jumpPreparationRef.current = Math.max(0, isMoving ? movingJumpStartDelay : jumpStartDelay);
+    }
 
+    if (jumpPreparationRef.current !== null && jumpPreparationRef.current <= 1e-6) {
+      jumpPreparationRef.current = null;
+      characterRigidBody.setLinvel({ x: linvel.x, y: 0, z: linvel.z }, true);
       characterRigidBody.applyImpulse(
         createJumpImpulse(jumpForce, { y: linvel.y }),
         true,
       );
+      // Publish takeoff in the same step so the jump clip continues uninterrupted.
+      linvel = characterRigidBody.linvel();
     }
 
     /**
@@ -362,6 +379,8 @@ export function useCharacterControllerPhysics({
       jumpForce,
       airControl,
       isGrounded: isGroundedStable && linvel.y <= 0.2,
+      isJumpPreparing: jumpPreparationRef.current !== null,
+      isMovingJump: movingJumpRef.current,
       isMoving,
       isSprinting,
       velocity: linvel,

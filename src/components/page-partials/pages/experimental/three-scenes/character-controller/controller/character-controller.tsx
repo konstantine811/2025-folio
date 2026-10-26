@@ -38,6 +38,10 @@ type CharacterControllerProps = {
   gravityScale?: number;
   moveSpeed?: number;
   jumpForce?: number;
+  /** Seconds of anticipation animation before the takeoff impulse. */
+  jumpStartDelay?: number;
+  /** Optional anticipation override for jumps initiated while moving. */
+  movingJumpStartDelay?: number;
   airControl?: number;
 
   renderCharacter: (props: CharacterRenderProps) => ReactNode;
@@ -56,6 +60,8 @@ export function CharacterController({
   gravityScale = 3,
   moveSpeed,
   jumpForce,
+  jumpStartDelay,
+  movingJumpStartDelay,
   airControl,
   renderCharacter,
 }: CharacterControllerProps) {
@@ -80,6 +86,8 @@ export function CharacterController({
     manageCamera,
     moveSpeed,
     jumpForce,
+    jumpStartDelay,
+    movingJumpStartDelay,
     airControl,
   });
   return (

@@ -17,10 +17,12 @@ const CODEWORLDS_ASSETS = {
   idleClip: "Root.001|mixamo.com|Layer0",
 } as const;
 
-export function CodeworldsCharacter({ isMoving, isSprinting, isGrounded, verticalVelocity }: {
+export function CodeworldsCharacter({ isMoving, isSprinting, isGrounded, isJumpPreparing, isMovingJump, verticalVelocity }: {
   isMoving: boolean;
   isSprinting: boolean;
   isGrounded: boolean;
+  isJumpPreparing: boolean;
+  isMovingJump: boolean;
   verticalVelocity: number;
 }) {
   const model = useGLTF(CODEWORLDS_ASSETS.model);
@@ -62,13 +64,15 @@ export function CodeworldsCharacter({ isMoving, isSprinting, isGrounded, vertica
   const { actions } = useAnimations(clips, ref);
 
   // Ground rays still reach the floor during the first frames of takeoff.
-  const animation = verticalVelocity > 0.2
-    ? "jump"
-    : !isGrounded
-      ? "falling"
-      : isMoving
-        ? isSprinting ? "run" : "walk"
-        : "idle";
+  const animation = isMovingJump && !isGrounded
+    ? "falling"
+    : isJumpPreparing || verticalVelocity > 0.2
+      ? "jump"
+      : !isGrounded
+        ? "falling"
+        : isMoving
+          ? isSprinting ? "run" : "walk"
+          : "idle";
 
   useEffect(() => {
     const action = actions[animation];

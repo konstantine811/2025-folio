@@ -5,6 +5,8 @@ export type CharacterControllerState = {
   isMoving: boolean;
   isSprinting: boolean;
   isGrounded: boolean;
+  isJumpPreparing: boolean;
+  isMovingJump: boolean;
   velocity: {
     x: number;
     y: number;

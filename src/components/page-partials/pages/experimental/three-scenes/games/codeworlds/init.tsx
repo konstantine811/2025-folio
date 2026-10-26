@@ -47,12 +47,12 @@ export default function Init() {
           shadow-camera-top={25} shadow-camera-bottom={-25} shadow-normalBias={0.03} />
         <Suspense fallback={null}>
           <Physics gravity={[0, -9.81, 0]}>
-            <CharacterController startPosition={[0, 1.25, 0]}
+            <CharacterController startPosition={[0, 1.25, 0]} jumpStartDelay={0.55} movingJumpStartDelay={0} jumpForce={2}
               capsuleCollisionGroups={interactionGroups(0, [1])} raycastFilterGroups={[1]}
               renderCharacter={({ modelRef, controllerState }) => (
                 <group ref={modelRef} position={[0, -1.2, 0]}>
                   <CodeworldsCharacter isMoving={controllerState.isMoving} isSprinting={controllerState.isSprinting}
-                    isGrounded={controllerState.isGrounded} verticalVelocity={controllerState.velocity.y} />
+                    isGrounded={controllerState.isGrounded} isJumpPreparing={controllerState.isJumpPreparing} isMovingJump={controllerState.isMovingJump} verticalVelocity={controllerState.velocity.y} />
                 </group>
               )} />
             <Block position={[0, -0.5, 0]} size={[48, 1, 48]} color="#829b83" />
