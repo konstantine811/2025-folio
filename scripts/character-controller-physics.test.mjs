@@ -9,16 +9,19 @@ await RAPIER.init();
 const source = readFileSync(new URL('../src/components/page-partials/pages/experimental/three-scenes/character-controller/useCharacterControllerPhysics.ts', import.meta.url), 'utf8');
 const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true } }).outputText;
 
-function simulate(renderHz, jumpStartDelay = 0, holdJump = false, movingJumpStartDelay = jumpStartDelay, movingAtTakeoff = true) {
+const groundSupport = {};
+vm.runInNewContext(ts.transpileModule(readFileSync(new URL('../src/components/page-partials/pages/experimental/three-scenes/character-controller/physics/ground-support.ts', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, { exports: groundSupport });
+
+function simulate(renderHz, jumpStartDelay = 0, holdJump = false, movingJumpStartDelay = jumpStartDelay, movingAtTakeoff = true, spawnY = 1.2, minimumGroundY) {
   const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
-  const body = world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(0, 1.2, 0).lockRotations());
+  const body = world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(0, spawnY, 0).lockRotations());
   world.createCollider(RAPIER.ColliderDesc.capsule(0.8, 0.4), body);
   world.createCollider(RAPIER.ColliderDesc.cuboid(50, 0.5, 50).setTranslation(0, -0.5, 0));
   const pivot = new THREE.Object3D();
   const followCam = new THREE.Object3D();
   followCam.position.z = -5;
   pivot.add(followCam);
-  let frame, physics;
+  let frame, physics, afterPhysics;
   const refs = [];
   let refIndex = 0;
   let publishedState;
@@ -28,10 +31,12 @@ function simulate(renderHz, jumpStartDelay = 0, holdJump = false, movingJumpStar
     '@react-three/fiber': { useFrame: fn => { frame = fn; } },
     '@react-three/rapier': {
       useRapier: () => ({ rapier: RAPIER, world }),
+      useAfterPhysicsStep: fn => { afterPhysics = fn; },
       useBeforePhysicsStep: fn => { physics = fn; },
       interactionGroups: () => 0xffffffff,
     },
     three: THREE,
+    "./physics/ground-support": groundSupport,
     '@/components/common/hooks/camera/useFollowCamera': { default: () => ({ pivot, followCam, cameraCollisionDetect() {} }), __esModule: true },
     '@/components/common/game-controller/store/control-game-store': { useControlStore: () => controls },
     '@/utils/game.utils': { getPivotMovingDirection: () => controls.forward ? 0 : null },
@@ -44,16 +49,16 @@ function simulate(renderHz, jumpStartDelay = 0, holdJump = false, movingJumpStar
   };
   const exports = {};
   vm.runInNewContext(compiled, { exports, require: name => { assert(name in modules, name); return modules[name]; } });
-  const render = () => { refIndex = 0; exports.useCharacterControllerPhysics({ jumpStartDelay, movingJumpStartDelay, playerRef: {current:{rigidBody:body}}, modelRef:{current:new THREE.Group()}, capsuleHalfHeight:0.8, capsuleRadius:0.4 }); };
+  const render = () => { refIndex = 0; exports.useCharacterControllerPhysics({ jumpStartDelay, movingJumpStartDelay, minimumGroundY, playerRef: {current:{rigidBody:body}}, modelRef:{current:new THREE.Group()}, capsuleHalfHeight:0.8, capsuleRadius:0.4 }); };
   render();
   const camera = new THREE.PerspectiveCamera();
   for (let tick=0; tick<240; tick++) {
     if (tick % (240/renderHz) === 0) frame({camera},1/renderHz);
-    if (tick % 4 === 0) { physics(); world.step(); }
+    if (tick % 4 === 0) { physics(); world.step(); afterPhysics(); if (minimumGroundY !== undefined) assert.ok(body.translation().y >= 1.18, "Player remains above known floor from first step"); }
   }
   const distance = body.translation().z;
   controls.forward = movingAtTakeoff;
-  for (let i = 0; i < 5; i++) { render(); physics(); world.step(); }
+  for (let i = 0; i < 5; i++) { render(); physics(); world.step(); afterPhysics(); }
   const expectedDelay = movingAtTakeoff ? movingJumpStartDelay : jumpStartDelay;
   let jumpStep = -1;
   let impulseCount = 0;
@@ -65,7 +70,7 @@ function simulate(renderHz, jumpStartDelay = 0, holdJump = false, movingJumpStar
   };
   for (step = 0; step < 180; step++) {
     controls.jump = holdJump || step === 0;
-    render(); physics(); world.step();
+    render(); physics(); world.step(); afterPhysics();
     if (step === 0) assert.equal(publishedState.isMovingJump, movingAtTakeoff);
     if (step === 1) controls.forward = false;
     if (!publishedState.isGrounded) {
@@ -94,3 +99,7 @@ simulate(120, 0.55, false, 0, true);
 simulate(120, 0.55, true, 0, true);
 simulate(120, 0.55, false, 0, false);
 console.log("PASS: moving jumps are immediate, stationary jumps retain anticipation, takeoff mode stays latched");
+
+simulate(60, 0, false, 0, true, -4, 0);
+simulate(30, 0.55, false, 0, false, 0.3, 0);
+console.log("PASS: underground and partially embedded player spawns recover on first step; walking and jumps remain functional");

@@ -46,6 +46,7 @@ const KeyboardController = () => {
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || (e.target instanceof Element && e.target.closest("input, textarea, select, [contenteditable='true']"))) return;
       if (!pressedKeysRef.current.has(e.code)) {
         pressedKeysRef.current.add(e.code);
         updateActions();
@@ -70,17 +71,15 @@ const KeyboardController = () => {
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
     window.addEventListener("blur", resetAll);
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) resetAll();
-    });
+    const handleVisibilityChange = () => { if (document.hidden) resetAll(); };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("blur", resetAll);
-      document.removeEventListener("visibilitychange", () => {
-        if (document.hidden) resetAll();
-      });
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      resetAll();
     };
   }, []);
 

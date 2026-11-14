@@ -34,7 +34,10 @@ type CharacterControllerProps = {
 
   /** When false, external code drives the main camera during play. */
   manageCamera?: boolean;
+  cameraMode?: "third-person" | "first-person";
 
+  /** Optional ground plane safety net, scoped to flat levels. */
+  minimumGroundY?: number;
   gravityScale?: number;
   moveSpeed?: number;
   jumpForce?: number;
@@ -57,6 +60,8 @@ export function CharacterController({
   raycastMembershipGroup,
   startModelRotationY = 0,
   manageCamera = true,
+  cameraMode = "third-person",
+  minimumGroundY,
   gravityScale = 3,
   moveSpeed,
   jumpForce,
@@ -80,10 +85,12 @@ export function CharacterController({
     modelRef,
     capsuleHalfHeight,
     capsuleRadius,
+    minimumGroundY,
     raycastMembershipGroup,
     raycastFilterGroups,
     startModelRotationY,
     manageCamera,
+    cameraMode,
     moveSpeed,
     jumpForce,
     jumpStartDelay,

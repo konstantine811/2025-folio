@@ -1,6 +1,6 @@
 import { RefObject, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
-import { interactionGroups, useBeforePhysicsStep, useRapier } from "@react-three/rapier";
+import { interactionGroups, useAfterPhysicsStep, useBeforePhysicsStep, useRapier } from "@react-three/rapier";
 import { Group, MathUtils, Vector3 } from "three";
 
 import useFollowCamera from "@/components/common/hooks/camera/useFollowCamera";
@@ -14,6 +14,7 @@ import {
 import { usePlayerPositionStore } from "@/components/page-partials/pages/experimental/three-scenes/character-controller/physics-world/usePlayerPositionStore";
 import { CharacterControllerState } from "./store/character-controller-store";
 import { EntityType } from "./ecs";
+import { recoverBelowFloor } from "./physics/ground-support";
 
 /**
  * Grounded move blend rate. Tuned so at 60 FPS ≈ old fixed `smoothing = 0.25`:
@@ -28,6 +29,7 @@ type UseCharacterControllerPhysicsParams = {
 
   capsuleHalfHeight: number;
   capsuleRadius: number;
+  minimumGroundY?: number;
 
   /** Rapier collision group membership for ground/wall raycasts. Default: 0 */
   raycastMembershipGroup?: number;
@@ -45,6 +47,7 @@ type UseCharacterControllerPhysicsParams = {
 
   /** When false, pivot still tracks the player but camera is driven externally. */
   manageCamera?: boolean;
+  cameraMode?: "third-person" | "first-person";
 
   moveSpeed?: number;
   jumpForce?: number;
@@ -58,11 +61,13 @@ export function useCharacterControllerPhysics({
   modelRef,
   capsuleHalfHeight,
   capsuleRadius,
+  minimumGroundY,
   raycastMembershipGroup = 0,
   raycastFilterGroups = [1, 2],
   startModelRotationY = 0,
   spawnGroundGraceFrames = 20,
   manageCamera = true,
+  cameraMode = "third-person",
   moveSpeed = 9,
   jumpForce = 2.5,
   jumpStartDelay = 0,
@@ -151,19 +156,31 @@ export function useCharacterControllerPhysics({
     pivot.position.lerp(pivotPosition, 1 - Math.exp(-11 * delta));
 
     if (manageCamera) {
-      followCam.getWorldPosition(followCamPosition);
-
-      camera.position.lerp(followCamPosition, 1 - Math.exp(-11 * delta));
-      camera.lookAt(pivot.position);
+      if (cameraMode === "first-person") {
+        camera.position.copy(pivotPosition);
+        camera.rotation.set(-followCam.rotation.x, pivot.rotation.y + Math.PI, 0, "YXZ");
+      } else {
+        followCam.getWorldPosition(followCamPosition);
+        camera.position.lerp(followCamPosition, 1 - Math.exp(-11 * delta));
+        camera.lookAt(pivot.position);
+      }
     }
 
-    cameraCollisionDetect(delta);
+    if (manageCamera && cameraMode === "third-person") cameraCollisionDetect(delta);
 
+  });
+
+  useAfterPhysicsStep(() => {
+    const body = playerRef.current?.rigidBody;
+    if (body && recoverBelowFloor(body, minimumGroundY, capsuleHalfHeight, capsuleRadius)) {
+      setPlayerPosition(body.translation());
+    }
   });
 
   useBeforePhysicsStep(() => {
     const characterRigidBody = playerRef.current?.rigidBody;
     if (!characterRigidBody) return;
+    recoverBelowFloor(characterRigidBody, minimumGroundY, capsuleHalfHeight, capsuleRadius);
     const delta = world.timestep;
     const translationStable = characterRigidBody.translation();
     setPlayerPosition(translationStable);

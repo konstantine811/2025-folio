@@ -26,6 +26,8 @@ const gameLoaders: Record<
   string,
   () => Promise<{ default: ComponentType<object> }>
 > = {
+  "rts-farmer": () =>
+    import("@/components/page-partials/pages/experimental/three-scenes/games/rts-farmer/init"),
   "codeworlds": () =>
     import("@/components/page-partials/pages/experimental/three-scenes/games/codeworlds/init"),
   "sim-city-game": () =>
@@ -39,6 +41,15 @@ const gameLoaders: Record<
 };
 
 export const THREE_GAME_DEMOS: ThreeGameDemoDefinition[] = [
+  {
+    slug: "three-rts-farmer",
+    folder: "rts-farmer",
+    id: "experimental-three-rts-farmer",
+    icon: "🌾",
+    description: "Економічна пригода: доставки, фургон, власна пекарня та команда.",
+    imageName: "rts-farmer",
+    imageFormat: "svg",
+  },
   {
     slug: "three-codeworlds",
     folder: "codeworlds",

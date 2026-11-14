@@ -1,7 +1,6 @@
-import { useAnimations, useGLTF } from "@react-three/drei";
-import { useEffect, useMemo, useRef } from "react";
-import { Box3, Group, LoopOnce, LoopRepeat, Mesh, Vector3 } from "three";
-import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
+import { useGLTF } from "@react-three/drei";
+import { useMemo } from "react";
+import { AnimatedLocomotionCharacter } from "../../character-controller/character-animation/animated-locomotion-character";
 
 // Exports contain earlier animations too, so select each clip explicitly.
 const CODEWORLDS_ASSETS = {
@@ -30,19 +29,6 @@ export function CodeworldsCharacter({ isMoving, isSprinting, isGrounded, isJumpP
   const run = useGLTF(CODEWORLDS_ASSETS.run);
   const jump = useGLTF(CODEWORLDS_ASSETS.jump);
   const falling = useGLTF(CODEWORLDS_ASSETS.falling);
-  const ref = useRef<Group>(null);
-  const { scene, scale, offset } = useMemo(() => {
-    const scene = clone(model.scene);
-    scene.traverse((object) => {
-      if (object instanceof Mesh) {
-        object.castShadow = true;
-        object.receiveShadow = true;
-      }
-    });
-    const bounds = new Box3().setFromObject(scene);
-    const scale = 2.4 / bounds.getSize(new Vector3()).y;
-    return { scene, scale, offset: -bounds.min.y * scale };
-  }, [model.scene]);
   const clips = useMemo(() => [
     { source: model.animations, name: CODEWORLDS_ASSETS.walkClip, alias: "walk" },
     { source: idle.animations, name: CODEWORLDS_ASSETS.idleClip, alias: "idle" },
@@ -61,30 +47,7 @@ export function CodeworldsCharacter({ isMoving, isSprinting, isGrounded, isJumpP
     }
     return copy;
   }), [model.animations, idle.animations, run.animations, jump.animations, falling.animations]);
-  const { actions } = useAnimations(clips, ref);
-
-  // Ground rays still reach the floor during the first frames of takeoff.
-  const animation = isMovingJump && !isGrounded
-    ? "falling"
-    : isJumpPreparing || verticalVelocity > 0.2
-      ? "jump"
-      : !isGrounded
-        ? "falling"
-        : isMoving
-          ? isSprinting ? "run" : "walk"
-          : "idle";
-
-  useEffect(() => {
-    const action = actions[animation];
-    if (!action) return;
-    action.reset();
-    action.setLoop(animation === "jump" ? LoopOnce : LoopRepeat, Infinity);
-    action.clampWhenFinished = animation === "jump";
-    action.setEffectiveTimeScale(1).setEffectiveWeight(1).fadeIn(0.15).play();
-    return () => { action.fadeOut(0.15); };
-  }, [actions, animation]);
-
-  return <group ref={ref} position={[0, offset, 0]} scale={scale}>
-    <primitive object={scene} />
-  </group>;
+  return <AnimatedLocomotionCharacter sourceScene={model.scene} clips={clips}
+    isMoving={isMoving} isSprinting={isSprinting} isGrounded={isGrounded}
+    isJumpPreparing={isJumpPreparing} isMovingJump={isMovingJump} verticalVelocity={verticalVelocity} />;
 }
