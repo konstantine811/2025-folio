@@ -6,3 +6,6 @@ export const sciFiLoadingFadeMs = 700;
 
 /** Minimum frames in canvas before we consider the scene "warm". */
 export const sciFiSceneReadyFrames = 4;
+
+/** Earth → arrival → rear hatch → existing scroll camera, in seconds. */
+export const sciFiCinematicDuration = 22;

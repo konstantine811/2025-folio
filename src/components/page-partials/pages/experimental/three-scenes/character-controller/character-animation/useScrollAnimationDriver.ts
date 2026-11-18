@@ -59,6 +59,10 @@ export function useScrollAnimationDriver({
 
     walk.reset().setLoop(LoopRepeat, Infinity).play();
 
+    // Scroll owns clip time; the automatic mixer must not advance these actions.
+    sitToStand.paused = true;
+    walk.paused = true;
+
     return () => {
       sitToStand.stop();
       walk.stop();

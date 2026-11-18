@@ -1,5 +1,7 @@
-import { JSX, RefObject, useEffect, useMemo, useRef } from "react";
-import { createPortal, useThree } from "@react-three/fiber";
+import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
+import { SciFiShipSpace } from "../sci-fi-ship-space";
+import { JSX, RefObject, useContext, useEffect, useMemo, useRef } from "react";
+import { createPortal, useGraph, useThree } from "@react-three/fiber";
 import { useAnimations, useGLTF } from "@react-three/drei";
 import { useControls } from "leva";
 import { Group, Object3D, SkinnedMesh } from "three";
@@ -58,15 +60,20 @@ function resolveHeadBone(nodes: Record<string, Object3D>) {
 export function SciFiCharacter(props: SciFiCharacterProps) {
   const { driver, modelRotationY = 0, ...groupProps } = props;
   const { scene } = useThree();
+  const shipSpace = useContext(SciFiShipSpace);
   const fallbackScrollProgressRef = useRef(0);
   const group = useRef<Group>(null);
   const modelRoot = useRef<Group>(null);
 
   const currentActionRef = useRef<string | null>(null);
 
-  const { nodes, materials, animations } = useGLTF(
+  const { scene: sourceScene, materials, animations } = useGLTF(
     sciFiCharacterConfig.modelPath,
   );
+
+  // A mixer must own its bones, including during scroll/controller handoff.
+  const characterScene = useMemo(() => clone(sourceScene), [sourceScene]);
+  const { nodes } = useGraph(characterScene);
 
   const characterAnimations = useStableWalkAnimations({
     animations,
@@ -152,7 +159,7 @@ export function SciFiCharacter(props: SciFiCharacterProps) {
         modelRotationY={modelRotationY}
       />
 
-      {createPortal(cableProxies, scene)}
+      {createPortal(cableProxies, shipSpace ?? scene)}
     </group>
   );
 }

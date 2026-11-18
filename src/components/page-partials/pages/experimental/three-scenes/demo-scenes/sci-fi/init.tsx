@@ -1,6 +1,8 @@
 import MainWrapperOffset from "@/components/ui-abc/main-wrapper-offset";
 import { Canvas } from "@react-three/fiber";
 import Experience from "./experience";
+import { SciFiCinematicOverlay } from "./sci-fi-cinematic-overlay";
+import { useSciFiEngineAudio } from "./use-sci-fi-engine-audio";
 import {
   Suspense,
   UIEvent,
@@ -18,6 +20,7 @@ import InitKeyboardController from "@/components/common/game-controller/init-key
 import { usePauseStore } from "@/components/common/game-controller/store/usePauseMode";
 import { SciFiScrollOverlay } from "./sci-fi-scroll-overlay";
 import {
+  sciFiCinematicDuration,
   sciFiLoadingFadeMs,
   sciFiSceneReadyFrames,
   sciFiSceneWarmupMs,
@@ -56,7 +59,7 @@ const SceneReadyReporter = ({ onReady }: SceneReadyReporterProps) => {
   return null;
 };
 
-type IntroPhase = "loading" | "fade-out" | "content";
+type IntroPhase = "loading" | "fade-out" | "ready" | "cinematic" | "content";
 
 const SciFiSceneLoadingOverlay = ({ progress }: { progress: number }) => {
   const pct = Math.min(100, Math.max(0, progress));
@@ -81,6 +84,8 @@ const SciFiSceneLoadingOverlay = ({ progress }: { progress: number }) => {
 
 const Init = () => {
   const scrollProgressRef = useRef(0);
+  const introTimeRef = useRef(0);
+  const { start: startEngineAudio, stop: stopEngineAudio } = useSciFiEngineAudio();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollTopRef = useRef(0);
   const introTimersRef = useRef<number[]>([]);
@@ -133,7 +138,7 @@ const Init = () => {
   }, [introPhase, sceneWarmupDone]);
 
   const handleLoadingFadeEnd = useCallback(() => {
-    setIntroPhase((phase) => (phase === "fade-out" ? "content" : phase));
+    setIntroPhase((phase) => (phase === "fade-out" ? "ready" : phase));
   }, []);
 
   useEffect(() => {
@@ -147,6 +152,18 @@ const Init = () => {
 
     return () => window.clearTimeout(fallbackId);
   }, [introPhase, handleLoadingFadeEnd]);
+
+  const handleCinematicComplete = useCallback(() => {
+    introTimeRef.current = sciFiCinematicDuration;
+    stopEngineAudio();
+    setIntroPhase("content");
+  }, [stopEngineAudio]);
+
+  const handleCinematicStart = useCallback(() => {
+    introTimeRef.current = 0;
+    startEngineAudio();
+    setIntroPhase("cinematic");
+  }, [startEngineAudio]);
 
   const handleScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
@@ -212,7 +229,7 @@ const Init = () => {
 
       <Canvas
         shadows
-        dpr={getDprCap()}
+        dpr={[1, Math.min(getDprCap()[1], 1.5)]}
         gl={{
           powerPreference: "high-performance",
           failIfMajorPerformanceCaveat: false,
@@ -221,7 +238,7 @@ const Init = () => {
         camera={{ position: [15, 10, -5], fov: 30 }}
         style={{ height: "100%" }}
         onPointerDown={(e) => {
-          if (isCameraControlsMode) return;
+          if (isCameraControlsMode || introPhase !== "content") return;
           if (e.pointerType === "mouse") {
             (e.target as HTMLCanvasElement).requestPointerLock();
           }
@@ -231,6 +248,10 @@ const Init = () => {
           <Experience
             cameraMode={selectedCameraMode}
             scrollProgressRef={scrollProgressRef}
+            introComplete={introPhase === "content"}
+            introRunning={introPhase === "cinematic"}
+            introTimeRef={introTimeRef}
+            onIntroComplete={handleCinematicComplete}
           />
           <SceneReadyReporter onReady={handleSceneReady} />
         </Suspense>
@@ -259,7 +280,7 @@ const Init = () => {
             style={{
               WebkitOverflowScrolling: "touch",
               overscrollBehavior: "contain",
-              pointerEvents: isCameraControlsMode ? "none" : "auto",
+              pointerEvents: introPhase === "content" ? "auto" : "none",
               touchAction: "pan-y",
             }}
           >
@@ -275,7 +296,7 @@ const Init = () => {
               />
             )}
           </div>
-          {introPhase !== "content" && (
+          {(introPhase === "loading" || introPhase === "fade-out") && (
             <div
               className={cn(
                 "absolute inset-0 z-40 bg-black/35 transition-opacity ease-out",
@@ -292,6 +313,14 @@ const Init = () => {
             >
               <SciFiSceneLoadingOverlay progress={displayProgress} />
             </div>
+          )}
+          {(introPhase === "ready" || introPhase === "cinematic") && (
+            <SciFiCinematicOverlay
+              running={introPhase === "cinematic"}
+              timeRef={introTimeRef}
+              onStart={handleCinematicStart}
+              onSkip={handleCinematicComplete}
+            />
           )}
           <div
             className="pointer-events-none absolute inset-0 z-30"

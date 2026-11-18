@@ -1,4 +1,4 @@
-import { JSX, useEffect, useMemo, useRef } from "react";
+import { RefObject, JSX, useEffect, useMemo, useRef } from "react";
 import { useGLTF, useTexture } from "@react-three/drei";
 import { Group, Mesh, MeshPhysicalMaterial, MeshStandardMaterial } from "three";
 import {
@@ -12,7 +12,7 @@ import { ShipDoor } from "./ship-door";
 import { ShipWallSupport } from "./ship-wall-support";
 import { ShipChair } from "./ship-chair";
 import { useSciFiChairControls } from "./ship-chair-cable-proxies";
-import { sciFiPropFloorCollisionGroups } from "../sci-fi-collision-groups";
+import { sciFiControllerFloorCollisionGroups, sciFiDetailedFloorCollisionGroups, sciFiPropFloorCollisionGroups } from "../sci-fi-collision-groups";
 
 const modelPath = "/3d-models/sci-fi/ship-container.glb";
 const texturePath = "/3d-models/sci-fi/ship_baking.jpg";
@@ -27,10 +27,12 @@ const camFloorExclude = camExcludeCollision;
 type ShipContainerProps = JSX.IntrinsicElements["group"] & {
   /** Hide in-canvas Html prompts (e.g. CameraControls inspect mode). */
   hideSceneHtml?: boolean;
+  cinematicDoorOpenRef?: RefObject<boolean>;
 };
 
 export function ShipContainer({
   hideSceneHtml = false,
+  cinematicDoorOpenRef,
   ...props
 }: ShipContainerProps) {
   const rootRef = useRef<Group>(null);
@@ -77,7 +79,7 @@ export function ShipContainer({
         position={[0, 5.272, 17.861]}
         userData={camWall}
       />
-      <RigidBody type="fixed" colliders="trimesh" friction={1}>
+      <RigidBody type="fixed" colliders="trimesh" friction={1} collisionGroups={sciFiDetailedFloorCollisionGroups()}>
         <mesh
           castShadow
           receiveShadow
@@ -118,6 +120,14 @@ export function ShipContainer({
         />
       </RigidBody>
       <RigidBody type="fixed" colliders={false}>
+        {/* Matches ship_floor bounds; top surface is at y=0.057. */}
+        <CuboidCollider
+          args={[6.7607, 0.1, 18.86147]}
+          position={[0, -0.043, 17.86147]}
+          collisionGroups={sciFiControllerFloorCollisionGroups()}
+          friction={0}
+          restitution={0}
+        />
         <CuboidCollider
           args={[5.8, 0.12, 12.5]}
           position={[0, 0.025, 17.861]}
@@ -154,7 +164,7 @@ export function ShipContainer({
       <ShipContainerBack
         hullMaterial={materials.shop_husk as MeshStandardMaterial}
       />
-      <ShipDoor position={[0, 0.17, 0.2]} hideHtmlOverlay={hideSceneHtml} />
+      <ShipDoor position={[0, 0.17, 0.2]} hideHtmlOverlay={hideSceneHtml} cinematicOpenRef={cinematicDoorOpenRef} />
       <ShipWallSupport />
       {chairControls.chairEnabled ? (
         <ShipChair controls={chairControls} />

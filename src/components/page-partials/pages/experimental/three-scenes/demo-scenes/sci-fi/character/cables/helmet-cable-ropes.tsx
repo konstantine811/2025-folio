@@ -1,6 +1,7 @@
+import { SciFiShipSpace } from "../../sci-fi-ship-space";
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { useControls } from "leva";
-import { useMemo, useRef } from "react";
+import { useContext, useMemo, useRef } from "react";
 import {
   CatmullRomCurve3,
   Color,
@@ -383,6 +384,7 @@ export function HelmetCableRopes({
   helmetScale,
 }: HelmetCableRopesProps) {
   const { scene, clock } = useThree();
+  const shipSpace = useContext(SciFiShipSpace);
   const meshRefs = useRef<(Mesh | null)[]>([]);
   const orbMeshRef = useRef<InstancedMesh>(null);
   const neonMaterialColor = useRef(new Color(cableNeonOrbDefaults.color));
@@ -824,6 +826,6 @@ export function HelmetCableRopes({
         userData={{ camExcludeCollision: true }}
       />
     </>,
-    scene,
+    shipSpace ?? scene,
   );
 }

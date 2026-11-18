@@ -7,8 +7,19 @@ export const SCIFI_HELMET_GROUP = 6;
 export const SCIFI_BODY_PROXY_GROUP = 7;
 export const SCIFI_CHARACTER_CONTROLLER_GROUP = 8;
 export const SCIFI_PROP_COLLIDER_GROUP = 1;
+export const SCIFI_CONTROLLER_FLOOR_GROUP = 9;
 
-export const SCIFI_CONTROLLER_COLLIDES_WITH = [0, SCIFI_CABLE_FLOOR_GROUP, 1, 2] as const;
+/** Detailed floor remains available to props; the player uses a flat cuboid. */
+export function sciFiDetailedFloorCollisionGroups() {
+  return interactionGroups(0, Array.from({ length: 16 }, (_, group) => group)
+    .filter((group) => group !== SCIFI_CHARACTER_CONTROLLER_GROUP));
+}
+
+export function sciFiControllerFloorCollisionGroups() {
+  return interactionGroups(SCIFI_CONTROLLER_FLOOR_GROUP, [SCIFI_CHARACTER_CONTROLLER_GROUP]);
+}
+
+export const SCIFI_CONTROLLER_COLLIDES_WITH = [0, SCIFI_CABLE_FLOOR_GROUP, 1, 2, SCIFI_CONTROLLER_FLOOR_GROUP] as const;
 
 /** Cables collide with floor, helmet proxy, and body proxies — not the controller capsule. */
 export function sciFiCableCollisionGroups() {

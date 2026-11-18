@@ -1,5 +1,5 @@
 import { useFrame, useThree } from "@react-three/fiber";
-import { RefObject, useEffect, useMemo, useRef } from "react";
+import { RefObject, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { Object3D, Vector3 } from "three";
 import { normalizeRange } from "@/utils/math/normalize";
 import {
@@ -91,6 +91,12 @@ export function SciFiCameraController({
     pivotHelper.add(followCam);
     return followCam;
   }, [pivotHelper]);
+
+  useLayoutEffect(() => {
+    getScrollCameraTargets(scrollProgressRef.current ?? 0, scrollPos.current, scrollLookAt.current);
+    camera.position.copy(scrollPos.current);
+    camera.lookAt(scrollLookAt.current);
+  }, [camera, scrollProgressRef]);
 
   useEffect(() => {
     if (wasPausedRef.current && !isPaused) {

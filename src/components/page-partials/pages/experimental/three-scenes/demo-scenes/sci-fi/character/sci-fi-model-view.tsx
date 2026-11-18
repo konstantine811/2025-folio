@@ -25,12 +25,14 @@ export function SciFiCharacterModelView({
       <group rotation={[0, modelRotationY, 0]}>
         <group name="Armature">
           <skinnedMesh
+            frustumCulled={false}
             name="human"
             geometry={(nodes.human as SkinnedMesh).geometry}
             material={materials["Skin.002"]}
             skeleton={(nodes.human as SkinnedMesh).skeleton}
           />
           <skinnedMesh
+            frustumCulled={false}
             name="l_manb"
             geometry={(nodes.l_manb as SkinnedMesh).geometry}
             material={materials.L_m_default}

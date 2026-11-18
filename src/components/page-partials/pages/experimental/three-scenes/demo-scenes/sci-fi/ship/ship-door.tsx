@@ -15,7 +15,7 @@ import {
   useState,
   type RefObject,
 } from "react";
-import { Group, Mesh, MeshStandardMaterial, Vector3 } from "three";
+import { DoubleSide, Group, Mesh, MeshStandardMaterial, Vector3 } from "three";
 import { usePauseStore } from "@/components/common/game-controller/store/usePauseMode";
 import { Key } from "@/config/key";
 import { useRegisterCameraCollisionMeshes } from "@/components/common/hooks/camera/useRegisterCameraCollisionMeshes";
@@ -73,6 +73,7 @@ const propCollisionGroups = interactionGroups(SCIFI_PROP_COLLIDER_GROUP, [
 
 function createOpaqueDoorMaterial(source: MeshStandardMaterial) {
   const material = source.clone();
+  material.side = DoubleSide;
   material.transparent = false;
   material.opacity = 1;
   material.depthWrite = true;
@@ -127,9 +128,10 @@ function KinematicDoorCollider({
 
 type ShipDoorProps = JSX.IntrinsicElements["group"] & {
   hideHtmlOverlay?: boolean;
+  cinematicOpenRef?: RefObject<boolean>;
 };
 
-export function ShipDoor({ hideHtmlOverlay = false, ...props }: ShipDoorProps) {
+export function ShipDoor({ hideHtmlOverlay = false, cinematicOpenRef, ...props }: ShipDoorProps) {
   const doorAssemblyPosition = SHIP_DOOR_EXPORT_ASSEMBLY_POSITION;
   const doorAssemblyRotation = SHIP_DOOR_EXPORT_ASSEMBLY_ROTATION;
   const rootRef = useRef<Group>(null);
@@ -297,7 +299,7 @@ export function ShipDoor({ hideHtmlOverlay = false, ...props }: ShipDoorProps) {
   };
 
   useFrame((_, delta) => {
-    const target = isOpen ? 1 : 0;
+    const target = isOpen || cinematicOpenRef?.current ? 1 : 0;
     openProgressRef.current +=
       (target - openProgressRef.current) * Math.min(1, openSpeed * delta);
 
