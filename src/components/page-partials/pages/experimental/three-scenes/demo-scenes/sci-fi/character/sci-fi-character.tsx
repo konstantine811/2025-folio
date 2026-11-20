@@ -5,7 +5,7 @@ import { JSX, RefObject, useContext, useEffect, useLayoutEffect, useMemo, useRef
 import { createPortal, useGraph, useThree } from "@react-three/fiber";
 import { useAnimations, useGLTF } from "@react-three/drei";
 import { useControls } from "leva";
-import { Group, Object3D, SkinnedMesh } from "three";
+import { Group, Object3D, SkinnedMesh, type AnimationAction } from "three";
 import { sciFiCharacterConfig, SciFiCharacterAnimations } from "./sci-fi.config";
 import { useLocomotionAnimationDriver } from "../../../character-controller/character-animation/useLocomotionAnimationDriver";
 import { useStableWalkAnimations } from "./useStableWalkAnimations";
@@ -93,7 +93,7 @@ export function SciFiCharacter(props: SciFiCharacterProps) {
     const idle = actions[initialIdleAnimation];
     if (!idle) return;
     const progress = initialScrollProgress.current;
-    const outgoing = [];
+    const outgoing: AnimationAction[] = [];
     if (progress !== undefined) {
       const config = sciFiCharacterConfig.scroll;
       const stand = actions[sciFiCharacterConfig.animations.sitToStand];
