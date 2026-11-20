@@ -2092,3 +2092,23 @@ body.dark
   white-space: normal;
   hyphens: manual;
 }
+
+/* Match the canvas preview metrics without adding a second content inset. */
+[data-nw-canvas-editor] .node-mdx-editor-basic .node-mdx-editor-content {
+  padding: 0;
+  font-size: 16.32px;
+  line-height: 28.1px;
+}
+[data-nw-canvas-editor] .node-mdx-editor-basic .node-mdx-editor-content :is(ul, ol) {
+  margin: 10px 0;
+  padding-left: 16.8px;
+}
+[data-nw-canvas-editor] .node-mdx-editor-basic .node-mdx-editor-content li {
+  margin: 4px 0;
+}
+[data-nw-canvas-editor] .node-mdx-editor-basic .node-mdx-editor-content li > p {
+  margin: 0;
+}
+[data-nw-canvas-editor] .node-mdx-editor-basic .node-mdx-editor-content :is(h1, h2, h3, h4, h5, h6) {
+  margin: 10px 0 14px;
+}

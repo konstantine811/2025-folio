@@ -1,6 +1,7 @@
+import { normalizeRange } from "@/utils/math/normalize";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { SciFiShipSpace } from "../sci-fi-ship-space";
-import { JSX, RefObject, useContext, useEffect, useMemo, useRef } from "react";
+import { JSX, RefObject, useContext, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { createPortal, useGraph, useThree } from "@react-three/fiber";
 import { useAnimations, useGLTF } from "@react-three/drei";
 import { useControls } from "leva";
@@ -30,6 +31,7 @@ type SciFiCharacterScrollProps = SciFiCharacterBaseProps &
 type SciFiCharacterControllerProps = SciFiCharacterBaseProps &
   SciFiCharacterSharedProps & {
     driver: "controller";
+    initialScrollProgress?: number;
 
     animationType: CharacterAnimations;
 
@@ -83,6 +85,45 @@ export function SciFiCharacter(props: SciFiCharacterProps) {
 
   const { actions, mixer } = useAnimations(characterAnimations, group);
 
+  const initialIdleAnimation = driver === "controller" ? props.animationType.idle : null;
+  // Capture once: later controller renders must not restart the handoff.
+  const initialScrollProgress = useRef(driver === "controller" ? props.initialScrollProgress : undefined);
+  useLayoutEffect(() => {
+    if (!initialIdleAnimation) return;
+    const idle = actions[initialIdleAnimation];
+    if (!idle) return;
+    const progress = initialScrollProgress.current;
+    const outgoing = [];
+    if (progress !== undefined) {
+      const config = sciFiCharacterConfig.scroll;
+      const stand = actions[sciFiCharacterConfig.animations.sitToStand];
+      const walk = actions[sciFiCharacterConfig.animations.walk];
+      const blend = normalizeRange(progress, config.walkScrollStart, config.standScrollEnd);
+      if (stand && walk) {
+        stand.reset().play();
+        stand.time = stand.getClip().duration * normalizeRange(progress, 0, config.standScrollEnd);
+        stand.paused = true;
+        stand.setEffectiveWeight(1 - blend);
+        walk.reset().play();
+        walk.time = (walk.getClip().duration * normalizeRange(progress, config.walkScrollStart, config.walkScrollEnd) * config.walkCycles) % walk.getClip().duration;
+        walk.paused = true;
+        walk.setEffectiveWeight(blend);
+        outgoing.push(stand, walk);
+      }
+    }
+    idle.reset().play();
+    if (outgoing.length) {
+      outgoing.forEach(action => action.fadeOut(0.4));
+      idle.fadeIn(0.4);
+    }
+    currentActionRef.current = initialIdleAnimation;
+    mixer.update(0);
+    return () => {
+      idle.stop();
+      outgoing.forEach(action => action.stop());
+    };
+  }, [initialIdleAnimation, actions, mixer]);
+
   const head = useMemo(() => resolveHeadBone(nodes), [nodes]);
   const skeletonRoot = nodes.mixamorigHips as Object3D | undefined;
 
@@ -101,9 +142,6 @@ export function SciFiCharacter(props: SciFiCharacterProps) {
     modelRoot.current.position.z = 0;
   }, [isControllerDriver]);
 
-  useEffect(() => {
-    currentActionRef.current = null;
-  }, [driver]);
 
   useScrollAnimationDriver({
     enabled: isScrollDriver,

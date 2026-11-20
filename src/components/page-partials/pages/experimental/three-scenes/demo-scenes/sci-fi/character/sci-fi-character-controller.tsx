@@ -1,7 +1,8 @@
+import { CableRopeStateContext, type RopeState } from "./cables/helmet-cable-ropes";
 import { SciFiCharacter } from "./sci-fi-character";
 import { CharacterAnimations } from "../../../character-controller/models/character-controller.model";
 import { CharacterController } from "../../../character-controller/controller/character-controller";
-import { RefObject, useMemo } from "react";
+import { RefObject, useMemo, useRef } from "react";
 import {
   SCIFI_CHARACTER_CONTROLLER_GROUP,
   SCIFI_CONTROLLER_COLLIDES_WITH,
@@ -34,7 +35,16 @@ type SciFiToggleCharacterProps = {
   manageCamera?: boolean;
 };
 
-export function SciFiToggleCharacter({
+export function SciFiToggleCharacter(props: SciFiToggleCharacterProps) {
+  const ropes = useRef<RopeState[] | null>(null);
+  return (
+    <CableRopeStateContext.Provider value={ropes}>
+      <SciFiToggleCharacterContent {...props} />
+    </CableRopeStateContext.Provider>
+  );
+}
+
+function SciFiToggleCharacterContent({
   mode,
   scrollProgressRef,
   animationType,
@@ -54,7 +64,7 @@ export function SciFiToggleCharacter({
     return (
       <group
         position={[0, sciFiScrollPlacement.groupY, sciFiScrollPlacement.startZ]}
-        scale={1.2}
+        scale={sciFiScrollPlacement.scale}
       >
         <SciFiCharacter
           driver="scroll"
@@ -83,9 +93,10 @@ export function SciFiToggleCharacter({
       raycastMembershipGroup={SCIFI_CHARACTER_CONTROLLER_GROUP}
       raycastFilterGroups={SCIFI_CONTROLLER_COLLIDES_WITH}
       renderCharacter={({ modelRef, controllerState }) => (
-        <group ref={modelRef} position={[0, sciFiModelOffsetY, 0]} scale={1}>
+        <group ref={modelRef} position={[0, sciFiModelOffsetY, 0]} scale={sciFiScrollPlacement.scale}>
           <SciFiCharacter
             driver="controller"
+            initialScrollProgress={scrollProgressRef.current}
             modelRotationY={controllerModelRotationY}
             animationType={animationType}
             isMoving={controllerState.isMoving}

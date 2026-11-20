@@ -279,11 +279,6 @@ function isMarkdownCanvasThematicBreak(line: string): boolean {
   );
 }
 
-function blocksContainMarkdownImage(blocks: NodeMarkdownBlock[]): boolean {
-  return descriptionFromBlocks(blocks)
-    .split("\n")
-    .some((line) => extractMarkdownCanvasImage(line) !== null);
-}
 
 function labelForCodeFenceLanguage(language: string) {
   const normalized = language.trim().toLowerCase();
@@ -694,7 +689,8 @@ function MarkdownBlocksPreview({
   isDark: boolean;
   nodeId: string;
 }) {
-  return blocksContainMarkdownImage(blocks) ? (
+  // Share DOM layout with editing; canvas text metrics differ from browser lists.
+  return blocks.length > 0 ? (
     <MarkdownReadonlyMdxPreview
       blocks={blocks}
       isDark={isDark}
@@ -717,6 +713,7 @@ function MarkdownReadonlyMdxPreview({
   return (
     <div
       className="h-full overflow-hidden"
+      data-nw-canvas-editor="true"
       style={{
         paddingLeft: MDX_CANVAS_TYPO.contentPaddingX,
         paddingRight: MDX_CANVAS_TYPO.contentPaddingX,
@@ -2156,10 +2153,10 @@ const MarkdownNodeOverlayItem = ({
                   }}
                   className="h-full overflow-hidden pointer-events-auto"
                 >
-                  <MarkdownCanvasPreview
+                  <MarkdownBlocksPreview
                     blocks={blocks}
                     isDark={isDark}
-                    scrollable
+                    nodeId={node.id}
                   />
                 </div>
               ) : readOnly ? (
@@ -2192,7 +2189,8 @@ const MarkdownNodeOverlayItem = ({
                     overscrollBehavior:
                       touchNavigationMode && isSelected ? "contain" : undefined,
                   }}
-                  className={`flex min-h-0 min-w-0 flex-1 flex-col pl-5 pr-2 pt-2 overflow-auto h-full ${
+                  data-nw-canvas-editor="true"
+                  className={`flex min-h-0 min-w-0 flex-1 flex-col px-5 pt-2 pb-3 overflow-auto h-full ${
                     isSelected ? "pointer-events-auto" : "pointer-events-none"
                   }`}
                 >

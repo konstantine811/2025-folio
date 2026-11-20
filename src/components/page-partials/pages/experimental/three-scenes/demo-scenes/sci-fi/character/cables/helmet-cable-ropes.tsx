@@ -1,7 +1,7 @@
 import { SciFiShipSpace } from "../../sci-fi-ship-space";
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { useControls } from "leva";
-import { useContext, useMemo, useRef } from "react";
+import { createContext, RefObject, useContext, useMemo, useRef } from "react";
 import {
   CatmullRomCurve3,
   Color,
@@ -47,11 +47,14 @@ type RopePoint = {
   previous: Vector3;
 };
 
-type RopeState = {
+export type RopeState = {
   initialized: boolean;
   points: RopePoint[];
   previousAnchor: Vector3;
 };
+
+// Owned by the mode switcher so remounting the model preserves Verlet history.
+export const CableRopeStateContext = createContext<RefObject<RopeState[] | null> | null>(null);
 
 type FloorScatterConfig = {
   sideSlope: number;
@@ -470,13 +473,18 @@ export function HelmetCableRopes({
   const anchorWorldMatrices = useRef(
     connectorLocalPositions.map(() => new Matrix4()),
   );
-  const ropeStates = useRef<RopeState[]>(
+  const persistentRopeStates = useContext(CableRopeStateContext);
+  const localRopeStates = useRef<RopeState[]>(
     connectorLocalPositions.map(() => ({
       initialized: false,
       points: [],
       previousAnchor: new Vector3(),
     })),
   );
+  if (persistentRopeStates && persistentRopeStates.current === null) {
+    persistentRopeStates.current = localRopeStates.current;
+  }
+  const ropeStates = persistentRopeStates as RefObject<RopeState[]> | null ?? localRopeStates;
   const helmetTransform = useMemo((): HelmetTransform => {
     const position = new Vector3(...helmetPosition);
     const quaternion = new Quaternion().setFromEuler(
